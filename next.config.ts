@@ -1,4 +1,5 @@
 // Import the necessary modules
+import { NextConfig } from "next";
 import withPWA from "next-pwa";
 /** @type {NextConfig} */
 
@@ -10,8 +11,28 @@ const pwaConfig = withPWA({
   // cacheOnFrontEndNav: true,
 });
 
-const nextConfig = {
+const config: NextConfig = {
   ...pwaConfig,
+  images: {
+    domains: ["conjecture.dev", "app.conjecture.dev"],
+  },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "X-DNS-Prefetch-Control",
+            value: "on",
+          },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains",
+          },
+        ],
+      },
+    ];
+  },
   // reactStrictMode: false,
   // logging: {
   //   fetches: {
@@ -20,4 +41,4 @@ const nextConfig = {
   // },
 };
 
-export default nextConfig;
+export default config;
