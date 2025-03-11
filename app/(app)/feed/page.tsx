@@ -1,4 +1,4 @@
-export default function Dashboard() {
+export default function Feed() {
   return (
     <div className="container py-8">
       <h1 className="text-3xl font-bold mb-8">Your Feed</h1>

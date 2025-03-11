@@ -6,7 +6,7 @@ import {
   Selectable,
   Updateable,
 } from "kysely";
-import { DB, Profile } from "kysely-codegen";
+import { DB, Draft, Profile } from "kysely-codegen";
 import { Pool } from "pg";
 
 const db = new Kysely<DB>({
@@ -28,5 +28,14 @@ declare module "kysely-codegen" {
   export type BaseProfile = Selectable<Profile>;
   export type NewProfile = Insertable<Profile>;
   export type EditedProfile = Updateable<Profile>;
+
+  export type BaseDraft = Selectable<Draft>;
+  export type NewDraft = Insertable<Draft>;
+  export type EditedDraft = Updateable<Draft>;
+
+  export type Statement = {
+    statementId: string;
+    drafts: BaseDraft[];
+  };
 }
 export default db;

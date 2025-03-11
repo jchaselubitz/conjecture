@@ -21,7 +21,7 @@ export async function middleware(request: NextRequest) {
     (url.pathname.startsWith("/posts") ||
       url.pathname.startsWith("/explore") ||
       url.pathname.startsWith("/join") ||
-      url.pathname === "/dashboard")
+      url.pathname === "/feed")
   ) {
     return NextResponse.redirect(
       `${protocol}://app.${hostname}${url.pathname}`,
