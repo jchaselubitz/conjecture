@@ -10,8 +10,9 @@ import {
 } from "@/lib/actions/statementActions";
 
 interface StatementContextType {
+  drafts: BaseDraft[] | undefined;
   statement: BaseDraft | undefined;
-  setStatement: (statement: BaseDraft) => void;
+  newStatement: NewDraft | undefined;
   setNewStatement: (statement: Partial<NewDraft>) => void;
   saveStatementDraft: () => Promise<void>;
   updateStatementDraft: () => Promise<void>;
@@ -24,12 +25,19 @@ const StatementContext = createContext<StatementContextType | undefined>(
   undefined,
 );
 
-export function StatementProvider({ children }: { children: ReactNode }) {
+export function StatementProvider({
+  children,
+  drafts,
+}: {
+  children: ReactNode;
+  drafts?: BaseDraft[];
+}) {
   const [loadingState, setLoadingState] =
     useState<ButtonLoadingState>("default");
   const [error, setError] = useState<string | null>(null);
 
-  const [statement, setStatement] = useState<NewDraft>();
+  const statement = drafts?.[0];
+
   const [newStatement, setNewStatementState] = useState<NewDraft>(
     statement ?? ({} as NewDraft),
   );
@@ -43,7 +51,6 @@ export function StatementProvider({ children }: { children: ReactNode }) {
 
   // Save a draft of the statement - new ones will take new PublicationId
   const saveStatementDraft = async () => {
-    console.log(newStatement);
     const { title, content, headerImg, statementId } = newStatement || {};
     if (!title || !content) {
       setError("Missing required fields");
@@ -93,8 +100,10 @@ export function StatementProvider({ children }: { children: ReactNode }) {
   return (
     <StatementContext.Provider
       value={{
-        statement: statement as BaseDraft,
-        setStatement,
+        drafts,
+        statement,
+        newStatement: newStatement,
+
         setNewStatement,
         saveStatementDraft,
         updateStatementDraft,

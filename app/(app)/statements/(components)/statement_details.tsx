@@ -1,21 +1,21 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
-import { BaseDraft } from "kysely-codegen";
 import Link from "next/link";
 import { useStatementContext } from "@/contexts/statementContext";
 
 interface StatementDetailsProps {
-  drafts: BaseDraft[];
   statementId: string;
 }
 
 export default function StatementDetails({
-  drafts,
   statementId,
 }: StatementDetailsProps) {
-  const { setStatement } = useStatementContext();
-  setStatement(drafts[0]);
+  const { drafts } = useStatementContext();
+
+  if (!drafts) {
+    return <div>No drafts found</div>;
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -23,7 +23,7 @@ export default function StatementDetails({
         {drafts.map((draft) => (
           <Link
             key={draft.id}
-            href={`/statements/${statementId}/edit?draft=${draft.id}`}
+            href={`/statements/${statementId}/edit`}
             className="p-4 rounded-lg border hover:border-foreground/20 transition-colors"
           >
             <div className="flex items-start justify-between">

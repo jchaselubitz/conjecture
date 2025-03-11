@@ -16,7 +16,7 @@ export default async function CreatePage({
   const draft = await getDraftById(id);
 
   return (
-    <div className="flex-1 bg-background   ">
+    <div className="flex-1 bg-background">
       <StatementNav />
       <div className="mx-auto container pt-20 px-4">
         <StatementCreateEditForm statementId={statementId} draft={draft} />

@@ -3,7 +3,7 @@
 import { createClient } from "@/supabase/server";
 import db from "@/lib/database";
 import { revalidatePath } from "next/cache";
-import { BaseDraft, EditedDraft, Statement } from "kysely-codegen";
+import { EditedDraft, Statement } from "kysely-codegen";
 import { redirect } from "next/navigation";
 import { generateStatementId } from "../helpers/helpersStatements";
 

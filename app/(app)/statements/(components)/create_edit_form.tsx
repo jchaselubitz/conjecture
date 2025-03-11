@@ -1,53 +1,49 @@
 "use client";
 
-import { BaseDraft } from "kysely-codegen";
 import { Upload } from "lucide-react";
+import RichTextEditor from "@/components/rich_text_editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useStatementContext } from "@/contexts/statementContext";
 
 export default function StatementCreateEditForm({
   statementId,
-  draft,
 }: {
   statementId?: string;
-  draft?: BaseDraft;
 }) {
-  const { statement, setStatement, setNewStatement } = useStatementContext();
-
-  if (draft) {
-    setStatement(draft);
-  }
+  const { statement, setNewStatement } = useStatementContext();
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-8 max-w-4xl mx-auto">
       {/* Cover Image Upload */}
-      <div className="relative h-[200px] w-full border-2 border-dashed rounded-lg flex items-center justify-center bg-muted/20">
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            className="flex flex-col gap-2"
-            onClick={() => {
-              // TODO: Implement image upload
-            }}
-          >
-            <Upload className="h-5 w-5" />
-            <span className="text-sm text-muted-foreground">
-              Choose or drag and drop a cover image
-            </span>
-          </Button>
-        </div>
+
+      <div className="flex items-center justify-center w-full my-14">
+        <Button
+          variant="outline"
+          className="gap-2"
+          onClick={() => {
+            // TODO: Implement image upload
+          }}
+        >
+          <Upload className="h-4 w-4" />
+          <span className="text-sm text-muted-foreground">
+            Choose or drag and drop a cover image
+          </span>
+        </Button>
       </div>
 
-      {/* Title Input */}
       <Input
         type="text"
+        name="title"
         placeholder="Give it a title..."
-        className="border-0 px-0 text-4xl font-bold focus-visible:ring-0"
+        className="border-0 px-0 md:text-8xl h-fit font-bold focus-visible:ring-0 w-full text-center my-14"
         defaultValue={statement?.title || ""}
         onChange={(e) =>
-          setNewStatement({ title: e.target.value, statementId })
+          setNewStatement({
+            ...statement,
+            title: e.target.value,
+            statementId,
+          })
         }
       />
 
@@ -58,17 +54,16 @@ export default function StatementCreateEditForm({
       </div>
 
       {/* Content Input */}
-      <Textarea
-        placeholder="What's on your mind?"
-        className="min-h-[200px] border-0 focus-visible:ring-0 px-0 py-4 resize-none"
-        defaultValue={statement?.content || ""}
-        onChange={(e) =>
-          setNewStatement({ content: e.target.value, statementId })
+      <RichTextEditor
+        content={statement?.content}
+        onChange={(content) =>
+          setNewStatement({ ...statement, content, statementId })
         }
+        placeholder="What's on your mind?"
       />
 
       {/* Import Entry Button */}
-      <Button variant="outline" className="gap-2">
+      <Button variant="outline" className="gap-2 w-fit">
         <Upload className="h-4 w-4" />
         Import Entry
       </Button>
