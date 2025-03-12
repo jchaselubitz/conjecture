@@ -17,12 +17,13 @@ import {
   ListOrdered,
   Quote,
 } from "lucide-react";
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 import { Button } from "./ui/button";
 
 interface RichTextEditorProps {
-  content: string | undefined;
+  content: string | undefined | null;
   onChange: (content: string) => void;
   placeholder?: string;
 }
@@ -160,6 +161,12 @@ export default function RichTextEditor({
       onChange(editor.getHTML());
     },
   });
+
+  useEffect(() => {
+    if (content) {
+      editor?.commands.setContent(content);
+    }
+  }, [content, editor?.commands]);
 
   if (!editor) {
     return null;

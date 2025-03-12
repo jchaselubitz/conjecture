@@ -3,7 +3,7 @@
 import { createClient } from "@/supabase/server";
 import db from "@/lib/database";
 import { revalidatePath } from "next/cache";
-import { EditedDraft, Statement } from "kysely-codegen";
+import { BaseDraft, Statement } from "kysely-codegen";
 import { redirect } from "next/navigation";
 import { generateStatementId } from "../helpers/helpersStatements";
 
@@ -63,10 +63,55 @@ export async function createDraft({
  content,
  headerImg,
  statementId,
+ versionNumber,
 }: {
- title: string;
- content: string;
+ title?: string;
+ content?: string;
  headerImg?: string;
+ statementId?: string;
+ versionNumber?: number;
+}) {
+ const supabase = await createClient();
+ const {
+  data: { user },
+ } = await supabase.auth.getUser();
+
+ if (!user) {
+  return { error: "Unauthorized" };
+ }
+ const prepStatementId = statementId ? statementId : generateStatementId();
+ const { statementId: returnedStatementId } = await db.insertInto("draft")
+  .values({
+   title,
+   content,
+   headerImg,
+   creatorId: user.id,
+   statementId: prepStatementId,
+   versionNumber,
+  })
+  .returning(["statementId"])
+  .executeTakeFirstOrThrow();
+
+ if (returnedStatementId) {
+  redirect(`/statements/${returnedStatementId}/edit?version=${versionNumber}`);
+ } else {
+  return { error: "Failed to create draft" };
+ }
+}
+
+export async function updateDraft({
+ title,
+ content,
+ headerImg,
+ publishedAt,
+ versionNumber,
+ statementId,
+}: {
+ title?: string;
+ content?: string;
+ headerImg?: string;
+ publishedAt?: Date;
+ versionNumber: number;
  statementId?: string;
 }) {
  const supabase = await createClient();
@@ -77,47 +122,17 @@ export async function createDraft({
  if (!user) {
   return { error: "Unauthorized" };
  }
- const prepStatementId = statementId ? statementId : generateStatementId(title);
- const { statementId: returnedStatementId } = await db.insertInto("draft")
-  .values({
-   title,
-   content,
-   headerImg,
-   creatorId: user.id,
-   statementId: prepStatementId,
-  })
-  .returning(["statementId"])
-  .executeTakeFirstOrThrow();
-
- if (returnedStatementId) {
-  redirect(`/statements/${returnedStatementId}`);
- }
-}
-
-export async function updateDraft({
- id,
- title,
- content,
- headerImg,
- isPublished,
-}: EditedDraft) {
- const supabase = await createClient();
- const {
-  data: { user },
- } = await supabase.auth.getUser();
-
- if (!user) {
-  return { error: "Unauthorized" };
- }
-
+ console.log(statementId, versionNumber);
  await db.updateTable("draft")
   .set({
    title,
    content,
    headerImg,
-   isPublished,
+   publishedAt,
+   versionNumber,
   })
-  .where("id", "=", `${id}`)
+  .where("statementId", "=", `${statementId}`)
+  .where("versionNumber", "=", versionNumber)
   .where("creatorId", "=", user.id)
   .execute();
 
@@ -142,15 +157,16 @@ export async function publishDraft({
   return { error: "Unauthorized" };
  }
 
+ const now = new Date();
  await db.transaction().execute(async (tx) => {
-  await tx.updateTable("draft").set({ isPublished: false }).where(
+  await tx.updateTable("draft").set({ publishedAt: null }).where(
    "statementId",
    "=",
    statementId,
   ).execute();
 
   if (publish) {
-   await tx.updateTable("draft").set({ isPublished: true }).where(
+   await tx.updateTable("draft").set({ publishedAt: now }).where(
     "id",
     "=",
     id,

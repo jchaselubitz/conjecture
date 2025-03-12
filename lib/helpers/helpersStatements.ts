@@ -1,17 +1,11 @@
-export const generateStatementId = (
- title: string,
-): string => {
- const sanitizeTitle = (title: string): string => {
-  return title
-   .toLowerCase()
-   .replace(/[^a-z0-9]+/g, "-")
-   .replace(/^-+|-+$/g, "");
- };
+import crypto from "crypto";
 
- let statementId: string;
+export const generateStatementId = (): string => {
+  const randomNumber = Math.floor(Math.random() * 100000);
+  const currentDatetime = new Date().toISOString();
+  const hash = crypto.createHash("sha256")
+    .update(currentDatetime + randomNumber.toString())
+    .digest("hex");
 
- const randomNumber = Math.floor(Math.random() * 100000);
- statementId = `${sanitizeTitle(title)}-${randomNumber}`;
-
- return statementId;
+  return hash.slice(0, 10);
 };

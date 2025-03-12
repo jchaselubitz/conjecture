@@ -1,8 +1,14 @@
 "use client";
 
 import { BaseDraft, NewDraft } from "kysely-codegen";
-import { createContext, ReactNode, useContext, useState } from "react";
-import { ButtonLoadingState } from "@/components/ui/loading-button";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import {
   createDraft,
   publishDraft,
@@ -10,14 +16,17 @@ import {
 } from "@/lib/actions/statementActions";
 
 interface StatementContextType {
-  drafts: BaseDraft[] | undefined;
-  statement: BaseDraft | undefined;
-  newStatement: NewDraft | undefined;
-  setNewStatement: (statement: Partial<NewDraft>) => void;
+  drafts: BaseDraft[];
+  statement: BaseDraft;
+  setStatement: (statement: BaseDraft) => void;
+  statementUpdate: NewDraft | undefined;
+  setStatementUpdate: (statement: Partial<NewDraft>) => void;
   saveStatementDraft: () => Promise<void>;
+  nextVersionNumber: number;
+  changeVersion: (version: number) => void;
   updateStatementDraft: () => Promise<void>;
   togglePublish: () => Promise<void>;
-  loadingState: ButtonLoadingState;
+  isUpdating: boolean;
   error: string | null;
 }
 
@@ -30,70 +39,88 @@ export function StatementProvider({
   drafts,
 }: {
   children: ReactNode;
-  drafts?: BaseDraft[];
+  drafts: BaseDraft[];
 }) {
-  const [loadingState, setLoadingState] =
-    useState<ButtonLoadingState>("default");
+  const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const params = useSearchParams();
+  const version = parseInt(params.get("version") || "0", 10);
+  const router = useRouter();
 
-  const statement = drafts?.[0];
+  const [statement, setStatement] = useState<BaseDraft>(
+    drafts?.find((draft) => draft.versionNumber === version) || drafts[0],
+  );
 
-  const [newStatement, setNewStatementState] = useState<NewDraft>(
+  const [statementUpdate, setNewStatementState] = useState<NewDraft>(
     statement ?? ({} as NewDraft),
   );
 
-  const setNewStatement = (newStatement: Partial<NewDraft>) => {
+  const setStatementUpdate = (statementUpdate: Partial<NewDraft>) => {
     setNewStatementState((prev) => ({
       ...prev,
-      ...newStatement,
+      ...statementUpdate,
     }));
   };
 
-  // Save a draft of the statement - new ones will take new PublicationId
+  useEffect(() => {
+    setStatement(
+      drafts?.find((draft) => draft.versionNumber === version) || drafts[0],
+    );
+  }, [version, drafts, setStatement]);
+
+  const nextVersionNumber = drafts.length;
+
+  const changeVersion = (newVersion: number) => {
+    router.push(
+      `/statements/${statement.statementId}/edit?version=${newVersion}`,
+    );
+  };
+
+  //if the new // Save a draft of the statement - new ones will take new PublicationId
   const saveStatementDraft = async () => {
-    const { title, content, headerImg, statementId } = newStatement || {};
+    const { title, content, headerImg, statementId } = statementUpdate || {};
     if (!title || !content) {
       setError("Missing required fields");
       return;
     }
     try {
-      setLoadingState("loading");
-
       await createDraft({
         title,
         content,
         headerImg: headerImg || undefined,
         statementId: statementId || undefined,
+        versionNumber: drafts?.length,
       });
     } catch (err) {
       console.error(err);
-      setLoadingState("error");
-    } finally {
-      setLoadingState("default");
     }
   };
 
   // Update a draft of the statement - will take new PublicationId
+
   const updateStatementDraft = async () => {
     if (!statement) return;
-    const { title, content, headerImg } = newStatement;
+    const { title, content, headerImg } = statementUpdate;
+    setIsUpdating(true);
     await updateDraft({
-      id: statement.id,
-      title: title,
-      content: content,
-      headerImg: headerImg,
+      title: title || undefined,
+      content: content || undefined,
+      headerImg: headerImg || undefined,
+      statementId: statement.statementId,
+      versionNumber: statement.versionNumber,
     });
+    setIsUpdating(false);
   };
 
   // Toggle the publish status of the statement
   const togglePublish = async () => {
     if (!statement) return;
     const existingStatement = statement as BaseDraft;
-    const { statementId, id, isPublished } = existingStatement;
+    const { statementId, id, publishedAt } = existingStatement;
     await publishDraft({
       statementId,
       id,
-      publish: !isPublished,
+      publish: publishedAt ? false : true,
     });
   };
 
@@ -102,14 +129,16 @@ export function StatementProvider({
       value={{
         drafts,
         statement,
-        newStatement: newStatement,
-
-        setNewStatement,
+        setStatement,
+        statementUpdate,
+        setStatementUpdate,
         saveStatementDraft,
+        nextVersionNumber,
+        changeVersion,
         updateStatementDraft,
-        loadingState,
         error,
         togglePublish,
+        isUpdating,
       }}
     >
       {children}

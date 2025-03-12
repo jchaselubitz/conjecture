@@ -1,6 +1,5 @@
 import reactPlugin from "eslint-plugin-react";
-import reactHooksPlugin from "eslint-plugin-react-hooks";
-// import nextConfig from 'eslint-config-next';
+
 import tsPlugin from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 import simpleSort from "eslint-plugin-simple-import-sort";
@@ -24,8 +23,6 @@ export default [
       },
     },
     plugins: {
-      // react: reactPlugin,
-      // 'react-hooks': reactHooksPlugin,
       "simple-import-sort": simpleSort,
       "@typescript-eslint": tsPlugin,
       prettier: prettierPlugin,
@@ -35,11 +32,12 @@ export default [
       ...tsPlugin.configs.recommended.rules,
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "error",
-      "prettier/prettier": "error",
+      "prettier/prettier": "warn",
       "react/jsx-uses-react": "error",
       "react/jsx-uses-vars": "error",
       "react/react-in-jsx-scope": "off",
-      // 'react/prop-types': 'off',
+      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-explicit-any": 1,
       "react/display-name": "off",
       "react/no-deprecated": "warn",
       "eol-last": "error",
@@ -48,6 +46,7 @@ export default [
       eqeqeq: ["error"],
       "no-undef": 0,
       "no-unused-vars": 1,
+
       "simple-import-sort/imports": [
         "warn",
         {

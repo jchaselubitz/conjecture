@@ -1,10 +1,7 @@
-"use client";
-
 import Link from "next/link";
 
-import { Button } from "../ui/button";
-
-export default function AppNav() {
+import CreatePostButton from "../special_buttons/create_post_button";
+export default async function AppNav() {
   return (
     <header className="border-b px-4">
       <div className="flex h-16 items-center justify-between w-full ">
@@ -13,9 +10,12 @@ export default function AppNav() {
         </Link>
         <nav className="flex items-center gap-6">
           <Link href="/explore">Explore</Link>
-          <Link href="/statements/new">
-            <Button>New Post</Button>
-          </Link>
+
+          <CreatePostButton
+            text="New Conjecture"
+            loadingText="Creating ..."
+            successText="Created"
+          />
         </nav>
       </div>
     </header>
