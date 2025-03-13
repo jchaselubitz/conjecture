@@ -2,11 +2,13 @@
 
 import { Upload } from "lucide-react";
 import { useEffect, useRef } from "react";
-import RichTextEditor from "@/components/rich_text_editor";
+import RichTextEditor from "@/components/statements/rich_text_editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useStatementContext } from "@/contexts/statementContext";
 import { generateStatementId } from "@/lib/helpers/helpersStatements";
+
+import Byline from "./byline";
 
 export default function StatementCreateEditForm({
   statementId,
@@ -41,6 +43,28 @@ export default function StatementCreateEditForm({
     }
   }, [statementUpdate, updateStatementDraft]);
 
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (titleInputRef.current) {
+        const input = titleInputRef.current;
+        const parentWidth = input.parentElement?.offsetWidth || 0;
+        let fontSize = parseInt(window.getComputedStyle(input).fontSize, 10);
+
+        while (input.scrollWidth > parentWidth && fontSize > 10) {
+          fontSize -= 1;
+          input.style.fontSize = `${fontSize}px`;
+        }
+      }
+    };
+
+    handleResize(); // Initial call to set the font size
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [statementUpdate]);
+
   return (
     <div className="flex flex-col gap-8 max-w-4xl mx-auto">
       {/* Cover Image Upload */}
@@ -61,10 +85,11 @@ export default function StatementCreateEditForm({
       </div>
 
       <Input
+        ref={titleInputRef}
         type="text"
         name="title"
         placeholder="Give it a title..."
-        className="border-0 px-0 md:text-8xl h-fit font-bold focus-visible:ring-0 w-full text-center my-14"
+        className="border-0 shadow-none px-0 md:text-8xl h-fit font-bold focus-visible:ring-0 w-full text-center my-14 whitespace-normal"
         defaultValue={statement?.title || ""}
         onChange={(e) =>
           setStatementUpdate({
@@ -74,18 +99,22 @@ export default function StatementCreateEditForm({
           })
         }
       />
+      <Input
+        type="text"
+        name="subtitle"
+        placeholder="Give it a subtitle..."
+        className="border-0 shadow-none px-0 md:text-xl h-fit font-bold focus-visible:ring-0 w-full "
+        defaultValue={statement?.subtitle || ""}
+        onChange={(e) =>
+          setStatementUpdate({
+            ...statement,
+            subtitle: e.target.value,
+            statementId: prepStatementId,
+          })
+        }
+      />
 
-      <div className="flex items-center gap-2">
-        <div className="h-8 w-8 rounded-full bg-muted" />
-        <div className="text-sm">Jake</div>
-        {/* add the publish and time here  */}
-        <div className="text-sm">
-          {statement?.publishedAt
-            ? new Date(statement.publishedAt).toLocaleDateString()
-            : "Not published"}
-        </div>
-        <div className="text-sm">v{statement?.versionNumber}</div>
-      </div>
+      <Byline statement={statement} />
 
       <RichTextEditor
         content={statement?.content}

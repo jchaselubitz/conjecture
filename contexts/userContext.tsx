@@ -1,0 +1,44 @@
+"use client";
+
+import { BaseProfile } from "kysely-codegen";
+import { createContext, ReactNode, useContext, useState } from "react";
+
+// Define the context type
+interface UserContextType {
+  userId: string | undefined;
+  userImageUrl: string | undefined;
+  userName: string | undefined;
+  userEmail: string | undefined;
+}
+
+// Create the context with default values
+const UserContext = createContext<UserContextType | undefined>(undefined);
+
+// Create the provider component
+export function UserProvider({
+  children,
+  userProfile,
+  userEmail,
+}: {
+  children: ReactNode;
+  userProfile?: BaseProfile | null;
+  userEmail?: string | null;
+}) {
+  const value = {
+    userId: userProfile?.id || undefined,
+    userImageUrl: userProfile?.imageUrl || undefined,
+    userName: userProfile?.name || undefined,
+    userEmail: userEmail || undefined,
+  };
+
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
+}
+
+// Custom hook to use the context
+export function useUserContext() {
+  const context = useContext(UserContext);
+  if (context === undefined) {
+    throw new Error("useUserContext must be used within a UserProvider");
+  }
+  return context;
+}

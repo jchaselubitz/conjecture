@@ -6,7 +6,7 @@ import {
   Selectable,
   Updateable,
 } from "kysely";
-import { DB, Draft, Profile } from "kysely-codegen";
+import { Annotation, DB, Draft, Profile } from "kysely-codegen";
 import { Pool } from "pg";
 
 const db = new Kysely<DB>({
@@ -30,8 +30,15 @@ declare module "kysely-codegen" {
   export type EditedProfile = Updateable<Profile>;
 
   export type BaseDraft = Selectable<Draft>;
+  export type DraftWithAnnotations = BaseDraft & {
+    annotations: BaseAnnotation[];
+  };
   export type NewDraft = Insertable<Draft>;
   export type EditedDraft = Updateable<Draft>;
+
+  export type BaseAnnotation = Selectable<Annotation>;
+  export type NewAnnotation = Insertable<Annotation>;
+  export type EditedAnnotation = Updateable<Annotation>;
 
   export type Statement = {
     statementId: string;

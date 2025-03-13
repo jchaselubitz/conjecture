@@ -9,7 +9,7 @@ import { createClient } from "@/supabase/server";
 import { redirect } from "next/navigation";
 import { BaseProfile } from "kysely-codegen";
 
-export const getProfile = async (): Promise<
+export const getUserProfile = async (): Promise<
   BaseProfile | null | undefined
 > => {
   const supabase = await createClient();

@@ -9,6 +9,7 @@ import {
   LoadingButton,
 } from "@/components/ui/loading-button";
 import { useStatementContext } from "@/contexts/statementContext";
+import { formatDate } from "@/lib/helpers/helpersDate";
 
 import { Button } from "../ui/button";
 import {
@@ -18,7 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-
 export default function StatementNav() {
   const {
     drafts,
@@ -87,13 +87,23 @@ export default function StatementNav() {
   };
 
   const versionOptions = drafts
-    .map((draft) => draft.versionNumber.toString())
-    .sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+    .map((draft) => {
+      return {
+        v: draft.versionNumber,
+        versionNumber: draft.versionNumber.toString(),
+        createdAt: draft.createdAt,
+      };
+    })
+    .sort((a, b) => a.v - b.v);
 
   return (
-    <header className="fixed top-0 left-0 right-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="fixed z-50 top-0 left-0 right-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-14 items-center justify-between px-4">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => router.push(`/statements/${statement?.statementId}`)}
+        >
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex items-center gap-4">
@@ -109,8 +119,11 @@ export default function StatementNav() {
             </SelectTrigger>
             <SelectContent>
               {versionOptions.map((v) => (
-                <SelectItem key={v} value={v}>
-                  v{v}
+                <SelectItem key={v.versionNumber} value={v.versionNumber}>
+                  v{v.versionNumber} -{" "}
+                  <span className="text-sm text-zinc-500">
+                    {formatDate({ date: v.createdAt })}
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>

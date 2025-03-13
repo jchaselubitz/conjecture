@@ -1,0 +1,5 @@
+.auto-resize-input {
+ resize: none;
+ overflow: hidden;
+ white-space: nowrap;
+}

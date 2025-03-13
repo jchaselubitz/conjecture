@@ -32,6 +32,7 @@ export default function CreatePostButton({
     try {
       await createDraft({
         statementId,
+        versionNumber: 1,
       });
       setButtonState("success");
     } catch (error) {

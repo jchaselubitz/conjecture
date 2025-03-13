@@ -1,6 +1,6 @@
 "use client";
 
-import { BaseDraft, NewDraft } from "kysely-codegen";
+import { BaseAnnotation, DraftWithAnnotations, NewDraft } from "kysely-codegen";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   createContext,
@@ -16,9 +16,11 @@ import {
 } from "@/lib/actions/statementActions";
 
 interface StatementContextType {
-  drafts: BaseDraft[];
-  statement: BaseDraft;
-  setStatement: (statement: BaseDraft) => void;
+  drafts: DraftWithAnnotations[];
+  statement: DraftWithAnnotations;
+  annotations: BaseAnnotation[];
+  setAnnotations: (annotations: BaseAnnotation[]) => void;
+  setStatement: (statement: DraftWithAnnotations) => void;
   statementUpdate: NewDraft | undefined;
   setStatementUpdate: (statement: Partial<NewDraft>) => void;
   saveStatementDraft: () => Promise<void>;
@@ -39,16 +41,17 @@ export function StatementProvider({
   drafts,
 }: {
   children: ReactNode;
-  drafts: BaseDraft[];
+  drafts: DraftWithAnnotations[];
 }) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const params = useSearchParams();
-  const version = parseInt(params.get("version") || "0", 10);
+  const versionString = params.get("version");
+  const version = versionString ? parseInt(versionString, 10) : undefined;
   const router = useRouter();
 
-  const [statement, setStatement] = useState<BaseDraft>(
-    drafts?.find((draft) => draft.versionNumber === version) || drafts[0],
+  const [statement, setStatement] = useState<DraftWithAnnotations>(
+    drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0],
   );
 
   const [statementUpdate, setNewStatementState] = useState<NewDraft>(
@@ -62,13 +65,17 @@ export function StatementProvider({
     }));
   };
 
+  const [annotations, setAnnotations] = useState<BaseAnnotation[]>(
+    statement.annotations,
+  );
+
   useEffect(() => {
     setStatement(
       drafts?.find((draft) => draft.versionNumber === version) || drafts[0],
     );
   }, [version, drafts, setStatement]);
 
-  const nextVersionNumber = drafts.length;
+  const nextVersionNumber = drafts.length + 1;
 
   const changeVersion = (newVersion: number) => {
     router.push(
@@ -89,7 +96,9 @@ export function StatementProvider({
         content,
         headerImg: headerImg || undefined,
         statementId: statementId || undefined,
-        versionNumber: drafts?.length,
+        versionNumber: drafts?.length + 1,
+        annotations,
+        subtitle: statementUpdate?.subtitle || undefined,
       });
     } catch (err) {
       console.error(err);
@@ -100,10 +109,11 @@ export function StatementProvider({
 
   const updateStatementDraft = async () => {
     if (!statement) return;
-    const { title, content, headerImg } = statementUpdate;
+    const { title, subtitle, content, headerImg } = statementUpdate;
     setIsUpdating(true);
     await updateDraft({
       title: title || undefined,
+      subtitle: subtitle || undefined,
       content: content || undefined,
       headerImg: headerImg || undefined,
       statementId: statement.statementId,
@@ -115,7 +125,7 @@ export function StatementProvider({
   // Toggle the publish status of the statement
   const togglePublish = async () => {
     if (!statement) return;
-    const existingStatement = statement as BaseDraft;
+    const existingStatement = statement as DraftWithAnnotations;
     const { statementId, id, publishedAt } = existingStatement;
     await publishDraft({
       statementId,
@@ -129,6 +139,8 @@ export function StatementProvider({
       value={{
         drafts,
         statement,
+        annotations,
+        setAnnotations,
         setStatement,
         statementUpdate,
         setStatementUpdate,

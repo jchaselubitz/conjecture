@@ -1,0 +1,36 @@
+.annotation {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-radius: 2px;
+}
+
+.annotation:hover {
+  background-color: #e6f0ff !important;
+}
+
+/* Style for the container when used as an annotator */
+.ProseMirror.annotator-container {
+  position: relative;
+  /* border: 1px solid #e2e8f0; */
+  /* border-radius: 0.375rem; */
+  /* padding: 1rem; */
+  /* min-height: 200px; */
+}
+
+/* Add a subtle indicator when the text is annotatable */
+.ProseMirror.annotator-container::after {
+  content: "";
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  background-color: #e2e8f0;
+  border-radius: 50%;
+  opacity: 0.5;
+}
+
+.ProseMirror.annotator-container:hover::after {
+  background-color: #0066cc;
+  opacity: 1;
+} 

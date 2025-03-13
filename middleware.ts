@@ -17,11 +17,12 @@ export async function middleware(request: NextRequest) {
 
   // If we're on the root domain and trying to access app routes, redirect to app subdomain
   if (
-    !isAppSubdomain &&
-    (url.pathname.startsWith("/posts") ||
-      url.pathname.startsWith("/explore") ||
-      url.pathname.startsWith("/join") ||
-      url.pathname === "/feed")
+    (!isAppSubdomain &&
+      (url.pathname.startsWith("/posts") ||
+        url.pathname.startsWith("/explore") ||
+        url.pathname.startsWith("/join") ||
+        url.pathname === "/feed")) ||
+    url.pathname.startsWith("/statements")
   ) {
     return NextResponse.redirect(
       `${protocol}://app.${hostname}${url.pathname}`,
