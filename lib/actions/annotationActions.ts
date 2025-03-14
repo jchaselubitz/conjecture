@@ -2,8 +2,8 @@
 
 import { createClient } from "@/supabase/server";
 import db from "../database";
-import { EditedAnnotation, NewAnnotation } from "kysely-codegen";
-
+import { EditedAnnotation } from "kysely-codegen";
+import { revalidatePath } from "next/cache";
 export async function getAnnotationsForDraft({ draftId }: { draftId: string }) {
  const annotations = await db
   .selectFrom("annotation")
@@ -14,11 +14,24 @@ export async function getAnnotationsForDraft({ draftId }: { draftId: string }) {
 }
 
 export async function createAnnotation(
- { annotation }: { annotation: NewAnnotation },
+ { annotation, statementId }: {
+  annotation: {
+   id: string;
+   tag: string | undefined | null;
+   text: string;
+   start: number;
+   end: number;
+   userId: string;
+   draftId: string; //we need to supply this for a responsive UI
+  };
+  statementId: string;
+ },
 ) {
- await db.insertInto("annotation").values({
+ const { id: annotationId } = await db.insertInto("annotation").values({
   ...annotation,
- }).execute();
+ }).returning("id").executeTakeFirstOrThrow();
+ revalidatePath(`/statements/${statementId}`, "page");
+ return annotationId;
 }
 
 export async function updateAnnotation(
@@ -40,25 +53,34 @@ export async function updateAnnotation(
  return result;
 }
 
-export async function deleteAnnotation(
- { id, annotationCreatorId, statementCreatorId }: {
-  id: string;
-  annotationCreatorId: string;
-  statementCreatorId: string;
- },
-) {
+export async function deleteAnnotation({
+ annotationId,
+ statementCreatorId,
+ annotationCreatorId,
+ statementId,
+}: {
+ annotationId: string;
+ statementCreatorId: string;
+ annotationCreatorId: string;
+ statementId: string;
+}) {
  const supabase = await createClient();
  const {
   data: { user },
  } = await supabase.auth.getUser();
 
- if (
-  !user || user.id !== annotationCreatorId || user.id !== statementCreatorId
- ) {
-  return { error: "Unauthorized" };
+ if (!user) {
+  throw new Error("No user found");
  }
 
- const result = await db.deleteFrom("annotation").where("id", "=", id)
-  .execute();
- return result;
+ if (
+  user.id === annotationCreatorId || user.id === statementCreatorId
+ ) {
+  await db.deleteFrom("annotation").where("id", "=", annotationId)
+   .execute();
+ } else {
+  throw new Error("Unauthorized");
+ }
+
+ revalidatePath(`/statements/${statementId}`, "page");
 }

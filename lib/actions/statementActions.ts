@@ -4,8 +4,11 @@ import { createClient } from "@/supabase/server";
 import db from "@/lib/database";
 import { revalidatePath } from "next/cache";
 import {
+  AnnotationWithComments,
   BaseAnnotation,
+  BaseComment,
   DraftWithAnnotations,
+  NewAnnotation,
   Statement,
 } from "kysely-codegen";
 import { redirect } from "next/navigation";
@@ -78,7 +81,23 @@ export async function getDraftsByStatementId(
       jsonArrayFrom(
         eb
           .selectFrom("annotation")
-          .selectAll()
+          .select(({ eb }) => [
+            "id",
+            "tag",
+            "text",
+            "start",
+            "end",
+            "userId",
+            "draftId",
+            "createdAt",
+            "updatedAt",
+            jsonArrayFrom(
+              eb
+                .selectFrom("comment")
+                .selectAll()
+                .whereRef("annotation.id", "=", "comment.annotationId"),
+            ).as("comments"),
+          ])
           .whereRef("draft.id", "=", "annotation.draftId")
           .orderBy("annotation.createdAt", "desc"),
       ).as("annotations"),
@@ -88,7 +107,10 @@ export async function getDraftsByStatementId(
 
   const draftWithAnnotations = draft.map((draft) => ({
     ...draft,
-    annotations: draft.annotations as BaseAnnotation[],
+    annotations: draft.annotations.map((a) => ({
+      ...a,
+      comments: a.comments as BaseComment[],
+    })) as AnnotationWithComments[],
   }));
 
   return draftWithAnnotations;
@@ -109,7 +131,7 @@ export async function createDraft({
   headerImg?: string;
   statementId?: string;
   versionNumber: number;
-  annotations?: BaseAnnotation[];
+  annotations?: NewAnnotation[];
 }) {
   const supabase = await createClient();
   const {

@@ -21,7 +21,7 @@ import {
 } from "../ui/select";
 export default function StatementNav() {
   const {
-    drafts,
+    versionOptions,
     statement,
     saveStatementDraft,
     updateStatementDraft,
@@ -50,7 +50,6 @@ export default function StatementNav() {
   }, [isUpdating]);
 
   const handleUpdate = async () => {
-    if (!statement) return;
     try {
       setUpdateButtonState("loading");
       await updateStatementDraft();
@@ -62,8 +61,6 @@ export default function StatementNav() {
   };
 
   const handleSaveDraft = async () => {
-    if (!statementUpdate?.content) return;
-
     try {
       setSaveButtonState("loading");
       await saveStatementDraft();
@@ -75,7 +72,6 @@ export default function StatementNav() {
   };
 
   const handlePublish = async () => {
-    if (!statement) return;
     try {
       setPublishButtonState("loading");
       await togglePublish();
@@ -85,16 +81,6 @@ export default function StatementNav() {
       setPublishButtonState("error");
     }
   };
-
-  const versionOptions = drafts
-    .map((draft) => {
-      return {
-        v: draft.versionNumber,
-        versionNumber: draft.versionNumber.toString(),
-        createdAt: draft.createdAt,
-      };
-    })
-    .sort((a, b) => a.v - b.v);
 
   return (
     <header className="fixed z-50 top-0 left-0 right-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

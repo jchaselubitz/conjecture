@@ -4,13 +4,15 @@ import Link from "next/link";
 import RichTextDisplay from "@/components/statements/rich_text_display";
 import { Button } from "@/components/ui/button";
 import { useStatementContext } from "@/contexts/statementContext";
-
+import { DraftWithAnnotations } from "kysely-codegen";
 import Byline from "./byline";
 
-interface StatementDetailsProps {}
+interface StatementDetailsProps {
+  drafts: DraftWithAnnotations[];
+}
 
-export default function StatementDetails({}: StatementDetailsProps) {
-  const { drafts, annotations, setAnnotations } = useStatementContext();
+export default function StatementDetails({ drafts }: StatementDetailsProps) {
+  const { setAnnotations } = useStatementContext();
 
   if (!drafts) {
     return <div>No drafts found</div>;
@@ -19,7 +21,7 @@ export default function StatementDetails({}: StatementDetailsProps) {
     drafts.find((draft) => draft.publishedAt !== null) ??
     drafts[drafts.length - 1];
 
-  const { title, subtitle, content, versionNumber } = statement;
+  const { title, subtitle, content, versionNumber, annotations } = statement;
 
   return (
     <div className="flex flex-col gap-8">
@@ -41,8 +43,10 @@ export default function StatementDetails({}: StatementDetailsProps) {
             <RichTextDisplay
               htmlContent={content}
               draftId={statement.id}
+              statementId={statement.statementId}
               annotations={annotations}
               setAnnotations={setAnnotations}
+              statementCreatorId={statement.creatorId}
             />
           )}
         </div>

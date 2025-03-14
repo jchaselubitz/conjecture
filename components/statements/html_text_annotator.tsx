@@ -2,10 +2,10 @@ import "./prose.css"; // Import the prose.css styles
 import "./annotator.css"; // Import the annotator-specific styles
 import React, { useEffect, useRef, useState } from "react";
 import { Span } from "react-text-annotate/lib/span";
-
+import { NewAnnotation, BaseAnnotation } from "kysely-codegen";
 // Function to generate a consistent color based on a string (userId)
 const generateColorFromString = (
-  str: string,
+  str: string
 ): { backgroundColor: string; borderColor: string } => {
   // Generate a hash from the string
   let hash = 0;
@@ -19,7 +19,7 @@ const generateColorFromString = (
   const l = 90; // High lightness for background
 
   // Generate a darker shade for the border
-  const borderL = 50; // Darker lightness for border
+  const borderL = 40; // Darker lightness for border
 
   return {
     backgroundColor: `hsl(${h}, ${s}%, ${l}%)`,
@@ -27,35 +27,36 @@ const generateColorFromString = (
   };
 };
 
-interface TextSpan extends Span {
-  text: string;
-  tag?: string; // Optional tag for the annotation
-  userId?: string;
-}
-
-interface HTMLTextAnnotatorProps<T extends Span> {
+interface HTMLTextAnnotatorProps {
   htmlContent: string;
-  value: T[];
-  onChange: (value: T[]) => void;
-  getSpan?: (span: TextSpan) => T;
+  value: NewAnnotation[];
+  userId: string | undefined;
+  onChange: (value: NewAnnotation[]) => void;
+  onClick: (id: string) => void;
+  getSpan?: (span: NewAnnotation) => NewAnnotation;
   style?: React.CSSProperties;
   className?: string;
   placeholder?: string; // Add placeholder prop for empty state
   annotatable?: boolean; // Whether the content can be annotated
 }
 
-const HTMLTextAnnotator = <T extends Span>({
+const HTMLTextAnnotator = ({
   htmlContent,
   value,
+  userId,
   onChange,
   getSpan,
+  onClick,
   style,
   className,
   placeholder,
   annotatable = true, // Default to true
-}: HTMLTextAnnotatorProps<T>) => {
+}: HTMLTextAnnotatorProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [annotations, setAnnotations] = useState<T[]>(value);
+  const [annotations, setAnnotations] = useState<NewAnnotation[]>([]);
+  useEffect(() => {
+    setAnnotations(value);
+  }, [value, setAnnotations]);
 
   // Process annotations and apply them to the HTML content
   useEffect(() => {
@@ -128,6 +129,8 @@ const HTMLTextAnnotator = <T extends Span>({
           mark.dataset.userId = userId;
           mark.dataset.start = annotation.start.toString();
           mark.dataset.end = annotation.end.toString();
+          mark.dataset.draftId = annotation.draftId.toString();
+          mark.dataset.id = annotation.id ? annotation.id.toString() : "";
 
           range.surroundContents(mark);
         } catch (e) {
@@ -144,7 +147,7 @@ const HTMLTextAnnotator = <T extends Span>({
               nodeRange.setEnd(nodeInfo.node, nodeInfo.endOffset);
 
               const mark = document.createElement("mark");
-              const tag = (annotation as any).tag || "none";
+              // const tag = (annotation as any).tag || "none";
               const userId = (annotation as any).userId || "none";
               const colors = generateColorFromString(userId);
 
@@ -152,10 +155,10 @@ const HTMLTextAnnotator = <T extends Span>({
               mark.style.backgroundColor = colors.backgroundColor;
               mark.style.borderBottom = `2px solid ${colors.borderColor}`;
               mark.className = "annotation";
-              mark.dataset.tag = tag;
+              // mark.dataset.tag = tag;
               mark.dataset.userId = userId;
-              mark.dataset.start = annotation.start.toString();
-              mark.dataset.end = annotation.end.toString();
+              // mark.dataset.start = annotation.start.toString();
+              // mark.dataset.end = annotation.end.toString();
 
               nodeRange.surroundContents(mark);
             });
@@ -169,7 +172,7 @@ const HTMLTextAnnotator = <T extends Span>({
 
   // Helper function to get text nodes within a range
   const getTextNodesInRange = (
-    range: Range,
+    range: Range
   ): { node: Text; startOffset: number; endOffset: number }[] => {
     const nodes: { node: Text; startOffset: number; endOffset: number }[] = [];
 
@@ -222,6 +225,7 @@ const HTMLTextAnnotator = <T extends Span>({
 
   // Handle selection and create new annotations
   const handleMouseUp = () => {
+    if (!userId) return;
     const selection = window.getSelection();
     if (!selection || selection.isCollapsed) return;
 
@@ -280,12 +284,14 @@ const HTMLTextAnnotator = <T extends Span>({
         start,
         end,
         text,
+        userId,
+        draftId: "", //just here to satisfy the type checker
       };
 
       // Use getSpan to format the annotation if provided
       const formattedAnnotation = getSpan
-        ? getSpan(newAnnotation as TextSpan)
-        : (newAnnotation as unknown as T);
+        ? getSpan(newAnnotation)
+        : newAnnotation;
 
       // Update annotations
       const newAnnotations = [...annotations, formattedAnnotation];
@@ -301,17 +307,17 @@ const HTMLTextAnnotator = <T extends Span>({
   const handleAnnotationClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     if (target.className === "annotation") {
-      // Remove the annotation
-      // const start = parseInt(target.dataset.start || "0", 10);
-      // const end = parseInt(target.dataset.end || "0", 10);
+      // Get the annotation data
+      const start = parseInt(target.dataset.start || "0", 10);
+      const end = parseInt(target.dataset.end || "0", 10);
 
-      // const newAnnotations = annotations.filter(
-      //   (a) => !(a.start === start && a.end === end)
-      // );
-      console.log("Annotation Clicked");
+      const annotation = annotations.find(
+        (a) => a.start === start && a.end === end
+      );
 
-      // setAnnotations(newAnnotations);
-      // onChange(newAnnotations);
+      if (annotation?.id) {
+        onClick(annotation.id);
+      }
     }
   };
 

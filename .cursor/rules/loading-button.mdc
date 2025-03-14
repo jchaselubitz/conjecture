@@ -1,0 +1,12 @@
+---
+description: Buttons that handle async actions should use the LoadingButton Component
+globs: 
+alwaysApply: false
+---
+
+# Your rule content
+
+- Buttons that handle async actions should always use the [loading-button.tsx](mdc:components/ui/loading-button.tsx)
+- This button requires a buttonState prop. The state for this should appear as ```const [buttonState, setButtonState] useState<ButtonLoadingState>('default')``` 
+- When a file contains multiple LoadingButtons, name the states according to the associated operation
+

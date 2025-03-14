@@ -1,6 +1,11 @@
 "use client";
 
-import { BaseAnnotation, DraftWithAnnotations, NewDraft } from "kysely-codegen";
+import {
+
+  DraftWithAnnotations,
+  NewAnnotation,
+  NewDraft,
+} from "kysely-codegen";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   createContext,
@@ -16,11 +21,15 @@ import {
 } from "@/lib/actions/statementActions";
 
 interface StatementContextType {
-  drafts: DraftWithAnnotations[];
+  versionOptions: {
+    v: number;
+    versionNumber: string;
+    createdAt: Date;
+  }[];
   statement: DraftWithAnnotations;
-  annotations: BaseAnnotation[];
-  setAnnotations: (annotations: BaseAnnotation[]) => void;
   setStatement: (statement: DraftWithAnnotations) => void;
+  annotations: NewAnnotation[];
+  setAnnotations: (annotations: NewAnnotation[]) => void;
   statementUpdate: NewDraft | undefined;
   setStatementUpdate: (statement: Partial<NewDraft>) => void;
   saveStatementDraft: () => Promise<void>;
@@ -33,7 +42,7 @@ interface StatementContextType {
 }
 
 const StatementContext = createContext<StatementContextType | undefined>(
-  undefined,
+  undefined
 );
 
 export function StatementProvider({
@@ -51,11 +60,11 @@ export function StatementProvider({
   const router = useRouter();
 
   const [statement, setStatement] = useState<DraftWithAnnotations>(
-    drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0],
+    drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0]
   );
 
   const [statementUpdate, setNewStatementState] = useState<NewDraft>(
-    statement ?? ({} as NewDraft),
+    statement ?? ({} as NewDraft)
   );
 
   const setStatementUpdate = (statementUpdate: Partial<NewDraft>) => {
@@ -65,21 +74,31 @@ export function StatementProvider({
     }));
   };
 
-  const [annotations, setAnnotations] = useState<BaseAnnotation[]>(
-    statement.annotations,
+  const [annotations, setAnnotations] = useState<NewAnnotation[]>(
+    statement.annotations
   );
 
   useEffect(() => {
     setStatement(
-      drafts?.find((draft) => draft.versionNumber === version) || drafts[0],
+      drafts?.find((draft) => draft.versionNumber === version) || drafts[0]
     );
   }, [version, drafts, setStatement]);
 
-  const nextVersionNumber = drafts.length + 1;
+  const versionOptions = drafts
+    .map((draft) => {
+      return {
+        v: draft.versionNumber,
+        versionNumber: draft.versionNumber.toString(),
+        createdAt: draft.createdAt,
+      };
+    })
+    .sort((a, b) => a.v - b.v);
+
+  const nextVersionNumber = versionOptions.length + 1;
 
   const changeVersion = (newVersion: number) => {
     router.push(
-      `/statements/${statement.statementId}/edit?version=${newVersion}`,
+      `/statements/${statement.statementId}/edit?version=${newVersion}`
     );
   };
 
@@ -108,7 +127,6 @@ export function StatementProvider({
   // Update a draft of the statement - will take new PublicationId
 
   const updateStatementDraft = async () => {
-    if (!statement) return;
     const { title, subtitle, content, headerImg } = statementUpdate;
     setIsUpdating(true);
     await updateDraft({
@@ -137,7 +155,7 @@ export function StatementProvider({
   return (
     <StatementContext.Provider
       value={{
-        drafts,
+        versionOptions,
         statement,
         annotations,
         setAnnotations,
@@ -162,7 +180,7 @@ export function useStatementContext() {
   const context = useContext(StatementContext);
   if (context === undefined) {
     throw new Error(
-      "useStatementContext must be used within a StatementProvider",
+      "useStatementContext must be used within a StatementProvider"
     );
   }
   return context;

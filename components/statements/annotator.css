@@ -31,6 +31,6 @@
 }
 
 .ProseMirror.annotator-container:hover::after {
-  background-color: #0066cc;
-  opacity: 1;
+  /* background-color: #0066cc;
+  opacity: 1; */
 } 
