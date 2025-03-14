@@ -1,11 +1,6 @@
 "use client";
 
-import {
-
-  DraftWithAnnotations,
-  NewAnnotation,
-  NewDraft,
-} from "kysely-codegen";
+import { DraftWithAnnotations, NewAnnotation, NewDraft } from "kysely-codegen";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   createContext,
@@ -42,7 +37,7 @@ interface StatementContextType {
 }
 
 const StatementContext = createContext<StatementContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export function StatementProvider({
@@ -60,11 +55,11 @@ export function StatementProvider({
   const router = useRouter();
 
   const [statement, setStatement] = useState<DraftWithAnnotations>(
-    drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0]
+    drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0],
   );
 
   const [statementUpdate, setNewStatementState] = useState<NewDraft>(
-    statement ?? ({} as NewDraft)
+    statement ?? ({} as NewDraft),
   );
 
   const setStatementUpdate = (statementUpdate: Partial<NewDraft>) => {
@@ -75,12 +70,12 @@ export function StatementProvider({
   };
 
   const [annotations, setAnnotations] = useState<NewAnnotation[]>(
-    statement.annotations
+    statement.annotations,
   );
 
   useEffect(() => {
     setStatement(
-      drafts?.find((draft) => draft.versionNumber === version) || drafts[0]
+      drafts?.find((draft) => draft.versionNumber === version) || drafts[0],
     );
   }, [version, drafts, setStatement]);
 
@@ -98,7 +93,7 @@ export function StatementProvider({
 
   const changeVersion = (newVersion: number) => {
     router.push(
-      `/statements/${statement.statementId}/edit?version=${newVersion}`
+      `/statements/${statement.statementId}/edit?version=${newVersion}`,
     );
   };
 
@@ -180,7 +175,7 @@ export function useStatementContext() {
   const context = useContext(StatementContext);
   if (context === undefined) {
     throw new Error(
-      "useStatementContext must be used within a StatementProvider"
+      "useStatementContext must be used within a StatementProvider",
     );
   }
   return context;

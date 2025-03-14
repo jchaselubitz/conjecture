@@ -1,12 +1,10 @@
-import { NewAnnotation, AnnotationWithComments } from "kysely-codegen";
-import React, { useState } from "react";
-
+import { NewAnnotation } from "kysely-codegen";
+import React from "react";
+import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
 import { createAnnotation } from "@/lib/actions/annotationActions";
-import { getCommentsForAnnotation } from "@/lib/actions/commentActions";
+
 import HTMLTextAnnotator from "./html_text_annotator";
-import AnnotationComment from "./annotation_comment";
-import { v4 as uuidv4 } from "uuid";
 
 interface RichTextDisplayProps {
   htmlContent: string;
@@ -16,35 +14,33 @@ interface RichTextDisplayProps {
   statementId: string;
   statementCreatorId: string;
   annotations: NewAnnotation[];
-  setAnnotations: (annotations: NewAnnotation[]) => void;
+  handleAnnotationClick: (annotationId: string) => void;
+  selectedAnnotationId: string | undefined;
+  setSelectedAnnotationId: (id: string | undefined) => void;
 }
 
 const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
   htmlContent,
   draftId,
   statementId,
-  statementCreatorId,
+  handleAnnotationClick,
   annotations,
-  setAnnotations,
+  selectedAnnotationId,
   placeholder = "Start typing or paste content here...",
   readOnly = false,
+  setSelectedAnnotationId,
 }) => {
   const { userId } = useUserContext();
-  const [selectedAnnotationId, setSelectedAnnotation] = useState<
-    string | undefined
-  >(undefined);
-
-  const selectedAnnotation = annotations.find(
-    (a) => a.id === selectedAnnotationId
-  );
-
-  const [isCommentOpen, setIsCommentOpen] = useState(false);
+  const { setAnnotations } = useStatementContext();
 
   const handleAnnotationChange = async (value: NewAnnotation[]) => {
     if (!userId) {
       throw new Error("User ID is required");
     }
     const recent = value[value.length - 1];
+    if (!recent.id) {
+      throw new Error("Annotation ID is required");
+    }
     const annotation = {
       tag: recent.tag,
       text: recent.text,
@@ -52,15 +48,13 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
       end: recent.end,
       userId: userId,
       draftId: draftId,
-      id: uuidv4(),
+      id: recent.id,
     };
 
     setAnnotations([...annotations, annotation as unknown as NewAnnotation]);
-
     if (!userId) {
       throw new Error("User ID is required");
     }
-
     await createAnnotation({ annotation, statementId: statementId });
   };
 
@@ -86,48 +80,20 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
     };
   };
 
-  const handleAnnotationClick = async (annotationId: string) => {
-    setSelectedAnnotation(annotationId);
-    setIsCommentOpen(true);
-  };
-
-  const handleDeleteAnnotation = (annotationId: string) => {
-    setAnnotations(annotations.filter((a) => a.id !== annotationId));
-  };
-
   return (
-    <div className="w-full space-y-4">
-      <div className="rounded-lg overflow-hidden bg-background p-4">
-        <HTMLTextAnnotator
-          htmlContent={htmlContent}
-          value={annotations}
-          userId={userId}
-          onClick={handleAnnotationClick}
-          onChange={handleAnnotationChange}
-          getSpan={getSpan}
-          placeholder={placeholder}
-          annotatable={!readOnly}
-        />
-      </div>
-      <div className="editor-controls">
-        <div className="ml-4">
-          <span className="text-sm text-gray-600">
-            {annotations.length} annotation
-            {annotations.length !== 1 ? "s" : ""}
-          </span>
-        </div>
-      </div>
-
-      {selectedAnnotation && (
-        <AnnotationComment
-          annotation={selectedAnnotation as AnnotationWithComments}
-          statementId={statementId}
-          statementCreatorId={statementCreatorId}
-          isOpen={isCommentOpen}
-          onClose={() => setIsCommentOpen(false)}
-          onDelete={handleDeleteAnnotation}
-        />
-      )}
+    <div className="rounded-lg overflow-hidden bg-background">
+      <HTMLTextAnnotator
+        htmlContent={htmlContent}
+        value={annotations}
+        userId={userId}
+        onClick={handleAnnotationClick}
+        onChange={handleAnnotationChange}
+        getSpan={getSpan}
+        placeholder={placeholder}
+        annotatable={!readOnly}
+        selectedAnnotationId={selectedAnnotationId}
+        setSelectedAnnotationId={setSelectedAnnotationId}
+      />
     </div>
   );
 };

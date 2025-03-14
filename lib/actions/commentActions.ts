@@ -3,14 +3,6 @@
 import { createClient } from "@/supabase/server";
 import db from "../database";
 import { revalidatePath } from "next/cache";
-import { NewComment } from "kysely-codegen";
-// Define types for comments
-
-export type ProfileData = {
- id: string;
- name: string | null;
- imageUrl: string | null;
-};
 
 export async function getCommentsForAnnotation(
  { annotationId }: { annotationId: string },
