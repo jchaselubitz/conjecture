@@ -38,10 +38,10 @@ export default function StatementDetails({ drafts }: StatementDetailsProps) {
   useEffect(() => {
     const savedSize = localStorage.getItem("annotationPanelSize");
     panelGroupRef.current?.setLayout(
-      savedSize ? JSON.parse(savedSize) : [100, 0],
+      savedSize ? JSON.parse(savedSize) : [100, 0]
     );
     const savedSelectedAnnotationId = localStorage.getItem(
-      "selectedAnnotationId",
+      "selectedAnnotationId"
     );
 
     setSelectedAnnotationId(savedSelectedAnnotationId ?? undefined);
@@ -49,8 +49,11 @@ export default function StatementDetails({ drafts }: StatementDetailsProps) {
 
   const handleAnnotationClick = async (annotationId: string) => {
     setSelectedAnnotationId(annotationId);
+    const savedSize = localStorage.getItem("annotationPanelSize");
+    const size = JSON.parse(savedSize ?? "[67,33]");
+    panelGroupRef.current?.setLayout(size);
     localStorage.setItem("selectedAnnotationId", annotationId);
-    localStorage.setItem("annotationPanelSize", JSON.stringify([67, 33]));
+    localStorage.setItem("annotationPanelSize", JSON.stringify(savedSize));
   };
 
   const handleCloseAnnotationPanel = () => {
@@ -59,10 +62,20 @@ export default function StatementDetails({ drafts }: StatementDetailsProps) {
     localStorage.removeItem("annotationPanelSize");
   };
 
+  const onLayout = (layout: number[]) => {
+    if (layout[0] !== 100) {
+      localStorage.setItem("annotationPanelSize", JSON.stringify(layout));
+    }
+  };
+
   return (
     <div className="flex flex-col ">
       {content && (
-        <ResizablePanelGroup direction="horizontal" ref={panelGroupRef}>
+        <ResizablePanelGroup
+          direction="horizontal"
+          ref={panelGroupRef}
+          onLayout={onLayout}
+        >
           <ResizablePanel id="editor" defaultSize={100} minSize={60}>
             <div className="flex flex-col mt-12 gap-6 mx-auto max-w-4xl">
               <div className="flex justify-between items-center">
