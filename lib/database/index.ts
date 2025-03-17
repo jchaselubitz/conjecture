@@ -53,6 +53,7 @@ declare module "kysely-codegen" {
   export type BaseComment = Selectable<Comment>;
   export type BaseCommentWithUser = BaseComment & {
     userName: string;
+    userImageUrl: string;
     votes: BaseCommentVote[];
   };
   export type NewComment = Insertable<Comment>;

@@ -9,6 +9,8 @@ interface UserContextType {
   userImageUrl: string | undefined;
   userName: string | undefined;
   userEmail: string | undefined;
+  settingsDialog: boolean;
+  setSettingsDialog: (settingsDialog: boolean) => void;
 }
 
 // Create the context with default values
@@ -24,6 +26,7 @@ export function UserProvider({
   userProfile?: BaseProfile | null;
   userEmail?: string | null;
 }) {
+  const [settingsDialog, setSettingsDialog] = useState(false);
   const value = {
     userId: userProfile?.id || undefined,
     userImageUrl: userProfile?.imageUrl || undefined,
@@ -31,7 +34,13 @@ export function UserProvider({
     userEmail: userEmail || undefined,
   };
 
-  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
+  return (
+    <UserContext.Provider
+      value={{ ...value, settingsDialog, setSettingsDialog }}
+    >
+      {children}
+    </UserContext.Provider>
+  );
 }
 
 // Custom hook to use the context

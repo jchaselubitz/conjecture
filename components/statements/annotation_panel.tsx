@@ -49,7 +49,7 @@ export default function AnnotationPanel({
         value={selectedAnnotationId}
         onValueChange={(value) => setSelectedAnnotationId(value)}
       >
-        <div className="flex flex-col gap-3 mx-auto max-w-11/12 ">
+        <div className="flex flex-col gap-2 mx-auto max-w-11/12 ">
           {sortedAnnotations.map((annotation) => (
             <AnnotationDetail
               key={annotation.id}

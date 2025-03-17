@@ -8,7 +8,7 @@ import { createClient } from "@/supabase/server";
 
 import { redirect } from "next/navigation";
 import { BaseProfile } from "kysely-codegen";
-
+import * as Sentry from "@sentry/nextjs";
 export const getUserProfile = async (): Promise<
   BaseProfile | null | undefined
 > => {
@@ -28,6 +28,7 @@ export const getUserProfile = async (): Promise<
       "profile.id as id",
       "profile.name as name",
       "profile.createdAt as createdAt",
+      "profile.imageUrl as imageUrl",
       "updatedAt",
       //  jsonArrayFrom(
       //   eb
@@ -108,15 +109,14 @@ export const signIn = async (
   { email, password }: { email: string; password: string },
 ) => {
   const supabase = await createClient();
-  console.time("signIn");
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
-  console.timeEnd("signIn");
   if (error) {
     console.log(error);
+    Sentry.captureException(error);
     return redirect("/login?message=Could not authenticate user");
   }
 

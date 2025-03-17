@@ -104,6 +104,7 @@ export async function getDraftsByStatementId(
                   "comment.annotationId",
                   "comment.parentId",
                   "profile.name as userName",
+                  "profile.imageUrl as userImageUrl",
                   jsonArrayFrom(
                     eb
                       .selectFrom("commentVote")

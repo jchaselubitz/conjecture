@@ -173,7 +173,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
   const nestedComments = nestObject(comments) as CommentWithReplies[];
 
   const selected = selectedAnnotationId === annotation.id;
-  const firstComment = nestedComments.find((c) => !c.parentId);
+  // const firstComment = nestedComments.find((c) => !c.parentId);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Submit on Enter
@@ -194,7 +194,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
       <Card
         className={cn(
           "p-0 gap-0",
-          selected ? "shadow-2xl my-2" : "shadow-none hover:shadow-md my-4",
+          selected ? "shadow-2xl  my-4" : "shadow-none hover:shadow-md ",
         )}
       >
         <AccordionTrigger className={cn("p-4 hover:no-underline")}>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import CreatePostButton from "../special_buttons/create_post_button";
+import UserButton from "./user_button";
 export default async function AppNav() {
   return (
     <header className="border-b px-4">
@@ -16,6 +17,7 @@ export default async function AppNav() {
             loadingText="Creating ..."
             successText="Created"
           />
+          <UserButton />
         </nav>
       </div>
     </header>

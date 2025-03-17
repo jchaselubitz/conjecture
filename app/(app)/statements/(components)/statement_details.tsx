@@ -36,10 +36,9 @@ export default function StatementDetails({ drafts }: StatementDetailsProps) {
   const { title, subtitle, content, versionNumber, annotations } = statement;
 
   useEffect(() => {
-    const savedSize = localStorage.getItem("annotationPanelSize");
-    panelGroupRef.current?.setLayout(
-      savedSize ? JSON.parse(savedSize) : [100, 0],
-    );
+    const savedSizeString = localStorage.getItem("annotationPanelSize");
+    const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
+    panelGroupRef.current?.setLayout(savedSize ?? [100, 0]);
     const savedSelectedAnnotationId = localStorage.getItem(
       "selectedAnnotationId",
     );
@@ -49,9 +48,10 @@ export default function StatementDetails({ drafts }: StatementDetailsProps) {
 
   const handleAnnotationClick = async (annotationId: string) => {
     setSelectedAnnotationId(annotationId);
-    const savedSize = localStorage.getItem("annotationPanelSize");
-    const size = JSON.parse(savedSize ?? "[67,33]");
-    panelGroupRef.current?.setLayout(size);
+    const savedSizeString = localStorage.getItem("annotationPanelSize");
+
+    const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
+    panelGroupRef.current?.setLayout(savedSize ?? [67, 33]);
     localStorage.setItem("selectedAnnotationId", annotationId);
     localStorage.setItem("annotationPanelSize", JSON.stringify(savedSize));
   };
