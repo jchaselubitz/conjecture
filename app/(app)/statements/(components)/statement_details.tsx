@@ -38,10 +38,10 @@ export default function StatementDetails({ drafts }: StatementDetailsProps) {
   useEffect(() => {
     const savedSize = localStorage.getItem("annotationPanelSize");
     panelGroupRef.current?.setLayout(
-      savedSize ? JSON.parse(savedSize) : [100, 0]
+      savedSize ? JSON.parse(savedSize) : [100, 0],
     );
     const savedSelectedAnnotationId = localStorage.getItem(
-      "selectedAnnotationId"
+      "selectedAnnotationId",
     );
 
     setSelectedAnnotationId(savedSelectedAnnotationId ?? undefined);

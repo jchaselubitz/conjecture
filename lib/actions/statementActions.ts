@@ -5,8 +5,7 @@ import db from "@/lib/database";
 import { revalidatePath } from "next/cache";
 import {
   AnnotationWithComments,
-  BaseAnnotation,
-  BaseComment,
+  BaseCommentWithUser,
   DraftWithAnnotations,
   NewAnnotation,
   Statement,
@@ -91,10 +90,27 @@ export async function getDraftsByStatementId(
             "draftId",
             "createdAt",
             "updatedAt",
+            "isPublic",
             jsonArrayFrom(
               eb
                 .selectFrom("comment")
-                .selectAll()
+                .innerJoin("profile", "comment.userId", "profile.id")
+                .select(({ eb }) => [
+                  "comment.id",
+                  "comment.content",
+                  "comment.createdAt",
+                  "comment.updatedAt",
+                  "comment.userId",
+                  "comment.annotationId",
+                  "comment.parentId",
+                  "profile.name as userName",
+                  jsonArrayFrom(
+                    eb
+                      .selectFrom("commentVote")
+                      .selectAll()
+                      .whereRef("commentVote.commentId", "=", "comment.id"),
+                  ).as("votes"),
+                ])
                 .whereRef("annotation.id", "=", "comment.annotationId"),
             ).as("comments"),
           ])
@@ -109,7 +125,10 @@ export async function getDraftsByStatementId(
     ...draft,
     annotations: draft.annotations.map((a) => ({
       ...a,
-      comments: a.comments as BaseComment[],
+      comments: a.comments.map((c) => ({
+        ...c,
+        userName: c.userName,
+      })) as BaseCommentWithUser[],
     })) as AnnotationWithComments[],
   }));
 

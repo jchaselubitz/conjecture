@@ -3,21 +3,9 @@
 import { createClient } from "@/supabase/server";
 import db from "../database";
 import { revalidatePath } from "next/cache";
+import { NewCommentVote } from "kysely-codegen";
 
-export async function getCommentsForAnnotation(
- { annotationId }: { annotationId: string },
-) {
- const comments = await (db as any)
-  .selectFrom("comment")
-  .selectAll()
-  .where("annotationId", "=", annotationId)
-  .orderBy("createdAt", "asc")
-  .execute();
-
- return comments;
-}
-
-export async function createComment({ comment, statementId }: {
+export async function createComment({ comment, statementId, parentId }: {
  comment: {
   userId: string;
   annotationId: string;
@@ -25,6 +13,7 @@ export async function createComment({ comment, statementId }: {
   id: string;
  };
  statementId: string;
+ parentId?: string;
 }) {
  await db.insertInto("comment")
   .values({
@@ -32,6 +21,7 @@ export async function createComment({ comment, statementId }: {
    annotationId: comment.annotationId,
    content: comment.content,
    id: comment.id,
+   parentId: parentId,
   })
   .returning("id")
   .executeTakeFirst();
@@ -86,4 +76,38 @@ export async function deleteComment({
  } else {
   throw new Error("Unauthorized");
  }
+}
+
+export async function toggleUpvote(
+ { commentId, isUpvoted }: { commentId: string; isUpvoted: boolean },
+) {
+ const supabase = await createClient();
+ const {
+  data: { user },
+ } = await supabase.auth.getUser();
+
+ const userId = user?.id;
+
+ if (!userId) {
+  throw new Error("No user found");
+ }
+
+ try {
+  if (isUpvoted) {
+   await db.deleteFrom("commentVote").where("userId", "=", userId).where(
+    "commentId",
+    "=",
+    commentId,
+   ).execute();
+  } else {
+   await db.insertInto("commentVote").values({
+    userId,
+    commentId,
+   } as NewCommentVote).execute();
+  }
+ } catch (error) {
+  console.error("Error toggling upvote:", error);
+ }
+
+ revalidatePath(`/statements/[statementId]`, "page");
 }

@@ -37,7 +37,7 @@ export default function AnnotationPanel({
   });
 
   return (
-    <div className="flex flex-col mt-8 gap-6 mx-auto max-w-9/10 ">
+    <div className="flex flex-col mt-8 gap-6 mx-auto  ">
       <div className="flex justify-end">
         <Button variant="ghost" onClick={handleCloseAnnotationPanel}>
           <X className="w-4 h-4" />
@@ -49,7 +49,7 @@ export default function AnnotationPanel({
         value={selectedAnnotationId}
         onValueChange={(value) => setSelectedAnnotationId(value)}
       >
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 mx-auto max-w-11/12 ">
           {sortedAnnotations.map((annotation) => (
             <AnnotationDetail
               key={annotation.id}
