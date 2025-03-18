@@ -80,17 +80,20 @@ export async function getDraftsByStatementId(
       jsonArrayFrom(
         eb
           .selectFrom("annotation")
+          .innerJoin("profile", "annotation.userId", "profile.id")
           .select(({ eb }) => [
-            "id",
+            "annotation.id",
             "tag",
             "text",
             "start",
             "end",
-            "userId",
-            "draftId",
-            "createdAt",
-            "updatedAt",
-            "isPublic",
+            "annotation.userId",
+            "annotation.draftId",
+            "annotation.createdAt",
+            "annotation.updatedAt",
+            "annotation.isPublic",
+            "profile.name as userName",
+            "profile.imageUrl as userImageUrl",
             jsonArrayFrom(
               eb
                 .selectFrom("comment")

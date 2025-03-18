@@ -3,15 +3,11 @@
 import * as Sentry from "@sentry/nextjs";
 import {
   AnnotationWithComments,
-  BaseComment,
   BaseCommentWithUser,
-  NewComment,
 } from "kysely-codegen";
 import { RefreshCw, Trash2, X } from "lucide-react";
 import React, {
-  startTransition,
   useEffect,
-  useOptimistic,
   useRef,
   useState,
 } from "react";
@@ -37,6 +33,8 @@ import {
 import { Card } from "../ui/card";
 import { ButtonLoadingState, LoadingButton } from "../ui/loading-button";
 import Comment, { CommentWithReplies } from "./comment";
+import { formatDate } from "@/lib/helpers/helpersDate";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 interface AnnotationDetailProps {
   annotation: AnnotationWithComments;
@@ -54,9 +52,8 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
   selectedAnnotationId,
 }) => {
   const [comments, setComments] = useState<BaseCommentWithUser[]>(
-    annotation.comments,
+    annotation.comments
   );
-  const rootComment = comments.find((c) => !c.parentId);
 
   const { userId, userName } = useUserContext();
   const [deletingButtonState, setDeletingButtonState] =
@@ -159,7 +156,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
 
   const handleCommentDeleted = (commentId: string) => {
     setComments((prevComments) =>
-      prevComments.filter((comment) => comment.id !== commentId),
+      prevComments.filter((comment) => comment.id !== commentId)
     );
 
     // If we were replying to this comment, cancel the reply
@@ -167,6 +164,8 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
       setReplyToComment(null);
     }
   };
+
+  const firstComment = comments.find((c) => !c.parentId);
 
   // Organize comments into a tree structure
 
@@ -189,52 +188,46 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
     }
   };
 
+  // const annotationText =
+  //   annotation.text.length > 100
+  //     ? annotation.text.substring(0, 100) + "..."
+  //     : annotation.text;
+
   return (
     <AccordionItem value={annotation.id} className="border-0">
       <Card
         className={cn(
           "p-0 gap-0",
-          selected ? "shadow-2xl  my-4" : "shadow-none hover:shadow-md ",
+          selected ? "shadow-2xl  my-4" : "shadow-none hover:shadow-md "
         )}
       >
         <AccordionTrigger className={cn("p-4 hover:no-underline")}>
           <div className="flex flex-col gap-3 w-full">
-            {/* {firstComment && (
+            {annotation.text && (
               <div className="bg-muted p-3 rounded-md">
-                <p className="text-sm italic ">{`"${firstComment.content}"`}</p>
+                <p className="text-sm italic line-clamp-2">{`"${annotation.text}"`}</p>
               </div>
-            )} */}
+            )}
 
             <div className="flex items-center justify-between w-full">
               {/* User info */}
               <div className="flex items-center space-x-2">
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
-                  {userName?.charAt(0) || "U"}
-                </div>
+                <Avatar>
+                  <AvatarImage src={annotation.userImageUrl} />
+                  <AvatarFallback>
+                    {annotation.userName?.charAt(0) || "U"}
+                  </AvatarFallback>
+                </Avatar>
                 <div>
                   <p className="text-sm font-medium">{userName || "User"}</p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(annotation.createdAt).toLocaleString()}
+                    {formatDate({
+                      date: new Date(annotation.createdAt),
+                      withTime: true,
+                    })}
                   </p>
                 </div>
               </div>
-
-              {/* Delete annotation button - moved to the header */}
-              {isCreator && (
-                <LoadingButton
-                  buttonState={deletingButtonState}
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent accordion from toggling
-                    handleDeleteAnnotation();
-                  }}
-                  text={<Trash2 className="w-4 h-4" color="red" />}
-                  variant="ghost"
-                  size="sm"
-                  loadingText={<RefreshCw className="w-4 h-4 animate-spin" />}
-                  successText="Deleted"
-                  errorText="Error deleting annotation"
-                />
-              )}
             </div>
           </div>
         </AccordionTrigger>
@@ -342,6 +335,32 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
                 <kbd className="px-1 py-0.5 bg-muted rounded">Enter</kbd> for
                 new line
               </div>
+              {isCreator && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <LoadingButton
+                        buttonState={deletingButtonState}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent accordion from toggling
+                          handleDeleteAnnotation();
+                        }}
+                        text={<Trash2 className="w-4 h-4" color="red" />}
+                        variant="ghost"
+                        size="sm"
+                        loadingText={
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                        }
+                        successText="Deleted"
+                        errorText="Error deleting annotation"
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Delete annotation</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
           </div>
         </AccordionContent>

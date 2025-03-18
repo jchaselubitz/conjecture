@@ -46,6 +46,8 @@ declare module "kysely-codegen" {
   export type BaseAnnotation = Selectable<Annotation>;
   export type AnnotationWithComments = BaseAnnotation & {
     comments: BaseCommentWithUser[];
+    userName: string;
+    userImageUrl: string;
   };
   export type NewAnnotation = Insertable<Annotation>;
   export type EditedAnnotation = Updateable<Annotation>;

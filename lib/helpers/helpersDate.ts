@@ -6,7 +6,7 @@ export const formatDate = ({
  withTime?: boolean;
 }) => {
  return date.toLocaleDateString("en-US", {
-  month: "long",
+  month: "short",
   day: "numeric",
   year: "numeric",
   hour: withTime ? "2-digit" : undefined,

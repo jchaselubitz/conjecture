@@ -22,6 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import { formatDate } from "@/lib/helpers/helpersDate";
 export type CommentWithReplies = BaseCommentWithUser & {
   children: BaseCommentWithUser[];
 };
@@ -117,15 +118,6 @@ const Comment: React.FC<CommentProps> = ({
   const isCreatorOrModerator = isCreator || isModerator;
   const maxLevel = 7; // Maximum nesting level
   const currentLevel = Math.min(level, maxLevel);
-
-  // Format the date to be more readable
-  const formattedDate = new Date(comment.createdAt).toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 
   const borderColor = () => {
     switch (currentLevel) {
@@ -242,7 +234,7 @@ const Comment: React.FC<CommentProps> = ({
       className={cn(
         "flex flex-col",
         currentLevel > 0 && "ml-2 mt-2 pl-2 border-l-2",
-        borderColor(),
+        borderColor()
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -252,7 +244,7 @@ const Comment: React.FC<CommentProps> = ({
           "p-3 rounded-md transition-colors flex flex-col gap-2",
           currentLevel === 0 ? "bg-background" : "bg-muted mb-2",
           isHovered && "bg-muted/80",
-          !isRootComment && level === 0 && "mt-6",
+          !isRootComment && level === 0 && "mt-6"
         )}
       >
         {/* Comment header with user info */}
@@ -271,7 +263,12 @@ const Comment: React.FC<CommentProps> = ({
                 <p className="text-xs font-medium">
                   {comment.userId === userId ? "You" : comment.userName}
                 </p>
-                <p className="text-xs text-muted-foreground">{formattedDate}</p>
+                <p className="text-xs text-muted-foreground">
+                  {formatDate({
+                    date: new Date(comment.createdAt),
+                    withTime: true,
+                  })}
+                </p>
               </div>
             </div>
           )}
