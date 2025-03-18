@@ -7,13 +7,7 @@ import { toast } from "sonner";
 import * as z from "zod";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+
 import {
   Form,
   FormControl,
@@ -58,7 +52,7 @@ export default function ProfileForm() {
   });
 
   const handleImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const files = event.target.files?.length
       ? Array.from(event.target.files)
@@ -137,7 +131,7 @@ export default function ProfileForm() {
       <div className="space-y-8">
         <div className="flex flex-col items-center space-y-4">
           <Avatar className="h-24 w-24">
-            {userImageUrl && <AvatarImage src={userImageUrl} />}
+            <AvatarImage src={userImageUrl} className="object-cover" />
             <AvatarFallback>{userName?.charAt(0) || "U"}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col items-center space-y-2">

@@ -45,7 +45,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
   selectedAnnotationId,
 }) => {
   const [comments, setComments] = useState<BaseCommentWithUser[]>(
-    annotation.comments,
+    annotation.comments
   );
 
   const { userId, userName } = useUserContext();
@@ -149,7 +149,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
 
   const handleCommentDeleted = (commentId: string) => {
     setComments((prevComments) =>
-      prevComments.filter((comment) => comment.id !== commentId),
+      prevComments.filter((comment) => comment.id !== commentId)
     );
 
     // If we were replying to this comment, cancel the reply
@@ -191,7 +191,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
       <Card
         className={cn(
           "p-0 gap-0",
-          selected ? "shadow-2xl  my-4" : "shadow-none hover:shadow-md ",
+          selected ? "shadow-2xl  my-4" : "shadow-none hover:shadow-md "
         )}
       >
         <AccordionTrigger className={cn("p-4 hover:no-underline")}>
@@ -205,14 +205,19 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
             <div className="flex items-center justify-between w-full">
               {/* User info */}
               <div className="flex items-center space-x-2">
-                <Avatar>
-                  <AvatarImage src={annotation.userImageUrl} />
+                <Avatar className="border ">
+                  <AvatarImage
+                    src={annotation.userImageUrl}
+                    className="object-cover"
+                  />
                   <AvatarFallback>
                     {annotation.userName?.charAt(0) || "U"}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-sm font-medium">{userName || "User"}</p>
+                  <p className="text-sm font-medium">
+                    {annotation.userName || "User"}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     {formatDate({
                       date: new Date(annotation.createdAt),

@@ -15,7 +15,7 @@ const pwaConfig = withPWA({
 const config: NextConfig = {
   ...pwaConfig,
   images: {
-    domains: ["conjecture.dev", "app.conjecture.dev"],
+    domains: ["conject.io", "app.conject.io", "127.0.0.1", "localhost"],
   },
   async headers() {
     return [

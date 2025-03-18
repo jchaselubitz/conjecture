@@ -13,7 +13,9 @@ import {
 } from "@/components/ui/resizable";
 
 import Byline from "./byline";
-
+import { useUserContext } from "@/contexts/userContext";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import Image from "next/image";
 interface StatementDetailsProps {
   drafts: DraftWithAnnotations[];
 }
@@ -26,12 +28,14 @@ export default function StatementDetails({ drafts }: StatementDetailsProps) {
     string | undefined
   >(undefined);
 
+  const { userId } = useUserContext();
+
   useEffect(() => {
     const savedSizeString = localStorage.getItem("annotationPanelSize");
     const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
     panelGroupRef.current?.setLayout(savedSize ?? [100, 0]);
     const savedSelectedAnnotationId = localStorage.getItem(
-      "selectedAnnotationId",
+      "selectedAnnotationId"
     );
 
     setSelectedAnnotationId(savedSelectedAnnotationId ?? undefined);
@@ -79,14 +83,24 @@ export default function StatementDetails({ drafts }: StatementDetailsProps) {
         >
           <ResizablePanel id="editor" defaultSize={100} minSize={60}>
             <div className="flex flex-col mt-12 gap-6 mx-auto max-w-4xl">
+              <AspectRatio ratio={16 / 9} className="bg-muted rounded-md mb-4">
+                <Image
+                  src={statement.headerImg ?? ""}
+                  alt="Statement cover image"
+                  fill
+                  className="h-full w-full rounded-md object-cover"
+                />
+              </AspectRatio>
               <div className="flex justify-between items-center">
                 <h1 className="text-4xl font-bold mb-4">{title}</h1>
 
-                <Link
-                  href={`/statements/${statement.statementId}/edit?version=${versionNumber}`}
-                >
-                  <Button variant="outline">Edit</Button>
-                </Link>
+                {statement.creatorId === userId && (
+                  <Link
+                    href={`/statements/${statement.statementId}/edit?version=${versionNumber}`}
+                  >
+                    <Button variant="outline">Edit</Button>
+                  </Link>
+                )}
               </div>
               <h2 className="text-xl font-medium  text-zinc-600">{subtitle}</h2>
               <Byline statement={statement} />

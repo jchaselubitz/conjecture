@@ -39,6 +39,12 @@ declare module "kysely-codegen" {
   export type BaseDraft = Selectable<Draft>;
   export type DraftWithAnnotations = BaseDraft & {
     annotations: AnnotationWithComments[];
+    creatorName: string | null;
+    creatorImageUrl: string | null;
+  };
+  export type DraftWithUser = BaseDraft & {
+    creatorName: string | null | undefined;
+    creatorImageUrl: string | null | undefined;
   };
   export type NewDraft = Insertable<Draft>;
   export type EditedDraft = Updateable<Draft>;
@@ -67,7 +73,7 @@ declare module "kysely-codegen" {
 
   export type Statement = {
     statementId: string;
-    drafts: BaseDraft[];
+    drafts: DraftWithUser[];
   };
 }
 export default db;

@@ -234,7 +234,7 @@ const Comment: React.FC<CommentProps> = ({
       className={cn(
         "flex flex-col",
         currentLevel > 0 && "ml-2 mt-2 pl-2 border-l-2",
-        borderColor(),
+        borderColor()
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -244,7 +244,7 @@ const Comment: React.FC<CommentProps> = ({
           "p-3 rounded-md transition-colors flex flex-col gap-2",
           currentLevel === 0 ? "bg-background" : "bg-muted mb-2",
           isHovered && "bg-muted/80",
-          !isRootComment && level === 0 && "mt-6",
+          !isRootComment && level === 0 && "mt-6"
         )}
       >
         {/* Comment header with user info */}
@@ -254,7 +254,10 @@ const Comment: React.FC<CommentProps> = ({
             <div className="flex items-center space-x-2">
               {/* <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs"> */}
               <Avatar>
-                <AvatarImage src={comment.userImageUrl} />
+                <AvatarImage
+                  src={comment.userImageUrl}
+                  className="object-cover border border-muted-foreground"
+                />
                 <AvatarFallback>
                   {comment.userName?.charAt(0) || "U"}
                 </AvatarFallback>

@@ -1,4 +1,4 @@
-import { BaseDraft } from "kysely-codegen";
+import { DraftWithUser } from "kysely-codegen";
 import React from "react";
 import {
   Tooltip,
@@ -7,11 +7,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { formatDate } from "@/lib/helpers/helpersDate";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const Byline = ({ statement }: { statement: BaseDraft }) => (
+const Byline = ({ statement }: { statement: DraftWithUser }) => (
   <div className="flex items-center gap-2">
-    <div className="h-8 w-8 rounded-full bg-muted" />
-    <div className=" font-bold">Jake</div>
+    <Avatar>
+      <AvatarImage
+        src={statement?.creatorImageUrl || ""}
+        className="object-cover"
+      />
+      <AvatarFallback>{statement?.creatorName?.slice(0, 2)}</AvatarFallback>
+    </Avatar>
+    <div className=" font-bold">{statement?.creatorName}</div>
     {/* add the publish and time here  */}
 
     <TooltipProvider>

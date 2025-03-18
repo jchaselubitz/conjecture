@@ -7,6 +7,7 @@ import {
   AnnotationWithComments,
   BaseCommentWithUser,
   DraftWithAnnotations,
+  DraftWithUser,
   NewAnnotation,
   Statement,
 } from "kysely-codegen";
@@ -14,7 +15,13 @@ import { redirect } from "next/navigation";
 import { generateStatementId } from "../helpers/helpersStatements";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 
-export async function getDrafts(): Promise<Statement[]> {
+export async function getDrafts({
+  forCurrentUser = false,
+  publishedOnly = true,
+}: {
+  forCurrentUser?: boolean;
+  publishedOnly?: boolean;
+}): Promise<Statement[]> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -23,14 +30,38 @@ export async function getDrafts(): Promise<Statement[]> {
   if (!user) {
     return [];
   }
-  const drafts = await db
+  let drafts = db
     .selectFrom("draft")
-    .selectAll()
-    .where("creatorId", "=", user.id)
-    .orderBy("versionNumber", "desc")
-    .execute();
+    .innerJoin("profile", "draft.creatorId", "profile.id")
+    .select([
+      "draft.id",
+      "draft.title",
+      "draft.subtitle",
+      "draft.content",
+      "draft.headerImg",
+      "draft.publishedAt",
+      "draft.versionNumber",
+      "draft.statementId",
+      "draft.creatorId",
+      "draft.createdAt",
+      "draft.updatedAt",
 
-  const draftsObject = drafts.reduce(
+      "profile.name as creatorName",
+      "profile.imageUrl as creatorImageUrl",
+    ])
+    .orderBy("versionNumber", "desc");
+
+  if (publishedOnly) {
+    drafts = drafts.where("publishedAt", "is not", null);
+  }
+
+  if (forCurrentUser) {
+    drafts = drafts.where("creatorId", "=", user.id);
+  }
+
+  const objects = await drafts.execute();
+
+  const draftsObject = objects.reduce(
     (acc: Record<string, Statement>, draft) => {
       const statementId = draft.statementId;
       if (!acc[statementId]) {
@@ -50,10 +81,27 @@ export async function getDrafts(): Promise<Statement[]> {
   return arrayOfStatements;
 }
 
-export async function getDraftById(id: string) {
+export async function getDraftById(
+  id: string,
+): Promise<DraftWithUser | null | undefined> {
   const draft = await db
     .selectFrom("draft")
-    .selectAll()
+    .innerJoin("profile", "draft.creatorId", "profile.id")
+    .select([
+      "draft.id",
+      "draft.title",
+      "draft.subtitle",
+      "draft.content",
+      "draft.headerImg",
+      "draft.publishedAt",
+      "draft.versionNumber",
+      "draft.statementId",
+      "draft.creatorId",
+      "draft.createdAt",
+      "draft.updatedAt",
+      "profile.name as creatorName",
+      "profile.imageUrl as creatorImageUrl",
+    ])
     .where("id", "=", id)
     .executeTakeFirst();
   return draft;
@@ -64,19 +112,21 @@ export async function getDraftsByStatementId(
 ): Promise<DraftWithAnnotations[]> {
   const draft = await db
     .selectFrom("draft")
+    .innerJoin("profile", "draft.creatorId", "profile.id")
     .select(({ eb }) => [
-      "id",
-      "title",
-      "subtitle",
-      "content",
-      "headerImg",
-      "publishedAt",
-      "versionNumber",
-      "statementId",
-      "creatorId",
-      "createdAt",
-      "updatedAt",
-      "isPublished",
+      "draft.id",
+      "draft.title",
+      "draft.subtitle",
+      "draft.content",
+      "draft.headerImg",
+      "draft.publishedAt",
+      "draft.versionNumber",
+      "draft.statementId",
+      "draft.creatorId",
+      "draft.createdAt",
+      "draft.updatedAt",
+      "profile.name as creatorName",
+      "profile.imageUrl as creatorImageUrl",
       jsonArrayFrom(
         eb
           .selectFrom("annotation")
@@ -275,9 +325,21 @@ export async function publishDraft({
         "id",
         "=",
         id,
-      ).where("creatorId", "=", user.id).execute();
+      ).execute();
     }
   });
+}
+
+export async function updateStatementImageUrl(
+  statementId: string,
+  imageUrl: string,
+) {
+  await db.updateTable("draft").set({ headerImg: imageUrl }).where(
+    "statementId",
+    "=",
+    statementId,
+  ).execute();
+  revalidatePath(`/statements/${statementId}`, "page");
 }
 
 export async function deleteDraft(id: string) {
@@ -292,5 +354,5 @@ export async function deleteDraft(id: string) {
 
   await db.deleteFrom("draft").where("id", "=", id).execute();
 
-  revalidatePath("/");
+  revalidatePath(`/statements}`, "page");
 }

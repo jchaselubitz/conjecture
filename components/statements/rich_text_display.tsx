@@ -59,21 +59,21 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
     await createAnnotation({ annotation, statementId: statementId });
   };
 
-  const handleAnnotationUpdate = async (updatedAnnotation: NewAnnotation) => {
-    if (!userId) {
-      throw new Error("User ID is required");
-    }
-    if (!updatedAnnotation.id) {
-      throw new Error("Annotation ID is required");
-    }
+  // const handleAnnotationUpdate = async (updatedAnnotation: NewAnnotation) => {
+  //   if (!userId) {
+  //     throw new Error("User ID is required");
+  //   }
+  //   if (!updatedAnnotation.id) {
+  //     throw new Error("Annotation ID is required");
+  //   }
 
-    await updateAnnotation({
-      annotation: {
-        ...updatedAnnotation,
-      },
-      statementId: statementId,
-    });
-  };
+  //   await updateAnnotation({
+  //     annotation: {
+  //       ...updatedAnnotation,
+  //     },
+  //     statementId: statementId,
+  //   });
+  // };
 
   const getSpan = (span: {
     start: number;
@@ -105,7 +105,6 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
         userId={userId}
         onClick={handleAnnotationClick}
         onChange={handleAnnotationChange}
-        onAnnotationUpdate={handleAnnotationUpdate}
         getSpan={getSpan}
         placeholder={placeholder}
         annotatable={!readOnly}

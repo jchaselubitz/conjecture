@@ -1,10 +1,13 @@
-import Link from "next/link";
 import AppNav from "@/components/navigation/app_nav";
 import StatementNav from "@/components/navigation/statement_nav";
+import { StatementCard } from "@/components/statements/card";
 import { getDrafts } from "@/lib/actions/statementActions";
 
 export default async function DraftsPage() {
-  const statements = await getDrafts();
+  const statements = await getDrafts({
+    forCurrentUser: true,
+    publishedOnly: false,
+  });
 
   if ("error" in statements) {
     return (
@@ -28,22 +31,17 @@ export default async function DraftsPage() {
         <div className="flex items-center justify-between my-8">
           <h1 className="text-3xl font-bold">Statements</h1>
         </div>
-        <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* each statement is the either the latest draft with that statementId or the latest published statement */}
           {statements.length > 0 ? (
             statements.map((statement) => (
-              <Link
+              <StatementCard
                 key={statement.statementId}
-                href={`/statements/${statement.statementId}`}
-                className="border border-foreground/20 rounded-lg p-4"
-              >
-                <h2 className="text-lg font-semibold">
-                  {statement.drafts[0].title}
-                </h2>
-              </Link>
+                statement={statement.drafts[0]}
+              />
             ))
           ) : (
-            <div className="text-center py-12">
+            <div className="text-center py-12 col-span-full">
               <h3 className="text-lg font-medium">No drafts yet</h3>
               <p className="text-muted-foreground mt-1">
                 Create a new draft to get started

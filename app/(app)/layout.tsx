@@ -3,6 +3,7 @@ import { getUserProfile } from "@/lib/actions/userActions";
 import { createClient } from "@/supabase/server";
 
 import ProfileSettingsDialog from "./settings/(components)/profile_settings_dialog";
+import AppNav from "@/components/navigation/app_nav";
 
 export default async function AppLayout({
   children,
@@ -18,7 +19,7 @@ export default async function AppLayout({
 
   return (
     <UserProvider userProfile={profile} userEmail={user?.email}>
-      <div className="min-h-screen">{children}</div>
+      <div className="min-h-screen"> {children}</div>
       <ProfileSettingsDialog />
     </UserProvider>
   );

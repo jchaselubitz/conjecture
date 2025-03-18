@@ -14,7 +14,7 @@ import {
   publishDraft,
   updateDraft,
 } from "@/lib/actions/statementActions";
-
+import * as Sentry from "@sentry/nextjs";
 interface StatementContextType {
   versionOptions: {
     v: number;
@@ -37,7 +37,7 @@ interface StatementContextType {
 }
 
 const StatementContext = createContext<StatementContextType | undefined>(
-  undefined,
+  undefined
 );
 
 export function StatementProvider({
@@ -55,11 +55,11 @@ export function StatementProvider({
   const router = useRouter();
 
   const [statement, setStatement] = useState<DraftWithAnnotations>(
-    drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0],
+    drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0]
   );
 
   const [statementUpdate, setNewStatementState] = useState<NewDraft>(
-    statement ?? ({} as NewDraft),
+    statement ?? ({} as NewDraft)
   );
 
   const setStatementUpdate = (statementUpdate: Partial<NewDraft>) => {
@@ -70,12 +70,12 @@ export function StatementProvider({
   };
 
   const [annotations, setAnnotations] = useState<NewAnnotation[]>(
-    statement.annotations,
+    statement.annotations
   );
 
   useEffect(() => {
     setStatement(
-      drafts?.find((draft) => draft.versionNumber === version) || drafts[0],
+      drafts?.find((draft) => draft.versionNumber === version) || drafts[0]
     );
   }, [version, drafts, setStatement]);
 
@@ -93,7 +93,7 @@ export function StatementProvider({
 
   const changeVersion = (newVersion: number) => {
     router.push(
-      `/statements/${statement.statementId}/edit?version=${newVersion}`,
+      `/statements/${statement.statementId}/edit?version=${newVersion}`
     );
   };
 
@@ -115,7 +115,8 @@ export function StatementProvider({
         subtitle: statementUpdate?.subtitle || undefined,
       });
     } catch (err) {
-      console.error(err);
+      setError("Error saving draft");
+      Sentry.captureException(err);
     }
   };
 
@@ -175,7 +176,7 @@ export function useStatementContext() {
   const context = useContext(StatementContext);
   if (context === undefined) {
     throw new Error(
-      "useStatementContext must be used within a StatementProvider",
+      "useStatementContext must be used within a StatementProvider"
     );
   }
   return context;

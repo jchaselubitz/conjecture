@@ -1,15 +1,24 @@
 "use client";
 
 import { Upload } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import RichTextEditor from "@/components/statements/rich_text_editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useStatementContext } from "@/contexts/statementContext";
 import { generateStatementId } from "@/lib/helpers/helpersStatements";
-
+import { useUserContext } from "@/contexts/userContext";
 import Byline from "./byline";
-
+import { useRouter } from "next/navigation";
+import { handleImageCompression } from "@/lib/helpers/helpersImages";
+import Image from "next/image";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import {
+  uploadStatementImage,
+  deleteStatementImage,
+} from "@/lib/actions/storageActions";
+import { toast } from "sonner";
+import { updateStatementImageUrl } from "@/lib/actions/statementActions";
 export default function StatementCreateEditForm({
   statementId,
 }: {
@@ -22,8 +31,70 @@ export default function StatementCreateEditForm({
     updateStatementDraft,
   } = useStatementContext();
 
+  const { userId } = useUserContext();
+  const router = useRouter();
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const prevStatementRef = useRef(statementUpdate);
   const prepStatementId = statementId ? statementId : generateStatementId();
+
+  const handleImageChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = event.target.files?.length
+      ? Array.from(event.target.files)
+      : null;
+    if (files && files.length > 0) {
+      files.map(async (file) => {
+        try {
+          const compressedFile = await handleImageCompression(file);
+          if (!compressedFile) return;
+
+          const fileFormData = new FormData();
+          fileFormData.append("image", compressedFile);
+          if (!userId) {
+            alert("Please set your profile name first.");
+            return;
+          }
+          const imageUrl = await uploadStatementImage({
+            file: fileFormData,
+            creatorId: userId,
+            fileName: compressedFile.name,
+            oldImageUrl: statementUpdate?.headerImg ?? null,
+          });
+          if (!imageUrl) throw new Error("Failed to upload image");
+          await updateStatementImageUrl(statement.statementId, imageUrl);
+          toast("Success", {
+            description: "Profile picture updated successfully!",
+          });
+          router.refresh();
+        } catch (error) {
+          toast("Error", {
+            description: "Failed to upload image. Please try again.",
+          });
+        } finally {
+          setIsUploading(false);
+        }
+      });
+    }
+  };
+
+  const handlePhotoButtonClick = () => {
+    if (photoInputRef.current !== null) {
+      photoInputRef.current.click();
+    }
+  };
+
+  const handleImageDelete = async () => {
+    if (!statementUpdate?.headerImg || !userId) return;
+    setIsDeleting(true);
+    await deleteStatementImage({
+      url: statementUpdate.headerImg,
+      creatorId: userId,
+    });
+    setIsDeleting(false);
+  };
 
   useEffect(() => {
     if (statementUpdate && prevStatementRef.current) {
@@ -65,25 +136,65 @@ export default function StatementCreateEditForm({
     return () => window.removeEventListener("resize", handleResize);
   }, [statementUpdate]);
 
-  return (
-    <div className="flex flex-col gap-8 max-w-4xl mx-auto">
-      {/* Cover Image Upload */}
-
-      <div className="flex items-center justify-center w-full my-14">
-        <Button
-          variant="outline"
-          className="gap-2"
-          onClick={() => {
-            // TODO: Implement image upload
-          }}
-        >
-          <Upload className="h-4 w-4" />
-          <span className="text-sm text-muted-foreground">
-            Choose or drag and drop a cover image
-          </span>
+  if (userId !== statement?.creatorId) {
+    return (
+      <div className="flex flex-col gap-8 max-w-4xl mx-auto">
+        <h1 className="text-xl font-bold">
+          You are not authorized to edit this statement
+        </h1>
+        <Button variant="outline" onClick={() => router.push("/statements")}>
+          Go to statements
         </Button>
       </div>
+    );
+  }
 
+  return (
+    <div className="flex flex-col gap-8 max-w-4xl mx-auto">
+      {statementUpdate?.headerImg ? (
+        <div className="relative group">
+          <AspectRatio ratio={16 / 9} className="bg-muted rounded-md">
+            <Image
+              src={statementUpdate?.headerImg ?? ""}
+              alt="Statement cover image"
+              fill
+              className="h-full w-full rounded-md object-cover"
+            />
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={handlePhotoButtonClick}
+              >
+                <Upload className="h-4 w-4" />
+                <span className="text-sm">Change cover image</span>
+              </Button>
+            </div>
+          </AspectRatio>
+        </div>
+      ) : (
+        <div className="flex items-center justify-center w-full my-14">
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={handlePhotoButtonClick}
+          >
+            <Upload className="h-4 w-4" />
+            <span className="text-sm text-muted-foreground">
+              Choose or drag and drop a cover image
+            </span>
+          </Button>
+        </div>
+      )}
+      <Input
+        type="file"
+        ref={photoInputRef}
+        accept="image/*"
+        className="hidden"
+        id="avatar-upload"
+        onChange={handleImageChange}
+        disabled={isUploading}
+      />
       <Input
         ref={titleInputRef}
         type="text"

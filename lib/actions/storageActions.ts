@@ -56,6 +56,81 @@ async function getPublicFile(
   return image.publicUrl;
 }
 
+export async function uploadStatementImage({
+  oldImageUrl,
+  file,
+  fileName,
+  creatorId,
+}: {
+  oldImageUrl: string | null;
+  file: FormData;
+  creatorId: string;
+  fileName: string;
+}) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const userId = user?.id;
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  if (userId !== creatorId) {
+    throw new Error("Unauthorized");
+  }
+
+  const bucket = "statement_images";
+  if (oldImageUrl) {
+    await deleteFile({
+      bucket,
+      url: oldImageUrl,
+      folderPath: `${userId}`,
+    });
+  }
+  const fileForUpload = file.get("image") as File;
+
+  const { data, error } = await uploadFile({
+    bucket,
+    file: fileForUpload,
+    path: `${userId}/${fileName}`,
+  });
+
+  if (error) {
+    Sentry.captureException(error);
+  }
+  if (!data) {
+    return null;
+  }
+
+  return getPublicFile({ bucket, path: data?.path });
+}
+
+export async function deleteStatementImage({
+  url,
+  creatorId,
+}: {
+  url: string;
+  creatorId: string;
+}) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const userId = user?.id;
+  if (!userId) {
+    return;
+  }
+
+  if (userId !== creatorId) {
+    throw new Error("Unauthorized");
+  }
+
+  const bucket = "statement_images";
+  await deleteFile({ bucket, url, folderPath: `${userId}` });
+  revalidatePath("/", "page");
+}
+
 export async function uploadProfileImage({
   oldImageUrl,
   file,
@@ -122,5 +197,5 @@ export async function deleteProfileImage(
 
   const bucket = "user_images";
   await deleteFile({ bucket, url, folderPath: profileId });
-  revalidatePath("/[organizationId]/settings/profile", "page");
+  revalidatePath("/", "page");
 }

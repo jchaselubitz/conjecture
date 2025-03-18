@@ -19,7 +19,9 @@ export default function UserButton() {
         className="rounded-full hover:ring-1 hover:ring-blue-700"
       >
         <Avatar>
-          {userImageUrl && <AvatarImage src={userImageUrl} />}
+          {userImageUrl && (
+            <AvatarImage src={userImageUrl} className="object-cover" />
+          )}
           <AvatarFallback>{userName?.charAt(0) || "U"}</AvatarFallback>
         </Avatar>
       </Button>

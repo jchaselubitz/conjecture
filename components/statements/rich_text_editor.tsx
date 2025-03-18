@@ -233,6 +233,7 @@ export default function RichTextEditor({
       }),
     ],
     content,
+    immediatelyRender: false,
     editorProps: {
       attributes: {
         class:
