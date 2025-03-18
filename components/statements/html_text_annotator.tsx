@@ -1,7 +1,14 @@
 import "./prose.css";
 import "./annotator.css";
 import { NewAnnotation } from "kysely-codegen";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useDebounce } from "use-debounce";
 
 // Create a cache for color generation to avoid recalculating for the same user ID
 const colorCache = new Map<
@@ -14,7 +21,7 @@ const colorCache = new Map<
 >();
 
 const generateColorFromString = (
-  str: string
+  str: string,
 ): {
   backgroundColor: string;
   hoverBackgroundColor: string;
@@ -65,6 +72,7 @@ interface HTMLTextAnnotatorProps {
   annotatable?: boolean; // Whether the content can be annotated
   selectedAnnotationId: string | undefined;
   setSelectedAnnotationId: (id: string | undefined) => void;
+  onAnnotationUpdate?: (updatedAnnotation: NewAnnotation) => void;
 }
 
 const HTMLTextAnnotator = ({
@@ -77,18 +85,30 @@ const HTMLTextAnnotator = ({
   style,
   className,
   placeholder,
-  annotatable = true, // Default to true
+  annotatable = true,
   selectedAnnotationId,
   setSelectedAnnotationId,
+  onAnnotationUpdate,
 }: HTMLTextAnnotatorProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [annotations, setAnnotations] = useState<NewAnnotation[]>([]);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const dragStateRef = useRef<{
+    initialX: number;
+    initialPosition: number;
+    isDragging: boolean;
+    pendingUpdate: NewAnnotation | null;
+  }>({
+    initialX: 0,
+    initialPosition: 0,
+    isDragging: false,
+    pendingUpdate: null,
+  });
 
   useEffect(() => {
     setAnnotations(value);
-  }, [value, setAnnotations]);
+  }, [value]);
 
-  // Memoize the text nodes extraction function to avoid recalculating on every render
   const getAllTextNodes = useMemo(() => {
     return (node: Node): Text[] => {
       const textNodes: Text[] = [];
@@ -108,10 +128,72 @@ const HTMLTextAnnotator = ({
     };
   }, []);
 
+  // Add helper function to get text from range
+  const getTextFromRange = useCallback(
+    (start: number, end: number): string => {
+      if (!containerRef.current) return "";
+
+      const textNodes = getAllTextNodes(containerRef.current);
+      let currentPos = 0;
+      let text = "";
+
+      for (const node of textNodes) {
+        const nodeLength = node.textContent?.length || 0;
+        const nodeEndPos = currentPos + nodeLength;
+
+        if (currentPos <= end && nodeEndPos >= start) {
+          const startOffset = Math.max(0, start - currentPos);
+          const endOffset = Math.min(nodeLength, end - currentPos);
+          text += node.textContent?.slice(startOffset, endOffset) || "";
+        }
+
+        currentPos += nodeLength;
+      }
+
+      return text;
+    },
+    [getAllTextNodes],
+  );
+
+  // Create a single debounced update function for database
+  const [debouncedUpdateDatabase] = useDebounce((annotation: NewAnnotation) => {
+    if (onAnnotationUpdate) {
+      onAnnotationUpdate(annotation);
+    }
+  }, 500);
+
+  // Create non-debounced update function for visual feedback
+  const handlePositionChangeImmediate = useCallback(
+    (annotationId: string, type: "start" | "end", newPosition: number) => {
+      const annotation = annotations.find((a) => a.id === annotationId);
+      if (!annotation) return;
+
+      const updatedAnnotation = {
+        ...annotation,
+        [type]: newPosition,
+        text: getTextFromRange(
+          type === "start" ? newPosition : annotation.start,
+          type === "end" ? newPosition : annotation.end,
+        ),
+      };
+
+      const newAnnotations = annotations.map((a) =>
+        a.id === annotationId ? updatedAnnotation : a,
+      );
+
+      // Only update local state for immediate feedback
+      setAnnotations(newAnnotations);
+
+      // Store the latest update in dragStateRef for when drag ends
+      dragStateRef.current.pendingUpdate = updatedAnnotation;
+    },
+    [annotations, getTextFromRange],
+  );
+
   // Memoize the function to get text nodes in a range
   const getTextNodesInRange = useMemo(() => {
     return (
-      range: Range
+      range: Range,
     ): { node: Text; startOffset: number; endOffset: number }[] => {
       const nodes: { node: Text; startOffset: number; endOffset: number }[] =
         [];
@@ -152,6 +234,20 @@ const HTMLTextAnnotator = ({
 
     // First, reset the HTML content
     containerRef.current.innerHTML = htmlContent;
+
+    // Clean up function to unmount all handle roots
+    const cleanup = () => {
+      if (containerRef.current) {
+        const handles =
+          containerRef.current.querySelectorAll(".handle-container");
+        handles.forEach((handle) => {
+          const root = (handle as any)._reactRootContainer;
+          if (root) {
+            root.unmount();
+          }
+        });
+      }
+    };
 
     // Apply ProseMirror specific attributes for placeholder if content is empty
     if (placeholder && containerRef.current.textContent?.trim() === "") {
@@ -219,7 +315,6 @@ const HTMLTextAnnotator = ({
           const mark = document.createElement("mark");
           const userId = (annotation as any).userId || "anonymous";
           const colors = generateColorFromString(userId);
-          const tag = (annotation as any).tag || "none";
           const annotationId = annotation.id ? annotation.id.toString() : "";
           const isSelected = selectedAnnotationId === annotationId;
 
@@ -227,8 +322,10 @@ const HTMLTextAnnotator = ({
           mark.style.backgroundColor = colors.backgroundColor;
           mark.style.setProperty(
             "--hover-bg-color",
-            colors.hoverBackgroundColor
+            colors.hoverBackgroundColor,
           );
+          mark.style.position = "relative";
+          mark.style.display = "inline-block";
 
           // Only apply border if this annotation is selected
           if (isSelected) {
@@ -237,14 +334,90 @@ const HTMLTextAnnotator = ({
           }
 
           mark.className = "annotation";
-          mark.dataset.tag = tag;
+          mark.dataset.tag = (annotation as any).tag || "none";
           mark.dataset.userId = userId;
           mark.dataset.start = annotation.start.toString();
           mark.dataset.end = annotation.end.toString();
           mark.dataset.draftId = annotation.draftId.toString();
           mark.dataset.id = annotationId;
+          mark.dataset.selected = isSelected.toString();
 
+          // First surround the content with the mark
           range.surroundContents(mark);
+
+          // Then add handles if this annotation is selected
+          if (isSelected) {
+            const startHandle = document.createElement("div");
+            const endHandle = document.createElement("div");
+            startHandle.className = "handle-container start";
+            endHandle.className = "handle-container end";
+
+            startHandle.textContent = "←";
+            endHandle.textContent = "→";
+
+            startHandle.draggable = true;
+            endHandle.draggable = true;
+
+            const handleDragStart = (
+              e: DragEvent,
+              type: "start" | "end",
+              position: number,
+            ) => {
+              dragStateRef.current = {
+                initialX: e.clientX,
+                initialPosition: position,
+                isDragging: true,
+                pendingUpdate: null,
+              };
+              e.dataTransfer?.setDragImage(new Image(), 0, 0);
+            };
+
+            const handleDrag = (e: DragEvent, type: "start" | "end") => {
+              if (e.clientX === 0) return;
+
+              const { initialX, initialPosition } = dragStateRef.current;
+              const delta = e.clientX - initialX;
+              const CHARS_PER_PIXEL = 0.125;
+              const charDelta = Math.round(delta * CHARS_PER_PIXEL);
+              const newPosition = initialPosition + charDelta;
+
+              // Update UI immediately
+              handlePositionChangeImmediate(annotationId, type, newPosition);
+            };
+
+            const handleDragEnd = () => {
+              dragStateRef.current.isDragging = false;
+              // If there's a pending update, send it to the database
+              if (dragStateRef.current.pendingUpdate) {
+                debouncedUpdateDatabase(dragStateRef.current.pendingUpdate);
+                dragStateRef.current.pendingUpdate = null;
+              }
+            };
+
+            // Find the mark in the DOM and append handles
+            const markInDom = document.querySelector(
+              `[data-id="${annotationId}"]`,
+            ) as HTMLElement;
+            if (markInDom) {
+              markInDom.appendChild(startHandle);
+              markInDom.appendChild(endHandle);
+
+              startHandle.addEventListener("dragstart", (e) =>
+                handleDragStart(e, "start", annotation.start),
+              );
+              endHandle.addEventListener("dragstart", (e) =>
+                handleDragStart(e, "end", annotation.end),
+              );
+
+              startHandle.addEventListener("drag", (e) =>
+                handleDrag(e, "start"),
+              );
+              endHandle.addEventListener("drag", (e) => handleDrag(e, "end"));
+
+              startHandle.addEventListener("dragend", handleDragEnd);
+              endHandle.addEventListener("dragend", handleDragEnd);
+            }
+          }
         } catch (e) {
           console.error("Error applying annotation:", e);
 
@@ -271,7 +444,7 @@ const HTMLTextAnnotator = ({
               mark.style.backgroundColor = colors.backgroundColor;
               mark.style.setProperty(
                 "--hover-bg-color",
-                colors.hoverBackgroundColor
+                colors.hoverBackgroundColor,
               );
 
               // Only apply border if this annotation is selected
@@ -293,6 +466,9 @@ const HTMLTextAnnotator = ({
         }
       }
     });
+
+    // Return cleanup function
+    return cleanup;
   }, [
     htmlContent,
     annotations,
@@ -300,6 +476,10 @@ const HTMLTextAnnotator = ({
     selectedAnnotationId,
     getAllTextNodes,
     getTextNodesInRange,
+    isUpdating,
+    getTextFromRange,
+    debouncedUpdateDatabase,
+    handlePositionChangeImmediate,
   ]);
 
   // Handle selection and create new annotations
@@ -393,17 +573,15 @@ const HTMLTextAnnotator = ({
     setSelectedAnnotationId,
   ]);
 
-  // Handle click on annotation to remove it
   const handleAnnotationClick = useMemo(() => {
     return (e: React.MouseEvent) => {
       const target = e.target as HTMLElement;
       if (target.className === "annotation") {
-        // Get the annotation data
         const start = parseInt(target.dataset.start || "0", 10);
         const end = parseInt(target.dataset.end || "0", 10);
 
         const annotation = annotations.find(
-          (a) => a.start === start && a.end === end
+          (a) => a.start === start && a.end === end,
         );
 
         if (annotation?.id) {

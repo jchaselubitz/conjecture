@@ -25,7 +25,7 @@ export default async function DraftsPage() {
     <div className="flex flex-col h-screen">
       <AppNav />
       <main className="flex-1 mx-auto bg-background container ">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between my-8">
           <h1 className="text-3xl font-bold">Statements</h1>
         </div>
         <div className="flex flex-col gap-4">

@@ -1,16 +1,9 @@
 "use client";
 
 import * as Sentry from "@sentry/nextjs";
-import {
-  AnnotationWithComments,
-  BaseCommentWithUser,
-} from "kysely-codegen";
+import { AnnotationWithComments, BaseCommentWithUser } from "kysely-codegen";
 import { RefreshCw, Trash2, X } from "lucide-react";
-import React, {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -22,6 +15,7 @@ import {
 import { useUserContext } from "@/contexts/userContext";
 import { deleteAnnotation } from "@/lib/actions/annotationActions";
 import { createComment } from "@/lib/actions/commentActions";
+import { formatDate } from "@/lib/helpers/helpersDate";
 import { nestObject } from "@/lib/helpers/helpersGeneral";
 import { cn } from "@/lib/utils";
 
@@ -30,11 +24,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../ui/accordion";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Card } from "../ui/card";
 import { ButtonLoadingState, LoadingButton } from "../ui/loading-button";
 import Comment, { CommentWithReplies } from "./comment";
-import { formatDate } from "@/lib/helpers/helpersDate";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 interface AnnotationDetailProps {
   annotation: AnnotationWithComments;
@@ -52,7 +45,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
   selectedAnnotationId,
 }) => {
   const [comments, setComments] = useState<BaseCommentWithUser[]>(
-    annotation.comments
+    annotation.comments,
   );
 
   const { userId, userName } = useUserContext();
@@ -156,7 +149,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
 
   const handleCommentDeleted = (commentId: string) => {
     setComments((prevComments) =>
-      prevComments.filter((comment) => comment.id !== commentId)
+      prevComments.filter((comment) => comment.id !== commentId),
     );
 
     // If we were replying to this comment, cancel the reply
@@ -198,7 +191,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
       <Card
         className={cn(
           "p-0 gap-0",
-          selected ? "shadow-2xl  my-4" : "shadow-none hover:shadow-md "
+          selected ? "shadow-2xl  my-4" : "shadow-none hover:shadow-md ",
         )}
       >
         <AccordionTrigger className={cn("p-4 hover:no-underline")}>

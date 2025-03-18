@@ -1,5 +1,4 @@
 import { StatementProvider } from "@/contexts/statementContext";
-import { getAnnotationsForDraft } from "@/lib/actions/annotationActions";
 import { getDraftsByStatementId } from "@/lib/actions/statementActions";
 
 export default async function CreateLayout({

@@ -1,8 +1,12 @@
+"use client";
 import { NewAnnotation } from "kysely-codegen";
 import React from "react";
 import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
-import { createAnnotation } from "@/lib/actions/annotationActions";
+import {
+  createAnnotation,
+  updateAnnotation,
+} from "@/lib/actions/annotationActions";
 
 import HTMLTextAnnotator from "./html_text_annotator";
 
@@ -52,10 +56,23 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
     };
 
     setAnnotations([...annotations, annotation as unknown as NewAnnotation]);
+    await createAnnotation({ annotation, statementId: statementId });
+  };
+
+  const handleAnnotationUpdate = async (updatedAnnotation: NewAnnotation) => {
     if (!userId) {
       throw new Error("User ID is required");
     }
-    await createAnnotation({ annotation, statementId: statementId });
+    if (!updatedAnnotation.id) {
+      throw new Error("Annotation ID is required");
+    }
+
+    await updateAnnotation({
+      annotation: {
+        ...updatedAnnotation,
+      },
+      statementId: statementId,
+    });
   };
 
   const getSpan = (span: {
@@ -88,6 +105,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
         userId={userId}
         onClick={handleAnnotationClick}
         onChange={handleAnnotationChange}
+        onAnnotationUpdate={handleAnnotationUpdate}
         getSpan={getSpan}
         placeholder={placeholder}
         annotatable={!readOnly}

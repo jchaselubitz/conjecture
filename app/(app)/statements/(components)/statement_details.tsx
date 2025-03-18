@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/resizable";
 
 import Byline from "./byline";
+
 interface StatementDetailsProps {
   drafts: DraftWithAnnotations[];
 }
@@ -25,16 +26,6 @@ export default function StatementDetails({ drafts }: StatementDetailsProps) {
     string | undefined
   >(undefined);
 
-  if (!drafts) {
-    return <div>No drafts found</div>;
-  }
-
-  const statement =
-    drafts.find((draft) => draft.publishedAt !== null) ??
-    drafts[drafts.length - 1];
-
-  const { title, subtitle, content, versionNumber, annotations } = statement;
-
   useEffect(() => {
     const savedSizeString = localStorage.getItem("annotationPanelSize");
     const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
@@ -45,6 +36,16 @@ export default function StatementDetails({ drafts }: StatementDetailsProps) {
 
     setSelectedAnnotationId(savedSelectedAnnotationId ?? undefined);
   }, [panelGroupRef.current]);
+
+  if (!drafts) {
+    return <div>No drafts found</div>;
+  }
+
+  const statement =
+    drafts.find((draft) => draft.publishedAt !== null) ??
+    drafts[drafts.length - 1];
+
+  const { title, subtitle, content, versionNumber, annotations } = statement;
 
   const handleAnnotationClick = async (annotationId: string) => {
     setSelectedAnnotationId(annotationId);

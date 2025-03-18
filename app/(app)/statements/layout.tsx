@@ -1,4 +1,4 @@
-export default function CreateLayout({
+export default function StatementsLayout({
   children,
 }: {
   children: React.ReactNode;

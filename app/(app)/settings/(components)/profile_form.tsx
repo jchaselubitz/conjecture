@@ -185,7 +185,7 @@ export default function ProfileForm() {
                     <Input placeholder="Your email" {...field} />
                   </FormControl>
                   <FormDescription>
-                    You'll need to verify your new email if you change it.
+                    {`You'll need to verify your new email if you change it.`}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

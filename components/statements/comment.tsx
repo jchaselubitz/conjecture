@@ -11,6 +11,7 @@ import {
   editComment,
   toggleUpvote,
 } from "@/lib/actions/commentActions";
+import { formatDate } from "@/lib/helpers/helpersDate";
 import { cn } from "@/lib/utils";
 
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -22,7 +23,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import { formatDate } from "@/lib/helpers/helpersDate";
 export type CommentWithReplies = BaseCommentWithUser & {
   children: BaseCommentWithUser[];
 };
@@ -234,7 +234,7 @@ const Comment: React.FC<CommentProps> = ({
       className={cn(
         "flex flex-col",
         currentLevel > 0 && "ml-2 mt-2 pl-2 border-l-2",
-        borderColor()
+        borderColor(),
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -244,7 +244,7 @@ const Comment: React.FC<CommentProps> = ({
           "p-3 rounded-md transition-colors flex flex-col gap-2",
           currentLevel === 0 ? "bg-background" : "bg-muted mb-2",
           isHovered && "bg-muted/80",
-          !isRootComment && level === 0 && "mt-6"
+          !isRootComment && level === 0 && "mt-6",
         )}
       >
         {/* Comment header with user info */}
