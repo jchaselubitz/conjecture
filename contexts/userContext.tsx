@@ -6,9 +6,10 @@ import { createContext, ReactNode, useContext, useState } from "react";
 // Define the context type
 interface UserContextType {
   userId: string | undefined;
-  userImageUrl: string | undefined;
-  userName: string | undefined;
-  userEmail: string | undefined;
+  imageUrl: string | undefined;
+  name: string | undefined;
+  email: string | undefined;
+  username: string | undefined;
   settingsDialog: boolean;
   setSettingsDialog: (settingsDialog: boolean) => void;
 }
@@ -29,9 +30,10 @@ export function UserProvider({
   const [settingsDialog, setSettingsDialog] = useState(false);
   const value = {
     userId: userProfile?.id || undefined,
-    userImageUrl: userProfile?.imageUrl || undefined,
-    userName: userProfile?.name || undefined,
-    userEmail: userEmail || undefined,
+    imageUrl: userProfile?.imageUrl || undefined,
+    name: userProfile?.name || undefined,
+    email: userEmail || undefined,
+    username: userProfile?.username || undefined,
   };
 
   return (

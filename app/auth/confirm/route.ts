@@ -11,9 +11,9 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get("next") ?? "";
 
   const redirectTo = request.nextUrl.clone();
-  if (process.env.NEXT_PUBLIC_CONTEXT !== "development") {
-    redirectTo.port = ""; // Clearing the port might help correct the URL
-  }
+  // if (process.env.NEXT_PUBLIC_CONTEXT !== "development") {
+  //   redirectTo.port = ""; // Clearing the port might help correct the URL
+  // }
   redirectTo.searchParams.delete("token_hash");
   redirectTo.searchParams.delete("type");
 
@@ -32,8 +32,18 @@ export async function GET(request: NextRequest) {
           `${process.env.NEXT_PUBLIC_SITE_URL}/login/reset`,
         );
       }
-      return NextResponse.redirect(
+
+      console.log(
         `${process.env.NEXT_PUBLIC_SITE_URL}/${next}`,
+        `${next}`,
+      );
+      // return NextResponse.redirect(
+      //   process.env.NEXT_PUBLIC_CONTEXT !== "development"
+      //     ? `${process.env.NEXT_PUBLIC_SITE_URL}/${next}`
+      //     : `${next}`,
+      // );
+      return NextResponse.redirect(
+        `${next}`,
       );
     }
     console.log("error", error);

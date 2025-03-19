@@ -8,7 +8,7 @@ import { Button } from "../ui/button";
 import UserMenu from "./user_menu";
 
 export default function UserButton() {
-  const { userName, userImageUrl } = useUserContext();
+  const { name, imageUrl } = useUserContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -19,10 +19,8 @@ export default function UserButton() {
         className="rounded-full hover:ring-1 hover:ring-blue-700"
       >
         <Avatar>
-          {userImageUrl && (
-            <AvatarImage src={userImageUrl} className="object-cover" />
-          )}
-          <AvatarFallback>{userName?.charAt(0) || "U"}</AvatarFallback>
+          {imageUrl && <AvatarImage src={imageUrl} className="object-cover" />}
+          <AvatarFallback>{name?.charAt(0) || "U"}</AvatarFallback>
         </Avatar>
       </Button>
     </UserMenu>

@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import * as z from "zod";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-
 import {
   Form,
   FormControl,
@@ -24,7 +23,12 @@ import {
   deleteProfileImage,
   uploadProfileImage,
 } from "@/lib/actions/storageActions";
-import { updateEmail, upsertProfile } from "@/lib/actions/userActions";
+import {
+  checkUsername,
+  updateEmail,
+  updateProfile,
+  updateUsername,
+} from "@/lib/actions/userActions";
 import { handleImageCompression } from "@/lib/helpers/helpersImages";
 const profileFormSchema = z.object({
   name: z.string().min(2, {
@@ -33,12 +37,16 @@ const profileFormSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
+  username: z.string().min(3, {
+    message: "Username must be at least 3 characters.",
+  }),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 export default function ProfileForm() {
-  const { userName, userEmail, userImageUrl, userId } = useUserContext();
+  const { name, email, imageUrl, userId, username } = useUserContext();
+  const [imageLoading, setImageLoading] = useState(false);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
 
   const [isUploading, setIsUploading] = useState(false);
@@ -46,14 +54,16 @@ export default function ProfileForm() {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      name: userName || "",
-      email: userEmail || "",
+      name: name || "",
+      email: email || "",
+      username: username || "",
     },
   });
 
   const handleImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
+    setImageLoading(true);
     const files = event.target.files?.length
       ? Array.from(event.target.files)
       : null;
@@ -69,13 +79,13 @@ export default function ProfileForm() {
             alert("Please set your profile name first.");
             return;
           }
-          const imageUrl = await uploadProfileImage({
+          const newImageUrl = await uploadProfileImage({
             file: fileFormData,
             profileId: userId,
             fileName: compressedFile.name,
-            oldImageUrl: userImageUrl ?? null,
+            oldImageUrl: imageUrl ?? null,
           });
-          await upsertProfile({ name: userName ?? "", imageUrl });
+          await updateProfile({ name: name ?? "", imageUrl: newImageUrl });
           toast("Success", {
             description: "Profile picture updated successfully!",
           });
@@ -88,6 +98,7 @@ export default function ProfileForm() {
         }
       });
     }
+    setImageLoading(false);
   };
 
   const handlePhotoButtonClick = () => {
@@ -97,23 +108,42 @@ export default function ProfileForm() {
   };
 
   const handleImageDelete = async () => {
-    if (!userImageUrl || !userId) return;
-    await deleteProfileImage({ profileId: userId, url: userImageUrl });
-    await upsertProfile({ name: userName ?? "", imageUrl: null });
+    if (!imageUrl || !userId) return;
+    await deleteProfileImage({ profileId: userId, url: imageUrl });
+    await updateProfile({
+      name: name ?? "",
+      imageUrl: null,
+    });
   };
 
   async function onSubmit(data: ProfileFormValues) {
     try {
-      if (data.email !== userEmail) {
+      if (data.username !== username) {
+        const c = confirm(
+          "Changing your username will change your public URL and break existing links to your posts. Are you sure you want to continue?",
+        );
+        if (!c) return;
+
+        const usernameAvailable = await checkUsername(data.username);
+        if (!usernameAvailable) {
+          toast("Error", {
+            description: "Username is already taken. Please try another.",
+          });
+          return;
+        }
+        await updateUsername(data.username);
+      }
+
+      if (data.email !== email) {
         await updateEmail(data.email);
         toast("Email Update", {
           description: "Email update request sent. Please check your inbox.",
         });
       }
 
-      await upsertProfile({
+      await updateProfile({
         name: data.name,
-        imageUrl: userImageUrl,
+        imageUrl: imageUrl,
       });
 
       toast("Success", {
@@ -131,8 +161,8 @@ export default function ProfileForm() {
       <div className="space-y-8">
         <div className="flex flex-col items-center space-y-4">
           <Avatar className="h-24 w-24">
-            <AvatarImage src={userImageUrl} className="object-cover" />
-            <AvatarFallback>{userName?.charAt(0) || "U"}</AvatarFallback>
+            <AvatarImage src={imageUrl} className="object-cover" />
+            <AvatarFallback>{name?.charAt(0) || "U"}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col items-center space-y-2">
             <Input
@@ -180,6 +210,23 @@ export default function ProfileForm() {
                   </FormControl>
                   <FormDescription>
                     {`You'll need to verify your new email if you change it.`}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Username</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Your username" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    This defines your public URL.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

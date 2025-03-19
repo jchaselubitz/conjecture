@@ -384,7 +384,7 @@ const HTMLTextAnnotator = ({
               const fontSize = window.getComputedStyle(
                 containerRef.current!
               ).fontSize;
-              const CHARS_PER_PIXEL = 1 / (parseInt(fontSize) * 0.6);
+              const CHARS_PER_PIXEL = 1 / (parseInt(fontSize, 10) * 0.6);
 
               const charDelta = Math.round(delta * CHARS_PER_PIXEL);
               const newPosition = initialPosition + charDelta;
@@ -521,7 +521,7 @@ const HTMLTextAnnotator = ({
                   const fontSize = window.getComputedStyle(
                     containerRef.current!
                   ).fontSize;
-                  const CHARS_PER_PIXEL = 1 / (parseInt(fontSize) * 0.6);
+                  const CHARS_PER_PIXEL = 1 / (parseInt(fontSize, 10) * 0.6);
 
                   const charDelta = Math.round(delta * CHARS_PER_PIXEL);
                   const newPosition = initialPosition + charDelta;

@@ -1,5 +1,6 @@
 import { DraftWithUser } from "kysely-codegen";
 import React from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Tooltip,
   TooltipContent,
@@ -7,7 +8,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { formatDate } from "@/lib/helpers/helpersDate";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Byline = ({ statement }: { statement: DraftWithUser }) => (
   <div className="flex items-center gap-2">

@@ -14,7 +14,7 @@ const colorCache = new Map<
 >();
 
 const generateColorFromString = (
-  str: string
+  str: string,
 ): {
   backgroundColor: string;
   hoverBackgroundColor: string;
@@ -115,7 +115,7 @@ const HTMLTextAnnotator = ({
   // Memoize the function to get text nodes in a range
   const getTextNodesInRange = useMemo(() => {
     return (
-      range: Range
+      range: Range,
     ): { node: Text; startOffset: number; endOffset: number }[] => {
       const nodes: { node: Text; startOffset: number; endOffset: number }[] =
         [];
@@ -181,10 +181,10 @@ const HTMLTextAnnotator = ({
 
     // Then apply annotations
     const authorAnnotations = annotations.filter(
-      (annotation) => annotation.userId === userId
+      (annotation) => annotation.userId === userId,
     );
     const readerAnnotations = annotations.filter(
-      (annotation) => annotation.userId !== userId
+      (annotation) => annotation.userId !== userId,
     );
 
     const setSelectedAnnotations = () => {
@@ -251,7 +251,7 @@ const HTMLTextAnnotator = ({
           mark.style.backgroundColor = colors.backgroundColor;
           mark.style.setProperty(
             "--hover-bg-color",
-            colors.hoverBackgroundColor
+            colors.hoverBackgroundColor,
           );
 
           // Only apply border if this annotation is selected
@@ -295,7 +295,7 @@ const HTMLTextAnnotator = ({
               mark.style.backgroundColor = colors.backgroundColor;
               mark.style.setProperty(
                 "--hover-bg-color",
-                colors.hoverBackgroundColor
+                colors.hoverBackgroundColor,
               );
 
               // Only apply border if this annotation is selected
@@ -429,7 +429,7 @@ const HTMLTextAnnotator = ({
         const end = parseInt(target.dataset.end || "0", 10);
 
         const annotation = annotations.find(
-          (a) => a.start === start && a.end === end
+          (a) => a.start === start && a.end === end,
         );
 
         if (annotation?.id) {

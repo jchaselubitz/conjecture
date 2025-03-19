@@ -1,6 +1,9 @@
+import { format } from "date-fns";
+import { DraftWithUser } from "kysely-codegen";
 import Image from "next/image";
 import Link from "next/link";
-import { format } from "date-fns";
+import Byline from "@/app/(app)/statements/(components)/byline";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import {
   Card,
   CardContent,
@@ -9,10 +12,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
 import { StatusBadge } from "./status_badge";
-import { DraftWithUser } from "kysely-codegen";
-import Byline from "@/app/(app)/statements/(components)/byline";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface StatementCardProps {
   statement: DraftWithUser;

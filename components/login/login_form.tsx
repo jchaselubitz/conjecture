@@ -18,7 +18,7 @@ import {
   ButtonLoadingState,
   LoadingButton,
 } from "@/components/ui/loading-button";
-import { signIn, signUp } from "@/lib/actions/userActions";
+import { checkUsername, signIn, signUp } from "@/lib/actions/userActions";
 import { cn } from "@/lib/utils";
 
 import { FormField } from "../ui/form";
@@ -40,7 +40,7 @@ export function LoginForm({
   } as { [key: string]: any };
 
   if (isSignUp) {
-    zObject["name"] = z.string().min(1);
+    zObject["username"] = z.string().min(1);
   }
 
   const loginSchema = z.object(zObject);
@@ -50,7 +50,7 @@ export function LoginForm({
     defaultValues: {
       email: "",
       password: "",
-      ...(isSignUp && { name: "" }),
+      ...(isSignUp && { username: "" }),
     },
   });
 
@@ -58,10 +58,19 @@ export function LoginForm({
     setButtonState("loading");
     try {
       if (isSignUp) {
+        const usernameAvailable = await checkUsername(data.username);
+        if (!usernameAvailable) {
+          form.setError("username", {
+            message: "Username is already taken",
+          });
+          setButtonState("default");
+          return;
+        }
+
         await signUp({
           email: data.email,
           password: data.password,
-          name: data.name,
+          username: data.username,
           token: null,
         });
       } else {
@@ -97,11 +106,11 @@ export function LoginForm({
               {isSignUp && (
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="username"
                   render={({ field }) => (
                     <div className="grid gap-2">
-                      <Label htmlFor="name">Name</Label>
-                      <Input id="name" {...field} placeholder="Bobby" />
+                      <Label htmlFor="username">Username</Label>
+                      <Input id="username" {...field} placeholder="Bobby" />
                     </div>
                   )}
                 />

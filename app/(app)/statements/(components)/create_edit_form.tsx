@@ -1,24 +1,25 @@
 "use client";
 
 import { Upload } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import RichTextEditor from "@/components/statements/rich_text_editor";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useStatementContext } from "@/contexts/statementContext";
-import { generateStatementId } from "@/lib/helpers/helpersStatements";
 import { useUserContext } from "@/contexts/userContext";
-import Byline from "./byline";
-import { useRouter } from "next/navigation";
-import { handleImageCompression } from "@/lib/helpers/helpersImages";
-import Image from "next/image";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import {
-  uploadStatementImage,
-  deleteStatementImage,
-} from "@/lib/actions/storageActions";
-import { toast } from "sonner";
 import { updateStatementImageUrl } from "@/lib/actions/statementActions";
+import {
+  deleteStatementImage,
+  uploadStatementImage,
+} from "@/lib/actions/storageActions";
+import { handleImageCompression } from "@/lib/helpers/helpersImages";
+import { generateStatementId } from "@/lib/helpers/helpersStatements";
+
+import Byline from "./byline";
 export default function StatementCreateEditForm({
   statementId,
 }: {
@@ -40,7 +41,7 @@ export default function StatementCreateEditForm({
   const prepStatementId = statementId ? statementId : generateStatementId();
 
   const handleImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const files = event.target.files?.length
       ? Array.from(event.target.files)

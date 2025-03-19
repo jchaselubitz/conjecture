@@ -10,7 +10,7 @@ export function StatusBadge({ isPublished, className }: StatusBadgeProps) {
     <span
       className={cn(
         "px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800",
-        className
+        className,
       )}
     >
       Published
@@ -19,7 +19,7 @@ export function StatusBadge({ isPublished, className }: StatusBadgeProps) {
     <span
       className={cn(
         "px-2 py-1 text-xs font-medium rounded-full bg-amber-100 text-amber-800",
-        className
+        className,
       )}
     >
       Draft

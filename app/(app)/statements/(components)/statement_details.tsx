@@ -1,24 +1,23 @@
 "use client";
 
 import { DraftWithAnnotations } from "kysely-codegen";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import AnnotationPanel from "@/components/statements/annotation_panel";
 import RichTextDisplay from "@/components/statements/rich_text_display";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { Switch } from "@/components/ui/switch";
+import { useUserContext } from "@/contexts/userContext";
 
 import Byline from "./byline";
-import { useUserContext } from "@/contexts/userContext";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import Image from "next/image";
-
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 interface StatementDetailsProps {
   drafts: DraftWithAnnotations[];
   authorCommentsEnabled: boolean;
@@ -34,10 +33,10 @@ export default function StatementDetails({
     useRef<React.ElementRef<typeof ResizablePanelGroup>>(null);
 
   const [showAuthorComments, setShowAuthorComments] = useState(
-    authorCommentsEnabled
+    authorCommentsEnabled,
   );
   const [showReaderComments, setShowReaderComments] = useState(
-    readerCommentsEnabled
+    readerCommentsEnabled,
   );
 
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<
@@ -51,7 +50,7 @@ export default function StatementDetails({
     const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
     panelGroupRef.current?.setLayout(savedSize ?? [100, 0]);
     const savedSelectedAnnotationId = localStorage.getItem(
-      "selectedAnnotationId"
+      "selectedAnnotationId",
     );
 
     setSelectedAnnotationId(savedSelectedAnnotationId ?? undefined);

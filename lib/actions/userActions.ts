@@ -9,6 +9,7 @@ import { createClient } from "@/supabase/server";
 import { redirect } from "next/navigation";
 import { BaseProfile } from "kysely-codegen";
 import * as Sentry from "@sentry/nextjs";
+
 export const getUserProfile = async (): Promise<
   BaseProfile | null | undefined
 > => {
@@ -22,29 +23,20 @@ export const getUserProfile = async (): Promise<
     return null;
   }
 
-  const profileWithMedia = await db
+  const profile = await db
     .selectFrom("profile")
-    .select(({ eb }) => [
+    .select([
       "profile.id as id",
       "profile.name as name",
       "profile.createdAt as createdAt",
       "profile.imageUrl as imageUrl",
+      "profile.username as username",
       "updatedAt",
-      //  jsonArrayFrom(
-      //   eb
-      //    .selectFrom("media")
-      //    .innerJoin("userMedia", "userMedia.mediaId", "media.id")
-      //    .selectAll()
-      //    .whereRef("media.id", "=", "userMedia.mediaId")
-      //    .orderBy("media.createdAt", "desc"),
-      //  ).as("media"),
     ])
     .where("profile.id", "=", user.id)
     .executeTakeFirst();
 
-  const profile = profileWithMedia as BaseProfile;
-
-  return profile;
+  return profile as BaseProfile;
 };
 
 export async function createAnonymousUser() {
@@ -108,6 +100,9 @@ export async function signInWithEmail({
 export const signIn = async (
   { email, password }: { email: string; password: string },
 ) => {
+  const headersList = await headers();
+  const origin = headersList.get("origin");
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -120,26 +115,33 @@ export const signIn = async (
     return redirect("/login?message=Could not authenticate user");
   }
 
-  return redirect(
-    `/feed`,
-  );
+  const redirectUrl = process.env.NEXT_PUBLIC_CONTEXT !== "development"
+    ? `${origin}/feed`
+    : `http://localhost:3000/feed`;
+
+  if (data) {
+    return redirect(
+      redirectUrl,
+    );
+  }
 };
 
 export const signUp = async ({
   email,
   password,
-  name,
+  username,
   token,
   inviteEmail,
 }: {
   email: string;
   password: string;
-  name: string;
+  username: string;
   token: string | null | undefined;
   inviteEmail?: string;
 }) => {
   const supabase = await createClient();
   const headersList = await headers();
+  const origin = headersList.get("origin");
   if (!inviteEmail && !email) {
     throw Error("/login?message=Missing required fields");
   }
@@ -147,9 +149,10 @@ export const signUp = async ({
     email: inviteEmail ?? (email as string),
     password,
     options: {
+      emailRedirectTo: `${origin}/feed`,
       data: {
-        name,
         has_password: true,
+        username,
       },
     },
   });
@@ -180,6 +183,15 @@ export const signUp = async ({
       }`,
     );
   }
+};
+
+export const checkUsername = async (username: string) => {
+  const profile = await db.selectFrom("profile").select("username").where(
+    "username",
+    "=",
+    username,
+  ).executeTakeFirst();
+  return !profile;
 };
 
 export const signOut = async () => {
@@ -232,7 +244,7 @@ export const updateEmail = async (email: string) => {
   revalidatePath("/settings", "page");
 };
 
-export const upsertProfile = async ({
+export const updateProfile = async ({
   name,
   imageUrl,
 }: {
@@ -249,23 +261,40 @@ export const upsertProfile = async ({
   }
 
   await db.transaction().execute(async (trx) => {
-    const profile = await trx
-      .selectFrom("profile")
-      .selectAll()
+    // const profile = await trx
+    //   .selectFrom("profile")
+    //   .selectAll()
+    //   .where("id", "=", userId)
+    //   .executeTakeFirst();
+    // if (!profile) {
+    //   await trx.insertInto("profile").values({ id: userId, name, username })
+    //     .execute();
+    //   return;
+    // } else {
+    await trx
+      .updateTable("profile")
+      .set({ name, imageUrl })
       .where("id", "=", userId)
       .executeTakeFirst();
-    if (!profile) {
-      await trx.insertInto("profile").values({ id: userId, name })
-        .execute();
-      return;
-    } else {
-      await trx
-        .updateTable("profile")
-        .set({ name, imageUrl })
-        .where("id", "=", userId)
-        .executeTakeFirst();
-    }
+    // }
   });
 
   revalidatePath("/settings", "page");
+};
+
+export const updateUsername = async (username: string) => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const userId = user?.id;
+  if (!userId) {
+    return;
+  }
+
+  await db.updateTable("profile").set({ username }).where(
+    "id",
+    "=",
+    userId,
+  ).executeTakeFirst();
 };

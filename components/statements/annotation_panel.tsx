@@ -14,6 +14,8 @@ interface AnnotationPanelProps {
   statementCreatorId: string;
   selectedAnnotationId: string | undefined;
   setSelectedAnnotationId: (id: string | undefined) => void;
+  showAuthorComments: boolean;
+  showReaderComments: boolean;
 }
 
 export default function AnnotationPanel({
@@ -23,6 +25,8 @@ export default function AnnotationPanel({
   statementCreatorId,
   selectedAnnotationId,
   setSelectedAnnotationId,
+  showAuthorComments,
+  showReaderComments,
 }: AnnotationPanelProps) {
   const { setAnnotations } = useStatementContext();
 
@@ -34,6 +38,16 @@ export default function AnnotationPanel({
 
   const sortedAnnotations = annotations.sort((a, b) => {
     return a.start - b.start;
+  });
+
+  const filteredAnnotations = sortedAnnotations.filter((annotation) => {
+    if (showAuthorComments && showReaderComments) {
+      return true;
+    } else if (showAuthorComments) {
+      return annotation.userId === statementCreatorId;
+    } else if (showReaderComments) {
+      return annotation.userId !== statementCreatorId;
+    }
   });
 
   return (
@@ -50,7 +64,7 @@ export default function AnnotationPanel({
         onValueChange={(value) => setSelectedAnnotationId(value)}
       >
         <div className="flex flex-col gap-2 mx-auto max-w-11/12 ">
-          {sortedAnnotations.map((annotation) => (
+          {filteredAnnotations.map((annotation) => (
             <AnnotationDetail
               key={annotation.id}
               annotation={annotation as AnnotationWithComments}

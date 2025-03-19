@@ -1,7 +1,7 @@
+import { cookies } from "next/headers";
 import StatementDetails from "@/app/(app)/statements/(components)/statement_details";
 import AppNav from "@/components/navigation/app_nav";
 import { getDraftsByStatementId } from "@/lib/actions/statementActions";
-import { cookies } from "next/headers";
 export default async function CreatePage({
   params,
 }: {
