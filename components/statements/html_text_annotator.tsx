@@ -65,6 +65,8 @@ interface HTMLTextAnnotatorProps {
   annotatable?: boolean; // Whether the content can be annotated
   selectedAnnotationId: string | undefined;
   setSelectedAnnotationId: (id: string | undefined) => void;
+  showAuthorComments: boolean;
+  showReaderComments: boolean;
 }
 
 const HTMLTextAnnotator = ({
@@ -80,6 +82,8 @@ const HTMLTextAnnotator = ({
   annotatable = true, // Default to true
   selectedAnnotationId,
   setSelectedAnnotationId,
+  showAuthorComments,
+  showReaderComments,
 }: HTMLTextAnnotatorProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [annotations, setAnnotations] = useState<NewAnnotation[]>([]);
@@ -163,6 +167,7 @@ const HTMLTextAnnotator = ({
     }
 
     // Add a style tag for hover effects
+
     const styleTag = document.createElement("style");
     styleTag.textContent = `
       .annotation {
@@ -175,7 +180,26 @@ const HTMLTextAnnotator = ({
     containerRef.current.appendChild(styleTag);
 
     // Then apply annotations
-    annotations.forEach((annotation) => {
+    const authorAnnotations = annotations.filter(
+      (annotation) => annotation.userId === userId
+    );
+    const readerAnnotations = annotations.filter(
+      (annotation) => annotation.userId !== userId
+    );
+
+    const setSelectedAnnotations = () => {
+      if (showAuthorComments && showReaderComments) {
+        return [...authorAnnotations, ...readerAnnotations];
+      } else if (showAuthorComments) {
+        return authorAnnotations;
+      } else if (showReaderComments) {
+        return readerAnnotations;
+      } else {
+        return [];
+      }
+    };
+
+    setSelectedAnnotations().forEach((annotation) => {
       const range = document.createRange();
       const container = containerRef.current;
 
@@ -300,6 +324,8 @@ const HTMLTextAnnotator = ({
     selectedAnnotationId,
     getAllTextNodes,
     getTextNodesInRange,
+    showAuthorComments,
+    showReaderComments,
   ]);
 
   // Handle selection and create new annotations

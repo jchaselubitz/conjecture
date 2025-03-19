@@ -8,7 +8,7 @@ import { Button } from "../ui/button";
 import UserMenu from "./user_menu";
 
 export default function UserButton() {
-  const { userName, userId, userImageUrl } = useUserContext();
+  const { userName, userImageUrl } = useUserContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (

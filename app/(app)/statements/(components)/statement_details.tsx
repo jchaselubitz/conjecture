@@ -16,13 +16,29 @@ import Byline from "./byline";
 import { useUserContext } from "@/contexts/userContext";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
+
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 interface StatementDetailsProps {
   drafts: DraftWithAnnotations[];
+  authorCommentsEnabled: boolean;
+  readerCommentsEnabled: boolean;
 }
 
-export default function StatementDetails({ drafts }: StatementDetailsProps) {
+export default function StatementDetails({
+  drafts,
+  authorCommentsEnabled,
+  readerCommentsEnabled,
+}: StatementDetailsProps) {
   const panelGroupRef =
     useRef<React.ElementRef<typeof ResizablePanelGroup>>(null);
+
+  const [showAuthorComments, setShowAuthorComments] = useState(
+    authorCommentsEnabled
+  );
+  const [showReaderComments, setShowReaderComments] = useState(
+    readerCommentsEnabled
+  );
 
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<
     string | undefined
@@ -73,6 +89,16 @@ export default function StatementDetails({ drafts }: StatementDetailsProps) {
     }
   };
 
+  const onShowAuthorCommentsChange = (checked: boolean) => {
+    setShowAuthorComments(checked);
+    document.cookie = `show_author_comments=${checked.toString()}`;
+  };
+
+  const onShowReaderCommentsChange = (checked: boolean) => {
+    setShowReaderComments(checked);
+    document.cookie = `show_reader_comments=${checked.toString()}`;
+  };
+
   return (
     <div className="flex flex-col ">
       {content && (
@@ -103,7 +129,27 @@ export default function StatementDetails({ drafts }: StatementDetailsProps) {
                 )}
               </div>
               <h2 className="text-xl font-medium  text-zinc-600">{subtitle}</h2>
-              <Byline statement={statement} />
+              <div className="flex justify-between items-center">
+                <Byline statement={statement} />
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="show-comments"
+                      checked={showAuthorComments}
+                      onCheckedChange={onShowAuthorCommentsChange}
+                    />
+                    <Label htmlFor="show-comments">Author comments</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="show-comments"
+                      checked={showReaderComments}
+                      onCheckedChange={onShowReaderCommentsChange}
+                    />
+                    <Label htmlFor="show-comments">Reader comments</Label>
+                  </div>
+                </div>
+              </div>
               <RichTextDisplay
                 htmlContent={content}
                 draftId={statement.id}
@@ -113,6 +159,8 @@ export default function StatementDetails({ drafts }: StatementDetailsProps) {
                 statementCreatorId={statement.creatorId}
                 selectedAnnotationId={selectedAnnotationId}
                 setSelectedAnnotationId={setSelectedAnnotationId}
+                showAuthorComments={showAuthorComments}
+                showReaderComments={showReaderComments}
               />
             </div>
           </ResizablePanel>
@@ -127,6 +175,8 @@ export default function StatementDetails({ drafts }: StatementDetailsProps) {
                 handleCloseAnnotationPanel={handleCloseAnnotationPanel}
                 selectedAnnotationId={selectedAnnotationId}
                 setSelectedAnnotationId={setSelectedAnnotationId}
+                showAuthorComments={showAuthorComments}
+                showReaderComments={showReaderComments}
               />
             )}
           </ResizablePanel>

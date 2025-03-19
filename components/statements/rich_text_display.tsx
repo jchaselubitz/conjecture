@@ -21,6 +21,8 @@ interface RichTextDisplayProps {
   handleAnnotationClick: (annotationId: string) => void;
   selectedAnnotationId: string | undefined;
   setSelectedAnnotationId: (id: string | undefined) => void;
+  showAuthorComments: boolean;
+  showReaderComments: boolean;
 }
 
 const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
@@ -33,6 +35,8 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
   placeholder = "Start typing or paste content here...",
   readOnly = false,
   setSelectedAnnotationId,
+  showAuthorComments,
+  showReaderComments,
 }) => {
   const { userId } = useUserContext();
   const { setAnnotations } = useStatementContext();
@@ -110,6 +114,8 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
         annotatable={!readOnly}
         selectedAnnotationId={selectedAnnotationId}
         setSelectedAnnotationId={setSelectedAnnotationId}
+        showAuthorComments={showAuthorComments}
+        showReaderComments={showReaderComments}
       />
     </div>
   );
