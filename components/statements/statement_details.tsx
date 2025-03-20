@@ -52,9 +52,8 @@ export default function StatementDetails({
     const savedSelectedAnnotationId = localStorage.getItem(
       "selectedAnnotationId",
     );
-
     setSelectedAnnotationId(savedSelectedAnnotationId ?? undefined);
-  }, [panelGroupRef.current]);
+  });
 
   if (!drafts) {
     return <div>No drafts found</div>;

@@ -21,7 +21,7 @@ const colorCache = new Map<
 >();
 
 const generateColorFromString = (
-  str: string
+  str: string,
 ): {
   backgroundColor: string;
   hoverBackgroundColor: string;
@@ -154,7 +154,7 @@ const HTMLTextAnnotator = ({
 
       return text;
     },
-    [getAllTextNodes]
+    [getAllTextNodes],
   );
 
   // Create a single debounced update function for database
@@ -175,12 +175,12 @@ const HTMLTextAnnotator = ({
         [type]: newPosition,
         text: getTextFromRange(
           type === "start" ? newPosition : annotation.start,
-          type === "end" ? newPosition : annotation.end
+          type === "end" ? newPosition : annotation.end,
         ),
       };
 
       const newAnnotations = annotations.map((a) =>
-        a.id === annotationId ? updatedAnnotation : a
+        a.id === annotationId ? updatedAnnotation : a,
       );
 
       // Only update local state for immediate feedback
@@ -189,13 +189,13 @@ const HTMLTextAnnotator = ({
       // Store the latest update in dragStateRef for when drag ends
       dragStateRef.current.pendingUpdate = updatedAnnotation;
     },
-    [annotations, getTextFromRange]
+    [annotations, getTextFromRange],
   );
 
   // Memoize the function to get text nodes in a range
   const getTextNodesInRange = useMemo(() => {
     return (
-      range: Range
+      range: Range,
     ): { node: Text; startOffset: number; endOffset: number }[] => {
       const nodes: { node: Text; startOffset: number; endOffset: number }[] =
         [];
@@ -324,7 +324,7 @@ const HTMLTextAnnotator = ({
           mark.style.backgroundColor = colors.backgroundColor;
           mark.style.setProperty(
             "--hover-bg-color",
-            colors.hoverBackgroundColor
+            colors.hoverBackgroundColor,
           );
 
           // Only apply border if this annotation is selected
@@ -361,7 +361,7 @@ const HTMLTextAnnotator = ({
             const handleDragStart = (
               e: DragEvent,
               type: "start" | "end",
-              position: number
+              position: number,
             ) => {
               e.stopPropagation();
               dragStateRef.current = {
@@ -382,7 +382,7 @@ const HTMLTextAnnotator = ({
 
               // Adjust CHARS_PER_PIXEL based on font size for more accurate selection
               const fontSize = window.getComputedStyle(
-                containerRef.current!
+                containerRef.current!,
               ).fontSize;
               const CHARS_PER_PIXEL = 1 / (parseInt(fontSize, 10) * 0.6);
 
@@ -404,7 +404,7 @@ const HTMLTextAnnotator = ({
 
             // Find the mark in the DOM and append handles
             const markInDom = document.querySelector(
-              `[data-id="${annotationId}"]`
+              `[data-id="${annotationId}"]`,
             ) as HTMLElement;
             if (markInDom) {
               // Create a wrapper for positioning if needed for multiline
@@ -414,14 +414,14 @@ const HTMLTextAnnotator = ({
               markInDom.appendChild(endHandle);
 
               startHandle.addEventListener("dragstart", (e) =>
-                handleDragStart(e, "start", annotation.start)
+                handleDragStart(e, "start", annotation.start),
               );
               endHandle.addEventListener("dragstart", (e) =>
-                handleDragStart(e, "end", annotation.end)
+                handleDragStart(e, "end", annotation.end),
               );
 
               startHandle.addEventListener("drag", (e) =>
-                handleDrag(e, "start")
+                handleDrag(e, "start"),
               );
               endHandle.addEventListener("drag", (e) => handleDrag(e, "end"));
 
@@ -455,7 +455,7 @@ const HTMLTextAnnotator = ({
               mark.style.backgroundColor = colors.backgroundColor;
               mark.style.setProperty(
                 "--hover-bg-color",
-                colors.hoverBackgroundColor
+                colors.hoverBackgroundColor,
               );
 
               // Only apply border if this annotation is selected
@@ -498,7 +498,7 @@ const HTMLTextAnnotator = ({
                 const handleDragStart = (
                   e: DragEvent,
                   type: "start" | "end",
-                  position: number
+                  position: number,
                 ) => {
                   e.stopPropagation();
                   dragStateRef.current = {
@@ -519,7 +519,7 @@ const HTMLTextAnnotator = ({
 
                   // Adjust CHARS_PER_PIXEL based on font size for more accurate selection
                   const fontSize = window.getComputedStyle(
-                    containerRef.current!
+                    containerRef.current!,
                   ).fontSize;
                   const CHARS_PER_PIXEL = 1 / (parseInt(fontSize, 10) * 0.6);
 
@@ -530,7 +530,7 @@ const HTMLTextAnnotator = ({
                   handlePositionChangeImmediate(
                     annotationId,
                     type,
-                    newPosition
+                    newPosition,
                   );
                 };
 
@@ -548,14 +548,14 @@ const HTMLTextAnnotator = ({
                 mark.appendChild(endHandle);
 
                 startHandle.addEventListener("dragstart", (e) =>
-                  handleDragStart(e, "start", annotation.start)
+                  handleDragStart(e, "start", annotation.start),
                 );
                 endHandle.addEventListener("dragstart", (e) =>
-                  handleDragStart(e, "end", annotation.end)
+                  handleDragStart(e, "end", annotation.end),
                 );
 
                 startHandle.addEventListener("drag", (e) =>
-                  handleDrag(e, "start")
+                  handleDrag(e, "start"),
                 );
                 endHandle.addEventListener("drag", (e) => handleDrag(e, "end"));
 
@@ -583,6 +583,7 @@ const HTMLTextAnnotator = ({
     getTextFromRange,
     debouncedUpdateDatabase,
     handlePositionChangeImmediate,
+    adjustable,
   ]);
 
   // Handle selection and create new annotations
@@ -684,7 +685,7 @@ const HTMLTextAnnotator = ({
         const end = parseInt(target.dataset.end || "0", 10);
 
         const annotation = annotations.find(
-          (a) => a.start === start && a.end === end
+          (a) => a.start === start && a.end === end,
         );
 
         if (annotation?.id) {

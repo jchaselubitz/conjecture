@@ -18,9 +18,11 @@ import { jsonArrayFrom } from "kysely/helpers/postgres";
 export async function getDrafts({
   forCurrentUser = false,
   publishedOnly = true,
+  creatorId,
 }: {
   forCurrentUser?: boolean;
   publishedOnly?: boolean;
+  creatorId?: string;
 }): Promise<Statement[]> {
   const supabase = await createClient();
   const {
@@ -45,9 +47,9 @@ export async function getDrafts({
       "draft.creatorId",
       "draft.createdAt",
       "draft.updatedAt",
-
       "profile.name as creatorName",
       "profile.imageUrl as creatorImageUrl",
+      "profile.username as creatorSlug",
     ])
     .orderBy("versionNumber", "desc");
 
@@ -59,14 +61,20 @@ export async function getDrafts({
     drafts = drafts.where("creatorId", "=", user.id);
   }
 
+  if (creatorId) {
+    drafts = drafts.where("creatorId", "=", creatorId);
+  }
+
   const objects = await drafts.execute();
 
   const draftsObject = objects.reduce(
     (acc: Record<string, Statement>, draft) => {
       const statementId = draft.statementId;
+      const creatorSlug = draft.creatorSlug;
       if (!acc[statementId]) {
         acc[statementId] = {
           statementId,
+          creatorSlug,
           drafts: [],
         };
       }
@@ -101,6 +109,7 @@ export async function getDraftById(
       "draft.updatedAt",
       "profile.name as creatorName",
       "profile.imageUrl as creatorImageUrl",
+      "profile.username as creatorSlug",
     ])
     .where("id", "=", id)
     .executeTakeFirst();
@@ -127,6 +136,7 @@ export async function getDraftsByStatementId(
       "draft.updatedAt",
       "profile.name as creatorName",
       "profile.imageUrl as creatorImageUrl",
+      "profile.username as creatorSlug",
       jsonArrayFrom(
         eb
           .selectFrom("annotation")

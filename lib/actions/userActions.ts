@@ -10,7 +10,7 @@ import { redirect } from "next/navigation";
 import { BaseProfile } from "kysely-codegen";
 import * as Sentry from "@sentry/nextjs";
 
-export const getUserProfile = async (): Promise<
+export const getUserProfile = async (slug?: string): Promise<
   BaseProfile | null | undefined
 > => {
   const supabase = await createClient();
@@ -23,20 +23,17 @@ export const getUserProfile = async (): Promise<
     return null;
   }
 
-  const profile = await db
+  let profile = db
     .selectFrom("profile")
-    .select([
-      "profile.id as id",
-      "profile.name as name",
-      "profile.createdAt as createdAt",
-      "profile.imageUrl as imageUrl",
-      "profile.username as username",
-      "updatedAt",
-    ])
-    .where("profile.id", "=", user.id)
-    .executeTakeFirst();
+    .selectAll();
 
-  return profile as BaseProfile;
+  if (slug) {
+    profile = profile.where("profile.username", "=", slug);
+  } else {
+    profile = profile.where("profile.id", "=", user.id);
+  }
+
+  return await profile.executeTakeFirst() as BaseProfile;
 };
 
 export async function createAnonymousUser() {

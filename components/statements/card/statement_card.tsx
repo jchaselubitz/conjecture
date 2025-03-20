@@ -2,7 +2,7 @@ import { format } from "date-fns";
 import { DraftWithUser } from "kysely-codegen";
 import Image from "next/image";
 import Link from "next/link";
-import Byline from "@/app/(app)/statements/(components)/byline";
+import Byline from "@/components/statements/byline";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import {
   Card,
@@ -18,9 +18,14 @@ import { StatusBadge } from "./status_badge";
 interface StatementCardProps {
   statement: DraftWithUser;
   isPublic?: boolean;
+  pathname: string;
 }
 
-export function StatementCard({ statement, isPublic }: StatementCardProps) {
+export async function StatementCard({
+  statement,
+  isPublic,
+  pathname,
+}: StatementCardProps) {
   // Format dates
   const formattedDate = statement.publishedAt
     ? format(new Date(statement.publishedAt), "MMM d, yyyy")
@@ -33,11 +38,13 @@ export function StatementCard({ statement, isPublic }: StatementCardProps) {
       (statement.content.length > previewLength ? "..." : "")
     : statement.subtitle || "No preview available";
 
+  const isDraft = statement.publishedAt === null;
+
+  const href = isDraft
+    ? `/${pathname}/${statement.statementId}/edit`
+    : `/${pathname}/${statement.statementId}`;
   return (
-    <Link
-      href={`/statements/${statement.statementId}`}
-      className="block transition-transform hover:scale-[1.01]"
-    >
+    <Link href={href} className="block transition-transform hover:scale-[1.01]">
       <Card className="h-full overflow-hidden pt-0">
         {statement.headerImg && (
           <AspectRatio ratio={16 / 8} className="bg-muted rounded-md ">

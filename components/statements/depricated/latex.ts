@@ -1,4 +1,5 @@
 import { mergeAttributes, Node, textblockTypeInputRule } from "@tiptap/core";
+import { NodeSelection } from "@tiptap/pm/state";
 
 export interface LatexOptions {
  /**
@@ -14,6 +15,12 @@ export interface LatexOptions {
   * @default undefined
   */
  renderer?: (latex: string) => string | HTMLElement;
+
+ /**
+  * Default LaTeX content to insert when creating a new LaTeX block
+  * @default ""
+  */
+ defaultContent?: string;
 }
 
 declare module "@tiptap/core" {
@@ -22,11 +29,11 @@ declare module "@tiptap/core" {
    /**
     * Set a LaTeX math block
     */
-   setLatexBlock: () => ReturnType;
+   setLatexBlock: (options?: { content?: string }) => ReturnType;
    /**
     * Toggle a LaTeX math block
     */
-   toggleLatexBlock: () => ReturnType;
+   toggleLatexBlock: (options?: { content?: string }) => ReturnType;
    /**
     * Unset a LaTeX math block
     */
@@ -50,6 +57,7 @@ export const LatexBlock = Node.create<LatexOptions>({
   return {
    HTMLAttributes: {},
    renderer: undefined,
+   defaultContent: "\\sum_{i=1}^{n}i = \\frac{n(n+1)}{2}",
   };
  },
 
@@ -61,7 +69,8 @@ export const LatexBlock = Node.create<LatexOptions>({
 
  code: true,
 
- isolating: true,
+ // Allow deleting block with backspace when empty
+ isolating: false,
 
  parseHTML() {
   return [
@@ -70,10 +79,10 @@ export const LatexBlock = Node.create<LatexOptions>({
  },
 
  renderHTML({ HTMLAttributes, node }) {
-  const content = node.textContent;
+  const content = node.textContent || "";
 
-  if (this.options.renderer) {
-   // Use custom renderer if provided
+  if (this.options.renderer && content.trim()) {
+   // Use custom renderer if provided and there's content
    const rendered = this.options.renderer(content);
 
    if (typeof rendered === "string") {
@@ -85,7 +94,7 @@ export const LatexBlock = Node.create<LatexOptions>({
       HTMLAttributes,
      ),
      ["div", { class: "latex-rendered", "data-latex": content }, rendered],
-     ["div", { class: "latex-source" }, content],
+     ["div", { class: "latex-source", contentEditable: "true" }, content],
     ];
    }
 
@@ -97,7 +106,7 @@ export const LatexBlock = Node.create<LatexOptions>({
      this.options.HTMLAttributes,
      HTMLAttributes,
     ),
-    ["div", { class: "latex-source" }, content],
+    ["div", { class: "latex-source", contentEditable: "true" }, content],
    ];
   }
 
@@ -109,23 +118,27 @@ export const LatexBlock = Node.create<LatexOptions>({
     this.options.HTMLAttributes,
     HTMLAttributes,
    ),
-   ["div", { class: "latex-content" }, content],
+   ["div", { class: "latex-content", contentEditable: "true" }, content],
   ];
  },
 
  addCommands() {
   return {
-   setLatexBlock: () => ({ commands }) => {
-    return commands.setNode(this.name);
+   setLatexBlock: (options = {}) => ({ commands, tr }) => {
+    // Use provided content or default content from options
+    const content = options.content || this.options.defaultContent;
+    return commands.setNode(this.name, { content });
    },
-   toggleLatexBlock: () => ({ commands, editor }) => {
+   toggleLatexBlock: (options = {}) => ({ commands, editor }) => {
     const isActive = editor.isActive(this.name);
 
     if (isActive) {
      return commands.setNode("paragraph");
     }
 
-    return commands.setNode(this.name);
+    // Use provided content or default content from options
+    const content = options.content || this.options.defaultContent;
+    return commands.setNode(this.name, { content });
    },
    unsetLatexBlock: () => ({ commands }) => {
     return commands.setNode("paragraph");
@@ -136,6 +149,34 @@ export const LatexBlock = Node.create<LatexOptions>({
  addKeyboardShortcuts() {
   return {
    "Mod-Shift-m": () => this.editor.commands.toggleLatexBlock(),
+   // Handle backspace at the beginning of an empty latex block
+   Backspace: ({ editor }) => {
+    const { selection, doc } = editor.state;
+    const { empty, anchor } = selection;
+
+    // Check if selection is at the start of a latex block
+    if (!empty) {
+     return false;
+    }
+
+    const currentNode = selection.$anchor.parent;
+    const isLatexBlock = currentNode.type.name === this.name;
+
+    if (isLatexBlock) {
+     // If at beginning of node or node is empty
+     if (
+      anchor === selection.$anchor.start() ||
+      currentNode.textContent.trim() === ""
+     ) {
+      return editor.commands.setNode("paragraph");
+     }
+
+     // Allow normal backspace behavior otherwise
+     return false;
+    }
+
+    return false;
+   },
   };
  },
 
@@ -144,6 +185,7 @@ export const LatexBlock = Node.create<LatexOptions>({
    textblockTypeInputRule({
     find: blockInputRegex,
     type: this.type,
+    getAttributes: () => ({ content: this.options.defaultContent }),
    }),
   ];
  },

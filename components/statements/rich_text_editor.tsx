@@ -9,44 +9,43 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Typography from "@tiptap/extension-typography";
 import {
   BubbleMenu,
+  Editor,
   EditorContent,
   FloatingMenu,
   useEditor,
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import katex from "katex";
-import {
-  Bold,
-  Code,
-  Heading1,
-  Heading2,
-  Highlighter,
-  Italic,
-  Link as LinkIcon,
-  List,
-  ListOrdered,
-  PenBox,
-  Quote,
-} from "lucide-react";
-import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { InlineLatex } from "./custom_extensions/inline_latex";
-import { LatexBlock } from "./custom_extensions/latex";
+import { BlockTypeChooser } from "./text_editor/block_type_chooser";
+import { PopoverLatex } from "./text_editor/custom_extensions/popover_latex";
+import { LatexButton } from "./text_editor/latex-button";
+import { LatexNodeEditor } from "./text_editor/latex-node-editor";
+import { TextFormatMenu } from "./text_editor/text_format_menu";
+
+declare module "@tiptap/react" {
+  interface Editor {
+    openLatexPopover: (options: {
+      latex?: string;
+      displayMode?: boolean;
+      id?: string | null;
+    }) => void;
+  }
+}
+
 interface RichTextEditorProps {
   content: string | undefined | null;
   onChange: (content: string) => void;
   placeholder?: string;
 }
 
-const renderLatex = (latex: string) => {
+// LaTeX rendering function for blocks and inline elements when viewing the content
+const renderLatex = (latex: string, displayMode = false) => {
   try {
-    // Remove surrounding $ signs if they exist
-    const content = latex.replace(/^\$|\$$/g, "");
-    return katex.renderToString(content, {
+    return katex.renderToString(latex.trim(), {
       throwOnError: false,
-      displayMode: false,
+      displayMode,
     });
   } catch (error) {
     console.error("Error rendering LaTeX:", error);
@@ -54,145 +53,33 @@ const renderLatex = (latex: string) => {
   }
 };
 
-// KaTeX block renderer function (display mode)
-const renderLatexBlock = (latex: string) => {
+// Function to render popoverLatex nodes
+const renderPopoverLatexNode = (node: HTMLElement) => {
+  const content = node.getAttribute("data-latex") || "";
+  const displayMode = node.getAttribute("data-display-mode") === "true";
+
   try {
-    // Remove surrounding $$ signs if they exist
-    const content = latex.replace(/^\$\$|\$\$$/g, "");
-    return katex.renderToString(content, {
-      throwOnError: false,
-      displayMode: true,
-    });
+    const rendered = renderLatex(content, displayMode);
+
+    // Create a container for the rendered LaTeX
+    const renderContainer = document.createElement("div");
+    renderContainer.classList.add("katex-rendered");
+    if (displayMode) {
+      renderContainer.classList.add("block-display");
+    } else {
+      renderContainer.classList.add("inline-display");
+    }
+    renderContainer.innerHTML = rendered;
+
+    // Replace content with rendered LaTeX
+    node.innerHTML = "";
+    node.appendChild(renderContainer);
   } catch (error) {
-    console.error("Error rendering LaTeX block:", error);
-    return `<div class="latex-error">Error rendering LaTeX block: ${latex}</div>`;
+    console.error("Error rendering LaTeX node:", error);
+
+    // Add error display
+    node.innerHTML = `<div class="latex-error">Error rendering LaTeX</div>`;
   }
-};
-
-const floatingMenuButtons = ({ editor }: { editor: any }) => (
-  <>
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-      className={cn(editor.isActive("heading", { level: 1 }) && "bg-muted")}
-    >
-      <Heading1 className="h-4 w-4" />
-    </Button>
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-      className={cn(editor.isActive("heading", { level: 2 }) && "bg-muted")}
-    >
-      <Heading2 className="h-4 w-4" />
-    </Button>
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => editor.chain().focus().toggleBulletList().run()}
-      className={cn(editor.isActive("bulletList") && "bg-muted")}
-    >
-      <List className="h-4 w-4" />
-    </Button>
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => editor.chain().focus().toggleOrderedList().run()}
-      className={cn(editor.isActive("orderedList") && "bg-muted")}
-    >
-      <ListOrdered className="h-4 w-4" />
-    </Button>
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => editor.chain().focus().toggleBlockquote().run()}
-      className={cn(editor.isActive("blockquote") && "bg-muted")}
-    >
-      <Quote className="h-4 w-4" />
-    </Button>
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => editor.chain().focus().toggleLatexBlock().run()}
-      className={cn(editor.isActive("latexBlock") && "bg-muted")}
-    >
-      <PenBox className="h-4 w-4" />
-    </Button>
-  </>
-);
-
-const FloatingBar = ({ editor }: { editor: any }) => {
-  return (
-    <div data-testid="floating-menu" className="floating-menu">
-      {floatingMenuButtons({ editor })}
-    </div>
-  );
-};
-
-const MenuBar = ({ editor }: { editor: any }) => {
-  if (!editor) {
-    return null;
-  }
-  const setLink = () => {
-    const previousUrl = editor.getAttributes("link").href;
-    const url = window.prompt("URL", previousUrl);
-
-    if (url === null) {
-      return;
-    }
-    if (url === "") {
-      editor.chain().focus().unsetLink().run();
-      return;
-    }
-    editor.chain().focus().setLink({ href: url }).run();
-  };
-
-  return (
-    <div className="flex flex-wrap w-fit gap-2 p-2 rounded-lg bg-background border shadow-sm">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        className={cn(editor.isActive("bold") && "bg-muted")}
-      >
-        <Bold className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={cn(editor.isActive("italic") && "bg-muted")}
-      >
-        <Italic className="h-4 w-4" />
-      </Button>
-      {floatingMenuButtons({ editor })}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-        className={cn(editor.isActive("codeBlock") && "bg-muted")}
-      >
-        <Code className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={setLink}
-        className={cn(editor.isActive("link") && "bg-muted")}
-      >
-        <LinkIcon className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => editor.chain().focus().toggleHighlight().run()}
-        className={cn(editor.isActive("highlight") && "bg-muted")}
-      >
-        <Highlighter className="h-4 w-4" />
-      </Button>
-    </div>
-  );
 };
 
 export default function RichTextEditor({
@@ -200,6 +87,108 @@ export default function RichTextEditor({
   onChange,
   placeholder,
 }: RichTextEditorProps) {
+  const [latexPopoverOpen, setLatexPopoverOpen] = useState(false);
+  const [currentLatex, setCurrentLatex] = useState("");
+  const [isBlock, setIsBlock] = useState(true);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [selectedNodePosition, setSelectedNodePosition] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
+  const editorRef = useRef<Editor | null>(null);
+
+  // Callback to open the LaTeX popover
+  const openLatexPopover = useCallback(
+    ({
+      latex = "",
+      displayMode = true,
+      id = null,
+      position = null,
+    }: {
+      latex?: string;
+      displayMode?: boolean;
+      id?: string | null;
+      position?: { x: number; y: number; width: number; height: number } | null;
+    }) => {
+      setCurrentLatex(latex);
+      setIsBlock(displayMode);
+      setSelectedNodeId(id);
+      if (position) {
+        setSelectedNodePosition(position);
+      }
+      setLatexPopoverOpen(true);
+    },
+    [],
+  );
+
+  // Save LaTeX content from popover
+  const handleSaveLatex = useCallback(
+    (latex: string) => {
+      if (!editorRef.current) return;
+
+      if (selectedNodeId) {
+        // Update existing node
+        editorRef.current.commands.updateLatex({
+          id: selectedNodeId,
+          content: latex,
+        });
+      } else {
+        // Insert new node
+        editorRef.current.commands.insertLatex({
+          content: latex,
+          displayMode: isBlock,
+        });
+      }
+
+      // Re-render the node after updating
+      setTimeout(() => {
+        const editorElement = editorRef.current?.view.dom as HTMLElement;
+        if (!editorElement) return;
+
+        const latexNodes = editorElement.querySelectorAll(
+          '[data-type="latex"], [data-type="latex-block"]',
+        );
+        latexNodes.forEach((node) => {
+          renderPopoverLatexNode(node as HTMLElement);
+        });
+      }, 10);
+    },
+    [selectedNodeId, isBlock],
+  );
+
+  // Handle delete LaTeX
+  const handleDeleteLatex = useCallback(() => {
+    if (!editorRef.current || !selectedNodeId) return;
+
+    // Find the node with the given ID
+    const { doc } = editorRef.current.state;
+    let nodePos = -1;
+    let nodeSize = 1;
+
+    doc.descendants((node, pos) => {
+      if (node.attrs && node.attrs.id === selectedNodeId) {
+        nodePos = pos;
+        nodeSize = node.nodeSize;
+        return false;
+      }
+      return true;
+    });
+
+    if (nodePos !== -1) {
+      // Delete the node
+      editorRef.current
+        .chain()
+        .focus()
+        .deleteRange({ from: nodePos, to: nodePos + nodeSize })
+        .run();
+
+      // Close the popover
+      setLatexPopoverOpen(false);
+    }
+  }, [selectedNodeId]);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -207,17 +196,10 @@ export default function RichTextEditor({
       Typography,
       CodeBlock,
       Gapcursor,
-      LatexBlock.configure({
+      PopoverLatex.configure({
         HTMLAttributes: {
-          class: "math-block",
+          class: "latex-popover-editor",
         },
-        renderer: renderLatexBlock,
-      }),
-      InlineLatex.configure({
-        HTMLAttributes: {
-          class: "math-inline",
-        },
-        renderer: renderLatex,
       }),
       Placeholder.configure({
         placeholder,
@@ -232,12 +214,53 @@ export default function RichTextEditor({
         },
       }),
     ],
+    editable: true,
     content,
-    immediatelyRender: false,
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none ",
+          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none",
+      },
+      handleDOMEvents: {
+        // Handle clicks on LaTeX nodes to edit them
+        click: (view, event) => {
+          const element = event.target as HTMLElement;
+          const latexNode = element.closest(
+            '[data-type="latex"], [data-type="latex-block"]',
+          );
+
+          if (latexNode) {
+            const id = latexNode.getAttribute("data-id");
+            const latex = latexNode.getAttribute("data-latex") || "";
+            const displayMode =
+              latexNode.getAttribute("data-display-mode") === "true";
+
+            if (id) {
+              // Store the node's position for the popover
+              const rect = latexNode.getBoundingClientRect();
+              setSelectedNodePosition({
+                x: rect.left,
+                y: rect.top,
+                width: rect.width,
+                height: rect.height,
+              });
+
+              // Open the LaTeX popover
+              openLatexPopover({
+                latex,
+                displayMode,
+                id,
+              });
+
+              // Prevent further handling
+              event.preventDefault();
+              event.stopPropagation();
+              return true;
+            }
+          }
+
+          return false;
+        },
       },
     },
     onUpdate: ({ editor }) => {
@@ -245,33 +268,81 @@ export default function RichTextEditor({
     },
   });
 
+  // Store reference to editor and extend with openLatexDialog method
   useEffect(() => {
-    if (content) {
-      editor?.commands.setContent(content);
+    if (editor) {
+      editorRef.current = editor;
+
+      // Extend editor with openLatexDialog method
+      editor.openLatexPopover = openLatexPopover;
+
+      // Hook into the transaction updates to render LaTeX nodes
+      editor.on("update", () => {
+        // Render all LaTeX nodes after update
+        setTimeout(() => {
+          const editorElement = editor.view.dom as HTMLElement;
+          const latexNodes = editorElement.querySelectorAll(
+            '[data-type="latex"], [data-type="latex-block"]',
+          );
+
+          latexNodes.forEach((node) => {
+            renderPopoverLatexNode(node as HTMLElement);
+          });
+        }, 0);
+      });
+
+      // Initial render of LaTeX nodes
+      setTimeout(() => {
+        const editorElement = editor.view.dom as HTMLElement;
+        const latexNodes = editorElement.querySelectorAll(
+          '[data-type="latex"], [data-type="latex-block"]',
+        );
+
+        latexNodes.forEach((node) => {
+          renderPopoverLatexNode(node as HTMLElement);
+        });
+      }, 0);
     }
-  }, [content]);
+  }, [editor, openLatexPopover]);
+
+  useEffect(() => {
+    if (content && editor) {
+      editor.commands.setContent(content);
+    }
+  }, [content, editor]);
+
+  // Create updated menu components with the new buttons
 
   if (!editor) {
     return null;
   }
 
   return (
-    <div className="w-full rounded-lg overflow-hidden bg-background">
-      {editor && (
-        <BubbleMenu
-          editor={editor}
-          tippyOptions={{ duration: 100 }}
-          className="overflow-hidden"
-        >
-          <MenuBar editor={editor} />
-        </BubbleMenu>
-      )}
-      {editor && (
-        <FloatingMenu editor={editor} tippyOptions={{ duration: 100 }}>
-          <FloatingBar editor={editor} />
-        </FloatingMenu>
-      )}
+    <div className="w-full rounded-lg overflow-hidden bg-background relative">
+      <BubbleMenu
+        editor={editor}
+        tippyOptions={{ duration: 100 }}
+        className="overflow-hidden"
+      >
+        <TextFormatMenu editor={editor} openLatexPopover={openLatexPopover} />
+      </BubbleMenu>
+      <FloatingMenu editor={editor} tippyOptions={{ duration: 100 }}>
+        <BlockTypeChooser editor={editor} openLatexPopover={openLatexPopover} />
+      </FloatingMenu>
+
+      {/* The editor content is not wrapped, allowing normal text editing */}
       <EditorContent editor={editor} />
+
+      {/* Use our new LatexNodeEditor component */}
+      <LatexNodeEditor
+        open={latexPopoverOpen}
+        onOpenChange={setLatexPopoverOpen}
+        initialLatex={currentLatex}
+        isBlock={isBlock}
+        nodePosition={selectedNodePosition}
+        onSave={handleSaveLatex}
+        onDelete={selectedNodeId ? handleDeleteLatex : undefined}
+      />
     </div>
   );
 }

@@ -1,12 +1,9 @@
 "use client";
 import { NewAnnotation } from "kysely-codegen";
-import React from "react";
+import React, { useMemo } from "react";
 import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
-import {
-  createAnnotation,
-  updateAnnotation,
-} from "@/lib/actions/annotationActions";
+import { createAnnotation } from "@/lib/actions/annotationActions";
 
 import HTMLTextAnnotator from "./html_text_annotator";
 
@@ -39,7 +36,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
   showReaderComments,
 }) => {
   const { userId } = useUserContext();
-  const { setAnnotations } = useStatementContext();
+  const { setAnnotations, statement } = useStatementContext();
 
   const handleAnnotationChange = async (value: NewAnnotation[]) => {
     if (!userId) {
@@ -101,6 +98,18 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
     };
   };
 
+  const isStatementCreator = useMemo(() => {
+    return userId === statement?.creatorId;
+  }, [userId, statement]);
+
+  const authorCanAnnotate = useMemo(() => {
+    return isStatementCreator && showAuthorComments;
+  }, [isStatementCreator, showAuthorComments]);
+
+  const readerCanAnnotate = useMemo(() => {
+    return !isStatementCreator && showReaderComments;
+  }, [isStatementCreator, showReaderComments]);
+
   return (
     <div className="rounded-lg overflow-hidden bg-background">
       <HTMLTextAnnotator
@@ -111,7 +120,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
         onChange={handleAnnotationChange}
         getSpan={getSpan}
         placeholder={placeholder}
-        annotatable={!readOnly}
+        annotatable={authorCanAnnotate || readerCanAnnotate}
         selectedAnnotationId={selectedAnnotationId}
         setSelectedAnnotationId={setSelectedAnnotationId}
         showAuthorComments={showAuthorComments}

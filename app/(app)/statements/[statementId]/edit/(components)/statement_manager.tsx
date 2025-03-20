@@ -1,6 +1,6 @@
 "use client";
 
-import StatementCreateEditForm from "../../../(components)/create_edit_form";
+import StatementCreateEditForm from "../create_edit_form";
 
 interface DraftSelectorProps {
   statementId: string;

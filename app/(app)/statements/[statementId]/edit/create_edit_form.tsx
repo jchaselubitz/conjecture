@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import Byline from "@/components/statements/byline";
 import RichTextEditor from "@/components/statements/rich_text_editor";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
@@ -18,8 +19,6 @@ import {
 } from "@/lib/actions/storageActions";
 import { handleImageCompression } from "@/lib/helpers/helpersImages";
 import { generateStatementId } from "@/lib/helpers/helpersStatements";
-
-import Byline from "./byline";
 export default function StatementCreateEditForm({
   statementId,
 }: {

@@ -1,5 +1,6 @@
 import "./prose.css";
-import "./annotator.css";
+import "katex/dist/katex.min.css";
+import katex from "katex";
 import { NewAnnotation } from "kysely-codegen";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
@@ -52,6 +53,130 @@ const generateColorFromString = (
   return colors;
 };
 
+// Add LaTeX processing functions
+const processInlineLatex = (element: HTMLElement) => {
+  // Look for both new and old inline LaTeX classes
+  const inlineLatexElements = element.querySelectorAll(
+    ".inline-latex, [data-type='latex']",
+  );
+  inlineLatexElements.forEach((latexElement) => {
+    try {
+      const latex =
+        latexElement.getAttribute("data-latex") ||
+        latexElement.textContent ||
+        "";
+      // Remove surrounding $ signs if they exist
+      const content = latex.replace(/^\$|\$$/g, "");
+      if (content.trim()) {
+        const rendered = katex.renderToString(content, {
+          throwOnError: false,
+          displayMode: false, // Ensure displayMode is false for inline
+          output: "html", // Explicitly specify HTML output
+        });
+
+        // Create a wrapper to hold the rendered content
+        const wrapper = document.createElement("span");
+        wrapper.classList.add("inline-latex");
+
+        // Ensure proper inline behavior
+        wrapper.style.display = "inline-block";
+        wrapper.style.verticalAlign = "middle";
+
+        // Preserve essential data attributes
+        if (latexElement.hasAttribute("data-latex")) {
+          wrapper.setAttribute(
+            "data-latex",
+            latexElement.getAttribute("data-latex") || "",
+          );
+        }
+        if (latexElement.hasAttribute("data-id")) {
+          wrapper.setAttribute(
+            "data-id",
+            latexElement.getAttribute("data-id") || "",
+          );
+        }
+        if (latexElement.hasAttribute("data-type")) {
+          wrapper.setAttribute("data-type", "latex");
+        }
+        wrapper.innerHTML = rendered;
+
+        // Store the original content in a hidden attribute for reference
+        wrapper.setAttribute("data-original-content", latex);
+
+        latexElement.replaceWith(wrapper);
+      }
+    } catch (error) {
+      console.error("Error rendering inline LaTeX:", error);
+      latexElement.classList.add("latex-error");
+    }
+  });
+};
+
+const processLatexBlocks = (element: HTMLElement) => {
+  // Look for both new and old block LaTeX classes
+  const latexBlockElements = element.querySelectorAll(
+    ".latex-block, [data-type='latex-block']",
+  );
+  latexBlockElements.forEach((blockElement) => {
+    try {
+      // Find source element or use the block content
+      const sourceElement = blockElement.querySelector(".latex-source");
+      const latex = sourceElement
+        ? sourceElement.getAttribute("data-latex") ||
+          sourceElement.textContent ||
+          ""
+        : blockElement.getAttribute("data-latex") ||
+          blockElement.textContent ||
+          "";
+
+      // Remove surrounding $$ signs if they exist
+      const content = latex.replace(/^\$\$|\$\$$/g, "");
+
+      if (content.trim()) {
+        const rendered = katex.renderToString(content, {
+          throwOnError: false,
+          displayMode: true,
+        });
+
+        // Create or update rendered element
+        let renderedElement = blockElement.querySelector(".latex-rendered");
+        if (!renderedElement) {
+          renderedElement = document.createElement("div");
+          renderedElement.classList.add("latex-rendered");
+
+          // Clear text nodes before inserting rendered element
+          const textNodes = Array.from(blockElement.childNodes).filter(
+            (node) =>
+              node.nodeType === Node.TEXT_NODE && node.textContent?.trim(),
+          );
+
+          // Store original content for reference
+          if (blockElement instanceof HTMLElement) {
+            blockElement.setAttribute("data-original-content", latex);
+          }
+
+          // Remove text nodes to prevent duplication
+          textNodes.forEach((node) => blockElement.removeChild(node));
+
+          blockElement.prepend(renderedElement);
+        }
+        renderedElement.innerHTML = rendered;
+
+        // Hide the source element if present
+        if (sourceElement && sourceElement instanceof HTMLElement) {
+          sourceElement.style.display = "none";
+        }
+      }
+    } catch (error) {
+      console.error("Error rendering LaTeX block:", error);
+      const errorElement = document.createElement("div");
+      errorElement.classList.add("latex-error");
+      errorElement.textContent = `Error rendering LaTeX block`;
+      blockElement.prepend(errorElement);
+    }
+  });
+};
+
 interface HTMLTextAnnotatorProps {
   htmlContent: string;
   value: NewAnnotation[];
@@ -87,6 +212,10 @@ const HTMLTextAnnotator = ({
 }: HTMLTextAnnotatorProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [annotations, setAnnotations] = useState<NewAnnotation[]>([]);
+
+  const permitAnnotations = useMemo(() => {
+    return showAuthorComments || showReaderComments;
+  }, [showAuthorComments, showReaderComments]);
 
   useEffect(() => {
     setAnnotations(value);
@@ -150,36 +279,20 @@ const HTMLTextAnnotator = ({
     };
   }, [getAllTextNodes]);
 
-  // Process annotations and apply them to the HTML content
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    // First, reset the HTML content
-    containerRef.current.innerHTML = htmlContent;
-
-    // Apply ProseMirror specific attributes for placeholder if content is empty
-    if (placeholder && containerRef.current.textContent?.trim() === "") {
-      const firstP = containerRef.current.querySelector("p");
-      if (firstP) {
-        firstP.classList.add("is-editor-empty");
-        firstP.setAttribute("data-placeholder", placeholder);
-      }
-    }
-
-    // Add a style tag for hover effects
-
-    const styleTag = document.createElement("style");
-    styleTag.textContent = `
-      .annotation {
-        transition: background-color 0.2s ease;
-      }
-      .annotation:hover {
-        background-color: var(--hover-bg-color) !important;
-      }
-    `;
-    containerRef.current.appendChild(styleTag);
-
-    // Then apply annotations
+  // Add a utility function to handle LaTeX when applying annotations
+  const processAnnotationsWithLatex = (
+    container: HTMLElement,
+    annotations: NewAnnotation[],
+    selectedAnnotationId: string | undefined,
+    userId: string | undefined,
+    showAuthorComments: boolean,
+    showReaderComments: boolean,
+    getAllTextNodes: (node: Node) => Text[],
+    getTextNodesInRange: (
+      range: Range,
+    ) => { node: Text; startOffset: number; endOffset: number }[],
+  ) => {
+    // Filter annotations based on visibility settings
     const authorAnnotations = annotations.filter(
       (annotation) => annotation.userId === userId,
     );
@@ -187,7 +300,7 @@ const HTMLTextAnnotator = ({
       (annotation) => annotation.userId !== userId,
     );
 
-    const setSelectedAnnotations = () => {
+    const visibleAnnotations = () => {
       if (showAuthorComments && showReaderComments) {
         return [...authorAnnotations, ...readerAnnotations];
       } else if (showAuthorComments) {
@@ -199,11 +312,13 @@ const HTMLTextAnnotator = ({
       }
     };
 
-    setSelectedAnnotations().forEach((annotation) => {
-      const range = document.createRange();
-      const container = containerRef.current;
+    // First, we need to process all LaTeX content to make sure it's rendered
+    processInlineLatex(container);
+    processLatexBlocks(container);
 
-      if (!container) return;
+    // Then handle annotations
+    visibleAnnotations().forEach((annotation) => {
+      const range = document.createRange();
 
       // Get all text nodes
       const textNodes = getAllTextNodes(container);
@@ -217,6 +332,29 @@ const HTMLTextAnnotator = ({
       for (const node of textNodes) {
         const nodeLength = node.textContent?.length || 0;
         const nodeEndPos = currentPos + nodeLength;
+
+        // Skip nodes within LaTeX blocks to prevent breaking LaTeX rendering
+        let parentElement = node.parentElement;
+        let isInsideLaTeX = false;
+
+        while (parentElement) {
+          if (
+            parentElement.classList &&
+            (parentElement.classList.contains("katex") ||
+              parentElement.classList.contains("latex-rendered") ||
+              parentElement.classList.contains("latex-block") ||
+              parentElement.classList.contains("inline-latex"))
+          ) {
+            isInsideLaTeX = true;
+            break;
+          }
+          parentElement = parentElement.parentElement;
+        }
+
+        if (isInsideLaTeX) {
+          currentPos += nodeLength;
+          continue;
+        }
 
         // Check if this node contains the start position
         if (currentPos <= annotation.start && annotation.start < nodeEndPos) {
@@ -247,14 +385,13 @@ const HTMLTextAnnotator = ({
           const annotationId = annotation.id ? annotation.id.toString() : "";
           const isSelected = selectedAnnotationId === annotationId;
 
-          // Apply the generated colors
+          // Apply colors and styles
           mark.style.backgroundColor = colors.backgroundColor;
           mark.style.setProperty(
             "--hover-bg-color",
             colors.hoverBackgroundColor,
           );
 
-          // Only apply border if this annotation is selected
           if (isSelected) {
             mark.style.borderBottom = `2px solid ${colors.borderColor}`;
             mark.style.backgroundColor = colors.hoverBackgroundColor;
@@ -269,6 +406,10 @@ const HTMLTextAnnotator = ({
           mark.dataset.id = annotationId;
 
           range.surroundContents(mark);
+
+          // Re-process any LaTeX inside the annotation to ensure it still renders correctly
+          processInlineLatex(mark);
+          processLatexBlocks(mark);
         } catch (e) {
           console.error("Error applying annotation:", e);
 
@@ -278,13 +419,34 @@ const HTMLTextAnnotator = ({
             // Create a highlight for each text node in the range
             const rangeNodes = getTextNodesInRange(range);
             rangeNodes.forEach((nodeInfo) => {
+              // Skip nodes within LaTeX elements
+              let parentElement = nodeInfo.node.parentElement;
+              let isInsideLaTeX = false;
+
+              while (parentElement) {
+                if (
+                  parentElement.classList &&
+                  (parentElement.classList.contains("katex") ||
+                    parentElement.classList.contains("latex-rendered") ||
+                    parentElement.classList.contains("latex-block") ||
+                    parentElement.classList.contains("inline-latex"))
+                ) {
+                  isInsideLaTeX = true;
+                  break;
+                }
+                parentElement = parentElement.parentElement;
+              }
+
+              if (isInsideLaTeX) {
+                return; // Skip this node
+              }
+
               const nodeRange = document.createRange();
               nodeRange.setStart(nodeInfo.node, nodeInfo.startOffset);
               nodeRange.setEnd(nodeInfo.node, nodeInfo.endOffset);
 
               const mark = document.createElement("mark");
-              // const tag = (annotation as any).tag || "none";
-              const userId = (annotation as any).userId || "none";
+              const userId = (annotation as any).userId || "anonymous";
               const colors = generateColorFromString(userId);
               const annotationId = annotation.id
                 ? annotation.id.toString()
@@ -304,10 +466,8 @@ const HTMLTextAnnotator = ({
               }
 
               mark.className = "annotation";
-              // mark.dataset.tag = tag;
               mark.dataset.userId = userId;
-              // mark.dataset.start = annotation.start.toString();
-              // mark.dataset.end = annotation.end.toString();
+              mark.dataset.id = annotationId;
 
               nodeRange.surroundContents(mark);
             });
@@ -317,6 +477,52 @@ const HTMLTextAnnotator = ({
         }
       }
     });
+  };
+
+  // Process annotations and apply them to the HTML content
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    // First, reset the HTML content
+    containerRef.current.innerHTML = htmlContent;
+
+    // Apply ProseMirror specific attributes for placeholder if content is empty
+    if (placeholder && containerRef.current.textContent?.trim() === "") {
+      const firstP = containerRef.current.querySelector("p");
+      if (firstP) {
+        firstP.classList.add("is-editor-empty");
+        firstP.setAttribute("data-placeholder", placeholder);
+      }
+    }
+
+    // Add a style tag for hover effects
+    const styleTag = document.createElement("style");
+    styleTag.textContent = `
+      .annotation {
+        transition: background-color 0.2s ease;
+      }
+      .annotation:hover {
+        background-color: var(--hover-bg-color) !important;
+      }
+    `;
+    containerRef.current.appendChild(styleTag);
+
+    // First process all LaTeX content
+    // This needs to happen before annotations to ensure LaTeX renders correctly
+    processInlineLatex(containerRef.current);
+    processLatexBlocks(containerRef.current);
+
+    // Then process and apply annotations
+    processAnnotationsWithLatex(
+      containerRef.current,
+      annotations,
+      selectedAnnotationId,
+      userId,
+      showAuthorComments,
+      showReaderComments,
+      getAllTextNodes,
+      getTextNodesInRange,
+    );
   }, [
     htmlContent,
     annotations,
@@ -326,6 +532,7 @@ const HTMLTextAnnotator = ({
     getTextNodesInRange,
     showAuthorComments,
     showReaderComments,
+    userId,
   ]);
 
   // Handle selection and create new annotations

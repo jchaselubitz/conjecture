@@ -37,6 +37,7 @@ export default async function Feed() {
                 key={statement.statementId}
                 statement={statement.drafts[0]}
                 isPublic={true}
+                pathname={statement.creatorSlug}
               />
             ))
           ) : (

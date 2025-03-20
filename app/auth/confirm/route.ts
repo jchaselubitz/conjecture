@@ -11,9 +11,6 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get("next") ?? "";
 
   const redirectTo = request.nextUrl.clone();
-  // if (process.env.NEXT_PUBLIC_CONTEXT !== "development") {
-  //   redirectTo.port = ""; // Clearing the port might help correct the URL
-  // }
   redirectTo.searchParams.delete("token_hash");
   redirectTo.searchParams.delete("type");
 

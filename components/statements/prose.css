@@ -1,70 +1,287 @@
 .ProseMirror p.is-editor-empty:first-child::before {
- color: var(--tw-prose-captions);
- opacity: 0.5;
- content: attr(data-placeholder);
- float: left;
- height: 0;
- pointer-events: none;
+  color: var(--tw-prose-captions);
+  opacity: 0.5;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
 }
+
 .ProseMirror:focus p.is-editor-empty:first-child::before {
- display: none;
+  display: none;
 }
 
 .ProseMirror h1 {
- font-size: 3.5em;
- font-weight: 700;
- line-height: 1.2;
- margin-top: 0;
- margin-bottom: 0.8em;
+  font-size: 3.5em;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-top: 0;
+  margin-bottom: 0.8em;
 }
 
 .ProseMirror h2 {
- font-size: 2.25em;
- font-weight: 600;
- line-height: 1.3;
- margin-top: 1.6em;
- margin-bottom: 0.6em;
+  font-size: 2.25em;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
 }
 
 .ProseMirror h3 {
- font-size: 1.5em;
- font-weight: 600;
- line-height: 1.3;
- margin-top: 1.6em;
- margin-bottom: 0.6em;
+  font-size: 1.5em;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
 }
 
 .ProseMirror p {
- font-size: 1.2em;
- line-height: 1.5;
- margin-bottom: 1.2em;
+  font-size: 1.2em;
+  line-height: 1.5;
+  margin-bottom: 1.2em;
 }
 
-.latex-editor {
- border: 1px solid #ccc;
- border-radius: 4px;
- overflow: hidden;
-}
-.editor-container {
- padding: 1rem;
-}
-.editor-controls {
- display: flex;
- border-top: 1px solid #ccc;
- padding: 0.5rem;
- background: #f1f1f1;
+/* Error display */
+.latex-error {
+  color: red;
+  font-style: italic;
+  background-color: #ffeeee;
+  padding: 0.25rem 0.5rem;
+  border-radius: 2px;
 }
 
-.math-block {
+/* Make sure KaTeX renders correctly in the editor */
+.ProseMirror .katex {
+  font-size: 1.1em;
+  line-height: 1.2;
+}
+
+.prose {
+  max-width: 100%;
+}
+
+/* KaTeX rendering styles */
+.katex-rendered {
+  overflow-x: auto;
+  max-width: 100%;
+  font-size: 1.1em;
+  line-height: 1.5;
+}
+
+.latex-rendered {
+  overflow-x: auto;
+  max-width: 100%;
+  font-size: 1.1em;
+  line-height: 1.5;
+  display: block;
+  text-align: center;
+  padding: 0.75rem 0;
+  margin: 1rem 0;
+  background-color: hsl(var(--muted) / 0.3);
+  border-radius: 0.25rem;
+}
+
+.katex-rendered.block-display {
+  display: block;
+  text-align: center;
+  padding: 0.75rem 0;
+  margin: 1rem 0;
+
+  background-color: rgba(0, 102, 204, 0.05);
+  border-radius: 0.25rem;
+}
+
+.katex-rendered.inline-display {
+  display: inline-block;
+  padding: 0 2px;
+}
+
+/* Styling for the LaTeX containers */
+[data-type="latex-block"] {
+  display: block;
+  /* margin: 1rem 0; */
+  text-align: center;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 0.75rem;
+  position: relative;
+  background-color: hsl(var(--muted) / 0.3);
+
+}
+
+[data-type="latex"] {
+  display: inline;
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: 0.9em;
+  background-color: rgba(0, 102, 204, 0.05);
+}
+
+[data-type="latex"]:hover, 
+[data-type="latex-block"]:hover {
+  background-color: hsl(var(--muted) / 0.5);
+}
+
+[data-type="latex-block"]:hover::after {
+  content: "Edit";
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  padding: 0.125rem 0.25rem;
+  font-size: 0.75rem;
+  border-bottom-left-radius: 4px;
+}
+
+/* Class-based styles from popover_latex.ts */
+.latex-block-popover, 
+.latex-inline-popover,
+.latex-block,
+.inline-latex {
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.latex-block-popover,
+.latex-block {
+  background-color: hsl(var(--muted) / 0.3);
+  padding: 0.75rem;
+  margin: 1rem 0;
+  display: block;
+}
+
+.latex-inline-popover,
+.inline-latex {
+  display: inline;
+  padding: 0 2px;
+  border-bottom: 1px dashed hsl(var(--muted-foreground));
+}
+
+/* Ensure inline LaTeX elements are truly inline with text */
+.inline-latex,
+[data-type="latex"] {
+  display: inline-block;
+  vertical-align: top;
+  margin: 0;
+  padding: 0 2px;
+  padding-top: 2px;
+  line-height: inherit;
+  white-space: nowrap;
+}
+
+/* Make sure the KaTeX elements inside inline LaTeX maintain inline flow */
+.inline-latex .katex,
+[data-type="latex"] .katex {
+  display: inline-block;
+  vertical-align: top;
+  margin: 0;
+  line-height: inherit;
+}
+
+/* Annotation styles */
+
+.annotation {
+ cursor: pointer;
+ transition: background-color 0.2s ease;
+ border-radius: 2px;
+ position: relative;
+ display: inline;
+}
+
+.annotation:hover {
+ background-color: #e6f0ff !important;
+}
+
+/* Style for the container when used as an annotator */
+.ProseMirror.annotator-container {
+ position: relative;
+}
+
+/* Add a subtle indicator when the text is annotatable */
+.ProseMirror.annotator-container::after {
+ content: "";
+ position: absolute;
+ top: 0.5rem;
+ right: 0.5rem;
+ width: 0.75rem;
+ height: 0.75rem;
+ background-color: #e2e8f0;
+ border-radius: 50%;
+ opacity: 0.5;
+}
+
+/* Add LaTeX-specific styles for annotator */
+.annotator-container .latex-block,
+.annotator-container .inline-latex {
+ pointer-events: none; /* Prevent LaTeX elements from interfering with annotation selection */
+}
+
+.annotator-container .latex-block {
  margin: 1rem 0;
  padding: 0.5rem;
  background: #f9f9f9;
  border-left: 3px solid #0066cc;
 }
-.math-inline {
+
+.annotator-container .inline-latex {
  padding: 0 2px;
 }
-.latex-error {
- color: red;
- font-style: italic;
+
+/* Make sure annotations properly wrap LaTeX content */
+.annotation .katex-html {
+ background: inherit;
 }
+
+/* Ensure LaTeX renders at the correct size in the annotator */
+.annotator-container .katex {
+ font-size: 1.1em;
+}
+
+/* Preserve LaTeX styles when inside annotations */
+.annotation .latex-block,
+.annotation .inline-latex {
+ background-color: inherit !important;
+ border-color: inherit !important;
+}
+
+/* .handle-container {
+ position: absolute;
+ width: 12px;
+ height: 20px;
+ background-color: #4a5568;
+ border-radius: 3px;
+ cursor: ew-resize;
+ z-index: 9999;
+ top: 0;
+ bottom: 0;
+ margin: auto 0;
+ transition: all 0.2s ease;
+ user-select: none;
+ pointer-events: auto;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ font-size: 10px;
+ color: white;
+ opacity: 0.6;
+}
+
+.handle-container:hover {
+ opacity: 1;
+ width: 14px;
+ height: 24px;
+}
+
+.handle-container.start {
+ left: -6px;
+}
+
+.handle-container.end {
+ right: -6px;
+}
+
+.handle-container.dragging {
+ opacity: 1;
+ background-color: #2d3748;
+} */

@@ -37,15 +37,15 @@ declare module "kysely-codegen" {
   export type EditedProfile = Updateable<Profile>;
 
   export type BaseDraft = Selectable<Draft>;
-  export type DraftWithAnnotations = BaseDraft & {
-    annotations: AnnotationWithComments[];
-    creatorName: string | null;
-    creatorImageUrl: string | null;
-  };
   export type DraftWithUser = BaseDraft & {
     creatorName: string | null | undefined;
     creatorImageUrl: string | null | undefined;
+    creatorSlug: string | null | undefined;
   };
+  export type DraftWithAnnotations = DraftWithUser & {
+    annotations: AnnotationWithComments[];
+  };
+
   export type NewDraft = Insertable<Draft>;
   export type EditedDraft = Updateable<Draft>;
 
@@ -73,6 +73,7 @@ declare module "kysely-codegen" {
 
   export type Statement = {
     statementId: string;
+    creatorSlug: string;
     drafts: DraftWithUser[];
   };
 }
