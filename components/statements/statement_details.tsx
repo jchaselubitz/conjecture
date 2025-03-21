@@ -33,12 +33,12 @@ export default function StatementDetails({
     useRef<React.ElementRef<typeof ResizablePanelGroup>>(null);
 
   const [showAuthorComments, setShowAuthorComments] = useState(
-    authorCommentsEnabled,
+    authorCommentsEnabled
   );
   const [showReaderComments, setShowReaderComments] = useState(
-    readerCommentsEnabled,
+    readerCommentsEnabled
   );
-  // const [editable, setEditable] = useState(false);
+
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<
     string | undefined
   >(undefined);
@@ -50,10 +50,10 @@ export default function StatementDetails({
     const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
     panelGroupRef.current?.setLayout(savedSize ?? [100, 0]);
     const savedSelectedAnnotationId = localStorage.getItem(
-      "selectedAnnotationId",
+      "selectedAnnotationId"
     );
     setSelectedAnnotationId(savedSelectedAnnotationId ?? undefined);
-  });
+  }, [setSelectedAnnotationId]);
 
   if (!drafts) {
     return <div>No drafts found</div>;
@@ -66,13 +66,12 @@ export default function StatementDetails({
   const { title, subtitle, content, versionNumber, annotations } = statement;
 
   const handleAnnotationClick = async (annotationId: string) => {
+    console.log("annotationId", annotationId);
     setSelectedAnnotationId(annotationId);
     const savedSizeString = localStorage.getItem("annotationPanelSize");
-
     const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
     panelGroupRef.current?.setLayout(savedSize ?? [67, 33]);
     localStorage.setItem("selectedAnnotationId", annotationId);
-    localStorage.setItem("annotationPanelSize", JSON.stringify(savedSize));
   };
 
   const handleCloseAnnotationPanel = () => {
@@ -124,12 +123,6 @@ export default function StatementDetails({
                   >
                     <Button variant="outline">Edit</Button>
                   </Link>
-                  // <Button
-                  //   variant="outline"
-                  //   onClick={() => setEditable(!editable)}
-                  // >
-                  //   {editable ? "View" : "Edit"}
-                  // </Button>
                 )}
               </div>
               <h2 className="text-xl font-medium  text-zinc-600">{subtitle}</h2>
