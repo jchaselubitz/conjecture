@@ -26,6 +26,10 @@ export function LatexNodeEditor({
 }: LatexNodeEditorProps) {
   if (!nodePosition || !open) return null;
 
+  const handleSave = (latex: string) => {
+    onSave(latex);
+  };
+
   return (
     <div
       className="fixed"
@@ -42,7 +46,7 @@ export function LatexNodeEditor({
         open={open}
         onOpenChange={onOpenChange}
         initialLatex={initialLatex}
-        onSave={onSave}
+        onSave={handleSave}
         onDelete={onDelete}
         isBlock={isBlock}
       >

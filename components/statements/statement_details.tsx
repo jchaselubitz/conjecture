@@ -38,7 +38,7 @@ export default function StatementDetails({
   const [showReaderComments, setShowReaderComments] = useState(
     readerCommentsEnabled,
   );
-
+  // const [editable, setEditable] = useState(false);
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<
     string | undefined
   >(undefined);
@@ -124,6 +124,12 @@ export default function StatementDetails({
                   >
                     <Button variant="outline">Edit</Button>
                   </Link>
+                  // <Button
+                  //   variant="outline"
+                  //   onClick={() => setEditable(!editable)}
+                  // >
+                  //   {editable ? "View" : "Edit"}
+                  // </Button>
                 )}
               </div>
               <h2 className="text-xl font-medium  text-zinc-600">{subtitle}</h2>
@@ -159,6 +165,7 @@ export default function StatementDetails({
                 setSelectedAnnotationId={setSelectedAnnotationId}
                 showAuthorComments={showAuthorComments}
                 showReaderComments={showReaderComments}
+                editable={false}
               />
             </div>
           </ResizablePanel>

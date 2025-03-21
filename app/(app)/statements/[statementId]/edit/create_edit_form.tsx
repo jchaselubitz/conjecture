@@ -1,12 +1,13 @@
 "use client";
 
+import { NewAnnotation, NewDraft } from "kysely-codegen";
 import { Upload } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import Byline from "@/components/statements/byline";
-import RichTextEditor from "@/components/statements/rich_text_editor";
+import HTMLTextAnnotator from "@/components/statements/custom_editor/html_text_annotator";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ import {
 } from "@/lib/actions/storageActions";
 import { handleImageCompression } from "@/lib/helpers/helpersImages";
 import { generateStatementId } from "@/lib/helpers/helpersStatements";
+
 export default function StatementCreateEditForm({
   statementId,
 }: {
@@ -111,6 +113,9 @@ export default function StatementCreateEditForm({
           clearTimeout(handler);
         };
       }
+    } else if (statementUpdate) {
+      // Initialize the ref if it's empty
+      prevStatementRef.current = statementUpdate;
     }
   }, [statementUpdate, updateStatementDraft]);
 
@@ -135,6 +140,46 @@ export default function StatementCreateEditForm({
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [statementUpdate]);
+
+  const getSpan = (span: {
+    start: number;
+    end: number;
+    text: string;
+    id?: string | undefined;
+    userId: string;
+    draftId: string | number | bigint;
+  }): NewAnnotation => {
+    if (!statement.id) {
+      throw new Error("Draft ID is required");
+    }
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+    return {
+      ...span,
+      tag: "none",
+      draftId: statement.id,
+      userId: userId,
+    };
+  };
+
+  const handleAnnotationClick = (id: string) => {
+    // Handle annotation click
+    console.log("Annotation clicked:", id);
+  };
+
+  const handleContentChange = useCallback(
+    (content: string) => {
+      if (statement && content !== statement.content) {
+        // Use type-safe update function instead
+        setStatementUpdate({
+          content,
+          statementId: prepStatementId,
+        });
+      }
+    },
+    [statement, prepStatementId, setStatementUpdate],
+  );
 
   if (userId !== statement?.creatorId) {
     return (
@@ -227,12 +272,20 @@ export default function StatementCreateEditForm({
 
       <Byline statement={statement} />
 
-      <RichTextEditor
-        content={statement?.content}
-        onChange={(content) =>
-          setStatementUpdate({ ...statement, content, statementId })
-        }
+      <HTMLTextAnnotator
+        htmlContent={statement?.content || ""}
+        value={statement?.annotations || []}
+        userId={userId || ""}
+        onClick={handleAnnotationClick}
+        getSpan={getSpan}
         placeholder="What's on your mind?"
+        annotatable={true}
+        selectedAnnotationId={undefined}
+        setSelectedAnnotationId={() => {}}
+        showAuthorComments={true}
+        showReaderComments={true}
+        editable={true}
+        onContentChange={handleContentChange}
       />
 
       <Button variant="outline" className="gap-2 w-fit">

@@ -1,29 +1,23 @@
 import { mergeAttributes, Node } from "@tiptap/core";
 import { nanoid } from "nanoid";
 
-export interface PopoverLatexOptions {
+export interface BlockLatexOptions {
  HTMLAttributes: Record<string, any>;
 }
 
 declare module "@tiptap/core" {
  interface Commands<ReturnType> {
-  popoverLatex: {
-   /**
-    * Insert a LaTeX node
-    */
+  blockLatex: {
    insertLatex: (
     options: { content: string; displayMode?: boolean },
    ) => ReturnType;
-   /**
-    * Update a LaTeX node
-    */
-   updateLatex: (options: { id: string; content: string }) => ReturnType;
+   updateLatex: (options: { latexId: string; content: string }) => ReturnType;
   };
  }
 }
 
-export const PopoverLatex = Node.create<PopoverLatexOptions>({
- name: "popoverLatex",
+export const BlockLatex = Node.create<BlockLatexOptions>({
+ name: "blockLatex",
 
  addOptions() {
   return {
@@ -61,12 +55,12 @@ export const PopoverLatex = Node.create<PopoverLatexOptions>({
      };
     },
    },
-   id: {
+   latexId: {
     default: null,
     parseHTML: (element) => element.getAttribute("data-id"),
     renderHTML: (attributes) => {
      return {
-      "data-id": attributes.id || nanoid(),
+      "data-id": attributes.latexId || nanoid(),
      };
     },
    },
@@ -83,7 +77,7 @@ export const PopoverLatex = Node.create<PopoverLatexOptions>({
      return {
       latex: element.getAttribute("data-latex"),
       displayMode: element.getAttribute("data-display-mode") === "true",
-      id: element.getAttribute("data-id"),
+      latexId: element.getAttribute("data-id"),
      };
     },
    },
@@ -95,7 +89,7 @@ export const PopoverLatex = Node.create<PopoverLatexOptions>({
      return {
       latex: element.getAttribute("data-latex"),
       displayMode: false,
-      id: element.getAttribute("data-id"),
+      latexId: element.getAttribute("data-id"),
      };
     },
    },
@@ -104,8 +98,8 @@ export const PopoverLatex = Node.create<PopoverLatexOptions>({
 
  renderHTML({ HTMLAttributes, node }) {
   // Create a unique ID if one doesn't exist
-  if (!HTMLAttributes.id) {
-   HTMLAttributes.id = nanoid();
+  if (!HTMLAttributes.latexId) {
+   HTMLAttributes.latexId = nanoid();
   }
 
   // Return the HTML structure for the LaTeX node
@@ -130,7 +124,7 @@ export const PopoverLatex = Node.create<PopoverLatexOptions>({
      "data-type": node.attrs.displayMode ? "latex-block" : "latex",
      "data-latex": node.attrs.latex,
      "data-display-mode": node.attrs.displayMode ? "true" : "false",
-     "data-id": HTMLAttributes.id,
+     "data-id": HTMLAttributes.latexId,
      class: classNames,
     },
    ),
@@ -141,18 +135,23 @@ export const PopoverLatex = Node.create<PopoverLatexOptions>({
 
  addCommands() {
   return {
-   insertLatex: (options) => ({ commands }) => {
-    const id = nanoid();
-    return commands.insertContent({
+   insertLatex: (options) => ({ chain, commands }) => {
+    const latexId = nanoid();
+
+    // Insert the content
+    const success = commands.insertContent({
      type: this.name,
      attrs: {
       latex: options.content,
       displayMode: options.displayMode !== undefined
        ? options.displayMode
        : true,
-      id,
+      latexId,
      },
     });
+
+    // Return success boolean to satisfy Command type
+    return success;
    },
    updateLatex: (options) => ({ tr, state, dispatch }) => {
     // Find the node with the given ID
@@ -162,7 +161,7 @@ export const PopoverLatex = Node.create<PopoverLatexOptions>({
     doc.descendants((node, pos) => {
      if (
       node.type.name === this.name &&
-      node.attrs.id === options.id
+      node.attrs.latexId === options.latexId
      ) {
       nodePos = pos;
       return false;

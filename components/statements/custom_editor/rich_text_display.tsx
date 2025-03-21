@@ -5,7 +5,7 @@ import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
 import { createAnnotation } from "@/lib/actions/annotationActions";
 
-import HTMLTextAnnotator from "./custom_editor/html_text_annotator";
+import HTMLTextAnnotator from "./html_text_annotator";
 
 interface RichTextDisplayProps {
   htmlContent: string;
@@ -20,7 +20,6 @@ interface RichTextDisplayProps {
   setSelectedAnnotationId: (id: string | undefined) => void;
   showAuthorComments: boolean;
   showReaderComments: boolean;
-  editable: boolean;
 }
 
 const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
@@ -31,14 +30,13 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
   annotations,
   selectedAnnotationId,
   placeholder = "Start typing or paste content here...",
+  readOnly = false,
   setSelectedAnnotationId,
   showAuthorComments,
   showReaderComments,
-  editable,
 }) => {
   const { userId } = useUserContext();
-  const { setAnnotations, statement, setStatementUpdate } =
-    useStatementContext();
+  const { setAnnotations, statement } = useStatementContext();
 
   const handleAnnotationChange = async (value: NewAnnotation[]) => {
     if (!userId) {
@@ -112,11 +110,6 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
     return !isStatementCreator && showReaderComments;
   }, [isStatementCreator, showReaderComments]);
 
-  const onContentChange = (content: string) => {
-    setStatementUpdate({ ...statement, content, statementId });
-    console.log("content", content);
-  };
-
   return (
     <div className="rounded-lg overflow-hidden bg-background">
       <HTMLTextAnnotator
@@ -132,8 +125,6 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
         setSelectedAnnotationId={setSelectedAnnotationId}
         showAuthorComments={showAuthorComments}
         showReaderComments={showReaderComments}
-        onContentChange={onContentChange}
-        editable={editable}
       />
     </div>
   );

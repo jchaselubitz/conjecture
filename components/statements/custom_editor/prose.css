@@ -1,0 +1,273 @@
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: var(--tw-prose-captions);
+  opacity: 0.5;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.ProseMirror:focus p.is-editor-empty:first-child::before {
+  display: none;
+}
+
+.ProseMirror h1 {
+  font-size: 3.5em;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-top: 0;
+  margin-bottom: 0.8em;
+}
+
+.ProseMirror h2 {
+  font-size: 2.25em;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
+}
+
+.ProseMirror h3 {
+  font-size: 1.5em;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
+}
+
+.ProseMirror p {
+  font-size: 1.2em;
+  line-height: 1.5;
+  margin-bottom: 1.2em;
+}
+
+/* Error display */
+.latex-error {
+  color: red;
+  font-style: italic;
+  background-color: #ffeeee;
+  padding: 0.25rem 0.5rem;
+  border-radius: 2px;
+}
+
+/* Base styles for LaTeX elements */
+.latex-base,
+[data-type="latex-block"],
+[data-type="latex"],
+.latex-block,
+.inline-latex {
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  
+}
+
+/* Block LaTeX styles */
+.latex-block,
+[data-type="latex-block"],
+.latex-block-popover {
+  display: block;
+  text-align: center;
+  padding: 0.75rem;
+  margin: 1rem 0;
+
+  background-color: hsl(var(--muted) / 0.3);
+}
+
+/* Inline LaTeX styles */
+.inline-latex,
+[data-type="latex"],
+.latex-inline-popover {
+  display: inline-block;
+  vertical-align: middle;
+  padding: 0 2px;
+  margin: 0;
+  line-height: inherit;
+  background-color: rgba(0, 102, 204, 0.05);
+  border-bottom: 1px dashed hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Hover styles */
+[data-type="latex"]:hover, 
+.inline-latex:hover,
+[data-type="latex-block"]:hover,
+.latex-block:hover {
+  background-color: hsl(var(--muted) / 0.5);
+}
+
+/* Edit indicator for block LaTeX */
+[data-type="latex-block"]:hover::after {
+  content: "Edit";
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  padding: 0.125rem 0.25rem;
+  font-size: 0.75rem;
+  border-bottom-left-radius: 4px;
+}
+
+/* KaTeX rendering styles */
+.ProseMirror .katex {
+  font-size: 1.1em;
+  line-height: 1.2;
+}
+
+.katex-rendered {
+  overflow-x: auto;
+  max-width: 100%;
+  font-size: 1.1em;
+  line-height: 1.5;
+}
+
+.latex-rendered {
+  overflow-x: auto;
+  max-width: 100%;
+  font-size: 1.1em;
+  line-height: 1.5;
+  display: block;
+  text-align: center;
+  padding: 0.75rem 0;
+  margin: 1rem 0;
+  background-color: hsl(var(--muted) / 0.3);
+  border-radius: 0.25rem;
+}
+
+.katex-rendered.block-display {
+  display: block;
+  text-align: center;
+  padding: 0.75rem 0;
+  margin: 1rem 0;
+  background-color: rgba(0, 102, 204, 0.05);
+  border-radius: 0.25rem;
+}
+
+.katex-rendered.inline-display {
+  display: inline-block;
+  padding: 0 2px;
+}
+
+/* Annotation styles */
+
+.annotation {
+ cursor: pointer;
+ transition: background-color 0.2s ease;
+ border-radius: 2px;
+ position: relative;
+ display: inline;
+}
+
+.annotation:hover {
+ background-color: #e6f0ff !important;
+
+}
+
+/* Style for the container when used as an annotator */
+.ProseMirror.annotator-container {
+ position: relative;
+}
+
+/* Add a subtle indicator when the text is annotatable */
+.ProseMirror.annotator-container::after {
+ content: "";
+ position: absolute;
+ top: 0.5rem;
+ right: 0.5rem;
+ width: 0.75rem;
+ height: 0.75rem;
+ background-color: #e2e8f0;
+ border-radius: 50%;
+ opacity: 0.5;
+}
+
+/* Add LaTeX-specific styles for annotator */
+.annotator-container .latex-block,
+.annotator-container .inline-latex {
+ pointer-events: none; /* Prevent LaTeX elements from interfering with annotation selection */
+ border: 1px solid #bebebe;
+}
+
+/* Allow pointer events on LaTeX elements in editable mode */
+.editable-container .latex-block,
+.editable-container .inline-latex {
+ pointer-events: auto; /* Enable interactions in edit mode */
+}
+
+.annotator-container .latex-block {
+ margin: 1rem 0;
+ padding: 0.5rem;
+ background: #f0efef;
+ /* border-left: 3px solid #0066cc; */
+}
+
+/* Make sure annotations properly wrap LaTeX content */
+.annotation .katex-html {
+ background: inherit;
+}
+
+/* Ensure LaTeX renders at the correct size in the annotator */
+.annotator-container .katex {
+ font-size: 1.1em;
+}
+
+/* Preserve LaTeX styles when inside annotations */
+.annotation .latex-block,
+.annotation .inline-latex {
+ background-color: inherit !important;
+ border-color: inherit !important;
+}
+
+
+.ProseMirror:focus, 
+.ProseMirror *:focus {
+  outline: none !important;
+}
+
+
+/* .ProseMirror {
+  outline: none !important;
+} */
+
+/* Basic editor styles */
+/* .ProseMirror {
+  outline: none !important;
+  box-shadow: none !important;
+} */
+
+/* Remove outlines on all nodes */
+/* .ProseMirror *:focus,
+.ProseMirror *:hover,
+.ProseMirror *:active {
+  outline: none !important;
+  box-shadow: none !important;
+} */
+
+/* Remove node selection indicators */
+/* .ProseMirror .ProseMirror-selectednode {
+  outline: none !important;
+  border: none !important;
+} */
+
+/* Remove cursor outline when editor is focused */
+/* .ProseMirror.ProseMirror-focused {
+  outline: none !important;
+  box-shadow: none !important;
+} */
+
+/* Customize text selection appearance */
+/* .ProseMirror ::selection {
+  background-color: rgba(66, 153, 225, 0.3); 
+  color: inherit;
+} */
+
+/* Style for the selection when selecting across nodes */
+/* .ProseMirror-selectednode {
+  background-color: rgba(66, 153, 225, 0.1) !important;
+} */
+
+/* Style for node selections and drag handles */
+/* .ProseMirror-gapcursor:after {
+  border-top: 1px solid rgba(66, 153, 225, 0.5) !important;
+} */
+
