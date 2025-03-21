@@ -27,6 +27,7 @@ export const generateColorFromString = (str: string) => {
  * @param container - Optional container to limit the scope of the search
  */
 export function processLatex(container?: HTMLElement) {
+  // console.log("Processing LaTeX");
   // If a container is provided, search only within it
   // Otherwise search the entire document
   const searchRoot = container || document;
@@ -40,9 +41,10 @@ export function processLatex(container?: HTMLElement) {
       element.classList.contains("katex") ||
       element.classList.contains("katex-html") ||
       element.closest(".katex") ||
-      element.querySelector(".katex-rendered")
+      element.querySelector(".katex-rendered") ||
+      // Skip if this element is already fully processed
+      element.classList.contains("katex-processed")
     ) {
-      console.log("Skipping already processed KaTeX element", element);
       return;
     }
 
@@ -64,7 +66,6 @@ export function processLatex(container?: HTMLElement) {
     }
 
     if (!latex) {
-      console.warn("Empty LaTeX content for element", element);
       return;
     }
 
@@ -120,12 +121,6 @@ export function processLatex(container?: HTMLElement) {
       }
 
       element.classList.add("katex-processed");
-
-      console.log("Successfully rendered LaTeX:", {
-        element,
-        isBlock,
-        latex: latex.substring(0, 30) + (latex.length > 30 ? "..." : ""),
-      });
     } catch (error) {
       console.error("Error rendering LaTeX:", error, { element, latex });
 
