@@ -28,7 +28,7 @@ interface HTMLTextAnnotatorProps {
   existingAnnotations: NewAnnotation[];
   userId: string | undefined;
   onAnnotationChange?: (value: NewAnnotation[]) => void;
-  onClick: (id: string) => void;
+  onAnnotationClick?: (id: string) => void;
   getSpan?: (span: NewAnnotation) => NewAnnotation;
   style?: React.CSSProperties;
   className?: string;
@@ -48,7 +48,7 @@ const HTMLTextAnnotator = ({
   userId,
   onAnnotationChange,
   getSpan,
-  onClick,
+  onAnnotationClick,
   style,
   className,
   placeholder,
@@ -101,6 +101,14 @@ const HTMLTextAnnotator = ({
     onUpdate: ({ editor }) => {
       if (onContentChange) {
         onContentChange(editor.getHTML());
+      }
+    },
+    onDestroy: () => {
+      // Clean up any references when editor is destroyed
+      const container = containerRef.current;
+      if (container) {
+        // Clear content to prevent manipulation of detached nodes
+        container.innerHTML = "";
       }
     },
     editorProps: {
@@ -592,7 +600,7 @@ const HTMLTextAnnotator = ({
 
   // Update the display when content or annotations change
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !editor) return;
 
     // Reset HTML content
     containerRef.current.innerHTML = htmlContent;
@@ -714,17 +722,18 @@ const HTMLTextAnnotator = ({
   ]);
 
   // Handle click on annotations
-  const handleAnnotationClick = useCallback(
+  const handleAnnotationAnnotationClick = useCallback(
     (e: React.MouseEvent) => {
+      if (!onAnnotationClick) return;
       const target = e.target as HTMLElement;
       if (target.classList.contains("annotation")) {
         const id = target.dataset.id;
         if (id) {
-          onClick(id);
+          onAnnotationClick(id);
         }
       }
     },
-    [onClick]
+    [onAnnotationClick]
   );
 
   // Update the editor content when htmlContent prop changes (in view mode)
@@ -733,6 +742,18 @@ const HTMLTextAnnotator = ({
       editor.commands.setContent(htmlContent);
     }
   }, [htmlContent, editor, editable]);
+
+  // Reset the editor completely when edit mode changes
+  useEffect(() => {
+    if (editor) {
+      return () => {
+        if (editor) {
+          // Clean up any pending operations
+          editor.commands.clearContent();
+        }
+      };
+    }
+  }, [editor, editable]);
 
   // Set up observer to watch for LaTeX elements and process them
   useEffect(() => {
@@ -745,6 +766,9 @@ const HTMLTextAnnotator = ({
     const observer = new MutationObserver((mutations) => {
       // Skip if we're currently processing
       if (isProcessing) return;
+
+      // Skip if editor is no longer valid
+      if (editor.isDestroyed || !editor.view?.dom?.isConnected) return;
 
       // Check if any mutations affect LaTeX elements
       const hasLatexChanges = mutations.some((mutation) => {
@@ -835,6 +859,7 @@ const HTMLTextAnnotator = ({
           {editor && (
             <>
               <BubbleMenu
+                key={`bubble-menu-${editable}`}
                 editor={editor}
                 tippyOptions={{ duration: 100 }}
                 className="overflow-hidden"
@@ -844,7 +869,11 @@ const HTMLTextAnnotator = ({
                   openLatexPopover={openLatexPopover}
                 />
               </BubbleMenu>
-              <FloatingMenu editor={editor} tippyOptions={{ duration: 100 }}>
+              <FloatingMenu
+                key={`floating-menu-${editable}`}
+                editor={editor}
+                tippyOptions={{ duration: 100 }}
+              >
                 <BlockTypeChooser
                   editor={editor}
                   openLatexPopover={openLatexPopover}
@@ -853,17 +882,18 @@ const HTMLTextAnnotator = ({
             </>
           )}
           <EditorContent
-            // ref={containerRef}
+            key={`editor-content-${editable}`}
             editor={editor}
             className={`ProseMirror ${annotatable ? "annotator-container" : ""}`}
           />
         </>
       ) : (
         <div
+          key={`view-content-${editable}`}
           ref={containerRef}
           className={`ProseMirror ${annotatable ? "annotator-container" : ""}`}
           onMouseUp={annotatable ? handleMouseUp : undefined}
-          onClick={annotatable ? handleAnnotationClick : undefined}
+          onClick={annotatable ? handleAnnotationAnnotationClick : undefined}
         />
       )}
 

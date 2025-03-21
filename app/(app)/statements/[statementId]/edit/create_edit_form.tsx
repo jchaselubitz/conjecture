@@ -41,53 +41,6 @@ export default function StatementCreateEditForm({
   const prevStatementRef = useRef(statementUpdate);
   const prepStatementId = statementId ? statementId : generateStatementId();
 
-  const handleImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const files = event.target.files?.length
-      ? Array.from(event.target.files)
-      : null;
-    if (files && files.length > 0) {
-      files.map(async (file) => {
-        try {
-          const compressedFile = await handleImageCompression(file);
-          if (!compressedFile) return;
-
-          const fileFormData = new FormData();
-          fileFormData.append("image", compressedFile);
-          if (!userId) {
-            alert("Please set your profile name first.");
-            return;
-          }
-          const imageUrl = await uploadStatementImage({
-            file: fileFormData,
-            creatorId: userId,
-            fileName: compressedFile.name,
-            oldImageUrl: statementUpdate?.headerImg ?? null,
-          });
-          if (!imageUrl) throw new Error("Failed to upload image");
-          await updateStatementImageUrl(statement.statementId, imageUrl);
-          toast("Success", {
-            description: "Profile picture updated successfully!",
-          });
-          router.refresh();
-        } catch (error) {
-          toast("Error", {
-            description: "Failed to upload image. Please try again.",
-          });
-        } finally {
-          setIsUploading(false);
-        }
-      });
-    }
-  };
-
-  const handlePhotoButtonClick = () => {
-    if (photoInputRef.current !== null) {
-      photoInputRef.current.click();
-    }
-  };
-
   const handleImageDelete = async () => {
     if (!statementUpdate?.headerImg || !userId) return;
     setIsDeleting(true);
@@ -97,27 +50,6 @@ export default function StatementCreateEditForm({
     });
     setIsDeleting(false);
   };
-
-  useEffect(() => {
-    if (statementUpdate && prevStatementRef.current) {
-      if (
-        statementUpdate.title !== prevStatementRef.current.title ||
-        statementUpdate.content !== prevStatementRef.current.content
-      ) {
-        const handler = setTimeout(() => {
-          updateStatementDraft();
-          prevStatementRef.current = statementUpdate;
-        }, 1000);
-
-        return () => {
-          clearTimeout(handler);
-        };
-      }
-    } else if (statementUpdate) {
-      // Initialize the ref if it's empty
-      prevStatementRef.current = statementUpdate;
-    }
-  }, [statementUpdate, updateStatementDraft]);
 
   const titleInputRef = useRef<HTMLInputElement>(null);
 
@@ -163,11 +95,6 @@ export default function StatementCreateEditForm({
     };
   };
 
-  const handleAnnotationClick = (id: string) => {
-    // Handle annotation click
-    console.log("Annotation clicked:", id);
-  };
-
   const handleContentChange = useCallback(
     (content: string) => {
       if (statement && content !== statement.content) {
@@ -178,7 +105,7 @@ export default function StatementCreateEditForm({
         });
       }
     },
-    [statement, prepStatementId, setStatementUpdate],
+    [statement, prepStatementId, setStatementUpdate]
   );
 
   if (userId !== statement?.creatorId) {
@@ -276,7 +203,6 @@ export default function StatementCreateEditForm({
         htmlContent={statement?.content || ""}
         existingAnnotations={statement?.annotations || []}
         userId={userId || ""}
-        onClick={handleAnnotationClick}
         getSpan={getSpan}
         placeholder="What's on your mind?"
         annotatable={true}

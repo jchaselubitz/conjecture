@@ -1,11 +1,18 @@
 "use client";
 import { NewAnnotation } from "kysely-codegen";
-import React, { useMemo } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
 import { createAnnotation } from "@/lib/actions/annotationActions";
 
 import HTMLTextAnnotator from "./custom_editor/html_text_annotator";
+import { generateStatementId } from "@/lib/helpers/helpersStatements";
 
 interface RichTextDisplayProps {
   htmlContent: string;
@@ -37,8 +44,66 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
   editable,
 }) => {
   const { userId } = useUserContext();
-  const { setAnnotations, statement, setStatementUpdate } =
-    useStatementContext();
+  const {
+    setAnnotations,
+    statement,
+    setStatementUpdate,
+    statementUpdate,
+    updateStatementDraft,
+  } = useStatementContext();
+
+  const prevStatementRef = useRef(statementUpdate);
+  // Keep track of previous edit mode to handle transitions
+  const prevEditModeRef = useRef(editable);
+
+  const prepStatementId = statementId ? statementId : generateStatementId();
+
+  // When edit mode changes, update the ref
+  useEffect(() => {
+    // When switching from edit to view mode, ensure we don't
+    // have any pending state updates that could cause DOM issues
+    if (prevEditModeRef.current && !editable) {
+      // We're transitioning from edit to view mode
+      // Any cleanup could be done here
+    }
+
+    // Update the ref
+    prevEditModeRef.current = editable;
+  }, [editable]);
+
+  const handleContentChange = useCallback(
+    (content: string) => {
+      if (statement && content !== statement.content) {
+        // Use type-safe update function instead
+        setStatementUpdate({
+          content,
+          statementId: prepStatementId,
+        });
+      }
+    },
+    [statement, prepStatementId, setStatementUpdate]
+  );
+
+  useEffect(() => {
+    if (editable && statementUpdate && prevStatementRef.current) {
+      if (
+        statementUpdate.title !== prevStatementRef.current.title ||
+        statementUpdate.content !== prevStatementRef.current.content
+      ) {
+        const handler = setTimeout(() => {
+          updateStatementDraft();
+          prevStatementRef.current = statementUpdate;
+        }, 1000);
+
+        return () => {
+          clearTimeout(handler);
+        };
+      }
+    } else if (statementUpdate) {
+      // Initialize the ref if it's empty
+      prevStatementRef.current = statementUpdate;
+    }
+  }, [statementUpdate, updateStatementDraft, editable]);
 
   const handleAnnotationChange = async (value: NewAnnotation[]) => {
     if (!userId) {
@@ -112,18 +177,13 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
     return !isStatementCreator && showReaderComments;
   }, [isStatementCreator, showReaderComments]);
 
-  const onContentChange = (content: string) => {
-    setStatementUpdate({ ...statement, content, statementId });
-    console.log("content", content);
-  };
-
   return (
     <div className="rounded-lg overflow-hidden bg-background">
       <HTMLTextAnnotator
-        htmlContent={htmlContent}
+        htmlContent={statementUpdate?.content || htmlContent}
         existingAnnotations={annotations}
         userId={userId}
-        onClick={handleAnnotationClick}
+        onAnnotationClick={handleAnnotationClick}
         onAnnotationChange={handleAnnotationChange}
         getSpan={getSpan}
         placeholder={placeholder}
@@ -132,7 +192,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
         setSelectedAnnotationId={setSelectedAnnotationId}
         showAuthorComments={showAuthorComments}
         showReaderComments={showReaderComments}
-        onContentChange={onContentChange}
+        onContentChange={handleContentChange}
         editable={editable}
       />
     </div>

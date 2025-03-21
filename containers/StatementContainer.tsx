@@ -21,7 +21,6 @@ export async function StatementContainer({
 
   return (
     <div>
-      <AppNav />
       <div className="flex-1  bg-background  ">
         <StatementDetails
           drafts={drafts}

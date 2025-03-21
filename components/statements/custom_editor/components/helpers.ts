@@ -1,4 +1,10 @@
+import { updateStatementImageUrl } from "@/lib/actions/statementActions";
+import { uploadStatementImage } from "@/lib/actions/storageActions";
+import { handleImageCompression } from "@/lib/helpers/helpersImages";
 import katex from "katex";
+import { DraftWithAnnotations } from "kysely-codegen";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export const generateColorFromString = (str: string) => {
   let hash = 0;

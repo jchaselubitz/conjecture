@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import CreatePostButton from "../special_buttons/create_post_button";
 import UserButton from "./user_button";
-export default async function AppNav() {
+export default function AppNav() {
   return (
     <header className="border-b px-4">
       <div className="flex h-16 items-center justify-between w-full ">
