@@ -13,9 +13,6 @@ const pwaConfig = withPWA({
 });
 
 const config: NextConfig = {
-  // eslint: {
-  //   ignoreDuringBuilds: true,
-  // },
   ...pwaConfig,
   images: {
     domains: ["conject.io", "app.conject.io", "127.0.0.1", "localhost"],

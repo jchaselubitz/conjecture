@@ -1,6 +1,6 @@
 import "./prose.css";
 import "katex/dist/katex.min.css";
-import Highlight from "@tiptap/extension-highlight";
+
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import {
@@ -81,7 +81,6 @@ const HTMLTextAnnotator = ({
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Highlight,
       Link.configure({
         openOnClick: false,
       }),
@@ -113,18 +112,18 @@ const HTMLTextAnnotator = ({
           // Look for any LaTeX element - both inline and block
           // Also check for elements inside a .katex rendered element
           let latexNode = element.closest(
-            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
           );
 
           // If we didn't find a direct LaTeX element, check if we're inside a katex rendered element
           if (!latexNode) {
             const katexElement = element.closest(
-              ".katex, .katex-html, .katex-rendered",
+              ".katex, .katex-html, .katex-rendered"
             );
             if (katexElement) {
               // Find the parent LaTeX element that contains this katex element
               latexNode = katexElement.closest(
-                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
               );
             }
           }
@@ -151,7 +150,7 @@ const HTMLTextAnnotator = ({
             // but skip KaTeX wrappers that might be inside
             if (!latex) {
               const katexWrapper = latexNode.querySelector(
-                ".katex-rendered, .katex",
+                ".katex-rendered, .katex"
               );
               if (katexWrapper) {
                 // If there's a rendered KaTeX element, ignore its content
@@ -224,7 +223,7 @@ const HTMLTextAnnotator = ({
 
       setLatexPopoverOpen(true);
     },
-    [editor],
+    [editor]
   );
 
   // Function to handle saving LaTeX content
@@ -237,7 +236,7 @@ const HTMLTextAnnotator = ({
       // Try to find the element in the DOM first for immediate visual feedback
       if (selectedLatexId) {
         const element = document.querySelector(
-          `[data-id="${selectedLatexId}"]`,
+          `[data-id="${selectedLatexId}"]`
         ) as HTMLElement;
 
         if (element) {
@@ -266,7 +265,7 @@ const HTMLTextAnnotator = ({
             // For block LaTeX, let's use a simpler approach for block LaTeX
             // Find the element in the DOM and update its attributes directly
             const element = document.querySelector(
-              `[data-id="${selectedLatexId}"]`,
+              `[data-id="${selectedLatexId}"]`
             ) as HTMLElement;
 
             if (element) {
@@ -337,7 +336,7 @@ const HTMLTextAnnotator = ({
         }, 100);
       }
     },
-    [editor, selectedLatexId, isBlock],
+    [editor, selectedLatexId, isBlock]
   );
 
   // Handle deleting LaTeX content from the editor
@@ -373,7 +372,7 @@ const HTMLTextAnnotator = ({
   // Get text nodes in a range
   const getTextNodesInRange = useCallback(
     (
-      range: Range,
+      range: Range
     ): { node: Text; startOffset: number; endOffset: number }[] => {
       const nodes: { node: Text; startOffset: number; endOffset: number }[] =
         [];
@@ -405,7 +404,7 @@ const HTMLTextAnnotator = ({
 
       return nodes;
     },
-    [getAllTextNodes],
+    [getAllTextNodes]
   );
 
   // Process and apply annotations to the HTML content
@@ -494,7 +493,7 @@ const HTMLTextAnnotator = ({
             mark.style.backgroundColor = colors.backgroundColor;
             mark.style.setProperty(
               "--hover-bg-color",
-              colors.hoverBackgroundColor,
+              colors.hoverBackgroundColor
             );
 
             if (isSelected) {
@@ -557,7 +556,7 @@ const HTMLTextAnnotator = ({
                 mark.style.backgroundColor = colors.backgroundColor;
                 mark.style.setProperty(
                   "--hover-bg-color",
-                  colors.hoverBackgroundColor,
+                  colors.hoverBackgroundColor
                 );
 
                 if (isSelected) {
@@ -573,7 +572,7 @@ const HTMLTextAnnotator = ({
             } catch (nestedError) {
               console.error(
                 "Failed to apply partial highlighting:",
-                nestedError,
+                nestedError
               );
             }
           }
@@ -588,7 +587,7 @@ const HTMLTextAnnotator = ({
       showAuthorComments,
       showReaderComments,
       userId,
-    ],
+    ]
   );
 
   // Update the display when content or annotations change
@@ -725,7 +724,7 @@ const HTMLTextAnnotator = ({
         }
       }
     },
-    [onClick],
+    [onClick]
   );
 
   // Update the editor content when htmlContent prop changes (in view mode)
