@@ -45,7 +45,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
   selectedAnnotationId,
 }) => {
   const [comments, setComments] = useState<BaseCommentWithUser[]>(
-    annotation.comments
+    annotation.comments,
   );
 
   const { userId } = useUserContext();
@@ -149,7 +149,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
 
   const handleCommentDeleted = (commentId: string) => {
     setComments((prevComments) =>
-      prevComments.filter((comment) => comment.id !== commentId)
+      prevComments.filter((comment) => comment.id !== commentId),
     );
 
     // If we were replying to this comment, cancel the reply
@@ -191,7 +191,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
       <Card
         className={cn(
           "p-0 gap-0",
-          selected ? "shadow-2xl  my-4" : "shadow-none hover:shadow-md "
+          selected ? "shadow-2xl  my-4" : "shadow-none hover:shadow-md ",
         )}
       >
         <AccordionTrigger className={cn("p-4 hover:no-underline")}>

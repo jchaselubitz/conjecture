@@ -23,6 +23,7 @@
     "js-lint-src": "eslint -c eslint.config.mjs '*.ts' '**/*.tsx' -f table",
     "js-lint-tests": "eslint -c eslint.config.mjs 'tests/**/*.ts' 'tests/**/*.tsx' -f table",
     "fix-js-lint-tests": "eslint -c eslint.config.mjs --fix 'tests/**/*.ts' 'tests/**/*.tsx' -f table",
+    "fix-style-lint": "stylelint '**/*.css' --fix",
     "js-lint": "yarn run js-lint-src && yarn run js-lint-tests",
     "type-check": "tsc --noEmit",
     "type-coverage": "type-coverage",

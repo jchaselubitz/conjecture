@@ -6,14 +6,20 @@ import simpleSort from "eslint-plugin-simple-import-sort";
 import prettierPlugin from "eslint-plugin-prettier";
 import { FlatCompat } from "@eslint/eslintrc";
 import js from "@eslint/js";
-
+import reactHooksPlugin from "eslint-plugin-react-hooks";
 const compat = new FlatCompat({
   // import.meta.dirname is available after Node.js v20.11.0
   baseDirectory: import.meta.dirname,
   recommendedConfig: js.configs.recommended,
 });
 
+// Load the Next.js config first
+const nextConfig = compat.config({
+  extends: ["next"],
+});
+
 export default [
+  ...nextConfig,
   {
     files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
@@ -26,13 +32,15 @@ export default [
       "simple-import-sort": simpleSort,
       "@typescript-eslint": tsPlugin,
       prettier: prettierPlugin,
+      "react-hooks": reactHooksPlugin,
     },
     rules: {
       ...reactPlugin.configs.recommended.rules,
       ...tsPlugin.configs.recommended.rules,
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "error",
+      "react-hooks/rules-of-hooks": ["error"],
+      "react-hooks/exhaustive-deps": ["error"],
       "prettier/prettier": "warn",
+      "react/prop-types": "off",
       "react/jsx-uses-react": "error",
       "react/jsx-uses-vars": "error",
       "react/react-in-jsx-scope": "off",
@@ -46,17 +54,13 @@ export default [
       eqeqeq: ["error"],
       "no-undef": 0,
       "no-unused-vars": 1,
-
       "simple-import-sort/imports": [
         "warn",
         {
           groups: [["^\\u0000", "^@?\\w", "^[^.]"]],
         },
       ],
-      "no-console": "error",
+      "no-console": "warn",
     },
   },
-  ...compat.config({
-    extends: ["next"],
-  }),
 ];

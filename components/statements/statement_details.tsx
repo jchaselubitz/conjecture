@@ -33,10 +33,10 @@ export default function StatementDetails({
     useRef<React.ElementRef<typeof ResizablePanelGroup>>(null);
 
   const [showAuthorComments, setShowAuthorComments] = useState(
-    authorCommentsEnabled
+    authorCommentsEnabled,
   );
   const [showReaderComments, setShowReaderComments] = useState(
-    readerCommentsEnabled
+    readerCommentsEnabled,
   );
 
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<
@@ -50,7 +50,7 @@ export default function StatementDetails({
     const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
     panelGroupRef.current?.setLayout(savedSize ?? [100, 0]);
     const savedSelectedAnnotationId = localStorage.getItem(
-      "selectedAnnotationId"
+      "selectedAnnotationId",
     );
     setSelectedAnnotationId(savedSelectedAnnotationId ?? undefined);
   }, [setSelectedAnnotationId]);
