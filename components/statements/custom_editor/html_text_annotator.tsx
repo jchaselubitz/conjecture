@@ -25,7 +25,7 @@ import { TextFormatMenu } from "./components/text_format_menu";
 
 interface HTMLTextAnnotatorProps {
   htmlContent: string;
-  value: NewAnnotation[];
+  existingAnnotations: NewAnnotation[];
   userId: string | undefined;
   onAnnotationChange?: (value: NewAnnotation[]) => void;
   onClick: (id: string) => void;
@@ -42,13 +42,9 @@ interface HTMLTextAnnotatorProps {
   showReaderComments: boolean;
 }
 
-/**
- * HTMLTextAnnotator - Enhanced component that supports both viewing with annotations
- * and rich text editing capabilities
- */
 const HTMLTextAnnotator = ({
   htmlContent,
-  value,
+  existingAnnotations,
   userId,
   onAnnotationChange,
   getSpan,
@@ -78,10 +74,9 @@ const HTMLTextAnnotator = ({
   } | null>(null);
 
   useEffect(() => {
-    setAnnotations(value);
-  }, [value]);
+    setAnnotations(existingAnnotations);
+  }, [existingAnnotations]);
 
-  console.log({ editable, annotatable });
   // Initialize the Tiptap editor for rich text editing
   const editor = useEditor({
     extensions: [
@@ -624,7 +619,6 @@ const HTMLTextAnnotator = ({
     `;
     containerRef.current.appendChild(styleTag);
 
-    // Process annotations
     processAnnotations(containerRef.current);
   }, [htmlContent, processAnnotations, placeholder]);
 
@@ -860,6 +854,7 @@ const HTMLTextAnnotator = ({
             </>
           )}
           <EditorContent
+            // ref={containerRef}
             editor={editor}
             className={`ProseMirror ${annotatable ? "annotator-container" : ""}`}
           />

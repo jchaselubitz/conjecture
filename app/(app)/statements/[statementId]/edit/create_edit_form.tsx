@@ -1,6 +1,6 @@
 "use client";
 
-import { NewAnnotation, NewDraft } from "kysely-codegen";
+import { NewAnnotation } from "kysely-codegen";
 import { Upload } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -42,7 +42,7 @@ export default function StatementCreateEditForm({
   const prepStatementId = statementId ? statementId : generateStatementId();
 
   const handleImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const files = event.target.files?.length
       ? Array.from(event.target.files)
@@ -178,7 +178,7 @@ export default function StatementCreateEditForm({
         });
       }
     },
-    [statement, prepStatementId, setStatementUpdate],
+    [statement, prepStatementId, setStatementUpdate]
   );
 
   if (userId !== statement?.creatorId) {
@@ -274,7 +274,7 @@ export default function StatementCreateEditForm({
 
       <HTMLTextAnnotator
         htmlContent={statement?.content || ""}
-        value={statement?.annotations || []}
+        existingAnnotations={statement?.annotations || []}
         userId={userId || ""}
         onClick={handleAnnotationClick}
         getSpan={getSpan}

@@ -121,7 +121,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
     <div className="rounded-lg overflow-hidden bg-background">
       <HTMLTextAnnotator
         htmlContent={htmlContent}
-        value={annotations}
+        existingAnnotations={annotations}
         userId={userId}
         onClick={handleAnnotationClick}
         onAnnotationChange={handleAnnotationChange}
