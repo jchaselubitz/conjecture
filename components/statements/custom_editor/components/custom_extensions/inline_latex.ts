@@ -5,6 +5,8 @@ import {
   mergeAttributes,
 } from "@tiptap/core";
 import { nanoid } from "nanoid";
+import { Plugin, PluginKey } from "prosemirror-state";
+import { processLatex } from "../helpers";
 
 export interface InlineLatexOptions {
   /**
@@ -125,21 +127,20 @@ export const InlineLatex = Mark.create<InlineLatexOptions>({
       HTMLAttributes.latexId = nanoid();
     }
 
-    // For marks, we don't have direct access to content
-    // The content will be rendered by editor processing later
     return [
       "span",
       mergeAttributes(
         {
           "data-type": "inline-latex",
-          "class": "inline-latex",
-          "data-id": HTMLAttributes.latexId,
+          class: "inline-latex",
           "data-latex": HTMLAttributes.latex,
+          "data-id": HTMLAttributes.latexId,
+          style: "display: inline-block; vertical-align: middle;",
         },
         this.options.HTMLAttributes,
         HTMLAttributes,
       ),
-      0, // Position marker for content
+      0,
     ];
   },
 
@@ -264,6 +265,61 @@ export const InlineLatex = Mark.create<InlineLatexOptions>({
       markPasteRule({
         find: inlineInputRegex,
         type: this.type,
+      }),
+    ];
+  },
+
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        key: new PluginKey("inlineLatexProcessor"),
+        view(editorView) {
+          const processLatexInView = () => {
+            processLatex(editorView.dom);
+          };
+
+          // Process on init
+          processLatexInView();
+
+          return {
+            update(view, prevState) {
+              // Process on content changes that affect LaTeX
+              let hasCurrentLatex = false;
+              let hasPrevLatex = false;
+
+              view.state.doc.descendants((node) => {
+                if (
+                  node.marks.some((mark) => mark.type.name === "inlineLatex")
+                ) {
+                  hasCurrentLatex = true;
+                  return false;
+                }
+                return true;
+              });
+
+              prevState.doc.descendants((node) => {
+                if (
+                  node.marks.some((mark) => mark.type.name === "inlineLatex")
+                ) {
+                  hasPrevLatex = true;
+                  return false;
+                }
+                return true;
+              });
+
+              const hasLatexChanges =
+                view.state.doc.eq(prevState.doc) === false &&
+                (hasCurrentLatex || hasPrevLatex);
+
+              if (hasLatexChanges) {
+                processLatexInView();
+              }
+            },
+            destroy() {
+              // Clean up if needed
+            },
+          };
+        },
       }),
     ];
   },

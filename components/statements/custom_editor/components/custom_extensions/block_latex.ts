@@ -1,5 +1,7 @@
 import { mergeAttributes, Node } from "@tiptap/core";
 import { nanoid } from "nanoid";
+import { Plugin, PluginKey } from "prosemirror-state";
+import { processLatex } from "../helpers";
 
 export interface BlockLatexOptions {
  HTMLAttributes: Record<string, any>;
@@ -25,13 +27,10 @@ export const BlockLatex = Node.create<BlockLatexOptions>({
   };
  },
 
- group() {
-  return "inline";
- },
-
+ group: "block",
  content: "text*",
  marks: "",
- inline: true,
+ inline: false,
  atom: true,
 
  addAttributes() {
@@ -81,18 +80,6 @@ export const BlockLatex = Node.create<BlockLatexOptions>({
      };
     },
    },
-   {
-    tag: 'span[data-type="latex"]',
-    getAttrs: (node) => {
-     if (typeof node === "string") return {};
-     const element = node as HTMLElement;
-     return {
-      latex: element.getAttribute("data-latex"),
-      displayMode: false,
-      latexId: element.getAttribute("data-id"),
-     };
-    },
-   },
   ];
  },
 
@@ -102,30 +89,17 @@ export const BlockLatex = Node.create<BlockLatexOptions>({
    HTMLAttributes.latexId = nanoid();
   }
 
-  // Return the HTML structure for the LaTeX node
-  const tag = node.attrs.displayMode ? "div" : "span";
-
-  // Use consistent class names that match what HTMLTextAnnotator processes
-  // HTMLTextAnnotator looks for .latex-block and .inline-latex
-  const classNames = node.attrs.displayMode ? "latex-block" : "inline-latex";
-
-  // For inline LaTeX, add additional styling to ensure it stays inline
-  const inlineStyle = !node.attrs.displayMode
-   ? { style: "display: inline-block; vertical-align: middle;" }
-   : {};
-
   return [
-   tag,
+   "div",
    mergeAttributes(
     this.options.HTMLAttributes,
     HTMLAttributes,
-    inlineStyle,
     {
-     "data-type": node.attrs.displayMode ? "latex-block" : "latex",
+     "data-type": "latex-block",
      "data-latex": node.attrs.latex,
-     "data-display-mode": node.attrs.displayMode ? "true" : "false",
+     "data-display-mode": "true",
      "data-id": HTMLAttributes.latexId,
-     class: classNames,
+     class: "latex-block",
     },
    ),
    // This placeholder will be replaced with rendered LaTeX in the editor
@@ -185,5 +159,55 @@ export const BlockLatex = Node.create<BlockLatexOptions>({
     return true;
    },
   };
+ },
+
+ addProseMirrorPlugins() {
+  return [
+   new Plugin({
+    key: new PluginKey("blockLatexProcessor"),
+    view(editorView) {
+     const processLatexInView = () => {
+      processLatex(editorView.dom);
+     };
+
+     // Process on init
+     processLatexInView();
+
+     return {
+      update(view, prevState) {
+       // Process on content changes that affect LaTeX
+       let hasCurrentLatex = false;
+       let hasPrevLatex = false;
+
+       view.state.doc.descendants((node) => {
+        if (node.type.name === "blockLatex") {
+         hasCurrentLatex = true;
+         return false;
+        }
+        return true;
+       });
+
+       prevState.doc.descendants((node) => {
+        if (node.type.name === "blockLatex") {
+         hasPrevLatex = true;
+         return false;
+        }
+        return true;
+       });
+
+       const hasLatexChanges = view.state.doc.eq(prevState.doc) === false &&
+        (hasCurrentLatex || hasPrevLatex);
+
+       if (hasLatexChanges) {
+        processLatexInView();
+       }
+      },
+      destroy() {
+       // Clean up if needed
+      },
+     };
+    },
+   }),
+  ];
  },
 });

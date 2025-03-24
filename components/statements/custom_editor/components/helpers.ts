@@ -1,10 +1,4 @@
-import { updateStatementImageUrl } from "@/lib/actions/statementActions";
-import { uploadStatementImage } from "@/lib/actions/storageActions";
-import { handleImageCompression } from "@/lib/helpers/helpersImages";
 import katex from "katex";
-import { DraftWithAnnotations } from "kysely-codegen";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
 export const generateColorFromString = (str: string) => {
   let hash = 0;
@@ -32,12 +26,8 @@ export const generateColorFromString = (str: string) => {
  * Processes LaTeX elements in the DOM to render them using KaTeX
  * @param container - Optional container to limit the scope of the search
  */
-export function processLatex(container?: HTMLElement) {
-  // console.log("Processing LaTeX");
-  // If a container is provided, search only within it
-  // Otherwise search the entire document
-  const searchRoot = container || document;
-  const elements = searchRoot.querySelectorAll<HTMLElement>(
+export function processLatex(container: HTMLElement) {
+  const elements = container.querySelectorAll(
     '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
   );
 

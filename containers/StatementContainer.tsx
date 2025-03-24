@@ -1,6 +1,5 @@
 import { DraftWithAnnotations } from "kysely-codegen";
 import { cookies } from "next/headers";
-import AppNav from "@/components/navigation/app_nav";
 import StatementDetails from "@/components/statements/statement_details";
 
 export async function StatementContainer({
@@ -11,6 +10,7 @@ export async function StatementContainer({
   const cookieStore = await cookies();
   const authorCommentCookie = cookieStore.get("show_author_comments");
   const readerCommentCookie = cookieStore.get("show_reader_comments");
+  const editModeCookie = cookieStore.get("edit_mode");
 
   const authorCommentsEnabled = authorCommentCookie
     ? authorCommentCookie?.value === "true"
@@ -18,6 +18,9 @@ export async function StatementContainer({
   const readerCommentsEnabled = readerCommentCookie
     ? readerCommentCookie?.value === "true"
     : true;
+  const editModeEnabled = editModeCookie
+    ? editModeCookie?.value === "true"
+    : false;
 
   return (
     <div>
@@ -26,6 +29,7 @@ export async function StatementContainer({
           drafts={drafts}
           authorCommentsEnabled={authorCommentsEnabled}
           readerCommentsEnabled={readerCommentsEnabled}
+          editModeEnabled={editModeEnabled}
         />
       </div>
     </div>

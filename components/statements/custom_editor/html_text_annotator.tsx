@@ -280,6 +280,9 @@ const HTMLTextAnnotator = ({
               element.setAttribute("data-latex", contentToSave);
               // First update attributes directly, then render through KaTeX
               const editorElement = editor.view.dom as HTMLElement;
+              console.log(
+                "processLatex called from handleSaveLatex - element update"
+              );
               processLatex(editorElement);
 
               // Force model update through setContent if needed
@@ -339,6 +342,9 @@ const HTMLTextAnnotator = ({
         setTimeout(() => {
           if (editor) {
             const editorElement = editor.view.dom as HTMLElement;
+            console.log(
+              "processLatex called from handleSaveLatex - setTimeout"
+            );
             processLatex(editorElement);
           }
         }, 100);
@@ -722,7 +728,7 @@ const HTMLTextAnnotator = ({
   ]);
 
   // Handle click on annotations
-  const handleAnnotationAnnotationClick = useCallback(
+  const handleAnnotationClick = useCallback(
     (e: React.MouseEvent) => {
       if (!onAnnotationClick) return;
       const target = e.target as HTMLElement;
@@ -755,99 +761,21 @@ const HTMLTextAnnotator = ({
     }
   }, [editor, editable]);
 
-  // Set up observer to watch for LaTeX elements and process them
-  useEffect(() => {
-    if (!editor) return;
+  // useEffect(() => {
+  //   if (!editor) return;
 
-    // Flag to prevent processing during our own updates
-    let isProcessing = false;
+  //   const handleAnnotationClick = (event: MouseEvent) => {
+  //     // ... existing click handler code ...
+  //     console.log("handleAnnotationClick called");
+  //   };
 
-    // Create a mutation observer to watch for changes
-    const observer = new MutationObserver((mutations) => {
-      // Skip if we're currently processing
-      if (isProcessing) return;
+  //   const editorElement = editor.view.dom as HTMLElement;
+  //   editorElement.addEventListener("click", handleAnnotationClick);
 
-      // Skip if editor is no longer valid
-      if (editor.isDestroyed || !editor.view?.dom?.isConnected) return;
-
-      // Check if any mutations affect LaTeX elements
-      const hasLatexChanges = mutations.some((mutation) => {
-        // Check for attribute mutations on LaTeX elements
-        if (
-          mutation.type === "attributes" &&
-          mutation.attributeName === "data-latex"
-        ) {
-          return true;
-        }
-
-        // Check for added nodes that might be LaTeX
-        if (mutation.type === "childList") {
-          // Check added nodes for LaTeX elements or elements that might contain LaTeX
-          const hasLatexNode = Array.from(mutation.addedNodes).some((node) => {
-            if (node.nodeType !== Node.ELEMENT_NODE) return false;
-
-            const element = node as HTMLElement;
-            return (
-              element.hasAttribute("data-latex") ||
-              element.querySelector("[data-latex]") !== null ||
-              element.classList.contains("latex-block") ||
-              element.classList.contains("inline-latex")
-            );
-          });
-
-          return hasLatexNode;
-        }
-
-        return false;
-      });
-
-      // If LaTeX-related changes were detected, process LaTeX elements
-      if (hasLatexChanges) {
-        // Debounce LaTeX processing to avoid too many re-renders
-        if (observer.timeout) {
-          clearTimeout(observer.timeout);
-        }
-
-        observer.timeout = setTimeout(() => {
-          // Set processing flag before modifying DOM
-          isProcessing = true;
-          try {
-            const editorElement = editor.view.dom as HTMLElement;
-            processLatex(editorElement);
-          } finally {
-            // Always reset the flag
-            isProcessing = false;
-            observer.timeout = null;
-          }
-        }, 50);
-      }
-    }) as MutationObserver & { timeout?: NodeJS.Timeout | null };
-
-    // Start observing the editor content
-    const editorElement = editor.view.dom as HTMLElement;
-    observer.observe(editorElement, {
-      attributes: true,
-      childList: true,
-      subtree: true,
-      attributeFilter: ["data-latex", "data-display-mode", "class"],
-    });
-
-    // Process any LaTeX content on initial render
-    isProcessing = true;
-    try {
-      processLatex(editorElement);
-    } finally {
-      isProcessing = false;
-    }
-
-    // Cleanup observer on unmount
-    return () => {
-      if (observer.timeout) {
-        clearTimeout(observer.timeout);
-      }
-      observer.disconnect();
-    };
-  }, [editor, processLatex]);
+  //   return () => {
+  //     editorElement.removeEventListener("click", handleAnnotationClick);
+  //   };
+  // }, [editor, editable]);
 
   return (
     <div
@@ -893,7 +821,7 @@ const HTMLTextAnnotator = ({
           ref={containerRef}
           className={`ProseMirror ${annotatable ? "annotator-container" : ""}`}
           onMouseUp={annotatable ? handleMouseUp : undefined}
-          onClick={annotatable ? handleAnnotationAnnotationClick : undefined}
+          onClick={annotatable ? handleAnnotationClick : undefined}
         />
       )}
 

@@ -50,41 +50,38 @@
   border-radius: 2px;
 }
 
-/* Base styles for LaTeX elements */
-.latex-base,
+/* Base styles for all LaTeX elements */
 [data-type="latex-block"],
-[data-type="latex"],
 .latex-block,
+[data-type="latex"],
 .inline-latex {
   cursor: pointer;
   border-radius: 4px;
   transition: background-color 0.2s ease;
-  
 }
 
 /* Block LaTeX styles */
-.latex-block,
 [data-type="latex-block"],
-.latex-block-popover {
+.latex-block {
   display: block;
   text-align: center;
+  margin-top: 1.6em;
   padding: 0.75rem;
   margin: 1rem 0;
-
+  font-size: 1.2em;
   background-color: hsl(var(--muted) / 0.3);
 }
 
 /* Inline LaTeX styles */
-.inline-latex,
 [data-type="latex"],
-.latex-inline-popover {
+.inline-latex {
   display: inline-block;
-  vertical-align: middle;
   padding: 0 2px;
   margin: 0;
   line-height: inherit;
+  font-size: inherit;
   background-color: rgba(0, 102, 204, 0.05);
-  border-bottom: 1px dashed hsl(var(--muted-foreground) / 0.5);
+  /* border-bottom: 1px dashed hsl(var(--muted-foreground) / 0.5); */
 }
 
 /* Hover styles */
@@ -205,6 +202,7 @@
 .annotation .katex-html {
  background: inherit;
 }
+ 
 
 /* Ensure LaTeX renders at the correct size in the annotator */
 .annotator-container .katex {

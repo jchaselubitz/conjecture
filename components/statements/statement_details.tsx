@@ -25,18 +25,20 @@ import { Upload } from "lucide-react";
 import { useStatementContext } from "@/contexts/statementContext";
 import { Input } from "../ui/input";
 import { generateStatementId } from "@/lib/helpers/helpersStatements";
-import StatementNav from "../navigation/statement_nav";
+import EditNav from "../navigation/edit_nav";
 import AppNav from "../navigation/app_nav";
 interface StatementDetailsProps {
   drafts: DraftWithAnnotations[];
   authorCommentsEnabled: boolean;
   readerCommentsEnabled: boolean;
+  editModeEnabled: boolean;
 }
 
 export default function StatementDetails({
   drafts,
   authorCommentsEnabled,
   readerCommentsEnabled,
+  editModeEnabled,
 }: StatementDetailsProps) {
   const { setStatementUpdate, statementUpdate } = useStatementContext();
   const { userId } = useUserContext();
@@ -45,6 +47,7 @@ export default function StatementDetails({
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [editMode, setEditMode] = useState(editModeEnabled);
 
   const panelGroupRef =
     useRef<React.ElementRef<typeof ResizablePanelGroup>>(null);
@@ -55,7 +58,6 @@ export default function StatementDetails({
   const [showReaderComments, setShowReaderComments] = useState(
     readerCommentsEnabled
   );
-  const [editMode, setEditMode] = useState(false);
 
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<
     string | undefined
@@ -88,6 +90,7 @@ export default function StatementDetails({
     setSelectedAnnotationId(annotationId);
     const savedSizeString = localStorage.getItem("annotationPanelSize");
     const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
+    console.log("savedSize", savedSize);
     panelGroupRef.current?.setLayout(savedSize ?? [67, 33]);
     localStorage.setItem("selectedAnnotationId", annotationId);
   };
@@ -99,7 +102,7 @@ export default function StatementDetails({
   };
 
   const onLayout = (layout: number[]) => {
-    if (layout[0] !== 100) {
+    if (layout[0] < 85) {
       localStorage.setItem("annotationPanelSize", JSON.stringify(layout));
     }
   };
@@ -161,9 +164,15 @@ export default function StatementDetails({
     }
   };
 
+  const handleEditModeToggle = () => {
+    setEditMode(!editMode);
+    const newEditMode = !editMode;
+    document.cookie = `edit_mode=${newEditMode.toString()}`;
+  };
+
   return (
     <div className="flex flex-col ">
-      {editMode ? <StatementNav /> : <AppNav />}
+      {editMode ? <EditNav /> : <AppNav />}
       {content && (
         <ResizablePanelGroup
           direction="horizontal"
@@ -242,10 +251,7 @@ export default function StatementDetails({
                 )}
 
                 {statement.creatorId === userId && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setEditMode(!editMode)}
-                  >
+                  <Button variant="outline" onClick={handleEditModeToggle}>
                     {editMode ? "View" : "Edit"}
                   </Button>
                 )}

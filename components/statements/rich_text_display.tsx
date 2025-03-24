@@ -1,12 +1,6 @@
 "use client";
 import { NewAnnotation } from "kysely-codegen";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
 import { createAnnotation } from "@/lib/actions/annotationActions";
