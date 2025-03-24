@@ -4,9 +4,9 @@ import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
 import { createAnnotation } from "@/lib/actions/annotationActions";
+import { generateStatementId } from "@/lib/helpers/helpersStatements";
 
 import HTMLTextAnnotator from "./custom_editor/html_text_annotator";
-import { generateStatementId } from "@/lib/helpers/helpersStatements";
 
 interface RichTextDisplayProps {
   htmlContent: string;
@@ -75,7 +75,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
         });
       }
     },
-    [statement, prepStatementId, setStatementUpdate]
+    [statement, prepStatementId, setStatementUpdate],
   );
 
   useEffect(() => {

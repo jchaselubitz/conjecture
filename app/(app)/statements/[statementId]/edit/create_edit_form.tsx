@@ -105,7 +105,7 @@ export default function StatementCreateEditForm({
         });
       }
     },
-    [statement, prepStatementId, setStatementUpdate]
+    [statement, prepStatementId, setStatementUpdate],
   );
 
   if (userId !== statement?.creatorId) {

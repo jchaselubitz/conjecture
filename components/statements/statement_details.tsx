@@ -1,8 +1,11 @@
 "use client";
 
 import { DraftWithAnnotations } from "kysely-codegen";
+import { Upload } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import AnnotationPanel from "@/components/statements/annotation_panel";
 import RichTextDisplay from "@/components/statements/rich_text_display";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -14,19 +17,16 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { Switch } from "@/components/ui/switch";
-import { useUserContext } from "@/contexts/userContext";
-
-import { handleImageCompression } from "@/lib/helpers/helpersImages";
-import { useRouter } from "next/navigation";
-import { uploadStatementImage } from "@/lib/actions/storageActions";
-import { updateStatementImageUrl } from "@/lib/actions/statementActions";
-import { toast } from "sonner";
-import { Upload } from "lucide-react";
 import { useStatementContext } from "@/contexts/statementContext";
-import { Input } from "../ui/input";
+import { useUserContext } from "@/contexts/userContext";
+import { updateStatementImageUrl } from "@/lib/actions/statementActions";
+import { uploadStatementImage } from "@/lib/actions/storageActions";
+import { handleImageCompression } from "@/lib/helpers/helpersImages";
 import { generateStatementId } from "@/lib/helpers/helpersStatements";
-import EditNav from "../navigation/edit_nav";
+
 import AppNav from "../navigation/app_nav";
+import EditNav from "../navigation/edit_nav";
+import { Input } from "../ui/input";
 interface StatementDetailsProps {
   drafts: DraftWithAnnotations[];
   authorCommentsEnabled: boolean;
@@ -53,10 +53,10 @@ export default function StatementDetails({
     useRef<React.ElementRef<typeof ResizablePanelGroup>>(null);
 
   const [showAuthorComments, setShowAuthorComments] = useState(
-    authorCommentsEnabled
+    authorCommentsEnabled,
   );
   const [showReaderComments, setShowReaderComments] = useState(
-    readerCommentsEnabled
+    readerCommentsEnabled,
   );
 
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<
@@ -68,7 +68,7 @@ export default function StatementDetails({
     const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
     panelGroupRef.current?.setLayout(savedSize ?? [100, 0]);
     const savedSelectedAnnotationId = localStorage.getItem(
-      "selectedAnnotationId"
+      "selectedAnnotationId",
     );
     setSelectedAnnotationId(savedSelectedAnnotationId ?? undefined);
   }, [setSelectedAnnotationId]);
@@ -118,7 +118,7 @@ export default function StatementDetails({
   };
 
   const handleImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const files = event.target.files?.length
       ? Array.from(event.target.files)

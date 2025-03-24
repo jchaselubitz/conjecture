@@ -1,6 +1,5 @@
 import "./prose.css";
 import "katex/dist/katex.min.css";
-
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import {
@@ -9,19 +8,18 @@ import {
   FloatingMenu,
   useEditor,
 } from "@tiptap/react";
-// Tiptap editor and extensions for rich text editing
 import StarterKit from "@tiptap/starter-kit";
 import { NewAnnotation } from "kysely-codegen";
-import { nanoid } from "nanoid";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { BlockTypeChooser } from "./components/block_type_chooser";
 import { BlockLatex } from "./components/custom_extensions/block_latex";
 import { InlineLatex } from "./components/custom_extensions/inline_latex";
-import { LatexCommands } from "./components/custom_extensions/latex_commands";
-import { generateColorFromString, processLatex } from "./components/helpers";
+import { processAnnotations } from "./components/annotationHelpers";
+
 import { LatexNodeEditor } from "./components/latex-node-editor";
 import { TextFormatMenu } from "./components/text_format_menu";
+import { processLatex } from "./components/custom_extensions/extensionHelpers";
 
 interface HTMLTextAnnotatorProps {
   htmlContent: string;
@@ -94,7 +92,7 @@ const HTMLTextAnnotator = ({
           class: "latex-popover-editor",
         },
       }),
-      LatexCommands,
+      // LatexCommands,
     ],
     content: htmlContent,
     editable: editable,
@@ -139,17 +137,9 @@ const HTMLTextAnnotator = ({
           if (latexNode) {
             // Get or generate an ID
             let id = latexNode.getAttribute("data-id");
-            if (!id) {
-              // Generate an ID if one doesn't exist
-              id = nanoid();
-              latexNode.setAttribute("data-id", id);
-            }
 
-            // Get the LaTeX content with fallbacks
-            // First try data-latex attribute which should contain the raw LaTeX
             let latex = latexNode.getAttribute("data-latex");
 
-            // If no data-latex, look for original content attribute
             if (!latex) {
               latex = latexNode.getAttribute("data-original-content");
             }
@@ -213,6 +203,7 @@ const HTMLTextAnnotator = ({
     }) => {
       setCurrentLatex(latex);
       setIsBlock(displayMode);
+      console.log("latexId", latexId);
       setSelectedLatexId(latexId);
 
       // Calculate position for the popover
@@ -238,118 +229,48 @@ const HTMLTextAnnotator = ({
   const handleSaveLatex = useCallback(
     (latex: string) => {
       if (!editor) return;
-
-      const contentToSave = latex;
-
-      // Try to find the element in the DOM first for immediate visual feedback
-      if (selectedLatexId) {
-        const element = document.querySelector(
-          `[data-id="${selectedLatexId}"]`
-        ) as HTMLElement;
-
-        if (element) {
-          // Update the element's data-latex attribute for immediate feedback
-          element.setAttribute("data-latex", contentToSave);
-          element.setAttribute("data-display-mode", String(isBlock));
-
-          // Add appropriate class based on display mode
-          if (isBlock) {
-            element.classList.add("latex-block");
-            element.classList.remove("inline-latex");
-          } else {
-            element.classList.add("inline-latex");
-            element.classList.remove("latex-block");
-          }
-        }
-      }
-
-      // First, try to update the model
       let modelUpdateSuccessful = false;
-      try {
-        // If it's an update to an existing LaTeX element
-        if (selectedLatexId) {
-          // Update based on the LaTeX type
-          if (isBlock) {
-            // For block LaTeX, let's use a simpler approach for block LaTeX
-            // Find the element in the DOM and update its attributes directly
-            const element = document.querySelector(
-              `[data-id="${selectedLatexId}"]`
-            ) as HTMLElement;
 
-            if (element) {
-              element.setAttribute("data-latex", contentToSave);
-              // First update attributes directly, then render through KaTeX
-              const editorElement = editor.view.dom as HTMLElement;
-              console.log(
-                "processLatex called from handleSaveLatex - element update"
-              );
-              processLatex(editorElement);
-
-              // Force model update through setContent if needed
-              const html = editor.getHTML();
-              editor.commands.setContent(html, false, {
-                preserveWhitespace: true,
-              });
-
-              modelUpdateSuccessful = true;
-            }
-          } else {
-            // For inline LaTeX, use the existing command
-            editor.commands.updateLatex({
-              latexId: selectedLatexId,
-              content: contentToSave,
-            });
-            modelUpdateSuccessful = true;
-          }
-        } else if (contentToSave.trim()) {
-          // It's a new LaTeX element, insert it at the current position
-          editor.chain().focus().run();
-
-          // Insert the LaTeX content now that we're focused
-          let inserted = false;
-
-          if (isBlock) {
-            // Use blockLatex for block mode
-            inserted = editor.commands.insertContent({
-              type: "blockLatex",
-              attrs: {
-                latex: contentToSave,
-                displayMode: true,
-                latexId: nanoid(),
-              },
-            });
-          } else {
-            // Use inline LaTeX for inline mode
-            inserted = editor.commands.setInlineLatex({
-              content: contentToSave,
-              latexId: nanoid(),
-            });
-          }
-
-          modelUpdateSuccessful = inserted;
+      if (!selectedLatexId) {
+        //insert new latex
+        if (isBlock) {
+          modelUpdateSuccessful = editor.commands.insertBlockLatex({
+            content: latex,
+          });
+        } else {
+          modelUpdateSuccessful = editor.commands.setInlineLatex({
+            content: latex,
+          });
         }
-      } catch (error) {
-        console.error("Error updating LaTeX in model:", error);
+      } else {
+        try {
+          if (isBlock) {
+            modelUpdateSuccessful = editor.commands.updateBlockLatex({
+              latexId: selectedLatexId,
+              content: latex,
+            });
+          } else {
+            modelUpdateSuccessful = editor.commands.updateInlineLatex({
+              latexId: selectedLatexId,
+              content: latex,
+            });
+          }
+        } catch (error) {
+          console.error("Error updating LaTeX in model:", error);
+        }
       }
-
       // Close the popover
       setLatexPopoverOpen(false);
 
-      // If the model update wasn't successful, or as a secondary measure,
-      // process the LaTeX in the DOM after a slight delay to ensure rendering
-      if (!modelUpdateSuccessful || true) {
-        // Always run as a fallback for now
-        setTimeout(() => {
-          if (editor) {
-            const editorElement = editor.view.dom as HTMLElement;
-            console.log(
-              "processLatex called from handleSaveLatex - setTimeout"
-            );
-            processLatex(editorElement);
-          }
-        }, 100);
-      }
+      // Process LaTeX in the DOM after a slight delay to ensure rendering
+      setTimeout(() => {
+        if (editor) {
+          const editorElement = editor.view.dom as HTMLElement;
+          processLatex(editorElement);
+        }
+      }, 100);
     },
+
     [editor, selectedLatexId, isBlock]
   );
 
@@ -357,12 +278,15 @@ const HTMLTextAnnotator = ({
   const handleDeleteLatex = useCallback(() => {
     if (!editor || !selectedLatexId) return;
 
-    // Find and delete the node
-    editor
-      .chain()
-      .focus()
-      .deleteNode(isBlock ? "blockLatex" : "inlineLatex")
-      .run();
+    if (isBlock) {
+      editor.commands.deleteBlockLatex({ latexId: selectedLatexId });
+    } else {
+      editor.commands.deleteInlineLatex({
+        latexId: selectedLatexId,
+      });
+    }
+
+    setLatexPopoverOpen(false);
   }, [editor, selectedLatexId, isBlock]);
 
   // Helper to get all text nodes
@@ -383,227 +307,6 @@ const HTMLTextAnnotator = ({
     return textNodes;
   }, []);
 
-  // Get text nodes in a range
-  const getTextNodesInRange = useCallback(
-    (
-      range: Range
-    ): { node: Text; startOffset: number; endOffset: number }[] => {
-      const nodes: { node: Text; startOffset: number; endOffset: number }[] =
-        [];
-      if (!containerRef.current) return nodes;
-
-      const textNodes = getAllTextNodes(containerRef.current);
-
-      for (const node of textNodes) {
-        if (range.intersectsNode(node)) {
-          const nodeRange = document.createRange();
-          nodeRange.selectNodeContents(node);
-
-          // Calculate the intersection of the ranges
-          const startOffset =
-            range.compareBoundaryPoints(Range.START_TO_START, nodeRange) <= 0
-              ? 0
-              : range.startOffset;
-
-          const endOffset =
-            range.compareBoundaryPoints(Range.END_TO_END, nodeRange) >= 0
-              ? node.length
-              : range.endOffset;
-
-          if (startOffset < endOffset) {
-            nodes.push({ node, startOffset, endOffset });
-          }
-        }
-      }
-
-      return nodes;
-    },
-    [getAllTextNodes]
-  );
-
-  // Process and apply annotations to the HTML content
-  const processAnnotations = useCallback(
-    (container: HTMLElement) => {
-      // Filter annotations based on visibility settings
-      const visibleAnnotations = annotations.filter((annotation) => {
-        const isAuthor = annotation.userId === userId;
-        if (showAuthorComments && isAuthor) return true;
-        if (showReaderComments && !isAuthor) return true;
-        return false;
-      });
-
-      // Process LaTeX first
-      processLatex(container);
-
-      // Apply annotations
-      visibleAnnotations.forEach((annotation) => {
-        const range = document.createRange();
-        const textNodes = getAllTextNodes(container);
-
-        let currentPos = 0;
-        let startNode: Text | null = null;
-        let endNode: Text | null = null;
-        let startOffset = 0;
-        let endOffset = 0;
-
-        // Find the start and end nodes and offsets
-        for (const node of textNodes) {
-          const nodeLength = node.textContent?.length || 0;
-          const nodeEndPos = currentPos + nodeLength;
-
-          // Skip nodes within LaTeX
-          let parentElement = node.parentElement;
-          let isInsideLaTeX = false;
-
-          while (parentElement) {
-            if (
-              parentElement.classList &&
-              (parentElement.classList.contains("katex") ||
-                parentElement.classList.contains("katex-rendered") ||
-                parentElement.classList.contains("latex-rendered") ||
-                parentElement.classList.contains("latex-block") ||
-                parentElement.classList.contains("inline-latex"))
-            ) {
-              isInsideLaTeX = true;
-              break;
-            }
-            parentElement = parentElement.parentElement;
-          }
-
-          if (isInsideLaTeX) {
-            currentPos += nodeLength;
-            continue;
-          }
-
-          // Find start and end positions
-          if (currentPos <= annotation.start && annotation.start < nodeEndPos) {
-            startNode = node;
-            startOffset = annotation.start - currentPos;
-          }
-
-          if (currentPos <= annotation.end && annotation.end <= nodeEndPos) {
-            endNode = node;
-            endOffset = annotation.end - currentPos;
-            break;
-          }
-
-          currentPos += nodeLength;
-        }
-
-        // Apply the annotation if we found both start and end positions
-        if (startNode && endNode) {
-          try {
-            range.setStart(startNode, startOffset);
-            range.setEnd(endNode, endOffset);
-
-            const mark = document.createElement("mark");
-            const annotationUserId = annotation.userId || "anonymous";
-            const colors = generateColorFromString(annotationUserId);
-            const tag = annotation.tag || "none";
-            const annotationId = annotation.id ? annotation.id.toString() : "";
-            const isSelected = selectedAnnotationId === annotationId;
-
-            // Apply colors and styles
-            mark.style.backgroundColor = colors.backgroundColor;
-            mark.style.setProperty(
-              "--hover-bg-color",
-              colors.hoverBackgroundColor
-            );
-
-            if (isSelected) {
-              mark.style.borderBottom = `2px solid ${colors.borderColor}`;
-              mark.style.backgroundColor = colors.hoverBackgroundColor;
-            }
-
-            mark.className = "annotation";
-            mark.dataset.tag = tag;
-            mark.dataset.userId = annotationUserId;
-            mark.dataset.start = annotation.start.toString();
-            mark.dataset.end = annotation.end.toString();
-            mark.dataset.draftId = annotation.draftId.toString();
-            mark.dataset.id = annotationId;
-
-            range.surroundContents(mark);
-
-            // Re-process LaTeX in the annotation
-            processLatex(mark);
-          } catch (e) {
-            console.error("Error applying annotation:", e);
-
-            // Try alternative approach with multiple highlights
-            try {
-              const rangeNodes = getTextNodesInRange(range);
-              rangeNodes.forEach((nodeInfo) => {
-                // Skip LaTeX nodes
-                let parentElement = nodeInfo.node.parentElement;
-                let isInsideLaTeX = false;
-
-                while (parentElement) {
-                  if (
-                    parentElement.classList &&
-                    (parentElement.classList.contains("katex") ||
-                      parentElement.classList.contains("katex-rendered") ||
-                      parentElement.classList.contains("latex-rendered") ||
-                      parentElement.classList.contains("latex-block") ||
-                      parentElement.classList.contains("inline-latex"))
-                  ) {
-                    isInsideLaTeX = true;
-                    break;
-                  }
-                  parentElement = parentElement.parentElement;
-                }
-
-                if (isInsideLaTeX) return;
-
-                const nodeRange = document.createRange();
-                nodeRange.setStart(nodeInfo.node, nodeInfo.startOffset);
-                nodeRange.setEnd(nodeInfo.node, nodeInfo.endOffset);
-
-                const mark = document.createElement("mark");
-                const annotationUserId = annotation.userId || "anonymous";
-                const colors = generateColorFromString(annotationUserId);
-                const annotationId = annotation.id
-                  ? annotation.id.toString()
-                  : "";
-                const isSelected = selectedAnnotationId === annotationId;
-
-                mark.style.backgroundColor = colors.backgroundColor;
-                mark.style.setProperty(
-                  "--hover-bg-color",
-                  colors.hoverBackgroundColor
-                );
-
-                if (isSelected) {
-                  mark.style.borderBottom = `2px solid ${colors.borderColor}`;
-                }
-
-                mark.className = "annotation";
-                mark.dataset.userId = annotationUserId;
-                mark.dataset.id = annotationId;
-
-                nodeRange.surroundContents(mark);
-              });
-            } catch (nestedError) {
-              console.error(
-                "Failed to apply partial highlighting:",
-                nestedError
-              );
-            }
-          }
-        }
-      });
-    },
-    [
-      annotations,
-      getAllTextNodes,
-      getTextNodesInRange,
-      selectedAnnotationId,
-      showAuthorComments,
-      showReaderComments,
-      userId,
-    ]
-  );
-
   // Update the display when content or annotations change
   useEffect(() => {
     if (!containerRef.current || !editor) return;
@@ -619,7 +322,6 @@ const HTMLTextAnnotator = ({
         firstP.setAttribute("data-placeholder", placeholder);
       }
     }
-
     // Add styles for hover effects
     const styleTag = document.createElement("style");
     styleTag.textContent = `
@@ -632,8 +334,15 @@ const HTMLTextAnnotator = ({
     `;
     containerRef.current.appendChild(styleTag);
 
-    processAnnotations(containerRef.current);
-  }, [htmlContent, processAnnotations, placeholder]);
+    processAnnotations({
+      annotations,
+      userId,
+      showAuthorComments,
+      showReaderComments,
+      selectedAnnotationId,
+      container: containerRef.current,
+    });
+  }, [htmlContent, processAnnotations, placeholder, editor]);
 
   // Handle selection and create new annotations
   const handleMouseUp = useCallback(() => {
@@ -760,22 +469,6 @@ const HTMLTextAnnotator = ({
       };
     }
   }, [editor, editable]);
-
-  // useEffect(() => {
-  //   if (!editor) return;
-
-  //   const handleAnnotationClick = (event: MouseEvent) => {
-  //     // ... existing click handler code ...
-  //     console.log("handleAnnotationClick called");
-  //   };
-
-  //   const editorElement = editor.view.dom as HTMLElement;
-  //   editorElement.addEventListener("click", handleAnnotationClick);
-
-  //   return () => {
-  //     editorElement.removeEventListener("click", handleAnnotationClick);
-  //   };
-  // }, [editor, editable]);
 
   return (
     <div

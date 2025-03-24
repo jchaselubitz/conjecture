@@ -1,7 +1,7 @@
 import { mergeAttributes, Node } from "@tiptap/core";
 import { nanoid } from "nanoid";
 import { Plugin, PluginKey } from "prosemirror-state";
-import { processLatex } from "../helpers";
+import { processLatex } from "./extensionHelpers";
 
 export interface BlockLatexOptions {
  HTMLAttributes: Record<string, any>;
@@ -10,10 +10,15 @@ export interface BlockLatexOptions {
 declare module "@tiptap/core" {
  interface Commands<ReturnType> {
   blockLatex: {
-   insertLatex: (
-    options: { content: string; displayMode?: boolean },
+   insertBlockLatex: (
+    options: { content: string },
    ) => ReturnType;
-   updateLatex: (options: { latexId: string; content: string }) => ReturnType;
+   updateBlockLatex: (
+    options: { latexId: string; content: string },
+   ) => ReturnType;
+   deleteBlockLatex: (
+    options: { latexId: string },
+   ) => ReturnType;
   };
  }
 }
@@ -84,11 +89,6 @@ export const BlockLatex = Node.create<BlockLatexOptions>({
  },
 
  renderHTML({ HTMLAttributes, node }) {
-  // Create a unique ID if one doesn't exist
-  if (!HTMLAttributes.latexId) {
-   HTMLAttributes.latexId = nanoid();
-  }
-
   return [
    "div",
    mergeAttributes(
@@ -97,8 +97,8 @@ export const BlockLatex = Node.create<BlockLatexOptions>({
     {
      "data-type": "latex-block",
      "data-latex": node.attrs.latex,
-     "data-display-mode": "true",
-     "data-id": HTMLAttributes.latexId,
+     "data-display-mode": node.attrs.displayMode ? "true" : "false",
+     "data-id": node.attrs.latexId,
      class: "latex-block",
     },
    ),
@@ -109,25 +109,19 @@ export const BlockLatex = Node.create<BlockLatexOptions>({
 
  addCommands() {
   return {
-   insertLatex: (options) => ({ chain, commands }) => {
+   insertBlockLatex: (options) => ({ chain, commands }) => {
     const latexId = nanoid();
-
-    // Insert the content
     const success = commands.insertContent({
      type: this.name,
      attrs: {
       latex: options.content,
-      displayMode: options.displayMode !== undefined
-       ? options.displayMode
-       : true,
+      displayMode: true,
       latexId,
      },
     });
-
-    // Return success boolean to satisfy Command type
     return success;
    },
-   updateLatex: (options) => ({ tr, state, dispatch }) => {
+   updateBlockLatex: (options) => ({ tr, state, dispatch }) => {
     // Find the node with the given ID
     const { doc } = state;
     let nodePos = -1;
@@ -148,6 +142,7 @@ export const BlockLatex = Node.create<BlockLatexOptions>({
     }
 
     // Update the node
+
     if (dispatch) {
      tr.setNodeMarkup(nodePos, undefined, {
       ...doc.nodeAt(nodePos)?.attrs,
@@ -156,6 +151,31 @@ export const BlockLatex = Node.create<BlockLatexOptions>({
      dispatch(tr);
     }
 
+    return true;
+   },
+   deleteBlockLatex: (options) => ({ tr, state, dispatch }) => {
+    if (!dispatch) return false;
+    const { doc } = state;
+    let nodePos = -1;
+
+    doc.descendants((node, pos) => {
+     if (
+      node.type.name === "blockLatex" &&
+      node.attrs.latexId === options.latexId
+     ) {
+      nodePos = pos;
+      return false;
+     }
+     return true;
+    });
+
+    if (nodePos === -1) {
+     return false;
+    }
+
+    // Delete the node at the found position
+    tr.delete(nodePos, nodePos + doc.nodeAt(nodePos)!.nodeSize);
+    dispatch(tr);
     return true;
    },
   };

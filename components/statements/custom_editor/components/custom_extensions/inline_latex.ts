@@ -6,7 +6,7 @@ import {
 } from "@tiptap/core";
 import { nanoid } from "nanoid";
 import { Plugin, PluginKey } from "prosemirror-state";
-import { processLatex } from "../helpers";
+import { processLatex } from "./extensionHelpers";
 
 export interface InlineLatexOptions {
   /**
@@ -54,6 +54,10 @@ declare module "@tiptap/core" {
       updateInlineLatex: (
         options: { latexId: string; content: string },
       ) => ReturnType;
+      /**
+       * Delete LaTeX mark by ID
+       */
+      deleteInlineLatex: (options: { latexId: string }) => ReturnType;
     };
   }
 }
@@ -122,11 +126,6 @@ export const InlineLatex = Mark.create<InlineLatexOptions>({
   },
 
   renderHTML({ HTMLAttributes }) {
-    // Create a unique ID if one doesn't exist
-    if (!HTMLAttributes.latexId) {
-      HTMLAttributes.latexId = nanoid();
-    }
-
     return [
       "span",
       mergeAttributes(
@@ -148,13 +147,14 @@ export const InlineLatex = Mark.create<InlineLatexOptions>({
     return {
       setInlineLatex: (options = {}) => ({ commands, editor, tr }) => {
         const { selection } = editor.state;
-        const latexId = options.latexId || nanoid();
 
-        // If there's no selection, insert default content
+        const latexId = options.latexId || nanoid();
         if (selection.empty) {
           const content = options.content || this.options.defaultContent || "";
           if (content) {
-            editor.commands.insertContent(content);
+            const spacedContent = content.trim();
+            console.log("spacedContent", spacedContent + "&nbsp;");
+            editor.commands.insertContent(spacedContent + "HI");
           }
         }
 
@@ -169,7 +169,8 @@ export const InlineLatex = Mark.create<InlineLatexOptions>({
         if (selection.empty && !isActive) {
           const content = options.content || this.options.defaultContent || "";
           if (content) {
-            editor.commands.insertContent(content);
+            const spacedContent = content.trim();
+            editor.commands.insertContent(spacedContent + "&nbsp;");
           }
         }
 
@@ -210,6 +211,36 @@ export const InlineLatex = Mark.create<InlineLatexOptions>({
                     latex: options.content,
                   }),
                 );
+                dispatch(tr);
+              }
+              return false;
+            }
+          });
+
+          return true;
+        });
+
+        return found;
+      },
+      deleteInlineLatex: (options) => ({ tr, state, dispatch }) => {
+        if (!dispatch) return false;
+        const { doc } = state;
+        let found = false;
+
+        doc.nodesBetween(0, doc.content.size, (node, pos) => {
+          if (found) return false;
+
+          // Check if this node has our mark
+          node.marks.forEach((mark) => {
+            if (
+              mark.type.name === this.name &&
+              mark.attrs.latexId === options.latexId
+            ) {
+              found = true;
+              if (dispatch) {
+                //also remove the text within the mark
+                tr.delete(pos, pos + node.nodeSize);
+                tr.removeMark(pos, pos + node.nodeSize, mark.type);
                 dispatch(tr);
               }
               return false;
