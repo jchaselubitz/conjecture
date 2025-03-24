@@ -12,14 +12,13 @@ import StarterKit from "@tiptap/starter-kit";
 import { NewAnnotation } from "kysely-codegen";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
+import { processAnnotations } from "./components/annotationHelpers";
 import { BlockTypeChooser } from "./components/block_type_chooser";
 import { BlockLatex } from "./components/custom_extensions/block_latex";
+import { processLatex } from "./components/custom_extensions/extensionHelpers";
 import { InlineLatex } from "./components/custom_extensions/inline_latex";
-import { processAnnotations } from "./components/annotationHelpers";
-
 import { LatexNodeEditor } from "./components/latex-node-editor";
 import { TextFormatMenu } from "./components/text_format_menu";
-import { processLatex } from "./components/custom_extensions/extensionHelpers";
 
 interface HTMLTextAnnotatorProps {
   htmlContent: string;
@@ -118,18 +117,18 @@ const HTMLTextAnnotator = ({
           // Look for any LaTeX element - both inline and block
           // Also check for elements inside a .katex rendered element
           let latexNode = element.closest(
-            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
+            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
           );
 
           // If we didn't find a direct LaTeX element, check if we're inside a katex rendered element
           if (!latexNode) {
             const katexElement = element.closest(
-              ".katex, .katex-html, .katex-rendered"
+              ".katex, .katex-html, .katex-rendered",
             );
             if (katexElement) {
               // Find the parent LaTeX element that contains this katex element
               latexNode = katexElement.closest(
-                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
+                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
               );
             }
           }
@@ -148,7 +147,7 @@ const HTMLTextAnnotator = ({
             // but skip KaTeX wrappers that might be inside
             if (!latex) {
               const katexWrapper = latexNode.querySelector(
-                ".katex-rendered, .katex"
+                ".katex-rendered, .katex",
               );
               if (katexWrapper) {
                 // If there's a rendered KaTeX element, ignore its content
@@ -222,7 +221,7 @@ const HTMLTextAnnotator = ({
 
       setLatexPopoverOpen(true);
     },
-    [editor]
+    [editor],
   );
 
   // Function to handle saving LaTeX content
@@ -238,7 +237,7 @@ const HTMLTextAnnotator = ({
             content: latex,
           });
         } else {
-          modelUpdateSuccessful = editor.commands.setInlineLatex({
+          modelUpdateSuccessful = editor.commands.insertInlineLatex({
             content: latex,
           });
         }
@@ -270,8 +269,7 @@ const HTMLTextAnnotator = ({
         }
       }, 100);
     },
-
-    [editor, selectedLatexId, isBlock]
+    [editor, selectedLatexId, isBlock],
   );
 
   // Handle deleting LaTeX content from the editor
@@ -342,7 +340,20 @@ const HTMLTextAnnotator = ({
       selectedAnnotationId,
       container: containerRef.current,
     });
-  }, [htmlContent, processAnnotations, placeholder, editor]);
+  }, [
+    htmlContent,
+    showAuthorComments,
+    showReaderComments,
+    placeholder,
+    editor,
+    annotations,
+    selectedAnnotationId,
+    getAllTextNodes,
+    getSpan,
+    onAnnotationChange,
+    setSelectedAnnotationId,
+    userId,
+  ]);
 
   // Handle selection and create new annotations
   const handleMouseUp = useCallback(() => {
@@ -448,7 +459,7 @@ const HTMLTextAnnotator = ({
         }
       }
     },
-    [onAnnotationClick]
+    [onAnnotationClick],
   );
 
   // Update the editor content when htmlContent prop changes (in view mode)

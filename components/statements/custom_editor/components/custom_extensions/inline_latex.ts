@@ -1,9 +1,4 @@
-import {
-  Mark,
-  markInputRule,
-  markPasteRule,
-  mergeAttributes,
-} from "@tiptap/core";
+import { mergeAttributes, Node } from "@tiptap/core";
 import { nanoid } from "nanoid";
 import { Plugin, PluginKey } from "prosemirror-state";
 import { processLatex } from "./extensionHelpers";
@@ -16,13 +11,6 @@ export interface InlineLatexOptions {
   HTMLAttributes: Record<string, any>;
 
   /**
-   * Custom renderer function for inline LaTeX content
-   * This allows for integration with libraries like KaTeX or MathJax
-   * @default undefined
-   */
-  renderer?: (latex: string) => string | HTMLElement;
-
-  /**
    * Default LaTeX content to insert when creating a new inline LaTeX
    * @default ""
    */
@@ -33,58 +21,36 @@ declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     inlineLatex: {
       /**
-       * Toggle inline LaTeX mark
+       * Insert inline LaTeX node
        */
-      toggleInlineLatex: (
-        options?: { content?: string; latexId?: string },
-      ) => ReturnType;
+      insertInlineLatex: (options?: { content?: string }) => ReturnType;
       /**
-       * Set inline LaTeX mark
-       */
-      setInlineLatex: (
-        options?: { content?: string; latexId?: string },
-      ) => ReturnType;
-      /**
-       * Unset inline LaTeX mark
-       */
-      unsetInlineLatex: () => ReturnType;
-      /**
-       * Update inline LaTeX mark
+       * Update inline LaTeX node
        */
       updateInlineLatex: (
         options: { latexId: string; content: string },
       ) => ReturnType;
       /**
-       * Delete LaTeX mark by ID
+       * Delete LaTeX node by ID
        */
       deleteInlineLatex: (options: { latexId: string }) => ReturnType;
     };
   }
 }
 
-/**
- * Matches inline LaTeX with $ as delimiters
- */
-export const inlineInputRegex = /(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)/g;
-
-/**
- * This extension allows for inline LaTeX expressions.
- */
-export const InlineLatex = Mark.create<InlineLatexOptions>({
+export const InlineLatex = Node.create<InlineLatexOptions>({
   name: "inlineLatex",
 
   addOptions() {
     return {
       HTMLAttributes: {},
-      renderer: undefined,
       defaultContent: "\\alpha + \\beta = \\gamma",
     };
   },
 
-  // Let other marks overwrite this one
-  excludes: "",
-
-  inclusive: true,
+  inline: true,
+  group: "inline",
+  atom: true,
 
   addAttributes() {
     return {
@@ -125,179 +91,100 @@ export const InlineLatex = Mark.create<InlineLatexOptions>({
     ];
   },
 
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({ HTMLAttributes, node }) {
     return [
       "span",
       mergeAttributes(
-        {
-          "data-type": "inline-latex",
-          class: "inline-latex",
-          "data-latex": HTMLAttributes.latex,
-          "data-id": HTMLAttributes.latexId,
-          style: "display: inline-block; vertical-align: middle;",
-        },
         this.options.HTMLAttributes,
         HTMLAttributes,
+        {
+          "data-type": "inline-latex",
+          "data-latex": node.attrs.latex,
+          "data-id": node.attrs.latexId,
+          class: "inline-latex",
+          style: "display: inline-block; vertical-align: middle;",
+        },
       ),
-      0,
+      // This placeholder will be replaced with rendered LaTeX
+      node.attrs.latex || "Click to edit LaTeX",
     ];
   },
 
   addCommands() {
     return {
-      setInlineLatex: (options = {}) => ({ commands, editor, tr }) => {
-        const { selection } = editor.state;
-
-        const latexId = options.latexId || nanoid();
-        if (selection.empty) {
-          const content = options.content || this.options.defaultContent || "";
-          if (content) {
-            const spacedContent = content.trim();
-            console.log("spacedContent", spacedContent + "&nbsp;");
-            editor.commands.insertContent(spacedContent + "HI");
-          }
-        }
-
-        return commands.setMark(this.name, { latexId, latex: options.content });
-      },
-      toggleInlineLatex: (options = {}) => ({ commands, editor }) => {
-        const { selection } = editor.state;
-        const isActive = editor.isActive(this.name);
-        const latexId = options.latexId || nanoid();
-
-        // If there's no selection and mark is not active, insert default content
-        if (selection.empty && !isActive) {
-          const content = options.content || this.options.defaultContent || "";
-          if (content) {
-            const spacedContent = content.trim();
-            editor.commands.insertContent(spacedContent + "&nbsp;");
-          }
-        }
-
-        return commands.toggleMark(this.name, {
-          latexId,
-          latex: options.content,
+      insertInlineLatex: (options = {}) => ({ chain, commands }) => {
+        const latexId = nanoid();
+        return commands.insertContent({
+          type: this.name,
+          attrs: {
+            latex: options.content || this.options.defaultContent,
+            latexId,
+          },
         });
       },
-      unsetInlineLatex: () => ({ commands }) => {
-        return commands.unsetMark(this.name);
-      },
       updateInlineLatex: (options) => ({ tr, state, dispatch }) => {
-        // Find the mark with the given ID and update it
-        const { doc, selection } = state;
-        let found = false;
+        // Find the node with the given ID
+        const { doc } = state;
+        let nodePos = -1;
 
-        doc.nodesBetween(0, doc.content.size, (node, pos) => {
-          if (found) return false;
-
-          // Check if this node has our mark
-          node.marks.forEach((mark) => {
-            if (
-              mark.type.name === this.name &&
-              mark.attrs.latexId === options.latexId
-            ) {
-              found = true;
-              if (dispatch) {
-                // Replace the mark with updated content
-                const start = pos;
-                const end = pos + node.nodeSize;
-
-                tr.removeMark(start, end, mark.type);
-                tr.addMark(
-                  start,
-                  end,
-                  mark.type.create({
-                    ...mark.attrs,
-                    latex: options.content,
-                  }),
-                );
-                dispatch(tr);
-              }
-              return false;
-            }
-          });
-
+        doc.descendants((node, pos) => {
+          if (
+            node.type.name === this.name &&
+            node.attrs.latexId === options.latexId
+          ) {
+            nodePos = pos;
+            return false;
+          }
           return true;
         });
 
-        return found;
+        if (nodePos === -1) {
+          return false;
+        }
+
+        // Update the node
+        if (dispatch) {
+          tr.setNodeMarkup(nodePos, undefined, {
+            ...doc.nodeAt(nodePos)?.attrs,
+            latex: options.content,
+          });
+          dispatch(tr);
+        }
+
+        return true;
       },
       deleteInlineLatex: (options) => ({ tr, state, dispatch }) => {
         if (!dispatch) return false;
         const { doc } = state;
-        let found = false;
+        let nodePos = -1;
 
-        doc.nodesBetween(0, doc.content.size, (node, pos) => {
-          if (found) return false;
-
-          // Check if this node has our mark
-          node.marks.forEach((mark) => {
-            if (
-              mark.type.name === this.name &&
-              mark.attrs.latexId === options.latexId
-            ) {
-              found = true;
-              if (dispatch) {
-                //also remove the text within the mark
-                tr.delete(pos, pos + node.nodeSize);
-                tr.removeMark(pos, pos + node.nodeSize, mark.type);
-                dispatch(tr);
-              }
-              return false;
-            }
-          });
-
+        doc.descendants((node, pos) => {
+          if (
+            node.type.name === this.name &&
+            node.attrs.latexId === options.latexId
+          ) {
+            nodePos = pos;
+            return false;
+          }
           return true;
         });
 
-        return found;
+        if (nodePos === -1) {
+          return false;
+        }
+
+        // Delete the node at the found position
+        tr.delete(nodePos, nodePos + doc.nodeAt(nodePos)!.nodeSize);
+        dispatch(tr);
+        return true;
       },
     };
   },
 
   addKeyboardShortcuts() {
     return {
-      "Mod-Shift-i": () => this.editor.commands.toggleInlineLatex(),
-      // Allow removing inline LaTeX with backspace when cursor is at start of LaTeX content
-      Backspace: ({ editor }) => {
-        if (!editor.isActive(this.name)) {
-          return false;
-        }
-
-        const { selection } = editor.state;
-        if (!selection.empty) {
-          return false;
-        }
-
-        // Check if we're at the beginning of a text node with LaTeX mark
-        const { $head } = selection;
-        if ($head.parentOffset === 0) {
-          // Remove the LaTeX mark from this point forward
-          return editor.chain().extendMarkRange(this.name).unsetMark(this.name)
-            .run();
-        }
-
-        return false;
-      },
+      "Mod-Shift-i": () => this.editor.commands.insertInlineLatex(),
     };
-  },
-
-  addInputRules() {
-    return [
-      markInputRule({
-        find: inlineInputRegex,
-        type: this.type,
-      }),
-    ];
-  },
-
-  addPasteRules() {
-    return [
-      markPasteRule({
-        find: inlineInputRegex,
-        type: this.type,
-      }),
-    ];
   },
 
   addProseMirrorPlugins() {
@@ -314,36 +201,28 @@ export const InlineLatex = Mark.create<InlineLatexOptions>({
 
           return {
             update(view, prevState) {
-              // Process on content changes that affect LaTeX
-              let hasCurrentLatex = false;
-              let hasPrevLatex = false;
+              // Only process if the document has actually changed
+              if (!view.state.doc.eq(prevState.doc)) {
+                // Check if any inline LaTeX nodes have changed
+                let hasLatexContentChanged = false;
 
-              view.state.doc.descendants((node) => {
-                if (
-                  node.marks.some((mark) => mark.type.name === "inlineLatex")
-                ) {
-                  hasCurrentLatex = true;
-                  return false;
+                view.state.doc.descendants((node, pos) => {
+                  if (node.type.name === "inlineLatex") {
+                    const prevNode = prevState.doc.nodeAt(pos);
+                    if (
+                      !prevNode || prevNode.type.name !== "inlineLatex" ||
+                      prevNode.attrs.latex !== node.attrs.latex
+                    ) {
+                      hasLatexContentChanged = true;
+                      return false;
+                    }
+                  }
+                  return true;
+                });
+
+                if (hasLatexContentChanged) {
+                  processLatexInView();
                 }
-                return true;
-              });
-
-              prevState.doc.descendants((node) => {
-                if (
-                  node.marks.some((mark) => mark.type.name === "inlineLatex")
-                ) {
-                  hasPrevLatex = true;
-                  return false;
-                }
-                return true;
-              });
-
-              const hasLatexChanges =
-                view.state.doc.eq(prevState.doc) === false &&
-                (hasCurrentLatex || hasPrevLatex);
-
-              if (hasLatexChanges) {
-                processLatexInView();
               }
             },
             destroy() {
