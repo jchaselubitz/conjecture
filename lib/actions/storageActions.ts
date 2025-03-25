@@ -3,7 +3,8 @@
 import { createClient } from "@/supabase/server";
 import { revalidatePath } from "next/cache";
 import * as Sentry from "@sentry/nextjs";
-export async function uploadFile({
+
+async function uploadFile({
   bucket,
   file,
   path,
@@ -61,10 +62,12 @@ export async function uploadStatementImage({
   file,
   fileName,
   creatorId,
+  statementId,
 }: {
   oldImageUrl: string | null;
   file: FormData;
   creatorId: string;
+  statementId: string;
   fileName: string;
 }) {
   const supabase = await createClient();
@@ -85,7 +88,7 @@ export async function uploadStatementImage({
     await deleteFile({
       bucket,
       url: oldImageUrl,
-      folderPath: `${userId}`,
+      folderPath: `${userId}/${statementId}`,
     });
   }
   const fileForUpload = file.get("image") as File;
@@ -93,7 +96,7 @@ export async function uploadStatementImage({
   const { data, error } = await uploadFile({
     bucket,
     file: fileForUpload,
-    path: `${userId}/${fileName}`,
+    path: `${userId}/${statementId}/${fileName}`,
   });
 
   if (error) {
@@ -106,12 +109,14 @@ export async function uploadStatementImage({
   return getPublicFile({ bucket, path: data?.path });
 }
 
-export async function deleteStatementImage({
+export async function deleteStoredStatementImage({
   url,
   creatorId,
+  statementId,
 }: {
   url: string;
   creatorId: string;
+  statementId: string;
 }) {
   const supabase = await createClient();
   const {
@@ -127,8 +132,7 @@ export async function deleteStatementImage({
   }
 
   const bucket = "statement_images";
-  await deleteFile({ bucket, url, folderPath: `${userId}` });
-  revalidatePath("/", "page");
+  await deleteFile({ bucket, url, folderPath: `${userId}/${statementId}` });
 }
 
 export async function uploadProfileImage({
@@ -198,4 +202,19 @@ export async function deleteProfileImage(
   const bucket = "user_images";
   await deleteFile({ bucket, url, folderPath: profileId });
   revalidatePath("/", "page");
+}
+
+export async function getStatementImages({
+  statementId,
+  creatorId,
+}: {
+  statementId: string;
+  creatorId: string;
+}) {
+  const supabase = await createClient();
+  const statementImages = await supabase.storage
+    .from("statement_images")
+    .createSignedUrls([`${creatorId}/${statementId}/`], 3600);
+
+  return statementImages;
 }

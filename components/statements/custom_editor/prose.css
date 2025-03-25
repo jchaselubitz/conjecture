@@ -12,15 +12,15 @@
 }
 
 .ProseMirror h1 {
-  font-size: 3.5em;
-  font-weight: 700;
-  line-height: 1.2;
-  margin-top: 0;
+  font-size: 3em;
+  font-weight: 800;
+  line-height: 1;
+  margin-top: 1.6em;
   margin-bottom: 0.8em;
 }
 
 .ProseMirror h2 {
-  font-size: 2.25em;
+  font-size: 1.9em;
   font-weight: 600;
   line-height: 1.3;
   margin-top: 1.6em;
@@ -36,9 +36,49 @@
 }
 
 .ProseMirror p {
-  font-size: 1.2em;
-  line-height: 1.5;
+  font-size: 1.1em;
+  line-height: 1.6;
   margin-bottom: 1.2em;
+}
+
+/* List styles */
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1.5em;
+  margin-bottom: 1.2em;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+}
+
+.ProseMirror ul ul {
+  list-style-type: circle;
+}
+
+.ProseMirror ul ul ul {
+  list-style-type: square;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+}
+
+.ProseMirror ol ol {
+  list-style-type: lower-alpha;
+}
+
+.ProseMirror ol ol ol {
+  list-style-type: lower-roman;
+}
+
+.ProseMirror li {
+  margin-bottom: 0.5em;
+  line-height: 1.6;
+}
+
+.ProseMirror li p {
+  margin: 0;
 }
 
 /* Error display */
@@ -69,7 +109,8 @@
   padding: 0.75rem;
   margin: 1rem 0;
   font-size: 1.2em;
-  background-color: hsl(var(--muted) / 0.3);
+   background: #f4e7d661;
+
 }
 
 /* Inline LaTeX styles */
@@ -81,7 +122,6 @@
   line-height: inherit;
   font-size: inherit;
   background-color: rgba(0, 102, 204, 0.05);
-  /* border-bottom: 1px dashed hsl(var(--muted-foreground) / 0.5); */
 }
 
 /* Hover styles */
@@ -145,6 +185,24 @@
   padding: 0 2px;
 }
 
+/* Block Image styles */
+.ProseMirror img[data-type="block-image"] {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1rem auto;
+  margin-bottom: 4rem;
+  margin-top: 4rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.ProseMirror img[data-type="block-image"]:hover {
+  box-shadow: 0 0 0 3px hsl(var(--muted) / 0.3);
+}
+
+
 /* Annotation styles */
 
 .annotation {
@@ -182,7 +240,6 @@
 .annotator-container .latex-block,
 .annotator-container .inline-latex {
  pointer-events: none; /* Prevent LaTeX elements from interfering with annotation selection */
- border: 1px solid #bebebe;
 }
 
 /* Allow pointer events on LaTeX elements in editable mode */
@@ -194,8 +251,6 @@
 .annotator-container .latex-block {
  margin: 1rem 0;
  padding: 0.5rem;
- background: #f0efef;
- /* border-left: 3px solid #0066cc; */
 }
 
 /* Make sure annotations properly wrap LaTeX content */
@@ -269,3 +324,11 @@
   border-top: 1px solid rgba(66, 153, 225, 0.5) !important;
 } */
 
+
+
+
+/* .auto-resize-input {
+  resize: none;
+  overflow: hidden;
+  white-space: nowrap;
+ } */

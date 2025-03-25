@@ -1,6 +1,5 @@
-import katex from "katex";
 import { NewAnnotation } from "kysely-codegen";
-import { processLatex } from "./custom_extensions/extensionHelpers";
+import { processLatex } from "./custom_extensions/helpersLatexExtension";
 
 export const generateColorFromString = (str: string) => {
   let hash = 0;

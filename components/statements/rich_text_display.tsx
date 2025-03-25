@@ -6,8 +6,7 @@ import { useUserContext } from "@/contexts/userContext";
 import { createAnnotation } from "@/lib/actions/annotationActions";
 import { generateStatementId } from "@/lib/helpers/helpersStatements";
 
-import HTMLTextAnnotator from "./custom_editor/html_text_annotator";
-
+import HTMLSuperEditor from "./custom_editor/html_super_editor";
 interface RichTextDisplayProps {
   htmlContent: string;
   placeholder?: string;
@@ -173,7 +172,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
 
   return (
     <div className="rounded-lg overflow-hidden bg-background">
-      <HTMLTextAnnotator
+      <HTMLSuperEditor
         htmlContent={statementUpdate?.content || htmlContent}
         existingAnnotations={annotations}
         userId={userId}
@@ -188,6 +187,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
         showReaderComments={showReaderComments}
         onContentChange={handleContentChange}
         editable={editable}
+        statementId={statementId}
       />
     </div>
   );

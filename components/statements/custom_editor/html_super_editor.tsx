@@ -11,19 +11,25 @@ import {
 import StarterKit from "@tiptap/starter-kit";
 import { NewAnnotation } from "kysely-codegen";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { UpsertImageDataType } from "@/lib/actions/statementActions";
 
 import { processAnnotations } from "./components/annotationHelpers";
 import { BlockTypeChooser } from "./components/block_type_chooser";
+import { BlockImage } from "./components/custom_extensions/block_image";
 import { BlockLatex } from "./components/custom_extensions/block_latex";
-import { processLatex } from "./components/custom_extensions/extensionHelpers";
+import {
+  deleteLatex,
+  saveLatex,
+} from "./components/custom_extensions/helpersLatexExtension";
 import { InlineLatex } from "./components/custom_extensions/inline_latex";
+import { ImageNodeEditor, NewImageData } from "./components/image-node-editor";
 import { LatexNodeEditor } from "./components/latex-node-editor";
 import { TextFormatMenu } from "./components/text_format_menu";
-
-interface HTMLTextAnnotatorProps {
+interface HTMLSuperEditorProps {
   htmlContent: string;
   existingAnnotations: NewAnnotation[];
   userId: string | undefined;
+  statementId: string;
   onAnnotationChange?: (value: NewAnnotation[]) => void;
   onAnnotationClick?: (id: string) => void;
   getSpan?: (span: NewAnnotation) => NewAnnotation;
@@ -39,10 +45,11 @@ interface HTMLTextAnnotatorProps {
   showReaderComments: boolean;
 }
 
-const HTMLTextAnnotator = ({
+const HTMLSuperEditor = ({
   htmlContent,
   existingAnnotations,
   userId,
+  statementId,
   onAnnotationChange,
   getSpan,
   onAnnotationClick,
@@ -56,7 +63,7 @@ const HTMLTextAnnotator = ({
   setSelectedAnnotationId,
   showAuthorComments,
   showReaderComments,
-}: HTMLTextAnnotatorProps) => {
+}: HTMLSuperEditorProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [annotations, setAnnotations] = useState<NewAnnotation[]>([]);
   const [latexPopoverOpen, setLatexPopoverOpen] = useState(false);
@@ -69,6 +76,23 @@ const HTMLTextAnnotator = ({
     width: number;
     height: number;
   } | null>(null);
+
+  const [imagePopoverOpen, setImagePopoverOpen] = useState(false);
+  const [initialImageData, setInitialImageData] = useState<UpsertImageDataType>(
+    {
+      src: "",
+      alt: "",
+      statementId,
+      id: "",
+    },
+  );
+  const [currentImageData, setCurrentImageData] = useState<NewImageData>({
+    file: undefined,
+    src: "",
+    alt: "",
+
+    id: undefined,
+  });
 
   useEffect(() => {
     setAnnotations(existingAnnotations);
@@ -91,7 +115,11 @@ const HTMLTextAnnotator = ({
           class: "latex-popover-editor",
         },
       }),
-      // LatexCommands,
+      BlockImage.configure({
+        HTMLAttributes: {
+          class: "block-image",
+        },
+      }),
     ],
     content: htmlContent,
     editable: editable,
@@ -113,6 +141,29 @@ const HTMLTextAnnotator = ({
         // Handle clicks on LaTeX elements to edit them
         click: (view, event) => {
           const element = event.target as HTMLElement;
+
+          // Check for image elements first
+          const imageNode = element.closest('img[data-type="block-image"]');
+          if (imageNode) {
+            const rect = imageNode.getBoundingClientRect();
+
+            setSelectedNodePosition({
+              x: rect.left,
+              y: rect.top,
+              width: rect.width,
+              height: rect.height,
+            });
+
+            openImagePopover({
+              src: imageNode.getAttribute("src") || "",
+              alt: imageNode.getAttribute("alt") || "",
+              id: imageNode.getAttribute("data-image-id") ?? undefined,
+            });
+
+            event.preventDefault();
+            event.stopPropagation();
+            return true;
+          }
 
           // Look for any LaTeX element - both inline and block
           // Also check for elements inside a .katex rendered element
@@ -224,70 +275,29 @@ const HTMLTextAnnotator = ({
     [editor],
   );
 
-  // Function to handle saving LaTeX content
-  const handleSaveLatex = useCallback(
-    (latex: string) => {
-      if (!editor) return;
-      let modelUpdateSuccessful = false;
+  const openImagePopover = useCallback(
+    ({
+      src = "",
+      alt = "",
+      id = "",
 
-      if (!selectedLatexId) {
-        //insert new latex
-        if (isBlock) {
-          modelUpdateSuccessful = editor.commands.insertBlockLatex({
-            content: latex,
-          });
-        } else {
-          modelUpdateSuccessful = editor.commands.insertInlineLatex({
-            content: latex,
-          });
-        }
-      } else {
-        try {
-          if (isBlock) {
-            modelUpdateSuccessful = editor.commands.updateBlockLatex({
-              latexId: selectedLatexId,
-              content: latex,
-            });
-          } else {
-            modelUpdateSuccessful = editor.commands.updateInlineLatex({
-              latexId: selectedLatexId,
-              content: latex,
-            });
-          }
-        } catch (error) {
-          console.error("Error updating LaTeX in model:", error);
-        }
+      position = null,
+    }: {
+      src?: string;
+      alt?: string;
+      id?: string;
+
+      position?: { x: number; y: number; width: number; height: number } | null;
+    }) => {
+      setInitialImageData({ src, alt, statementId, id });
+      if (position) {
+        setSelectedNodePosition(position);
       }
-      // Close the popover
-      setLatexPopoverOpen(false);
-
-      // Process LaTeX in the DOM after a slight delay to ensure rendering
-      setTimeout(() => {
-        if (editor) {
-          const editorElement = editor.view.dom as HTMLElement;
-          processLatex(editorElement);
-        }
-      }, 100);
+      setImagePopoverOpen(true);
     },
-    [editor, selectedLatexId, isBlock],
+    [statementId],
   );
 
-  // Handle deleting LaTeX content from the editor
-  const handleDeleteLatex = useCallback(() => {
-    if (!editor || !selectedLatexId) return;
-
-    if (isBlock) {
-      editor.commands.deleteBlockLatex({ latexId: selectedLatexId });
-    } else {
-      editor.commands.deleteInlineLatex({
-        latexId: selectedLatexId,
-      });
-    }
-
-    setLatexPopoverOpen(false);
-  }, [editor, selectedLatexId, isBlock]);
-
-  // Helper to get all text nodes
   const getAllTextNodes = useCallback((node: Node): Text[] => {
     const textNodes: Text[] = [];
 
@@ -481,6 +491,24 @@ const HTMLTextAnnotator = ({
     }
   }, [editor, editable]);
 
+  const handleSaveLatex = useCallback(() => {
+    if (editor) {
+      saveLatex({
+        latex: currentLatex,
+        editor,
+        selectedLatexId,
+        isBlock,
+        setLatexPopoverOpen,
+      });
+    }
+  }, [editor, selectedLatexId, isBlock, currentLatex, setLatexPopoverOpen]);
+
+  const handleDeleteLatex = useCallback(() => {
+    if (editor) {
+      deleteLatex({ editor, selectedLatexId, isBlock, setLatexPopoverOpen });
+    }
+  }, [editor, selectedLatexId, isBlock, setLatexPopoverOpen]);
+
   return (
     <div
       className={`relative ${editable ? "editable-container" : "annotator-container"} ${className || ""}`}
@@ -509,6 +537,7 @@ const HTMLTextAnnotator = ({
                 <BlockTypeChooser
                   editor={editor}
                   openLatexPopover={openLatexPopover}
+                  openImagePopover={openImagePopover}
                 />
               </FloatingMenu>
             </>
@@ -530,17 +559,29 @@ const HTMLTextAnnotator = ({
       )}
 
       {/* LaTeX Editor */}
-      <LatexNodeEditor
-        open={latexPopoverOpen}
-        onOpenChange={setLatexPopoverOpen}
-        initialLatex={currentLatex}
-        isBlock={isBlock}
-        nodePosition={selectedNodePosition}
-        onSave={handleSaveLatex}
-        onDelete={selectedLatexId ? handleDeleteLatex : undefined}
-      />
+      {editor && (
+        <>
+          <LatexNodeEditor
+            open={latexPopoverOpen}
+            onOpenChange={setLatexPopoverOpen}
+            initialLatex={currentLatex}
+            isBlock={isBlock}
+            nodePosition={selectedNodePosition}
+            onSave={handleSaveLatex}
+            onDelete={handleDeleteLatex}
+          />
+          <ImageNodeEditor
+            open={imagePopoverOpen}
+            onOpenChange={setImagePopoverOpen}
+            initialImageData={initialImageData}
+            nodePosition={selectedNodePosition}
+            editor={editor}
+            statementId={statementId}
+          />
+        </>
+      )}
     </div>
   );
 };
 
-export default HTMLTextAnnotator;
+export default HTMLSuperEditor;

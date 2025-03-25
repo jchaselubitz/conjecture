@@ -1,7 +1,7 @@
 import { mergeAttributes, Node } from "@tiptap/core";
 import { nanoid } from "nanoid";
 import { Plugin, PluginKey } from "prosemirror-state";
-import { processLatex } from "./extensionHelpers";
+import { processLatex } from "./helpersLatexExtension";
 
 export interface InlineLatexOptions {
   /**

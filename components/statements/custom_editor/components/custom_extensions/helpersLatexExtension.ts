@@ -1,5 +1,5 @@
 import katex from "katex";
-
+import { Editor } from "@tiptap/react";
 /**
  * Processes LaTeX elements in the DOM to render them using KaTeX
  * @param container - Optional container to limit the scope of the search
@@ -115,3 +115,84 @@ export function processLatex(container: HTMLElement) {
   }
  });
 }
+
+export const saveLatex = ({
+ latex,
+ editor,
+ selectedLatexId,
+ isBlock,
+ setLatexPopoverOpen,
+}: {
+ latex: string;
+ editor: Editor;
+ selectedLatexId: string | null;
+ isBlock: boolean;
+ setLatexPopoverOpen: (open: boolean) => void;
+}) => {
+ if (!editor) return;
+ let modelUpdateSuccessful = false;
+
+ if (!selectedLatexId) {
+  //insert new latex
+  if (isBlock) {
+   modelUpdateSuccessful = editor.commands.insertBlockLatex({
+    content: latex,
+   });
+  } else {
+   modelUpdateSuccessful = editor.commands.insertInlineLatex({
+    content: latex,
+   });
+  }
+ } else {
+  try {
+   if (isBlock) {
+    modelUpdateSuccessful = editor.commands.updateBlockLatex({
+     latexId: selectedLatexId,
+     content: latex,
+    });
+   } else {
+    modelUpdateSuccessful = editor.commands.updateInlineLatex({
+     latexId: selectedLatexId,
+     content: latex,
+    });
+   }
+  } catch (error) {
+   console.error("Error updating LaTeX in model:", error);
+  }
+ }
+ // Close the popover
+ setLatexPopoverOpen(false);
+
+ // Process LaTeX in the DOM after a slight delay to ensure rendering
+ setTimeout(() => {
+  if (editor) {
+   const editorElement = editor.view.dom as HTMLElement;
+   processLatex(editorElement);
+  }
+ }, 100);
+};
+
+// Handle deleting LaTeX content from the editor
+export const deleteLatex = ({
+ editor,
+ selectedLatexId,
+ isBlock,
+ setLatexPopoverOpen,
+}: {
+ editor: Editor;
+ selectedLatexId: string | null;
+ isBlock: boolean;
+ setLatexPopoverOpen: (open: boolean) => void;
+}) => {
+ if (!editor || !selectedLatexId) return;
+
+ if (isBlock) {
+  editor.commands.deleteBlockLatex({ latexId: selectedLatexId });
+ } else {
+  editor.commands.deleteInlineLatex({
+   latexId: selectedLatexId,
+  });
+ }
+
+ setLatexPopoverOpen(false);
+};

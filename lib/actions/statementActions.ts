@@ -6,9 +6,11 @@ import { revalidatePath } from "next/cache";
 import {
   AnnotationWithComments,
   BaseCommentWithUser,
+  BaseStatementImage,
   DraftWithAnnotations,
   DraftWithUser,
   NewAnnotation,
+  NewStatementImage,
   Statement,
 } from "kysely-codegen";
 import { redirect } from "next/navigation";
@@ -340,7 +342,7 @@ export async function publishDraft({
   });
 }
 
-export async function updateStatementImageUrl(
+export async function updateStatementHeaderImageUrl(
   statementId: string,
   imageUrl: string,
 ) {
@@ -365,4 +367,69 @@ export async function deleteDraft(id: string) {
   await db.deleteFrom("draft").where("id", "=", id).execute();
 
   revalidatePath(`/statements}`, "page");
+}
+
+export type UpsertImageDataType = {
+  src: string;
+  alt: string;
+  statementId: string;
+  id: string;
+};
+
+export async function upsertStatementImage({
+  alt,
+  src,
+  statementId,
+  id,
+}: {
+  alt: string;
+  src: string;
+  statementId: string;
+  id: string;
+}) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Unauthorized" };
+  }
+
+  await db.insertInto("statementImage").values({
+    id,
+    src,
+    alt,
+    statementId,
+    creatorId: user.id,
+  }).onConflict((oc) =>
+    oc.column("id").doUpdateSet({
+      src,
+      alt,
+      statementId,
+      id,
+    }).where("statementImage.id", "=", id).where(
+      "statementImage.creatorId",
+      "=",
+      user.id,
+    )
+  )
+    .execute();
+}
+
+export async function deleteStatementImage(id: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Unauthorized" };
+  }
+
+  await db.deleteFrom("statementImage").where("id", "=", id).where(
+    "creatorId",
+    "=",
+    user.id,
+  ).execute();
 }

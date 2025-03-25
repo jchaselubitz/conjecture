@@ -1,8 +1,16 @@
 import { Editor } from "@tiptap/react";
-import { Heading1, Heading2, List, ListOrdered, Quote } from "lucide-react";
+import {
+  Heading1,
+  Heading2,
+  Heading3,
+  List,
+  ListOrdered,
+  Quote,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+import { ImageButton } from "./image-button";
 import { LatexButton } from "./latex-button";
 
 interface BlockTypeChooserProps {
@@ -10,18 +18,24 @@ interface BlockTypeChooserProps {
   openLatexPopover: (options: {
     latex?: string;
     displayMode?: boolean;
-    id?: string | null;
+    latexId?: string | null;
+  }) => void;
+  openImagePopover: (options: {
+    src?: string;
+    alt?: string;
+    id?: string | undefined;
   }) => void;
 }
 
-export const BlockTypeChooser = ({
+export function BlockTypeChooser({
   editor,
   openLatexPopover,
-}: BlockTypeChooserProps) => {
+  openImagePopover,
+}: BlockTypeChooserProps) {
   if (!editor) return null;
 
   return (
-    <div data-testid="floating-menu" className="floating-menu">
+    <div className="flex items-center gap-1 rounded-lg border bg-background p-1 shadow-sm">
       <Button
         variant="ghost"
         size="sm"
@@ -41,6 +55,13 @@ export const BlockTypeChooser = ({
       <Button
         variant="ghost"
         size="sm"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+        className={cn(editor.isActive("heading", { level: 3 }) && "bg-muted")}
+      >
+        <Heading3 className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
         onClick={() => editor.chain().focus().toggleBulletList().run()}
         className={cn(editor.isActive("bulletList") && "bg-muted")}
       >
@@ -70,6 +91,8 @@ export const BlockTypeChooser = ({
         displayMode={true}
         openLatexPopover={openLatexPopover}
       />
+
+      <ImageButton editor={editor} openImagePopover={openImagePopover} />
     </div>
   );
-};
+}

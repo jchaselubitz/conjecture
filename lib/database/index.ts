@@ -13,6 +13,7 @@ import {
   DB,
   Draft,
   Profile,
+  StatementImage,
 } from "kysely-codegen";
 import { Pool } from "pg";
 
@@ -35,6 +36,10 @@ declare module "kysely-codegen" {
   export type BaseProfile = Selectable<Profile>;
   export type NewProfile = Insertable<Profile>;
   export type EditedProfile = Updateable<Profile>;
+
+  export type BaseStatementImage = Selectable<StatementImage>;
+  export type NewStatementImage = Insertable<StatementImage>;
+  export type EditedStatementImage = Updateable<StatementImage>;
 
   export type BaseDraft = Selectable<Draft>;
   export type DraftWithUser = BaseDraft & {

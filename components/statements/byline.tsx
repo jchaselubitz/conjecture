@@ -11,7 +11,7 @@ import { formatDate } from "@/lib/helpers/helpersDate";
 
 const Byline = ({ statement }: { statement: DraftWithUser }) => (
   <div className="flex items-center gap-2">
-    <Avatar>
+    <Avatar className="w-10 h-10">
       <AvatarImage
         src={statement?.creatorImageUrl || ""}
         className="object-cover"

@@ -1,6 +1,7 @@
 import { DraftWithAnnotations } from "kysely-codegen";
 import { cookies } from "next/headers";
 import StatementDetails from "@/components/statements/statement_details";
+import { getStatementImages } from "@/lib/actions/storageActions";
 
 export async function StatementContainer({
   drafts,
@@ -23,15 +24,13 @@ export async function StatementContainer({
     : false;
 
   return (
-    <div>
-      <div className="flex-1  bg-background  ">
-        <StatementDetails
-          drafts={drafts}
-          authorCommentsEnabled={authorCommentsEnabled}
-          readerCommentsEnabled={readerCommentsEnabled}
-          editModeEnabled={editModeEnabled}
-        />
-      </div>
+    <div className="flex-1 bg-background ">
+      <StatementDetails
+        drafts={drafts}
+        authorCommentsEnabled={authorCommentsEnabled}
+        readerCommentsEnabled={readerCommentsEnabled}
+        editModeEnabled={editModeEnabled}
+      />
     </div>
   );
 }

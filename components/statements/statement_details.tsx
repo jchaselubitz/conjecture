@@ -5,21 +5,20 @@ import { Upload } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import TextareaAutosize from "react-textarea-autosize";
 import { toast } from "sonner";
 import AnnotationPanel from "@/components/statements/annotation_panel";
 import RichTextDisplay from "@/components/statements/rich_text_display";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { Switch } from "@/components/ui/switch";
 import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
-import { updateStatementImageUrl } from "@/lib/actions/statementActions";
+import { updateStatementHeaderImageUrl } from "@/lib/actions/statementActions";
 import { uploadStatementImage } from "@/lib/actions/storageActions";
 import { handleImageCompression } from "@/lib/helpers/helpersImages";
 import { generateStatementId } from "@/lib/helpers/helpersStatements";
@@ -27,6 +26,9 @@ import { generateStatementId } from "@/lib/helpers/helpersStatements";
 import AppNav from "../navigation/app_nav";
 import EditNav from "../navigation/edit_nav";
 import { Input } from "../ui/input";
+import Byline from "./byline";
+import StatementOptions from "./statement_options";
+
 interface StatementDetailsProps {
   drafts: DraftWithAnnotations[];
   authorCommentsEnabled: boolean;
@@ -90,7 +92,6 @@ export default function StatementDetails({
     setSelectedAnnotationId(annotationId);
     const savedSizeString = localStorage.getItem("annotationPanelSize");
     const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
-    console.log("savedSize", savedSize);
     panelGroupRef.current?.setLayout(savedSize ?? [67, 33]);
     localStorage.setItem("selectedAnnotationId", annotationId);
   };
@@ -117,7 +118,7 @@ export default function StatementDetails({
     document.cookie = `show_reader_comments=${checked.toString()}`;
   };
 
-  const handleImageChange = async (
+  const handleHeaderImageChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const files = event.target.files?.length
@@ -138,11 +139,12 @@ export default function StatementDetails({
           const imageUrl = await uploadStatementImage({
             file: fileFormData,
             creatorId: userId,
+            statementId: statement.statementId,
             fileName: compressedFile.name,
             oldImageUrl: statementUpdate?.headerImg ?? null,
           });
           if (!imageUrl) throw new Error("Failed to upload image");
-          await updateStatementImageUrl(statement.statementId, imageUrl);
+          await updateStatementHeaderImageUrl(statement.statementId, imageUrl);
           toast("Success", {
             description: "Profile picture updated successfully!",
           });
@@ -180,7 +182,7 @@ export default function StatementDetails({
           onLayout={onLayout}
         >
           <ResizablePanel id="editor" defaultSize={100} minSize={60}>
-            <div className="flex flex-col mt-12 gap-6 mx-auto max-w-4xl">
+            <div className="flex flex-col mt-12 gap-6 mx-auto max-w-3xl px-4">
               {statementUpdate?.headerImg ? (
                 <div className="relative group">
                   <AspectRatio ratio={16 / 9} className="bg-muted rounded-md">
@@ -224,80 +226,74 @@ export default function StatementDetails({
                 accept="image/*"
                 className="hidden"
                 id="avatar-upload"
-                onChange={handleImageChange}
+                onChange={handleHeaderImageChange}
                 disabled={isUploading || !editMode}
               />
-              <div className="flex justify-between items-center">
-                {editMode ? (
-                  <Input
-                    type="text"
-                    name="title"
-                    disabled={!editMode}
-                    placeholder="Give it a title..."
-                    className="border-0 shadow-none px-0 md:text-4xl font-bold h-fit focus-visible:ring-0 w-full  whitespace-normal"
-                    defaultValue={statement?.title || ""}
-                    onChange={(e) =>
-                      setStatementUpdate({
-                        ...statement,
-                        title: e.target.value,
-                        statementId: prepStatementId,
-                      })
-                    }
-                  />
-                ) : (
-                  <h1 className="text-4xl font-bold mb-4">
-                    {statementUpdate?.title ?? title}
-                  </h1>
-                )}
-
-                {statement.creatorId === userId && (
-                  <Button variant="outline" onClick={handleEditModeToggle}>
-                    {editMode ? "View" : "Edit"}
-                  </Button>
-                )}
-              </div>
-
-              <div className="flex justify-between items-center">
-                {editMode ? (
-                  <Input
-                    type="text"
-                    name="subtitle"
-                    disabled={!editMode}
-                    placeholder="Give it a subtitle..."
-                    className="border-0 shadow-none px-0 md:text-xl font-bold focus-visible:ring-0 w-fit "
-                    defaultValue={statement?.subtitle || ""}
-                    onChange={(e) =>
-                      setStatementUpdate({
-                        ...statement,
-                        subtitle: e.target.value,
-                        statementId: prepStatementId,
-                      })
-                    }
-                  />
-                ) : (
-                  <h2 className="text-xl font-bold mb-4">
-                    {statementUpdate?.subtitle ?? subtitle}
-                  </h2>
-                )}
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="show-comments"
-                      checked={showAuthorComments}
-                      onCheckedChange={onShowAuthorCommentsChange}
+              <div className="flex flex-col gap-1 mt-10 mb-5">
+                <div className="flex justify-between items-center">
+                  {editMode ? (
+                    <TextareaAutosize
+                      name="title"
+                      disabled={!editMode}
+                      placeholder="Give it a title..."
+                      className="shadow-none rounded-none border-0 border-b py-4 md:text-5xl text-3xl font-bold h-fit focus:outline-none focus:border-zinc-500 focus-visible:ring-0 w-full resize-none bg-transparent"
+                      defaultValue={statement?.title || ""}
+                      minRows={1}
+                      maxRows={2}
+                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                        setStatementUpdate({
+                          ...statement,
+                          title: e.target.value,
+                          statementId: prepStatementId,
+                        })
+                      }
                     />
-                    <Label htmlFor="show-comments">Author comments</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="show-comments"
-                      checked={showReaderComments}
-                      onCheckedChange={onShowReaderCommentsChange}
+                  ) : (
+                    <h1 className="md:text-5xl text-3xl font-bold py-1">
+                      {statementUpdate?.title ?? title}
+                    </h1>
+                  )}
+                </div>
+
+                <div className="flex justify-between items-center">
+                  {editMode ? (
+                    <TextareaAutosize
+                      name="subtitle"
+                      disabled={!editMode}
+                      placeholder="Give it a subtitle..."
+                      className="shadow-none rounded-none border-0 border-b py-4 font-medium focus:outline-none focus:border-zinc-500 focus-visible:ring-0 w-full text-zinc-700 md:text-xl resize-none bg-transparent"
+                      defaultValue={statement?.subtitle || ""}
+                      minRows={1}
+                      maxRows={2}
+                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                        setStatementUpdate({
+                          ...statement,
+                          subtitle: e.target.value,
+                          statementId: prepStatementId,
+                        })
+                      }
                     />
-                    <Label htmlFor="show-comments">Reader comments</Label>
-                  </div>
+                  ) : (
+                    <h2 className="font-medium py-1 md:text-xl text-zinc-500">
+                      {statementUpdate?.subtitle ?? subtitle}
+                    </h2>
+                  )}
                 </div>
               </div>
+
+              <StatementOptions
+                className="mb-5"
+                statement={statement}
+                userId={userId}
+                editMode={editMode}
+                showAuthorComments={showAuthorComments}
+                showReaderComments={showReaderComments}
+                handleEditModeToggle={handleEditModeToggle}
+                onShowAuthorCommentsChange={onShowAuthorCommentsChange}
+                onShowReaderCommentsChange={onShowReaderCommentsChange}
+              />
+
+              <Byline statement={statement} />
               <RichTextDisplay
                 htmlContent={content}
                 draftId={statement.id}
@@ -335,3 +331,24 @@ export default function StatementDetails({
     </div>
   );
 }
+// const titleInputRef = useRef<HTMLInputElement>(null);
+
+//   useEffect(() => {
+//     const handleResize = () => {
+//       if (titleInputRef.current) {
+//         const input = titleInputRef.current;
+//         const parentWidth = input.parentElement?.offsetWidth || 0;
+//         let fontSize = parseInt(window.getComputedStyle(input).fontSize, 10);
+
+//         while (input.scrollWidth > parentWidth && fontSize > 10) {
+//           fontSize -= 1;
+//           input.style.fontSize = `${fontSize}px`;
+//         }
+//       }
+//     };
+
+//     handleResize(); // Initial call to set the font size
+
+//     window.addEventListener("resize", handleResize);
+//     return () => window.removeEventListener("resize", handleResize);
+//   }, [statementUpdate]);
