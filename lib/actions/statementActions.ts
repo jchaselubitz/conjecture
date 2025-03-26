@@ -6,11 +6,9 @@ import { revalidatePath } from "next/cache";
 import {
   AnnotationWithComments,
   BaseCommentWithUser,
-  BaseStatementImage,
   DraftWithAnnotations,
   DraftWithUser,
   NewAnnotation,
-  NewStatementImage,
   Statement,
 } from "kysely-codegen";
 import { redirect } from "next/navigation";

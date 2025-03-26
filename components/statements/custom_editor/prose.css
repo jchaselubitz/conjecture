@@ -202,81 +202,146 @@
   box-shadow: 0 0 0 3px hsl(var(--muted) / 0.3);
 }
 
-
-/* Annotation styles */
-
-.annotation {
- cursor: pointer;
- transition: background-color 0.2s ease;
- border-radius: 2px;
- position: relative;
- display: inline;
+/* Annotation marker styles */
+.ProseMirror .annotation-marker {
+  display: none !important; /* Always hide markers */
+  user-select: none !important; /* Prevent selection */
+  pointer-events: none !important; /* Prevent interaction */
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
-.annotation:hover {
- background-color: #e6f0ff !important;
+/* Base annotation styles - no highlight by default */
+.ProseMirror mark.annotation {
+  cursor: default;
+  border-radius: 0.125rem;
+  transition: all 0.2s ease;
+  /* Remove highlight styling by default */
+  border-bottom: none;
+  background-color: transparent;
+  text-decoration: none;
+  pointer-events: none; /* Disable interaction when not visible */
+}
 
+/* Show author comments when enabled */
+.show-author-comments .ProseMirror mark.annotation[data-is-author="true"] {
+  cursor: pointer;
+  border-bottom: 2px solid var(--border-color);
+  background-color: var(--bg-color);
+  pointer-events: auto; /* Re-enable interaction */
+}
+
+/* Show reader comments when enabled */
+.show-reader-comments .ProseMirror mark.annotation[data-is-author="false"] {
+  cursor: pointer;
+  pointer-events: auto; /* Re-enable interaction */
+}
+
+.ProseMirror mark.annotation:hover {
+  background-color: var(--hover-bg-color) !important;
+}
+
+.ProseMirror mark.annotation.selected {
+  background-color: var(--hover-bg-color) !important;
+  box-shadow: 0 0 0 2px var(--border-color);
+}
+
+.ProseMirror mark.annotation.new-annotation {
+  animation: highlight-pulse 1.5s ease-in-out;
+}
+
+@keyframes highlight-pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--border-color);
+  }
+  70% {
+    box-shadow: 0 0 0 4px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .ProseMirror mark.annotation:hover,
+  .ProseMirror mark.annotation.selected {
+    box-shadow: 0 1px 2px rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .ProseMirror mark.annotation.selected {
+    box-shadow: 0 1px 3px rgba(255, 255, 255, 0.2) !important;
+  }
+  
+  @keyframes pulse-dark {
+    0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.1) !important; }
+    70% { box-shadow: 0 0 0 4px rgba(255, 255, 255, 0) !important; }
+    100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0) !important; }
+  }
+  
+  .ProseMirror mark.annotation.new-annotation {
+    animation: pulse-dark 1.5s 1;
+  }
+}
+
+/* LaTeX compatibility with annotations */
+.annotation .katex-html {
+  background: inherit;
+}
+
+.annotation .latex-block,
+.annotation .inline-latex {
+  background-color: inherit !important;
+  border-color: inherit !important;
 }
 
 /* Style for the container when used as an annotator */
 .ProseMirror.annotator-container {
- position: relative;
+  position: relative;
 }
 
 /* Add a subtle indicator when the text is annotatable */
 .ProseMirror.annotator-container::after {
- content: "";
- position: absolute;
- top: 0.5rem;
- right: 0.5rem;
- width: 0.75rem;
- height: 0.75rem;
- background-color: #e2e8f0;
- border-radius: 50%;
- opacity: 0.5;
+  content: "";
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  background-color: #e2e8f0;
+  border-radius: 50%;
+  opacity: 0.5;
 }
 
 /* Add LaTeX-specific styles for annotator */
 .annotator-container .latex-block,
 .annotator-container .inline-latex {
- pointer-events: none; /* Prevent LaTeX elements from interfering with annotation selection */
+  pointer-events: none; /* Prevent LaTeX elements from interfering with annotation selection */
 }
 
 /* Allow pointer events on LaTeX elements in editable mode */
 .editable-container .latex-block,
 .editable-container .inline-latex {
- pointer-events: auto; /* Enable interactions in edit mode */
+  pointer-events: auto; /* Enable interactions in edit mode */
 }
 
 .annotator-container .latex-block {
- margin: 1rem 0;
- padding: 0.5rem;
+  margin: 1rem 0;
+  padding: 0.5rem;
 }
-
-/* Make sure annotations properly wrap LaTeX content */
-.annotation .katex-html {
- background: inherit;
-}
- 
 
 /* Ensure LaTeX renders at the correct size in the annotator */
 .annotator-container .katex {
- font-size: 1.1em;
+  font-size: 1.1em;
 }
 
-/* Preserve LaTeX styles when inside annotations */
-.annotation .latex-block,
-.annotation .inline-latex {
- background-color: inherit !important;
- border-color: inherit !important;
-}
-
-
+/* Remove outlines */
 .ProseMirror:focus, 
 .ProseMirror *:focus {
   outline: none !important;
 }
-
 
 /* .ProseMirror {
   outline: none !important;

@@ -12,8 +12,9 @@ import {
   PopoverContent,
 } from "@/components/ui/popover";
 import { useUserContext } from "@/contexts/userContext";
-import { deleteStoredStatementImage } from "@/lib/actions/storageActions";
 import { deleteStatementImage } from "@/lib/actions/statementActions";
+import { deleteStoredStatementImage } from "@/lib/actions/storageActions";
+
 import { saveImage } from "./custom_extensions/helpersImageExtension";
 import { NewImageData } from "./image-node-editor";
 

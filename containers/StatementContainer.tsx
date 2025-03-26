@@ -1,7 +1,6 @@
 import { DraftWithAnnotations } from "kysely-codegen";
 import { cookies } from "next/headers";
 import StatementDetails from "@/components/statements/statement_details";
-import { getStatementImages } from "@/lib/actions/storageActions";
 
 export async function StatementContainer({
   drafts,
@@ -23,10 +22,14 @@ export async function StatementContainer({
     ? editModeCookie?.value === "true"
     : false;
 
+  const statement =
+    drafts.find((draft) => draft.publishedAt !== null) ??
+    drafts[drafts.length - 1];
+
   return (
     <div className="flex-1 bg-background ">
       <StatementDetails
-        drafts={drafts}
+        statement={statement}
         authorCommentsEnabled={authorCommentsEnabled}
         readerCommentsEnabled={readerCommentsEnabled}
         editModeEnabled={editModeEnabled}

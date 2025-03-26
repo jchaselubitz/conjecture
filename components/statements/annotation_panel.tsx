@@ -1,8 +1,11 @@
 "use client";
 
-import { AnnotationWithComments } from "kysely-codegen";
+import * as Sentry from "@sentry/nextjs";
+import { AnnotationWithComments, BaseAnnotation } from "kysely-codegen";
 import { X } from "lucide-react";
 import { useStatementContext } from "@/contexts/statementContext";
+import { useUserContext } from "@/contexts/userContext";
+import { deleteAnnotation } from "@/lib/actions/annotationActions";
 
 import { Accordion } from "../ui/accordion";
 import { Button } from "../ui/button";
@@ -28,11 +31,28 @@ export default function AnnotationPanel({
   showAuthorComments,
   showReaderComments,
 }: AnnotationPanelProps) {
-  const { setAnnotations } = useStatementContext();
+  const { setAnnotations, editor } = useStatementContext();
+  const { userId } = useUserContext();
 
-  const handleDeleteAnnotation = (annotationId: string) => {
+  const handleDeleteAnnotation = async (annotation: BaseAnnotation) => {
+    const annotationId = annotation.id;
+    if (!annotationId) return;
     setAnnotations(annotations.filter((a) => a.id !== annotationId));
     setSelectedAnnotationId(undefined);
+    try {
+      await deleteAnnotation({
+        annotationId: annotation.id,
+        statementCreatorId,
+        annotationCreatorId: annotation.userId,
+        statementId: annotation.draftId,
+      });
+      if (editor) {
+        editor.commands.deleteAnnotationHighlight(annotationId);
+      }
+    } catch (error) {
+      console.error("Error deleting annotation:", error);
+      Sentry.captureException(error);
+    }
     localStorage.removeItem("selectedAnnotationId");
   };
 

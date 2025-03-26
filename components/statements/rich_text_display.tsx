@@ -1,5 +1,5 @@
 "use client";
-import { NewAnnotation } from "kysely-codegen";
+import { DraftWithAnnotations, NewAnnotation } from "kysely-codegen";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
@@ -8,12 +8,11 @@ import { generateStatementId } from "@/lib/helpers/helpersStatements";
 
 import HTMLSuperEditor from "./custom_editor/html_super_editor";
 interface RichTextDisplayProps {
-  htmlContent: string;
+  htmlContent?: string;
   placeholder?: string;
   readOnly?: boolean;
   draftId: string;
   statementId: string;
-  statementCreatorId: string;
   annotations: NewAnnotation[];
   handleAnnotationClick: (annotationId: string) => void;
   selectedAnnotationId: string | undefined;
@@ -74,11 +73,11 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
         });
       }
     },
-    [statement, prepStatementId, setStatementUpdate],
+    [statement, prepStatementId, setStatementUpdate]
   );
 
   useEffect(() => {
-    if (editable && statementUpdate && prevStatementRef.current) {
+    if (statementUpdate && prevStatementRef.current) {
       if (
         statementUpdate.title !== prevStatementRef.current.title ||
         statementUpdate.content !== prevStatementRef.current.content
@@ -106,14 +105,19 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
     if (!recent.id) {
       throw new Error("Annotation ID is required");
     }
+
+    // Extract the text content from the mark in the editor
     const annotation = {
+      id: recent.id,
       tag: recent.tag,
       text: recent.text,
-      start: recent.start,
-      end: recent.end,
       userId: userId,
       draftId: draftId,
-      id: recent.id,
+      isPublic: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      start: recent.start,
+      end: recent.end,
     };
 
     setAnnotations([...annotations, annotation as unknown as NewAnnotation]);
@@ -173,12 +177,11 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
   return (
     <div className="rounded-lg overflow-hidden bg-background">
       <HTMLSuperEditor
-        htmlContent={statementUpdate?.content || htmlContent}
+        statement={statementUpdate as DraftWithAnnotations}
         existingAnnotations={annotations}
         userId={userId}
         onAnnotationClick={handleAnnotationClick}
         onAnnotationChange={handleAnnotationChange}
-        getSpan={getSpan}
         placeholder={placeholder}
         annotatable={authorCanAnnotate || readerCanAnnotate}
         selectedAnnotationId={selectedAnnotationId}
@@ -187,7 +190,6 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
         showReaderComments={showReaderComments}
         onContentChange={handleContentChange}
         editable={editable}
-        statementId={statementId}
       />
     </div>
   );

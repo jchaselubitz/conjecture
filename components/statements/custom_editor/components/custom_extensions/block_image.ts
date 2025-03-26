@@ -133,8 +133,6 @@ export const BlockImage = Node.create<BlockImageOptions>({
           return false;
         }
 
-        console.log("Updating image:", options);
-
         if (dispatch) {
           tr.setNodeMarkup(nodePos, undefined, {
             ...state.doc.nodeAt(nodePos)?.attrs,
@@ -163,8 +161,6 @@ export const BlockImage = Node.create<BlockImageOptions>({
           return false;
         }
 
-        console.log("Deleting image:", options);
-
         if (dispatch) {
           tr.delete(nodePos, nodePos + 1);
           dispatch(tr);
@@ -192,7 +188,7 @@ export const BlockImage = Node.create<BlockImageOptions>({
               }
 
               event.preventDefault();
-              console.log("Image dropped:", file);
+
               // Here you would typically handle the file upload
               // For now, we just log it as per requirements
 

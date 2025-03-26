@@ -1,7 +1,11 @@
 "use client";
 
 import * as Sentry from "@sentry/nextjs";
-import { AnnotationWithComments, BaseCommentWithUser } from "kysely-codegen";
+import {
+  AnnotationWithComments,
+  BaseAnnotation,
+  BaseCommentWithUser,
+} from "kysely-codegen";
 import { RefreshCw, Trash2, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -13,7 +17,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useUserContext } from "@/contexts/userContext";
-import { deleteAnnotation } from "@/lib/actions/annotationActions";
 import { createComment } from "@/lib/actions/commentActions";
 import { formatDate } from "@/lib/helpers/helpersDate";
 import { nestObject } from "@/lib/helpers/helpersGeneral";
@@ -31,7 +34,7 @@ import Comment, { CommentWithReplies } from "./comment";
 
 interface AnnotationDetailProps {
   annotation: AnnotationWithComments;
-  onDelete: (annotationId: string) => void;
+  onDelete: (annotation: BaseAnnotation) => void;
   statementCreatorId: string;
   statementId: string;
   selectedAnnotationId: string | undefined;
@@ -58,9 +61,6 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
     useState<ButtonLoadingState>("default");
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Use a regular state for comments instead of useOptimistic for more control
-
-  // Update comments when annotation changes
   useEffect(() => {
     setComments(annotation.comments);
   }, [annotation.comments]);
@@ -70,17 +70,10 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
 
     setDeletingButtonState("loading");
     try {
-      await deleteAnnotation({
-        annotationId: annotation.id,
-        statementCreatorId,
-        annotationCreatorId: annotation.userId,
-        statementId: annotation.draftId,
-      });
-      onDelete(annotation.id);
+      onDelete(annotation);
     } catch (error) {
-      console.error("Error deleting annotation:", error);
-      Sentry.captureException(error);
       setDeletingButtonState("error");
+      Sentry.captureException(error);
     } finally {
       setDeletingButtonState("default");
     }

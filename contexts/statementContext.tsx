@@ -1,6 +1,7 @@
 "use client";
 
 import * as Sentry from "@sentry/nextjs";
+import { Editor } from "@tiptap/react";
 import { DraftWithAnnotations, NewAnnotation, NewDraft } from "kysely-codegen";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -21,6 +22,8 @@ interface StatementContextType {
     versionNumber: string;
     createdAt: Date;
   }[];
+  editor: Editor | null;
+  setEditor: (editor: Editor | null) => void;
   statement: DraftWithAnnotations;
   setStatement: (statement: DraftWithAnnotations) => void;
   annotations: NewAnnotation[];
@@ -53,6 +56,8 @@ export function StatementProvider({
   const versionString = params.get("version");
   const version = versionString ? parseInt(versionString, 10) : undefined;
   const router = useRouter();
+
+  const [editor, setEditor] = useState<Editor | null>(null);
 
   const [statement, setStatement] = useState<DraftWithAnnotations>(
     drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0],
@@ -152,6 +157,8 @@ export function StatementProvider({
     <StatementContext.Provider
       value={{
         versionOptions,
+        editor,
+        setEditor,
         statement,
         annotations,
         setAnnotations,

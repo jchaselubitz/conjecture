@@ -2,6 +2,7 @@ import "./prose.css";
 import "katex/dist/katex.min.css";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
+import { Step } from "@tiptap/pm/transform";
 import {
   BubbleMenu,
   EditorContent,
@@ -9,12 +10,13 @@ import {
   useEditor,
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { NewAnnotation } from "kysely-codegen";
+import { DraftWithAnnotations, NewAnnotation } from "kysely-codegen";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useStatementContext } from "@/contexts/statementContext";
 import { UpsertImageDataType } from "@/lib/actions/statementActions";
 
-import { processAnnotations } from "./components/annotationHelpers";
 import { BlockTypeChooser } from "./components/block_type_chooser";
+import { AnnotationHighlight } from "./components/custom_extensions/annotation_highlight";
 import { BlockImage } from "./components/custom_extensions/block_image";
 import { BlockLatex } from "./components/custom_extensions/block_latex";
 import {
@@ -22,17 +24,16 @@ import {
   saveLatex,
 } from "./components/custom_extensions/helpersLatexExtension";
 import { InlineLatex } from "./components/custom_extensions/inline_latex";
-import { ImageNodeEditor, NewImageData } from "./components/image-node-editor";
+import { ImageNodeEditor } from "./components/image-node-editor";
 import { LatexNodeEditor } from "./components/latex-node-editor";
 import { TextFormatMenu } from "./components/text_format_menu";
+
 interface HTMLSuperEditorProps {
-  htmlContent: string;
+  statement: DraftWithAnnotations;
   existingAnnotations: NewAnnotation[];
   userId: string | undefined;
-  statementId: string;
   onAnnotationChange?: (value: NewAnnotation[]) => void;
   onAnnotationClick?: (id: string) => void;
-  getSpan?: (span: NewAnnotation) => NewAnnotation;
   style?: React.CSSProperties;
   className?: string;
   placeholder?: string;
@@ -46,12 +47,10 @@ interface HTMLSuperEditorProps {
 }
 
 const HTMLSuperEditor = ({
-  htmlContent,
   existingAnnotations,
   userId,
-  statementId,
   onAnnotationChange,
-  getSpan,
+  statement,
   onAnnotationClick,
   style,
   className,
@@ -64,6 +63,7 @@ const HTMLSuperEditor = ({
   showAuthorComments,
   showReaderComments,
 }: HTMLSuperEditorProps) => {
+  const { setEditor } = useStatementContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const [annotations, setAnnotations] = useState<NewAnnotation[]>([]);
   const [latexPopoverOpen, setLatexPopoverOpen] = useState(false);
@@ -77,6 +77,11 @@ const HTMLSuperEditor = ({
     height: number;
   } | null>(null);
 
+  const htmlContent = statement.content;
+  const draftId = statement.id;
+  const statementId = statement.statementId;
+  const statementCreatorId = statement.creatorId;
+
   const [imagePopoverOpen, setImagePopoverOpen] = useState(false);
   const [initialImageData, setInitialImageData] = useState<UpsertImageDataType>(
     {
@@ -84,15 +89,8 @@ const HTMLSuperEditor = ({
       alt: "",
       statementId,
       id: "",
-    },
+    }
   );
-  const [currentImageData, setCurrentImageData] = useState<NewImageData>({
-    file: undefined,
-    src: "",
-    alt: "",
-
-    id: undefined,
-  });
 
   useEffect(() => {
     setAnnotations(existingAnnotations);
@@ -101,7 +99,9 @@ const HTMLSuperEditor = ({
   // Initialize the Tiptap editor for rich text editing
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        history: {},
+      }),
       Link.configure({
         openOnClick: false,
       }),
@@ -120,33 +120,143 @@ const HTMLSuperEditor = ({
           class: "block-image",
         },
       }),
+      AnnotationHighlight.configure({
+        HTMLAttributes: {
+          class: "annotation",
+        },
+      }),
     ],
     content: htmlContent,
-    editable: editable,
-    onUpdate: ({ editor }) => {
+    editable: true,
+    onCreate: ({ editor }) => {
+      // No need to reapply annotations on create as they're already in the HTML
+      // Just ensure we have DB records for all annotation marks
+      const marks: { node: any }[] = [];
+      editor.state.doc.descendants((node, pos) => {
+        if (
+          node.marks?.some((mark) => mark.type.name === "annotationHighlight")
+        ) {
+          marks.push({ node });
+        }
+        return true;
+      });
+
+      // Sync any marks that don't have corresponding DB records
+      marks.forEach(({ node }) => {
+        const annotationMark = node.marks.find(
+          (mark: any) => mark.type.name === "annotationHighlight"
+        );
+        if (annotationMark) {
+          const annotationId = annotationMark.attrs.annotationId;
+          const existingAnnotation = annotations.find(
+            (a) => a.id === annotationId
+          );
+
+          if (!existingAnnotation && onAnnotationChange) {
+            const newAnnotation: NewAnnotation = {
+              id: annotationId,
+              text: node.text || "",
+              userId: annotationMark.attrs.userId,
+              draftId: draftId,
+              tag: annotationMark.attrs.tag,
+              isPublic: true,
+              createdAt: new Date(annotationMark.attrs.createdAt),
+              updatedAt: new Date(),
+              start: editor.state.selection.from,
+              end: editor.state.selection.to,
+            };
+
+            onAnnotationChange([...annotations, newAnnotation]);
+          }
+        }
+      });
+    },
+    onUpdate: ({ editor, transaction }) => {
+      // Only block content updates if they're not annotation-related
+      const hasAnnotationChanges = transaction.steps.some((step: Step) => {
+        const mark = (step as any).mark;
+        const annotationId = mark?.attrs?.annotationId;
+        if (!annotationId) return false;
+        return mark.type.name === "annotationHighlight";
+      });
+      if (!editable && !hasAnnotationChanges) {
+        editor.commands.setContent(htmlContent);
+        return;
+      }
+
       if (onContentChange) {
         onContentChange(editor.getHTML());
       }
     },
+    onSelectionUpdate: ({ editor }) => {
+      if (!annotatable || !userId) return;
+    },
     onDestroy: () => {
-      // Clean up any references when editor is destroyed
       const container = containerRef.current;
       if (container) {
-        // Clear content to prevent manipulation of detached nodes
         container.innerHTML = "";
       }
     },
     editorProps: {
+      handleKeyDown: (view, event) => {
+        // Block all keyboard input in non-editable mode except selection shortcuts
+        if (!editable) {
+          const isSelectionKey =
+            event.key === "ArrowLeft" ||
+            event.key === "ArrowRight" ||
+            event.key === "ArrowUp" ||
+            event.key === "ArrowDown" ||
+            ((event.metaKey || event.ctrlKey) && event.key === "a") ||
+            event.key === "Home" ||
+            event.key === "End" ||
+            event.key === "PageUp" ||
+            event.key === "PageDown";
+
+          if (isSelectionKey) {
+            return false; // Allow selection keys
+          }
+
+          event.preventDefault();
+          return true; // Block all other keys
+        }
+        return false;
+      },
+      handleClick: (view, pos, event) => {
+        // Allow clicks for selection in both modes
+        return false;
+      },
+      transformPastedText: (text) => {
+        // Prevent pasting in non-editable mode
+        return editable ? text : "";
+      },
+      handleDrop: (view, event) => {
+        // Block drag and drop in non-editable mode
+        if (!editable) {
+          event?.preventDefault();
+          return true;
+        }
+        return false;
+      },
+      handlePaste: (view, event) => {
+        // Block paste in non-editable mode
+        if (!editable) {
+          event?.preventDefault();
+          return true;
+        }
+        return false;
+      },
+      attributes: {
+        // Add a class to indicate non-editable mode
+        class: !editable ? "pseudo-readonly" : "",
+      },
       handleDOMEvents: {
-        // Handle clicks on LaTeX elements to edit them
         click: (view, event) => {
           const element = event.target as HTMLElement;
 
-          // Check for image elements first
+          // Handle image clicks only in editable mode
           const imageNode = element.closest('img[data-type="block-image"]');
-          if (imageNode) {
+          if (imageNode && editable) {
             const rect = imageNode.getBoundingClientRect();
-
             setSelectedNodePosition({
               x: rect.left,
               y: rect.top,
@@ -165,43 +275,35 @@ const HTMLSuperEditor = ({
             return true;
           }
 
-          // Look for any LaTeX element - both inline and block
-          // Also check for elements inside a .katex rendered element
+          // Handle LaTeX clicks only in editable mode
           let latexNode = element.closest(
-            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
           );
 
-          // If we didn't find a direct LaTeX element, check if we're inside a katex rendered element
           if (!latexNode) {
             const katexElement = element.closest(
-              ".katex, .katex-html, .katex-rendered",
+              ".katex, .katex-html, .katex-rendered"
             );
             if (katexElement) {
-              // Find the parent LaTeX element that contains this katex element
               latexNode = katexElement.closest(
-                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
               );
             }
           }
 
-          if (latexNode) {
-            // Get or generate an ID
+          if (latexNode && editable) {
             let id = latexNode.getAttribute("data-id");
-
             let latex = latexNode.getAttribute("data-latex");
 
             if (!latex) {
               latex = latexNode.getAttribute("data-original-content");
             }
 
-            // If still no content, try extracting from text content
-            // but skip KaTeX wrappers that might be inside
             if (!latex) {
               const katexWrapper = latexNode.querySelector(
-                ".katex-rendered, .katex",
+                ".katex-rendered, .katex"
               );
               if (katexWrapper) {
-                // If there's a rendered KaTeX element, ignore its content
                 latex = "";
               } else {
                 latex = latexNode.textContent || "";
@@ -212,7 +314,6 @@ const HTMLSuperEditor = ({
               latexNode.getAttribute("data-display-mode") === "true" ||
               latexNode.classList.contains("latex-block");
 
-            // Store the node's position for the popover
             const rect = latexNode.getBoundingClientRect();
             setSelectedNodePosition({
               x: rect.left,
@@ -221,17 +322,29 @@ const HTMLSuperEditor = ({
               height: rect.height,
             });
 
-            // Open the LaTeX popover
             openLatexPopover({
               latex,
               displayMode,
               latexId: id,
             });
 
-            // Prevent further handling
             event.preventDefault();
             event.stopPropagation();
             return true;
+          }
+
+          // Handle annotation clicks
+          const annotationElement = element.closest(".annotation");
+          if (annotationElement && onAnnotationClick) {
+            const id = annotationElement.getAttribute("data-annotation-id");
+
+            if (id) {
+              onAnnotationClick(id);
+              setSelectedAnnotationId(id);
+              event.preventDefault();
+              event.stopPropagation();
+              return true;
+            }
           }
 
           return false;
@@ -253,7 +366,6 @@ const HTMLSuperEditor = ({
     }) => {
       setCurrentLatex(latex);
       setIsBlock(displayMode);
-      console.log("latexId", latexId);
       setSelectedLatexId(latexId);
 
       // Calculate position for the popover
@@ -272,7 +384,7 @@ const HTMLSuperEditor = ({
 
       setLatexPopoverOpen(true);
     },
-    [editor],
+    [editor]
   );
 
   const openImagePopover = useCallback(
@@ -295,189 +407,134 @@ const HTMLSuperEditor = ({
       }
       setImagePopoverOpen(true);
     },
-    [statementId],
+    [statementId]
   );
 
-  const getAllTextNodes = useCallback((node: Node): Text[] => {
-    const textNodes: Text[] = [];
-
-    const walk = (node: Node) => {
-      if (node.nodeType === Node.TEXT_NODE) {
-        textNodes.push(node as Text);
-      } else {
-        for (let i = 0; i < node.childNodes.length; i++) {
-          walk(node.childNodes[i]);
-        }
-      }
-    };
-
-    walk(node);
-    return textNodes;
-  }, []);
-
-  // Update the display when content or annotations change
+  // Update annotations when they change
   useEffect(() => {
-    if (!containerRef.current || !editor) return;
+    if (!editor?.isEditable) return;
 
-    // Reset HTML content
-    containerRef.current.innerHTML = htmlContent;
+    setEditor(editor);
 
-    // Add placeholder if empty
-    if (placeholder && containerRef.current.textContent?.trim() === "") {
-      const firstP = containerRef.current.querySelector("p");
-      if (firstP) {
-        firstP.classList.add("is-editor-empty");
-        firstP.setAttribute("data-placeholder", placeholder);
-      }
-    }
-    // Add styles for hover effects
-    const styleTag = document.createElement("style");
-    styleTag.textContent = `
-      .annotation {
-        transition: background-color 0.2s ease;
-      }
-      .annotation:hover {
-        background-color: var(--hover-bg-color) !important;
-      }
-    `;
-    containerRef.current.appendChild(styleTag);
+    // Clear all existing annotation highlights
+    editor.commands.unsetAnnotationHighlight();
 
-    processAnnotations({
-      annotations,
-      userId,
-      showAuthorComments,
-      showReaderComments,
-      selectedAnnotationId,
-      container: containerRef.current,
+    // Apply highlights for each annotation using the editor's mark system
+    annotations.forEach((annotation) => {
+      if (!annotation.id || !annotation.userId) {
+        return;
+      }
+
+      if (annotation.start >= 0 && annotation.end >= 0) {
+        editor
+          .chain()
+          .setTextSelection({ from: annotation.start, to: annotation.end })
+          .setAnnotationHighlight({
+            annotationId: annotation.id,
+            userId: annotation.userId,
+            isAuthor: annotation.userId === statementCreatorId,
+            createdAt:
+              annotation.createdAt instanceof Date
+                ? annotation.createdAt.toISOString()
+                : String(annotation.createdAt),
+            tag: annotation.tag || null,
+          })
+          .run();
+      }
     });
-  }, [
-    htmlContent,
-    showAuthorComments,
-    showReaderComments,
-    placeholder,
-    editor,
-    annotations,
-    selectedAnnotationId,
-    getAllTextNodes,
-    getSpan,
-    onAnnotationChange,
-    setSelectedAnnotationId,
-    userId,
-  ]);
 
-  // Handle selection and create new annotations
-  const handleMouseUp = useCallback(() => {
-    if (!userId) return;
+    // Reset selection after applying all annotations
+    editor.commands.setTextSelection({ from: 0, to: 0 });
+  }, [editor, annotations, statementCreatorId, setEditor]);
 
-    const selection = window.getSelection();
-    if (!selection || selection.isCollapsed) return;
+  // Handle creating new annotations
+  const handleAnnotationCreate = useCallback(async () => {
+    if (!userId || !editor) return;
 
-    const range = selection.getRangeAt(0);
-    if (!range) return;
-
-    // Get the text content of the selection
-    const text = range.toString();
-    if (!text) return;
-
-    // Calculate start and end positions
-    const container = containerRef.current;
-    if (!container) return;
-
-    // Get all text nodes and their positions
-    const textNodes = getAllTextNodes(container);
-    const nodePositions: { node: Text; start: number; end: number }[] = [];
-    let currentPos = 0;
-
-    for (const node of textNodes) {
-      const nodeLength = node.textContent?.length || 0;
-      nodePositions.push({
-        node,
-        start: currentPos,
-        end: currentPos + nodeLength,
-      });
-      currentPos += nodeLength;
+    // Check if text is actually selected
+    const { from, to } = editor.state.selection;
+    if (from === to) {
+      return;
     }
 
-    // Find the start position
-    let start = -1;
-    const startNode = range.startContainer;
-    const startOffset = range.startOffset;
-
-    if (startNode.nodeType === Node.TEXT_NODE) {
-      const nodeInfo = nodePositions.find((info) => info.node === startNode);
-      if (nodeInfo) {
-        start = nodeInfo.start + startOffset;
-      }
+    // Check if the user is allowed to create annotations based on their role
+    const isAuthor = userId === statementCreatorId;
+    if (
+      (isAuthor && !showAuthorComments) ||
+      (!isAuthor && !showReaderComments)
+    ) {
+      return; // Don't allow annotation creation if the corresponding visibility is off
     }
 
-    // Find the end position
-    let end = -1;
-    const endNode = range.endContainer;
-    const endOffset = range.endOffset;
-
-    if (endNode.nodeType === Node.TEXT_NODE) {
-      const nodeInfo = nodePositions.find((info) => info.node === endNode);
-      if (nodeInfo) {
-        end = nodeInfo.start + endOffset;
-      }
-    }
-
-    if (start !== -1 && end !== -1) {
-      const newAnnotation = {
-        start,
-        end,
-        text,
+    try {
+      // Create a new annotation
+      const annotationId = crypto.randomUUID();
+      const newAnnotation: NewAnnotation = {
+        id: annotationId,
+        text: editor.state.doc.textBetween(from, to),
         userId,
-        id: crypto.randomUUID(),
-        draftId: "", // Required by type
+        draftId,
+        start: editor.state.selection.from,
+        end: editor.state.selection.to,
+        tag: null,
+        isPublic: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      // Format the annotation if getSpan is provided
-      const formattedAnnotation = getSpan
-        ? getSpan(newAnnotation)
-        : newAnnotation;
-
-      // Update annotations
-      const newAnnotations = [...annotations, formattedAnnotation];
-      setAnnotations(newAnnotations);
-      if (onAnnotationChange) {
-        onAnnotationChange(newAnnotations);
+      // Apply the highlight mark
+      if (!newAnnotation.id || !newAnnotation.userId) {
+        return;
       }
 
-      // Clear selection and set the new annotation as selected
-      selection.removeAllRanges();
-      setSelectedAnnotationId(formattedAnnotation.id);
+      editor
+        .chain()
+        .focus()
+        .setTextSelection({ from, to })
+        .setAnnotationHighlight({
+          annotationId: newAnnotation.id,
+          userId: newAnnotation.userId,
+          isAuthor: newAnnotation.userId === statementCreatorId,
+          createdAt:
+            newAnnotation.createdAt instanceof Date
+              ? newAnnotation.createdAt.toISOString()
+              : new Date().toISOString(),
+          tag: newAnnotation.tag || null,
+        })
+        .run();
+
+      if (onAnnotationChange) {
+        const formattedAnnotation = newAnnotation;
+        const newAnnotations = [...annotations, formattedAnnotation];
+        setAnnotations(newAnnotations);
+        onAnnotationChange(newAnnotations);
+        setSelectedAnnotationId(formattedAnnotation.id);
+      }
+    } catch (error) {
+      // Handle error silently
     }
   }, [
     userId,
+    editor,
+    statementId,
+    draftId,
     annotations,
-    getAllTextNodes,
-    getSpan,
+    statementCreatorId,
+    showAuthorComments,
+    showReaderComments,
     onAnnotationChange,
     setSelectedAnnotationId,
   ]);
 
-  // Handle click on annotations
-  const handleAnnotationClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (!onAnnotationClick) return;
-      const target = e.target as HTMLElement;
-      if (target.classList.contains("annotation")) {
-        const id = target.dataset.id;
-        if (id) {
-          onAnnotationClick(id);
-        }
-      }
-    },
-    [onAnnotationClick],
-  );
-
-  // Update the editor content when htmlContent prop changes (in view mode)
+  // Handle editor content updates
   useEffect(() => {
-    if (!editable && editor) {
+    if (!editor) return;
+
+    // Only set content if editor is not editable or if it's the initial content set
+    if (!editor.isEditable || editor.isEmpty) {
       editor.commands.setContent(htmlContent);
     }
-  }, [htmlContent, editor, editable]);
+  }, [htmlContent, editor]);
 
   // Reset the editor completely when edit mode changes
   useEffect(() => {
@@ -511,55 +568,41 @@ const HTMLSuperEditor = ({
 
   return (
     <div
-      className={`relative ${editable ? "editable-container" : "annotator-container"} ${className || ""}`}
+      className={`relative ${editable ? "editable-container" : "annotator-container"} ${
+        showAuthorComments ? "show-author-comments" : ""
+      } ${showReaderComments ? "show-reader-comments" : ""} ${className || ""}`}
       style={style}
     >
-      {editable ? (
+      {editor && (
         <>
-          {editor && (
-            <>
-              <BubbleMenu
-                key={`bubble-menu-${editable}`}
-                editor={editor}
-                tippyOptions={{ duration: 100 }}
-                className="overflow-hidden"
-              >
-                <TextFormatMenu
-                  editor={editor}
-                  openLatexPopover={openLatexPopover}
-                />
-              </BubbleMenu>
-              <FloatingMenu
-                key={`floating-menu-${editable}`}
-                editor={editor}
-                tippyOptions={{ duration: 100 }}
-              >
-                <BlockTypeChooser
-                  editor={editor}
-                  openLatexPopover={openLatexPopover}
-                  openImagePopover={openImagePopover}
-                />
-              </FloatingMenu>
-            </>
-          )}
-          <EditorContent
-            key={`editor-content-${editable}`}
-            editor={editor}
-            className={`ProseMirror ${annotatable ? "annotator-container" : ""}`}
-          />
+          <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
+            <TextFormatMenu
+              isCreator={userId === statementCreatorId}
+              editMode={editable ?? false}
+              editor={editor}
+              openLatexPopover={openLatexPopover}
+              onAnnotate={annotatable ? handleAnnotationCreate : undefined}
+              canAnnotate={annotatable && !!userId}
+            />
+          </BubbleMenu>
+          <FloatingMenu editor={editor} tippyOptions={{ duration: 100 }}>
+            <BlockTypeChooser
+              editor={editor}
+              openLatexPopover={openLatexPopover}
+              openImagePopover={openImagePopover}
+            />
+          </FloatingMenu>
         </>
-      ) : (
-        <div
-          key={`view-content-${editable}`}
-          ref={containerRef}
-          className={`ProseMirror ${annotatable ? "annotator-container" : ""}`}
-          onMouseUp={annotatable ? handleMouseUp : undefined}
-          onClick={annotatable ? handleAnnotationClick : undefined}
-        />
       )}
 
-      {/* LaTeX Editor */}
-      {editor && (
+      <EditorContent
+        key={`editor-content-${editable}`}
+        editor={editor}
+        className={`ProseMirror ${annotatable ? "annotator-container" : ""} ${!editable ? "pseudo-readonly" : ""}`}
+      />
+
+      {/* LaTeX and Image editors only shown in editable mode */}
+      {editor && editable && (
         <>
           <LatexNodeEditor
             open={latexPopoverOpen}

@@ -1,5 +1,5 @@
 import { NewAnnotation } from "kysely-codegen";
-import { processLatex } from "./custom_extensions/helpersLatexExtension";
+import { processLatex } from "./helpersLatexExtension";
 
 export const generateColorFromString = (str: string) => {
   let hash = 0;
