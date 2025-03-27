@@ -1,15 +1,15 @@
 "use client";
 
 import * as Sentry from "@sentry/nextjs";
-import { BaseCommentWithUser } from "kysely-codegen";
+import { BaseCommentWithUser, BaseCommentVote } from "kysely-codegen";
 import { ArrowUp, Edit2, RefreshCw, Reply, Trash2 } from "lucide-react";
-import React, { useState } from "react";
+import React, { startTransition, useOptimistic, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useUserContext } from "@/contexts/userContext";
 import {
   deleteComment,
   editComment,
-  toggleUpvote,
+  toggleCommentUpvote,
 } from "@/lib/actions/commentActions";
 import { formatDate } from "@/lib/helpers/helpersDate";
 import { cn } from "@/lib/utils";
@@ -58,8 +58,15 @@ const Comment: React.FC<CommentProps> = ({
     useState<ButtonLoadingState>("default");
   const [isHovered, setIsHovered] = useState(false);
 
-  const votes = comment.votes;
-  const voteCount = votes?.length || 0;
+  const [optVotes, useOptVotes] = useOptimistic<
+    BaseCommentVote[],
+    BaseCommentVote[]
+  >(comment.votes, (current, updated) => {
+    return updated;
+  });
+
+  const voteCount = optVotes?.length || 0;
+  const hasUpvoted = optVotes?.some((vote) => vote.userId === userId) || false;
 
   const handleEditComment = async () => {
     if (!userId) return;
@@ -77,12 +84,24 @@ const Comment: React.FC<CommentProps> = ({
     }
   };
 
-  const hasUpvoted = votes?.some((vote) => vote.userId === userId) || false;
-
   const handleVote = async () => {
     if (!userId) return;
     try {
-      await toggleUpvote({
+      startTransition(() => {
+        const newVotes = hasUpvoted
+          ? optVotes.filter((vote) => vote.userId !== userId)
+          : [
+              ...optVotes,
+              {
+                id: crypto.randomUUID(),
+                userId,
+                commentId: comment.id,
+                createdAt: new Date(),
+              },
+            ];
+        useOptVotes(newVotes);
+      });
+      await toggleCommentUpvote({
         commentId: comment.id,
         isUpvoted: hasUpvoted,
       });
@@ -234,7 +253,7 @@ const Comment: React.FC<CommentProps> = ({
       className={cn(
         "flex flex-col",
         currentLevel > 0 && "ml-2 mt-2 pl-2 border-l-2",
-        borderColor(),
+        borderColor()
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -244,7 +263,7 @@ const Comment: React.FC<CommentProps> = ({
           "p-3 rounded-md transition-colors flex flex-col gap-2",
           currentLevel === 0 ? "bg-background" : "bg-muted mb-2",
           isHovered && "bg-muted/80",
-          !isRootComment && level === 0 && "mt-6",
+          !isRootComment && level === 0 && "mt-6"
         )}
       >
         {/* Comment header with user info */}

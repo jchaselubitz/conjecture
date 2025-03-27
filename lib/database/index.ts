@@ -14,6 +14,7 @@ import {
   Draft,
   Profile,
   StatementImage,
+  StatementVote,
 } from "kysely-codegen";
 import { Pool } from "pg";
 
@@ -41,6 +42,10 @@ declare module "kysely-codegen" {
   export type NewStatementImage = Insertable<StatementImage>;
   export type EditedStatementImage = Updateable<StatementImage>;
 
+  export type BaseStatementVote = Selectable<StatementVote>;
+  export type NewStatementVote = Insertable<StatementVote>;
+  export type EditedStatementVote = Updateable<StatementVote>;
+
   export type BaseDraft = Selectable<Draft>;
   export type DraftWithUser = BaseDraft & {
     creatorName: string | null | undefined;
@@ -49,6 +54,7 @@ declare module "kysely-codegen" {
   };
   export type DraftWithAnnotations = DraftWithUser & {
     annotations: AnnotationWithComments[];
+    upvotes: BaseStatementVote[];
   };
 
   export type NewDraft = Insertable<Draft>;

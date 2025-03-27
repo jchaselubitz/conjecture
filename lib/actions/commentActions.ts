@@ -78,7 +78,7 @@ export async function deleteComment({
  }
 }
 
-export async function toggleUpvote(
+export async function toggleCommentUpvote(
  { commentId, isUpvoted }: { commentId: string; isUpvoted: boolean },
 ) {
  const supabase = await createClient();

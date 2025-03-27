@@ -6,8 +6,8 @@ import { revalidatePath } from "next/cache";
 import {
   AnnotationWithComments,
   BaseCommentWithUser,
+  BaseStatementVote,
   DraftWithAnnotations,
-  DraftWithUser,
   NewAnnotation,
   Statement,
 } from "kysely-codegen";
@@ -35,7 +35,7 @@ export async function getDrafts({
   let drafts = db
     .selectFrom("draft")
     .innerJoin("profile", "draft.creatorId", "profile.id")
-    .select([
+    .select(({ eb }) => [
       "draft.id",
       "draft.title",
       "draft.subtitle",
@@ -50,6 +50,12 @@ export async function getDrafts({
       "profile.name as creatorName",
       "profile.imageUrl as creatorImageUrl",
       "profile.username as creatorSlug",
+      jsonArrayFrom(
+        eb
+          .selectFrom("statementVote")
+          .selectAll()
+          .whereRef("statementVote.statementId", "=", "draft.statementId"),
+      ).as("upvotes"),
     ])
     .orderBy("versionNumber", "desc");
 
@@ -89,32 +95,32 @@ export async function getDrafts({
   return arrayOfStatements;
 }
 
-export async function getDraftById(
-  id: string,
-): Promise<DraftWithUser | null | undefined> {
-  const draft = await db
-    .selectFrom("draft")
-    .innerJoin("profile", "draft.creatorId", "profile.id")
-    .select([
-      "draft.id",
-      "draft.title",
-      "draft.subtitle",
-      "draft.content",
-      "draft.headerImg",
-      "draft.publishedAt",
-      "draft.versionNumber",
-      "draft.statementId",
-      "draft.creatorId",
-      "draft.createdAt",
-      "draft.updatedAt",
-      "profile.name as creatorName",
-      "profile.imageUrl as creatorImageUrl",
-      "profile.username as creatorSlug",
-    ])
-    .where("id", "=", id)
-    .executeTakeFirst();
-  return draft;
-}
+// export async function getDraftById(
+//   id: string,
+// ): Promise<DraftWithUser | null | undefined> {
+//   const draft = await db
+//     .selectFrom("draft")
+//     .innerJoin("profile", "draft.creatorId", "profile.id")
+//     .select([
+//       "draft.id",
+//       "draft.title",
+//       "draft.subtitle",
+//       "draft.content",
+//       "draft.headerImg",
+//       "draft.publishedAt",
+//       "draft.versionNumber",
+//       "draft.statementId",
+//       "draft.creatorId",
+//       "draft.createdAt",
+//       "draft.updatedAt",
+//       "profile.name as creatorName",
+//       "profile.imageUrl as creatorImageUrl",
+//       "profile.username as creatorSlug",
+//     ])
+//     .where("id", "=", id)
+//     .executeTakeFirst();
+//   return draft;
+// }
 
 export async function getDraftsByStatementId(
   statementId: string,
@@ -137,6 +143,12 @@ export async function getDraftsByStatementId(
       "profile.name as creatorName",
       "profile.imageUrl as creatorImageUrl",
       "profile.username as creatorSlug",
+      jsonArrayFrom(
+        eb
+          .selectFrom("statementVote")
+          .selectAll()
+          .whereRef("statementVote.statementId", "=", "draft.statementId"),
+      ).as("upvotes"),
       jsonArrayFrom(
         eb
           .selectFrom("annotation")
@@ -187,6 +199,12 @@ export async function getDraftsByStatementId(
 
   const draftWithAnnotations = draft.map((draft) => ({
     ...draft,
+    upvotes: draft.upvotes.map((u) => ({
+      id: u.id,
+      userId: u.userId,
+      statementId: u.statementId,
+      createdAt: u.createdAt,
+    })) as BaseStatementVote[],
     annotations: draft.annotations.map((a) => ({
       ...a,
       comments: a.comments.map((c) => ({
@@ -430,4 +448,33 @@ export async function deleteStatementImage(id: string) {
     "=",
     user.id,
   ).execute();
+}
+
+export async function toggleStatementUpvote({
+  statementId,
+  isUpvoted,
+}: {
+  statementId: string;
+  isUpvoted: boolean;
+}) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Unauthorized" };
+  }
+
+  if (isUpvoted) {
+    await db.deleteFrom("statementVote").where("statementId", "=", statementId)
+      .where("userId", "=", user.id).execute();
+  } else {
+    await db.insertInto("statementVote").values({
+      statementId,
+      userId: user.id,
+    }).execute();
+  }
+
+  revalidatePath(`/statements/[statementId]`, "page");
 }

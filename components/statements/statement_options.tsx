@@ -1,6 +1,6 @@
 // make a component that displays the options for the statement
 
-import { DraftWithAnnotations } from "kysely-codegen";
+import { BaseStatementVote, DraftWithAnnotations } from "kysely-codegen";
 import {
   BarChart3,
   Eye,
@@ -12,10 +12,11 @@ import {
   PencilLine,
   Send,
   Share2,
+  ArrowUp,
   Twitter,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
+import { toggleStatementUpvote } from "@/lib/actions/statementActions";
 import { Button } from "../ui/button";
 import {
   DropdownMenu,
@@ -28,10 +29,15 @@ import { Label } from "../ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
 import { Switch } from "../ui/switch";
+import { TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { Tooltip } from "../ui/tooltip";
+import { TooltipProvider } from "../ui/tooltip";
+import { useUserContext } from "@/contexts/userContext";
+import { startTransition, useOptimistic, useState } from "react";
 
 interface StatementOptionsProps {
   statement: DraftWithAnnotations;
-  userId: string | null | undefined;
+
   editMode: boolean;
   showAuthorComments: boolean;
   showReaderComments: boolean;
@@ -43,7 +49,6 @@ interface StatementOptionsProps {
 
 export default function StatementOptions({
   statement,
-  userId,
   editMode,
   showAuthorComments,
   showReaderComments,
@@ -52,6 +57,15 @@ export default function StatementOptions({
   onShowReaderCommentsChange,
   className,
 }: StatementOptionsProps) {
+  const { userId } = useUserContext();
+
+  const [optVotes, useOptVotes] = useOptimistic<
+    BaseStatementVote[],
+    BaseStatementVote[]
+  >(statement.upvotes, (current, updated) => {
+    return updated;
+  });
+
   if (editMode) {
     return (
       <ViewModeButton
@@ -60,16 +74,67 @@ export default function StatementOptions({
       />
     );
   }
+
+  const voteCount = optVotes?.length || 0;
+  const hasUpvoted = optVotes?.some((vote) => vote.userId === userId) || false;
+
+  const handleVote = async () => {
+    if (!userId) return;
+    try {
+      startTransition(() => {
+        const newVotes = hasUpvoted
+          ? optVotes.filter((vote) => vote.userId !== userId)
+          : [
+              ...optVotes,
+              {
+                id: crypto.randomUUID(),
+                userId,
+                statementId: statement.statementId,
+                createdAt: new Date(),
+              },
+            ];
+        useOptVotes(newVotes);
+      });
+      await toggleStatementUpvote({
+        statementId: statement.statementId,
+        isUpvoted: hasUpvoted,
+      });
+    } catch (error) {
+      console.error("Error upvoting comment:", error);
+    } finally {
+    }
+  };
+
   return (
     <div className={cn("space-y-2", className)}>
       <Separator />
       <div className="flex justify-between items-center gap-3 px-1">
-        <CommentIndicatorButton
-          showAuthorComments={showAuthorComments}
-          showReaderComments={showReaderComments}
-          onShowAuthorCommentsChange={onShowAuthorCommentsChange}
-          onShowReaderCommentsChange={onShowReaderCommentsChange}
-        />
+        <div className="flex items-center gap-3">
+          <CommentIndicatorButton
+            showAuthorComments={showAuthorComments}
+            showReaderComments={showReaderComments}
+            onShowAuthorCommentsChange={onShowAuthorCommentsChange}
+            onShowReaderCommentsChange={onShowReaderCommentsChange}
+          />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={hasUpvoted ? "default" : "outline"}
+                  size="sm"
+                  onClick={handleVote}
+                  className=" text-xs opacity-70 hover:opacity-100 hover:cursor-pointer"
+                >
+                  <ArrowUp className="w-3 h-3 " />
+                  {voteCount > 0 && voteCount}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{hasUpvoted ? "Remove upvote" : "Upvote comment"}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
         <div className="flex items-center">
           <ShareButton />
           {statement.creatorId === userId && (
@@ -130,13 +195,13 @@ const CommentIndicatorButton = ({
             <span
               className={cn(
                 " h-2 w-2 rounded-full border border-orange-500",
-                showAuthorComments ? "bg-orange-500" : "bg-transparent",
+                showAuthorComments ? "bg-orange-500" : "bg-transparent"
               )}
             />
             <span
               className={cn(
                 " h-2 w-2 rounded-full border border-blue-500",
-                showReaderComments ? "bg-blue-500" : "bg-transparent",
+                showReaderComments ? "bg-blue-500" : "bg-transparent"
               )}
             />
           </span>
