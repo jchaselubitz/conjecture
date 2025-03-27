@@ -50,6 +50,8 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
   const [comments, setComments] = useState<BaseCommentWithUser[]>(
     annotation.comments,
   );
+  const selected = selectedAnnotationId === annotation.id;
+  const annotationRef = useRef<HTMLDivElement>(null);
 
   const { userId } = useUserContext();
   const [deletingButtonState, setDeletingButtonState] =
@@ -64,6 +66,15 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
   useEffect(() => {
     setComments(annotation.comments);
   }, [annotation.comments]);
+
+  useEffect(() => {
+    if (selected && annotationRef.current) {
+      annotationRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [selected]);
 
   const handleDeleteAnnotation = async () => {
     if (!userId) return;
@@ -151,13 +162,10 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
     }
   };
 
-  const firstComment = comments.find((c) => !c.parentId);
-
   // Organize comments into a tree structure
 
   const nestedComments = nestObject(comments) as CommentWithReplies[];
 
-  const selected = selectedAnnotationId === annotation.id;
   // const firstComment = nestedComments.find((c) => !c.parentId);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -182,9 +190,12 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
   return (
     <AccordionItem value={annotation.id} className="border-0">
       <Card
+        ref={annotationRef}
         className={cn(
           "p-0 gap-0",
-          selected ? "shadow-2xl  my-4" : "shadow-none hover:shadow-md ",
+          selected
+            ? "shadow-2xl my-4 animate-ring-flash"
+            : "shadow-none hover:shadow-md ",
         )}
       >
         <AccordionTrigger className={cn("p-4 hover:no-underline")}>
@@ -318,13 +329,13 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
+                <div className="text-xs text-muted-foreground self-center">
+                  Press <kbd className="px-1 py-0.5 bg-muted rounded">⇧</kbd>+
+                  <kbd className="px-1 py-0.5 bg-muted rounded">Enter</kbd> for
+                  new line
+                </div>
               </div>
 
-              <div className="text-xs text-muted-foreground self-center">
-                Press <kbd className="px-1 py-0.5 bg-muted rounded">⇧</kbd>+
-                <kbd className="px-1 py-0.5 bg-muted rounded">Enter</kbd> for
-                new line
-              </div>
               {isCreator && (
                 <TooltipProvider>
                   <Tooltip>

@@ -1,7 +1,7 @@
 "use client";
 
 import * as Sentry from "@sentry/nextjs";
-import { BaseCommentWithUser, BaseCommentVote } from "kysely-codegen";
+import { BaseCommentVote, BaseCommentWithUser } from "kysely-codegen";
 import { ArrowUp, Edit2, RefreshCw, Reply, Trash2 } from "lucide-react";
 import React, { startTransition, useOptimistic, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -87,18 +87,18 @@ const Comment: React.FC<CommentProps> = ({
   const handleVote = async () => {
     if (!userId) return;
     try {
+      const newVotes = hasUpvoted
+        ? optVotes.filter((vote) => vote.userId !== userId)
+        : [
+            ...optVotes,
+            {
+              id: crypto.randomUUID(),
+              userId,
+              commentId: comment.id,
+              createdAt: new Date(),
+            },
+          ];
       startTransition(() => {
-        const newVotes = hasUpvoted
-          ? optVotes.filter((vote) => vote.userId !== userId)
-          : [
-              ...optVotes,
-              {
-                id: crypto.randomUUID(),
-                userId,
-                commentId: comment.id,
-                createdAt: new Date(),
-              },
-            ];
         useOptVotes(newVotes);
       });
       await toggleCommentUpvote({

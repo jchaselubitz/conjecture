@@ -1,6 +1,6 @@
 import { DraftWithAnnotations } from "kysely-codegen";
 import { cookies } from "next/headers";
-import StatementDetails from "@/components/statements/statement_details";
+import StatementLayout from "@/components/statements/statement_layout";
 
 export async function StatementContainer({
   drafts,
@@ -27,8 +27,8 @@ export async function StatementContainer({
     drafts[drafts.length - 1];
 
   return (
-    <div className="flex-1 bg-background ">
-      <StatementDetails
+    <div className="flex-1 bg-background  h-screen">
+      <StatementLayout
         statement={statement}
         authorCommentsEnabled={authorCommentsEnabled}
         readerCommentsEnabled={readerCommentsEnabled}

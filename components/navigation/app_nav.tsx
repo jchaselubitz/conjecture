@@ -10,7 +10,8 @@ export default function AppNav() {
           Conjecture
         </Link>
         <nav className="flex items-center gap-6">
-          <Link href="/explore">Explore</Link>
+          <Link href="/feed">Feed</Link>
+          <Link href="/statements">My Conjectures</Link>
 
           <CreatePostButton
             text="New Conjecture"

@@ -2,6 +2,7 @@
 
 import { BaseStatementVote, DraftWithAnnotations } from "kysely-codegen";
 import {
+  ArrowUp,
   BarChart3,
   Eye,
   Facebook,
@@ -12,11 +13,13 @@ import {
   PencilLine,
   Send,
   Share2,
-  ArrowUp,
   Twitter,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { startTransition, useOptimistic, useState } from "react";
+import { useUserContext } from "@/contexts/userContext";
 import { toggleStatementUpvote } from "@/lib/actions/statementActions";
+import { cn } from "@/lib/utils";
+
 import { Button } from "../ui/button";
 import {
   DropdownMenu,
@@ -32,8 +35,6 @@ import { Switch } from "../ui/switch";
 import { TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Tooltip } from "../ui/tooltip";
 import { TooltipProvider } from "../ui/tooltip";
-import { useUserContext } from "@/contexts/userContext";
-import { startTransition, useOptimistic, useState } from "react";
 
 interface StatementOptionsProps {
   statement: DraftWithAnnotations;
@@ -81,18 +82,18 @@ export default function StatementOptions({
   const handleVote = async () => {
     if (!userId) return;
     try {
+      const newVotes = hasUpvoted
+        ? optVotes.filter((vote) => vote.userId !== userId)
+        : [
+            ...optVotes,
+            {
+              id: crypto.randomUUID(),
+              userId,
+              statementId: statement.statementId,
+              createdAt: new Date(),
+            },
+          ];
       startTransition(() => {
-        const newVotes = hasUpvoted
-          ? optVotes.filter((vote) => vote.userId !== userId)
-          : [
-              ...optVotes,
-              {
-                id: crypto.randomUUID(),
-                userId,
-                statementId: statement.statementId,
-                createdAt: new Date(),
-              },
-            ];
         useOptVotes(newVotes);
       });
       await toggleStatementUpvote({

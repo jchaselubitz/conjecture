@@ -275,7 +275,7 @@ export async function createDraft({
 
   if (returnedStatementId) {
     redirect(
-      `/statements/${returnedStatementId}/edit?version=${versionNumber}`,
+      `/statements/${returnedStatementId}?version=${versionNumber}`,
     );
   } else {
     return { error: "Failed to create draft" };

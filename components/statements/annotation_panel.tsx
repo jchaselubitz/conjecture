@@ -70,8 +70,9 @@ export default function AnnotationPanel({
   });
 
   return (
-    <div className="flex flex-col mt-8 gap-6 mx-auto  ">
-      <div className="flex justify-end">
+    <div className="flex flex-col mt-4 gap-6 mx-auto  ">
+      <div className="flex justify-between mx-auto max-w-11/12 w-full items-center">
+        <h2 className="text-lg font-bold">Comments</h2>
         <Button variant="ghost" onClick={handleCloseAnnotationPanel}>
           <X className="w-4 h-4" />
         </Button>
@@ -82,7 +83,7 @@ export default function AnnotationPanel({
         value={selectedAnnotationId}
         onValueChange={(value) => setSelectedAnnotationId(value)}
       >
-        <div className="flex flex-col gap-2 mx-auto max-w-11/12 ">
+        <div className="flex flex-col gap-2 mx-auto max-w-11/12">
           {filteredAnnotations.map((annotation) => (
             <AnnotationDetail
               key={annotation.id}
@@ -93,6 +94,7 @@ export default function AnnotationPanel({
               onDelete={handleDeleteAnnotation}
             />
           ))}
+          <div className="h-20" />
         </div>
       </Accordion>
     </div>

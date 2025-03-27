@@ -4,6 +4,7 @@ import {
   Code,
   Heading1,
   Heading2,
+  Heading3,
   Italic,
   LinkIcon,
   List,
@@ -94,6 +95,18 @@ export const TextFormatMenu = ({
             )}
           >
             <Heading2 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 3 }).run()
+            }
+            className={cn(
+              editor.isActive("heading", { level: 3 }) && "bg-muted",
+            )}
+          >
+            <Heading3 className="h-4 w-4" />
           </Button>
           <Button
             variant="ghost"

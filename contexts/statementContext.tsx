@@ -97,9 +97,7 @@ export function StatementProvider({
   const nextVersionNumber = versionOptions.length + 1;
 
   const changeVersion = (newVersion: number) => {
-    router.push(
-      `/statements/${statement.statementId}/edit?version=${newVersion}`,
-    );
+    router.push(`/statements/${statement.statementId}?version=${newVersion}`);
   };
 
   //if the new // Save a draft of the statement - new ones will take new PublicationId
