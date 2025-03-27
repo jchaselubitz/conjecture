@@ -70,6 +70,11 @@ export default function StatementDetails({
     const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
     panelGroupRef.current?.setLayout(savedSize ?? [67, 33]);
     localStorage.setItem("selectedAnnotationId", annotationId);
+
+    // Update URL with annotation ID
+    const url = new URL(window.location.href);
+    url.searchParams.set("annotation_id", annotationId);
+    router.push(url.pathname + url.search);
   };
 
   const handleHeaderImageChange = async (

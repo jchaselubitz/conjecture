@@ -11,6 +11,7 @@ import {
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { DraftWithAnnotations, NewAnnotation } from "kysely-codegen";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useStatementContext } from "@/contexts/statementContext";
 import { UpsertImageDataType } from "@/lib/actions/statementActions";
@@ -64,6 +65,8 @@ const HTMLSuperEditor = ({
   showReaderComments,
 }: HTMLSuperEditorProps) => {
   const { setEditor } = useStatementContext();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const containerRef = useRef<HTMLDivElement>(null);
   const [annotations, setAnnotations] = useState<NewAnnotation[]>([]);
   const [latexPopoverOpen, setLatexPopoverOpen] = useState(false);
@@ -95,6 +98,26 @@ const HTMLSuperEditor = ({
   useEffect(() => {
     setAnnotations(existingAnnotations);
   }, [existingAnnotations]);
+
+  useEffect(() => {
+    const annotationId = searchParams.get("annotation-id");
+    if (annotationId && setSelectedAnnotationId) {
+      setSelectedAnnotationId(annotationId);
+
+      // Wait for the DOM to update before scrolling
+      setTimeout(() => {
+        const annotationElement = document.querySelector(
+          `[data-annotation-id="${annotationId}"]`,
+        );
+        if (annotationElement) {
+          annotationElement.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }
+      }, 100);
+    }
+  }, [searchParams, setSelectedAnnotationId]);
 
   // Initialize the Tiptap editor for rich text editing
   const editor = useEditor({
@@ -483,6 +506,22 @@ const HTMLSuperEditor = ({
               selected: isSelected,
             })
             .run();
+
+          // If this is the selected annotation, scroll it into view
+          if (isSelected) {
+            // Use setTimeout to ensure the DOM has updated
+            setTimeout(() => {
+              const annotationElement = document.querySelector(
+                `[data-annotation-id="${selectedAnnotationId}"]`,
+              );
+              if (annotationElement) {
+                annotationElement.scrollIntoView({
+                  behavior: "smooth",
+                  block: "center",
+                });
+              }
+            }, 100);
+          }
         }
       }
       return true;
@@ -612,6 +651,21 @@ const HTMLSuperEditor = ({
       deleteLatex({ editor, selectedLatexId, isBlock, setLatexPopoverOpen });
     }
   }, [editor, selectedLatexId, isBlock, setLatexPopoverOpen]);
+
+  useEffect(() => {
+    if (selectedAnnotationId === undefined) return;
+
+    const params = new URLSearchParams(window.location.search);
+    if (selectedAnnotationId) {
+      params.set("annotation-id", selectedAnnotationId);
+    } else {
+      params.delete("annotation-id");
+    }
+
+    router.push(`${window.location.pathname}?${params.toString()}`, {
+      scroll: false,
+    });
+  }, [selectedAnnotationId, router]);
 
   return (
     <div
