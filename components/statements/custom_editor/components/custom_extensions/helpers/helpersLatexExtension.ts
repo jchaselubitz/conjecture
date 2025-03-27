@@ -5,19 +5,24 @@ import { Editor } from "@tiptap/react";
  * @param container - Optional container to limit the scope of the search
  */
 export function processLatex(container: HTMLElement) {
- const elements = container.querySelectorAll(
-  '[data-type="latex"], [data-type="latex-block"], [data-type="inline-latex"], .inline-latex, .latex-block',
- );
+ // Common LaTeX element selector can be extracted to a constant
+ const LATEX_SELECTORS =
+  '[data-type="latex"], [data-type="latex-block"], [data-type="inline-latex"], .inline-latex, .latex-block';
+
+ // Common LaTeX class checks can be consolidated into a helper
+ const isLatexElement = (element: Element) => {
+  return element.classList.contains("katex") ||
+   element.classList.contains("katex-html") ||
+   element.closest(".katex") ||
+   element.querySelector(".katex-rendered");
+ };
+
+ const elements = container.querySelectorAll(LATEX_SELECTORS);
 
  elements.forEach((element) => {
   // Skip if this is already a KaTeX element or is inside one
   if (
-   element.classList.contains("katex") ||
-   element.classList.contains("katex-html") ||
-   element.closest(".katex") ||
-   element.querySelector(".katex-rendered") ||
-   // Skip if this element is already fully processed
-   element.classList.contains("katex-processed")
+   isLatexElement(element) || element.classList.contains("katex-processed")
   ) {
    return;
   }
@@ -132,19 +137,20 @@ export const saveLatex = ({
  if (!editor) return;
  let modelUpdateSuccessful = false;
 
- if (!selectedLatexId) {
-  //insert new latex
-  if (isBlock) {
-   modelUpdateSuccessful = editor.commands.insertBlockLatex({
-    content: latex,
-   });
+ try {
+  if (!selectedLatexId) {
+   // Insert new latex
+   if (isBlock) {
+    modelUpdateSuccessful = editor.commands.insertBlockLatex({
+     content: latex,
+    });
+   } else {
+    modelUpdateSuccessful = editor.commands.insertInlineLatex({
+     content: latex,
+    });
+   }
   } else {
-   modelUpdateSuccessful = editor.commands.insertInlineLatex({
-    content: latex,
-   });
-  }
- } else {
-  try {
+   // Update existing latex
    if (isBlock) {
     modelUpdateSuccessful = editor.commands.updateBlockLatex({
      latexId: selectedLatexId,
@@ -156,20 +162,25 @@ export const saveLatex = ({
      content: latex,
     });
    }
-  } catch (error) {
-   console.error("Error updating LaTeX in model:", error);
   }
- }
- // Close the popover
- setLatexPopoverOpen(false);
 
- // Process LaTeX in the DOM after a slight delay to ensure rendering
- setTimeout(() => {
-  if (editor) {
-   const editorElement = editor.view.dom as HTMLElement;
-   processLatex(editorElement);
+  if (!modelUpdateSuccessful) {
+   return;
   }
- }, 100);
+
+  // Close the popover
+  setLatexPopoverOpen(false);
+
+  // Process LaTeX in the DOM after a slight delay to ensure rendering
+  setTimeout(() => {
+   if (editor) {
+    const editorElement = editor.view.dom as HTMLElement;
+    processLatex(editorElement);
+   }
+  }, 100);
+ } catch (error) {
+  // Silently handle error
+ }
 };
 
 // Handle deleting LaTeX content from the editor

@@ -22,7 +22,7 @@ import { BlockLatex } from "./components/custom_extensions/block_latex";
 import {
   deleteLatex,
   saveLatex,
-} from "./components/custom_extensions/helpersLatexExtension";
+} from "./components/custom_extensions/helpers/helpersLatexExtension";
 import { InlineLatex } from "./components/custom_extensions/inline_latex";
 import { ImageNodeEditor } from "./components/image-node-editor";
 import { LatexNodeEditor } from "./components/latex-node-editor";
@@ -89,7 +89,7 @@ const HTMLSuperEditor = ({
       alt: "",
       statementId,
       id: "",
-    },
+    }
   );
 
   useEffect(() => {
@@ -144,12 +144,12 @@ const HTMLSuperEditor = ({
       // Sync any marks that don't have corresponding DB records
       marks.forEach(({ node }) => {
         const annotationMark = node.marks.find(
-          (mark: any) => mark.type.name === "annotationHighlight",
+          (mark: any) => mark.type.name === "annotationHighlight"
         );
         if (annotationMark) {
           const annotationId = annotationMark.attrs.annotationId;
           const existingAnnotation = annotations.find(
-            (a) => a.id === annotationId,
+            (a) => a.id === annotationId
           );
 
           if (!existingAnnotation && onAnnotationChange) {
@@ -277,16 +277,16 @@ const HTMLSuperEditor = ({
 
           // Handle LaTeX clicks only in editable mode
           let latexNode = element.closest(
-            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
           );
 
           if (!latexNode) {
             const katexElement = element.closest(
-              ".katex, .katex-html, .katex-rendered",
+              ".katex, .katex-html, .katex-rendered"
             );
             if (katexElement) {
               latexNode = katexElement.closest(
-                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
               );
             }
           }
@@ -301,7 +301,7 @@ const HTMLSuperEditor = ({
 
             if (!latex) {
               const katexWrapper = latexNode.querySelector(
-                ".katex-rendered, .katex",
+                ".katex-rendered, .katex"
               );
               if (katexWrapper) {
                 latex = "";
@@ -340,7 +340,8 @@ const HTMLSuperEditor = ({
 
             if (id) {
               onAnnotationClick(id);
-              setSelectedAnnotationId(id);
+              // how do we apply the 'selected' class to the annotation?
+
               event.preventDefault();
               event.stopPropagation();
               return true;
@@ -384,7 +385,7 @@ const HTMLSuperEditor = ({
 
       setLatexPopoverOpen(true);
     },
-    [editor],
+    [editor]
   );
 
   const openImagePopover = useCallback(
@@ -407,7 +408,7 @@ const HTMLSuperEditor = ({
       }
       setImagePopoverOpen(true);
     },
-    [statementId],
+    [statementId]
   );
 
   // Update annotations when they change
@@ -438,6 +439,7 @@ const HTMLSuperEditor = ({
                 ? annotation.createdAt.toISOString()
                 : String(annotation.createdAt),
             tag: annotation.tag || null,
+            selected: annotation.id === selectedAnnotationId,
           })
           .run();
       }
@@ -445,7 +447,50 @@ const HTMLSuperEditor = ({
 
     // Reset selection after applying all annotations
     editor.commands.setTextSelection({ from: 0, to: 0 });
-  }, [editor, annotations, statementCreatorId, setEditor]);
+  }, [
+    editor,
+    annotations,
+    statementCreatorId,
+    setEditor,
+    selectedAnnotationId,
+  ]);
+
+  // Add a new effect to update selection state when selectedAnnotationId changes
+  useEffect(() => {
+    if (!editor) return;
+
+    // Update all annotations to reflect new selection state
+    editor.state.doc.descendants((node, pos) => {
+      const annotationMark = node.marks.find(
+        (mark) => mark.type.name === "annotationHighlight"
+      );
+
+      if (annotationMark) {
+        const isSelected =
+          annotationMark.attrs.annotationId === selectedAnnotationId;
+        if (isSelected !== annotationMark.attrs.selected) {
+          editor
+            .chain()
+            .setTextSelection({ from: pos, to: pos + node.nodeSize })
+            .setAnnotationHighlight({
+              ...(annotationMark.attrs as {
+                annotationId: string;
+                isAuthor: boolean;
+                userId: string;
+                createdAt?: string | null;
+                tag?: string | null;
+              }),
+              selected: isSelected,
+            })
+            .run();
+        }
+      }
+      return true;
+    });
+
+    // Reset selection after updating
+    editor.commands.setTextSelection({ from: 0, to: 0 });
+  }, [editor, selectedAnnotationId]);
 
   // Handle creating new annotations
   const handleAnnotationCreate = useCallback(async () => {
@@ -547,17 +592,20 @@ const HTMLSuperEditor = ({
     }
   }, [editor, editable]);
 
-  const handleSaveLatex = useCallback(() => {
-    if (editor) {
-      saveLatex({
-        latex: currentLatex,
-        editor,
-        selectedLatexId,
-        isBlock,
-        setLatexPopoverOpen,
-      });
-    }
-  }, [editor, selectedLatexId, isBlock, currentLatex, setLatexPopoverOpen]);
+  const handleSaveLatex = useCallback(
+    (newLatex: string) => {
+      if (editor) {
+        saveLatex({
+          latex: newLatex,
+          editor,
+          selectedLatexId,
+          isBlock,
+          setLatexPopoverOpen,
+        });
+      }
+    },
+    [editor, selectedLatexId, isBlock, setLatexPopoverOpen]
+  );
 
   const handleDeleteLatex = useCallback(() => {
     if (editor) {

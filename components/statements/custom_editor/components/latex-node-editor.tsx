@@ -18,8 +18,8 @@ interface LatexNodeEditorProps {
 export function LatexNodeEditor({
   open,
   onOpenChange,
-  initialLatex,
-  isBlock,
+  initialLatex = "",
+  isBlock = true,
   nodePosition,
   onSave,
   onDelete,
@@ -27,6 +27,11 @@ export function LatexNodeEditor({
   if (!nodePosition || !open) return null;
 
   const handleSave = (latex: string) => {
+    console.log("LatexNodeEditor save triggered:", {
+      latex,
+      isBlock,
+      initialLatex,
+    });
     onSave(latex);
   };
 

@@ -1,5 +1,5 @@
 import { Mark, mergeAttributes } from "@tiptap/core";
-import { generateColorFromString } from "./helpersAnnotationExtension";
+import { generateColorFromString } from "./helpers/helpersAnnotationExtension";
 
 export interface AnnotationHighlightOptions {
   HTMLAttributes: Record<string, any>;
@@ -17,6 +17,7 @@ declare module "@tiptap/core" {
         userId: string;
         createdAt?: string | null;
         tag?: string | null;
+        selected?: boolean;
       }) => ReturnType;
       /**
        * Toggle an annotation highlight mark
@@ -27,6 +28,7 @@ declare module "@tiptap/core" {
         userId: string;
         createdAt?: string | null;
         tag?: string | null;
+        selected?: boolean;
       }) => ReturnType;
       /**
        * Unset an annotation highlight mark
@@ -113,6 +115,14 @@ export const AnnotationHighlight = Mark.create<AnnotationHighlightOptions>({
           return {
             "data-created-at": attributes.createdAt,
           };
+        },
+      },
+      selected: {
+        default: false,
+        parseHTML: (element) => element.classList.contains("selected"),
+        renderHTML: (attributes) => {
+          if (!attributes.selected) return {};
+          return { class: "selected" };
         },
       },
     };

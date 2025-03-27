@@ -8,7 +8,6 @@ import { generateStatementId } from "@/lib/helpers/helpersStatements";
 
 import HTMLSuperEditor from "./custom_editor/html_super_editor";
 interface RichTextDisplayProps {
-  htmlContent?: string;
   placeholder?: string;
   readOnly?: boolean;
   draftId: string;
@@ -23,7 +22,6 @@ interface RichTextDisplayProps {
 }
 
 const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
-  htmlContent,
   draftId,
   statementId,
   handleAnnotationClick,
@@ -73,7 +71,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
         });
       }
     },
-    [statement, prepStatementId, setStatementUpdate],
+    [statement, prepStatementId, setStatementUpdate]
   );
 
   useEffect(() => {
@@ -106,7 +104,6 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
       throw new Error("Annotation ID is required");
     }
 
-    // Extract the text content from the mark in the editor
     const annotation = {
       id: recent.id,
       tag: recent.tag,
@@ -139,28 +136,6 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
   //     statementId: statementId,
   //   });
   // };
-
-  const getSpan = (span: {
-    start: number;
-    end: number;
-    text: string;
-    id?: string | undefined;
-    userId: string;
-    draftId: string | number | bigint;
-  }): NewAnnotation => {
-    if (!draftId) {
-      throw new Error("Draft ID is required");
-    }
-    if (!userId) {
-      throw new Error("User ID is required");
-    }
-    return {
-      ...span,
-      tag: "none",
-      draftId: draftId.toString(),
-      userId: userId,
-    };
-  };
 
   const isStatementCreator = useMemo(() => {
     return userId === statement?.creatorId;

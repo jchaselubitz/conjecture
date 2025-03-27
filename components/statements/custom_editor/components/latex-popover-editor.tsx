@@ -58,8 +58,10 @@ export function LatexPopoverEditor({
   }, [latex, isBlock]);
 
   const handleSave = () => {
+    if (latex.trim() === "") {
+      return;
+    }
     onSave(latex);
-    onOpenChange(false);
   };
 
   const handleDelete = () => {

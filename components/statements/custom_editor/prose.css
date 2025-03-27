@@ -129,15 +129,18 @@
 .inline-latex:hover,
 [data-type="latex-block"]:hover,
 .latex-block:hover {
-  background-color: hsl(var(--muted) / 0.5);
+  position: relative;
+  /* background-color: hsl(var(--muted) / 0.5); */
+  /* background-color: #eaeaea61; */
+  border: 1px solid #b4ab9461;
 }
 
 /* Edit indicator for block LaTeX */
 [data-type="latex-block"]:hover::after {
   content: "Edit";
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 5px;
+  right: 10px;
   background-color: hsl(var(--muted));
   color: hsl(var(--muted-foreground));
   /* padding: 0.125rem 0.25rem; */
@@ -228,7 +231,7 @@
 /* Show author comments when enabled */
 .show-author-comments .ProseMirror mark.annotation[data-is-author="true"] {
   cursor: pointer;
-  border-bottom: 2px solid var(--border-color);
+  /* border-bottom: 2px solid var(--border-color); */
   background-color: var(--bg-color);
   pointer-events: auto; /* Re-enable interaction */
 }
@@ -236,65 +239,64 @@
 /* Show reader comments when enabled */
 .show-reader-comments .ProseMirror mark.annotation[data-is-author="false"] {
   cursor: pointer;
+  /* border-bottom: 2px solid var(--border-color); */
+  background-color: var(--bg-color);
   pointer-events: auto; /* Re-enable interaction */
 }
 
-.ProseMirror mark.annotation:hover {
-  background-color: var(--hover-bg-color) !important;
+/* Annotation hover and selection styles - without !important */
+.ProseMirror mark.annotation:hover:not([data-type="latex"]):not([data-type="latex-block"]):not(.latex-block):not(.inline-latex) {
+  background-color: var(--hover-bg-color);
 }
 
-.ProseMirror mark.annotation.selected {
-  background-color: var(--hover-bg-color) !important;
-  box-shadow: 0 0 0 2px var(--border-color);
+.ProseMirror mark.annotation.selected:not([data-type="latex"]):not([data-type="latex-block"]):not(.latex-block):not(.inline-latex) {
+  background-color: var(--hover-bg-color);
+  /* box-shadow: 0 0 0 2px var(--border-color); */
+  border-bottom: 2px solid var(--border-color);
 }
 
-.ProseMirror mark.annotation.new-annotation {
-  animation: highlight-pulse 1.5s ease-in-out;
+/* LaTeX compatibility with annotations - with higher specificity */
+.ProseMirror mark.annotation[data-type="latex"],
+.ProseMirror mark.annotation[data-type="latex-block"],
+.ProseMirror mark.annotation .latex-block,
+.ProseMirror mark.annotation .inline-latex {
+  background-color: inherit;
+  border-color: inherit;
 }
 
-@keyframes highlight-pulse {
-  0% {
-    box-shadow: 0 0 0 0 var(--border-color);
-  }
-  70% {
-    box-shadow: 0 0 0 4px transparent;
-  }
-  100% {
-    box-shadow: 0 0 0 0 transparent;
-  }
+/* Preserve LaTeX styling within annotations */
+.ProseMirror mark.annotation[data-type="latex-block"],
+.ProseMirror mark.annotation .latex-block {
+  display: block;
+  text-align: center;
+  margin: 1rem 0;
+  padding: 0.75rem;
+  font-size: 1.2em;
+  background: #f4e7d661;
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .ProseMirror mark.annotation:hover,
-  .ProseMirror mark.annotation.selected {
-    box-shadow: 0 1px 2px rgba(255, 255, 255, 0.1) !important;
-  }
-  
-  .ProseMirror mark.annotation.selected {
-    box-shadow: 0 1px 3px rgba(255, 255, 255, 0.2) !important;
-  }
-  
-  @keyframes pulse-dark {
-    0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.1) !important; }
-    70% { box-shadow: 0 0 0 4px rgba(255, 255, 255, 0) !important; }
-    100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0) !important; }
-  }
-  
-  .ProseMirror mark.annotation.new-annotation {
-    animation: pulse-dark 1.5s 1;
-  }
+/* Ensure inline LaTeX maintains its styling when annotated */
+.ProseMirror mark.annotation[data-type="latex"],
+.ProseMirror mark.annotation .inline-latex {
+  display: inline-block;
+  padding: 0 2px;
+  line-height: inherit;
+  font-size: inherit;
+  background-color: rgba(0, 102, 204, 0.05);
 }
 
-/* LaTeX compatibility with annotations */
-.annotation .katex-html {
-  background: inherit;
+/* Preserve hover effects for LaTeX elements within annotations */
+.ProseMirror mark.annotation[data-type="latex"]:hover,
+.ProseMirror mark.annotation .inline-latex:hover,
+.ProseMirror mark.annotation[data-type="latex-block"]:hover,
+.ProseMirror mark.annotation .latex-block:hover {
+  background-color: hsl(var(--muted) / 0.5);
 }
 
-.annotation .latex-block,
-.annotation .inline-latex {
-  background-color: inherit !important;
-  border-color: inherit !important;
+/* Ensure KaTeX rendering is preserved within annotations */
+.ProseMirror mark.annotation .katex {
+  font-size: 1.1em;
+  line-height: 1.2;
 }
 
 /* Style for the container when used as an annotator */

@@ -4,7 +4,6 @@ import * as Sentry from "@sentry/nextjs";
 import { AnnotationWithComments, BaseAnnotation } from "kysely-codegen";
 import { X } from "lucide-react";
 import { useStatementContext } from "@/contexts/statementContext";
-import { useUserContext } from "@/contexts/userContext";
 import { deleteAnnotation } from "@/lib/actions/annotationActions";
 
 import { Accordion } from "../ui/accordion";
@@ -32,13 +31,12 @@ export default function AnnotationPanel({
   showReaderComments,
 }: AnnotationPanelProps) {
   const { setAnnotations, editor } = useStatementContext();
-  const { userId } = useUserContext();
 
   const handleDeleteAnnotation = async (annotation: BaseAnnotation) => {
     const annotationId = annotation.id;
     if (!annotationId) return;
     setAnnotations(annotations.filter((a) => a.id !== annotationId));
-    setSelectedAnnotationId(undefined);
+
     try {
       await deleteAnnotation({
         annotationId: annotation.id,
@@ -49,6 +47,7 @@ export default function AnnotationPanel({
       if (editor) {
         editor.commands.deleteAnnotationHighlight(annotationId);
       }
+      setSelectedAnnotationId(undefined);
     } catch (error) {
       console.error("Error deleting annotation:", error);
       Sentry.captureException(error);

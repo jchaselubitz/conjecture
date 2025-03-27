@@ -1,7 +1,7 @@
 import { mergeAttributes, Node } from "@tiptap/core";
 import { nanoid } from "nanoid";
 import { Plugin, PluginKey } from "prosemirror-state";
-import { processLatex } from "./helpersLatexExtension";
+import { processLatex } from "./helpers/helpersLatexExtension";
 
 export interface InlineLatexOptions {
   /**
@@ -139,13 +139,19 @@ export const InlineLatex = Node.create<InlineLatexOptions>({
         });
 
         if (nodePos === -1) {
+          console.warn(
+            `No inline LaTeX node found with ID: ${options.latexId}`,
+          );
           return false;
         }
 
-        // Update the node
+        // Update the node with new content
         if (dispatch) {
+          const currentNode = doc.nodeAt(nodePos);
+          if (!currentNode) return false;
+
           tr.setNodeMarkup(nodePos, undefined, {
-            ...doc.nodeAt(nodePos)?.attrs,
+            ...currentNode.attrs,
             latex: options.content,
           });
           dispatch(tr);
