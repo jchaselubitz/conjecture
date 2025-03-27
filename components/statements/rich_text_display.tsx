@@ -71,7 +71,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
         });
       }
     },
-    [statement, prepStatementId, setStatementUpdate]
+    [statement, prepStatementId, setStatementUpdate],
   );
 
   useEffect(() => {

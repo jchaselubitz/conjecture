@@ -89,7 +89,7 @@ const HTMLSuperEditor = ({
       alt: "",
       statementId,
       id: "",
-    }
+    },
   );
 
   useEffect(() => {
@@ -144,12 +144,12 @@ const HTMLSuperEditor = ({
       // Sync any marks that don't have corresponding DB records
       marks.forEach(({ node }) => {
         const annotationMark = node.marks.find(
-          (mark: any) => mark.type.name === "annotationHighlight"
+          (mark: any) => mark.type.name === "annotationHighlight",
         );
         if (annotationMark) {
           const annotationId = annotationMark.attrs.annotationId;
           const existingAnnotation = annotations.find(
-            (a) => a.id === annotationId
+            (a) => a.id === annotationId,
           );
 
           if (!existingAnnotation && onAnnotationChange) {
@@ -277,16 +277,16 @@ const HTMLSuperEditor = ({
 
           // Handle LaTeX clicks only in editable mode
           let latexNode = element.closest(
-            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
+            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
           );
 
           if (!latexNode) {
             const katexElement = element.closest(
-              ".katex, .katex-html, .katex-rendered"
+              ".katex, .katex-html, .katex-rendered",
             );
             if (katexElement) {
               latexNode = katexElement.closest(
-                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
+                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
               );
             }
           }
@@ -301,7 +301,7 @@ const HTMLSuperEditor = ({
 
             if (!latex) {
               const katexWrapper = latexNode.querySelector(
-                ".katex-rendered, .katex"
+                ".katex-rendered, .katex",
               );
               if (katexWrapper) {
                 latex = "";
@@ -385,7 +385,7 @@ const HTMLSuperEditor = ({
 
       setLatexPopoverOpen(true);
     },
-    [editor]
+    [editor],
   );
 
   const openImagePopover = useCallback(
@@ -408,7 +408,7 @@ const HTMLSuperEditor = ({
       }
       setImagePopoverOpen(true);
     },
-    [statementId]
+    [statementId],
   );
 
   // Update annotations when they change
@@ -462,7 +462,7 @@ const HTMLSuperEditor = ({
     // Update all annotations to reflect new selection state
     editor.state.doc.descendants((node, pos) => {
       const annotationMark = node.marks.find(
-        (mark) => mark.type.name === "annotationHighlight"
+        (mark) => mark.type.name === "annotationHighlight",
       );
 
       if (annotationMark) {
@@ -604,7 +604,7 @@ const HTMLSuperEditor = ({
         });
       }
     },
-    [editor, selectedLatexId, isBlock, setLatexPopoverOpen]
+    [editor, selectedLatexId, isBlock, setLatexPopoverOpen],
   );
 
   const handleDeleteLatex = useCallback(() => {
