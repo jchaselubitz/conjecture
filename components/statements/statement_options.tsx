@@ -197,13 +197,13 @@ const CommentIndicatorButton = ({
             <span
               className={cn(
                 " h-2 w-2 rounded-full border border-orange-500",
-                showAuthorComments ? "bg-orange-500" : "bg-transparent"
+                showAuthorComments ? "bg-orange-500" : "bg-transparent",
               )}
             />
             <span
               className={cn(
                 " h-2 w-2 rounded-full border border-blue-500",
-                showReaderComments ? "bg-blue-500" : "bg-transparent"
+                showReaderComments ? "bg-blue-500" : "bg-transparent",
               )}
             />
           </span>

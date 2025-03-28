@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import {
   AnnotationWithComments,
   BaseCommentWithUser,
+  BaseStatementCitation,
   BaseStatementVote,
   DraftWithAnnotations,
   NewAnnotation,
@@ -145,6 +146,12 @@ export async function getDraftsByStatementId(
       "profile.username as creatorSlug",
       jsonArrayFrom(
         eb
+          .selectFrom("statementCitation")
+          .selectAll()
+          .whereRef("statementCitation.statementId", "=", "draft.statementId"),
+      ).as("citations"),
+      jsonArrayFrom(
+        eb
           .selectFrom("statementVote")
           .selectAll()
           .whereRef("statementVote.statementId", "=", "draft.statementId"),
@@ -201,10 +208,13 @@ export async function getDraftsByStatementId(
     ...draft,
     upvotes: draft.upvotes.map((u) => ({
       id: u.id,
-      userId: u.userId,
+      userId: u.creatorId,
       statementId: u.statementId,
       createdAt: u.createdAt,
     })) as BaseStatementVote[],
+    citations: draft.citations.map((c) => ({
+      ...c,
+    })) as BaseStatementCitation[],
     annotations: draft.annotations.map((a) => ({
       ...a,
       comments: a.comments.map((c) => ({

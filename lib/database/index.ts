@@ -13,6 +13,7 @@ import {
   DB,
   Draft,
   Profile,
+  StatementCitation,
   StatementImage,
   StatementVote,
 } from "kysely-codegen";
@@ -39,12 +40,20 @@ declare module "kysely-codegen" {
   export type EditedProfile = Updateable<Profile>;
 
   export type BaseStatementImage = Selectable<StatementImage>;
-  export type NewStatementImage = Insertable<StatementImage>;
+  export type NewStatementImage = Insertable<StatementImage> & {
+    id: string;
+  };
   export type EditedStatementImage = Updateable<StatementImage>;
 
   export type BaseStatementVote = Selectable<StatementVote>;
   export type NewStatementVote = Insertable<StatementVote>;
   export type EditedStatementVote = Updateable<StatementVote>;
+
+  export type BaseStatementCitation = Selectable<StatementCitation>;
+  export type NewStatementCitation = Insertable<StatementCitation> & {
+    id: string;
+  };
+  export type EditedStatementCitation = Updateable<StatementCitation>;
 
   export type BaseDraft = Selectable<Draft>;
   export type DraftWithUser = BaseDraft & {
@@ -55,6 +64,7 @@ declare module "kysely-codegen" {
   export type DraftWithAnnotations = DraftWithUser & {
     annotations: AnnotationWithComments[];
     upvotes: BaseStatementVote[];
+    citations: BaseStatementCitation[];
   };
 
   export type NewDraft = Insertable<Draft>;
@@ -66,7 +76,9 @@ declare module "kysely-codegen" {
     userName: string;
     userImageUrl: string;
   };
-  export type NewAnnotation = Insertable<Annotation>;
+  export type NewAnnotation = Insertable<Annotation> & {
+    id: string;
+  };
   export type EditedAnnotation = Updateable<Annotation>;
 
   export type BaseComment = Selectable<Comment>;

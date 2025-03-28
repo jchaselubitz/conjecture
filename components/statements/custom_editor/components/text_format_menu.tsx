@@ -1,4 +1,5 @@
 import { Editor } from "@tiptap/react";
+import { NewStatementCitation } from "kysely-codegen";
 import {
   Bold,
   Code,
@@ -15,16 +16,22 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 import { AnnotationButton } from "./annotation-button";
+import { CitationButton } from "./citation-button";
 import { LatexButton } from "./latex-button";
 import { QuoteLinkButton } from "./quote-link-button";
 
 interface TextFormatMenuProps {
   editor: Editor;
   isCreator: boolean;
+  statementId: string;
   openLatexPopover: (options: {
     latex?: string;
     displayMode?: boolean;
     id?: string | null;
+  }) => void;
+  openCitationPopover: (options: {
+    citationData: NewStatementCitation;
+    position?: { x: number; y: number; width: number; height: number } | null;
   }) => void;
   onAnnotate?: () => void;
   canAnnotate?: boolean;
@@ -36,6 +43,8 @@ export const TextFormatMenu = ({
   isCreator,
   editMode,
   openLatexPopover,
+  openCitationPopover,
+  statementId,
   onAnnotate,
   canAnnotate = false,
 }: TextFormatMenuProps) => {
@@ -80,7 +89,7 @@ export const TextFormatMenu = ({
               editor.chain().focus().toggleHeading({ level: 1 }).run()
             }
             className={cn(
-              editor.isActive("heading", { level: 1 }) && "bg-muted"
+              editor.isActive("heading", { level: 1 }) && "bg-muted",
             )}
           >
             <Heading1 className="h-4 w-4" />
@@ -92,7 +101,7 @@ export const TextFormatMenu = ({
               editor.chain().focus().toggleHeading({ level: 2 }).run()
             }
             className={cn(
-              editor.isActive("heading", { level: 2 }) && "bg-muted"
+              editor.isActive("heading", { level: 2 }) && "bg-muted",
             )}
           >
             <Heading2 className="h-4 w-4" />
@@ -104,7 +113,7 @@ export const TextFormatMenu = ({
               editor.chain().focus().toggleHeading({ level: 3 }).run()
             }
             className={cn(
-              editor.isActive("heading", { level: 3 }) && "bg-muted"
+              editor.isActive("heading", { level: 3 }) && "bg-muted",
             )}
           >
             <Heading3 className="h-4 w-4" />
@@ -125,6 +134,11 @@ export const TextFormatMenu = ({
           >
             <ListOrdered className="h-4 w-4" />
           </Button>
+          <CitationButton
+            editor={editor}
+            openCitationPopover={openCitationPopover}
+            statementId={statementId}
+          />
           <Button
             variant="ghost"
             size="sm"

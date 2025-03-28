@@ -1,8 +1,12 @@
 import "./prose.css";
 import "katex/dist/katex.min.css";
+import { Extension } from "@tiptap/core";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
+import Typography from "@tiptap/extension-typography";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Step } from "@tiptap/pm/transform";
+import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import {
   BubbleMenu,
   EditorContent,
@@ -11,29 +15,28 @@ import {
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { DraftWithAnnotations, NewAnnotation } from "kysely-codegen";
+import { NewStatementCitation } from "kysely-codegen";
+import { nanoid } from "nanoid";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useStatementContext } from "@/contexts/statementContext";
 import { UpsertImageDataType } from "@/lib/actions/statementActions";
 
 import { BlockTypeChooser } from "./components/block_type_chooser";
+import { CitationNodeEditor } from "./components/citation-node-editor";
 import { AnnotationHighlight } from "./components/custom_extensions/annotation_highlight";
 import { BlockImage } from "./components/custom_extensions/block_image";
 import { BlockLatex } from "./components/custom_extensions/block_latex";
+import { Citation } from "./components/custom_extensions/citation";
 import {
   deleteLatex,
   saveLatex,
 } from "./components/custom_extensions/helpers/helpersLatexExtension";
 import { InlineLatex } from "./components/custom_extensions/inline_latex";
+import { QuotePasteHandler } from "./components/custom_extensions/quote_paste_handler";
 import { ImageNodeEditor } from "./components/image-node-editor";
 import { LatexNodeEditor } from "./components/latex-node-editor";
 import { TextFormatMenu } from "./components/text_format_menu";
-import { Decoration, DecorationSet } from "@tiptap/pm/view";
-import { Plugin, PluginKey } from "@tiptap/pm/state";
-import { Extension } from "@tiptap/core";
-import { QuoteLinkButton } from "./components/quote-link-button";
-import { QuotePasteHandler } from "./components/custom_extensions/quote_paste_handler";
-
 interface HTMLSuperEditorProps {
   statement: DraftWithAnnotations;
   existingAnnotations: NewAnnotation[];
@@ -110,6 +113,12 @@ const HTMLSuperEditor = ({
   const router = useRouter();
   const searchParams = useSearchParams();
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const htmlContent = statement.content;
+  const draftId = statement.id;
+  const statementId = statement.statementId;
+  const statementCreatorId = statement.creatorId;
+
   const [annotations, setAnnotations] = useState<NewAnnotation[]>([]);
   const [latexPopoverOpen, setLatexPopoverOpen] = useState(false);
   const [currentLatex, setCurrentLatex] = useState("");
@@ -121,11 +130,22 @@ const HTMLSuperEditor = ({
     width: number;
     height: number;
   } | null>(null);
-
-  const htmlContent = statement.content;
-  const draftId = statement.id;
-  const statementId = statement.statementId;
-  const statementCreatorId = statement.creatorId;
+  const [citationPopoverOpen, setCitationPopoverOpen] = useState(false);
+  const [initialCitationData, setInitialCitationData] =
+    useState<NewStatementCitation>({
+      statementId,
+      title: "",
+      url: "",
+      year: "",
+      authorNames: "",
+      issue: null,
+      pageEnd: null,
+      pageStart: null,
+      publisher: "",
+      titlePublication: "",
+      volume: "",
+      id: "",
+    });
 
   const [imagePopoverOpen, setImagePopoverOpen] = useState(false);
   const [initialImageData, setInitialImageData] = useState<UpsertImageDataType>(
@@ -134,7 +154,7 @@ const HTMLSuperEditor = ({
       alt: "",
       statementId,
       id: "",
-    }
+    },
   );
 
   useEffect(() => {
@@ -149,7 +169,7 @@ const HTMLSuperEditor = ({
       // Wait for the DOM to update before scrolling
       setTimeout(() => {
         const annotationElement = document.querySelector(
-          `[data-annotation-id="${annotationId}"]`
+          `[data-annotation-id="${annotationId}"]`,
         );
         if (annotationElement) {
           annotationElement.scrollIntoView({
@@ -169,6 +189,7 @@ const HTMLSuperEditor = ({
       StarterKit.configure({
         history: {},
       }),
+      Typography,
       Link.configure({
         openOnClick: true,
         HTMLAttributes: {
@@ -197,14 +218,14 @@ const HTMLSuperEditor = ({
           class: "annotation",
         },
       }),
+      Citation,
       QuoteHighlight,
       QuotePasteHandler,
     ],
     content: htmlContent,
     editable: true,
     onCreate: ({ editor }) => {
-      // No need to reapply annotations on create as they're already in the HTML
-      // Just ensure we have DB records for all annotation marks
+      //  ensure we have DB records for all annotation marks
       const marks: { node: any }[] = [];
       editor.state.doc.descendants((node, pos) => {
         if (
@@ -218,12 +239,12 @@ const HTMLSuperEditor = ({
       // Sync any marks that don't have corresponding DB records
       marks.forEach(({ node }) => {
         const annotationMark = node.marks.find(
-          (mark: any) => mark.type.name === "annotationHighlight"
+          (mark: any) => mark.type.name === "annotationHighlight",
         );
         if (annotationMark) {
           const annotationId = annotationMark.attrs.annotationId;
           const existingAnnotation = annotations.find(
-            (a) => a.id === annotationId
+            (a) => a.id === annotationId,
           );
 
           if (!existingAnnotation && onAnnotationChange) {
@@ -349,18 +370,71 @@ const HTMLSuperEditor = ({
             return true;
           }
 
+          // Handle citation clicks only in editable mode
+          const citationNode = element.closest(
+            '[data-type="citation"], [data-type="citation-block"]',
+          );
+
+          if (citationNode && editable) {
+            const rect = citationNode.getBoundingClientRect();
+            setSelectedNodePosition({
+              x: rect.left,
+              y: rect.top,
+              width: rect.width,
+              height: rect.height,
+            });
+
+            const id = citationNode.getAttribute("data-citation-id");
+
+            if (!id) {
+              return;
+            }
+
+            const selectedCitation = statement.citations.find(
+              (c) => c.id === id,
+            );
+
+            openCitationPopover({
+              citationData: {
+                statementId,
+                id: selectedCitation?.id ?? nanoid(),
+                title: selectedCitation?.title ?? "",
+                url: selectedCitation?.url ?? undefined,
+                year: selectedCitation?.year ?? undefined,
+                authorNames: selectedCitation?.authorNames ?? "",
+                issue: selectedCitation?.issue ?? undefined,
+                pageEnd: selectedCitation?.pageEnd ?? undefined,
+                pageStart: selectedCitation?.pageStart ?? undefined,
+                publisher: selectedCitation?.publisher ?? undefined,
+                titlePublication:
+                  selectedCitation?.titlePublication ?? undefined,
+                volume: selectedCitation?.volume ?? undefined,
+              },
+              position: {
+                x: rect.left,
+                y: rect.top,
+                width: rect.width,
+                height: rect.height,
+              },
+            });
+
+            event.preventDefault();
+            event.stopPropagation();
+            return true;
+          }
+
           // Handle LaTeX clicks only in editable mode
           let latexNode = element.closest(
-            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
+            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
           );
 
           if (!latexNode) {
             const katexElement = element.closest(
-              ".katex, .katex-html, .katex-rendered"
+              ".katex, .katex-html, .katex-rendered",
             );
             if (katexElement) {
               latexNode = katexElement.closest(
-                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
+                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
               );
             }
           }
@@ -375,7 +449,7 @@ const HTMLSuperEditor = ({
 
             if (!latex) {
               const katexWrapper = latexNode.querySelector(
-                ".katex-rendered, .katex"
+                ".katex-rendered, .katex",
               );
               if (katexWrapper) {
                 latex = "";
@@ -414,8 +488,6 @@ const HTMLSuperEditor = ({
 
             if (id) {
               onAnnotationClick(id);
-              // how do we apply the 'selected' class to the annotation?
-
               event.preventDefault();
               event.stopPropagation();
               return true;
@@ -459,7 +531,7 @@ const HTMLSuperEditor = ({
 
       setLatexPopoverOpen(true);
     },
-    [editor]
+    [editor],
   );
 
   const openImagePopover = useCallback(
@@ -482,8 +554,28 @@ const HTMLSuperEditor = ({
       }
       setImagePopoverOpen(true);
     },
-    [statementId]
+    [statementId],
   );
+
+  const openCitationPopover = ({
+    citationData,
+    position = null,
+  }: {
+    citationData: NewStatementCitation;
+    position?: { x: number; y: number; width: number; height: number } | null;
+  }) => {
+    setInitialCitationData(citationData);
+    setSelectedNodePosition({
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+    });
+    if (position) {
+      setSelectedNodePosition(position);
+    }
+    setCitationPopoverOpen(true);
+  };
 
   // Update annotations when they change
   useEffect(() => {
@@ -536,7 +628,7 @@ const HTMLSuperEditor = ({
     // Update all annotations to reflect new selection state
     editor.state.doc.descendants((node, pos) => {
       const annotationMark = node.marks.find(
-        (mark) => mark.type.name === "annotationHighlight"
+        (mark) => mark.type.name === "annotationHighlight",
       );
 
       if (annotationMark) {
@@ -563,7 +655,7 @@ const HTMLSuperEditor = ({
             // Use setTimeout to ensure the DOM has updated
             setTimeout(() => {
               const annotationElement = document.querySelector(
-                `[data-annotation-id="${selectedAnnotationId}"]`
+                `[data-annotation-id="${selectedAnnotationId}"]`,
               );
               if (annotationElement) {
                 annotationElement.scrollIntoView({
@@ -694,7 +786,7 @@ const HTMLSuperEditor = ({
         });
       }
     },
-    [editor, selectedLatexId, isBlock, setLatexPopoverOpen]
+    [editor, selectedLatexId, isBlock, setLatexPopoverOpen],
   );
 
   const handleDeleteLatex = useCallback(() => {
@@ -779,10 +871,12 @@ const HTMLSuperEditor = ({
         <>
           <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
             <TextFormatMenu
+              statementId={statementId}
               isCreator={userId === statementCreatorId}
               editMode={editable ?? false}
               editor={editor}
               openLatexPopover={openLatexPopover}
+              openCitationPopover={openCitationPopover}
               onAnnotate={annotatable ? handleAnnotationCreate : undefined}
               canAnnotate={annotatable && !!userId}
             />
@@ -820,6 +914,14 @@ const HTMLSuperEditor = ({
             open={imagePopoverOpen}
             onOpenChange={setImagePopoverOpen}
             initialImageData={initialImageData}
+            nodePosition={selectedNodePosition}
+            editor={editor}
+            statementId={statementId}
+          />
+          <CitationNodeEditor
+            open={citationPopoverOpen}
+            onOpenChange={setCitationPopoverOpen}
+            initialCitationData={initialCitationData}
             nodePosition={selectedNodePosition}
             editor={editor}
             statementId={statementId}

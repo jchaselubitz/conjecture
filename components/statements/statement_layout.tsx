@@ -34,10 +34,10 @@ export default function StatementLayout({
     useRef<React.ElementRef<typeof ResizablePanelGroup>>(null);
 
   const [showAuthorComments, setShowAuthorComments] = useState(
-    authorCommentsEnabled
+    authorCommentsEnabled,
   );
   const [showReaderComments, setShowReaderComments] = useState(
-    readerCommentsEnabled
+    readerCommentsEnabled,
   );
 
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<
