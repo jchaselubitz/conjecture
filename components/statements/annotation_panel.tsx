@@ -52,7 +52,6 @@ export default function AnnotationPanel({
       console.error("Error deleting annotation:", error);
       Sentry.captureException(error);
     }
-    localStorage.removeItem("selectedAnnotationId");
   };
 
   const sortedAnnotations = annotations.sort((a, b) => {

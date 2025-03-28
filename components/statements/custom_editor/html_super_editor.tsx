@@ -28,6 +28,11 @@ import { InlineLatex } from "./components/custom_extensions/inline_latex";
 import { ImageNodeEditor } from "./components/image-node-editor";
 import { LatexNodeEditor } from "./components/latex-node-editor";
 import { TextFormatMenu } from "./components/text_format_menu";
+import { Decoration, DecorationSet } from "@tiptap/pm/view";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { Extension } from "@tiptap/core";
+import { QuoteLinkButton } from "./components/quote-link-button";
+import { QuotePasteHandler } from "./components/custom_extensions/quote_paste_handler";
 
 interface HTMLSuperEditorProps {
   statement: DraftWithAnnotations;
@@ -46,6 +51,43 @@ interface HTMLSuperEditorProps {
   showAuthorComments: boolean;
   showReaderComments: boolean;
 }
+
+const quoteHighlightKey = new PluginKey("quoteHighlight");
+
+const createQuoteHighlight = (searchParamsGetter: () => URLSearchParams) => {
+  return Extension.create({
+    name: "quoteHighlight",
+
+    addProseMirrorPlugins() {
+      let decorationSet = DecorationSet.empty;
+
+      return [
+        new Plugin({
+          key: quoteHighlightKey,
+          props: {
+            decorations(state) {
+              const location = searchParamsGetter().get("location");
+              if (!location) return DecorationSet.empty;
+
+              const [start, end] = location
+                .split("-")
+                .map((pos: string) => parseInt(pos, 10));
+              if (isNaN(start) || isNaN(end)) return DecorationSet.empty;
+
+              // Create a decoration that adds the quoted-text class
+              const decoration = Decoration.inline(start, end, {
+                class: "quoted-text",
+              });
+
+              decorationSet = DecorationSet.create(state.doc, [decoration]);
+              return decorationSet;
+            },
+          },
+        }),
+      ];
+    },
+  });
+};
 
 const HTMLSuperEditor = ({
   existingAnnotations,
@@ -92,7 +134,7 @@ const HTMLSuperEditor = ({
       alt: "",
       statementId,
       id: "",
-    },
+    }
   );
 
   useEffect(() => {
@@ -107,7 +149,7 @@ const HTMLSuperEditor = ({
       // Wait for the DOM to update before scrolling
       setTimeout(() => {
         const annotationElement = document.querySelector(
-          `[data-annotation-id="${annotationId}"]`,
+          `[data-annotation-id="${annotationId}"]`
         );
         if (annotationElement) {
           annotationElement.scrollIntoView({
@@ -119,6 +161,8 @@ const HTMLSuperEditor = ({
     }
   }, [searchParams, setSelectedAnnotationId]);
 
+  const QuoteHighlight = createQuoteHighlight(() => searchParams);
+
   // Initialize the Tiptap editor for rich text editing
   const editor = useEditor({
     extensions: [
@@ -126,7 +170,12 @@ const HTMLSuperEditor = ({
         history: {},
       }),
       Link.configure({
-        openOnClick: false,
+        openOnClick: true,
+        HTMLAttributes: {
+          class: "prose-link",
+          target: "_blank",
+          rel: "noopener noreferrer",
+        },
       }),
       Placeholder.configure({
         placeholder,
@@ -148,6 +197,8 @@ const HTMLSuperEditor = ({
           class: "annotation",
         },
       }),
+      QuoteHighlight,
+      QuotePasteHandler,
     ],
     content: htmlContent,
     editable: true,
@@ -167,12 +218,12 @@ const HTMLSuperEditor = ({
       // Sync any marks that don't have corresponding DB records
       marks.forEach(({ node }) => {
         const annotationMark = node.marks.find(
-          (mark: any) => mark.type.name === "annotationHighlight",
+          (mark: any) => mark.type.name === "annotationHighlight"
         );
         if (annotationMark) {
           const annotationId = annotationMark.attrs.annotationId;
           const existingAnnotation = annotations.find(
-            (a) => a.id === annotationId,
+            (a) => a.id === annotationId
           );
 
           if (!existingAnnotation && onAnnotationChange) {
@@ -300,16 +351,16 @@ const HTMLSuperEditor = ({
 
           // Handle LaTeX clicks only in editable mode
           let latexNode = element.closest(
-            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
           );
 
           if (!latexNode) {
             const katexElement = element.closest(
-              ".katex, .katex-html, .katex-rendered",
+              ".katex, .katex-html, .katex-rendered"
             );
             if (katexElement) {
               latexNode = katexElement.closest(
-                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
               );
             }
           }
@@ -324,7 +375,7 @@ const HTMLSuperEditor = ({
 
             if (!latex) {
               const katexWrapper = latexNode.querySelector(
-                ".katex-rendered, .katex",
+                ".katex-rendered, .katex"
               );
               if (katexWrapper) {
                 latex = "";
@@ -408,7 +459,7 @@ const HTMLSuperEditor = ({
 
       setLatexPopoverOpen(true);
     },
-    [editor],
+    [editor]
   );
 
   const openImagePopover = useCallback(
@@ -431,7 +482,7 @@ const HTMLSuperEditor = ({
       }
       setImagePopoverOpen(true);
     },
-    [statementId],
+    [statementId]
   );
 
   // Update annotations when they change
@@ -485,7 +536,7 @@ const HTMLSuperEditor = ({
     // Update all annotations to reflect new selection state
     editor.state.doc.descendants((node, pos) => {
       const annotationMark = node.marks.find(
-        (mark) => mark.type.name === "annotationHighlight",
+        (mark) => mark.type.name === "annotationHighlight"
       );
 
       if (annotationMark) {
@@ -512,7 +563,7 @@ const HTMLSuperEditor = ({
             // Use setTimeout to ensure the DOM has updated
             setTimeout(() => {
               const annotationElement = document.querySelector(
-                `[data-annotation-id="${selectedAnnotationId}"]`,
+                `[data-annotation-id="${selectedAnnotationId}"]`
               );
               if (annotationElement) {
                 annotationElement.scrollIntoView({
@@ -643,7 +694,7 @@ const HTMLSuperEditor = ({
         });
       }
     },
-    [editor, selectedLatexId, isBlock, setLatexPopoverOpen],
+    [editor, selectedLatexId, isBlock, setLatexPopoverOpen]
   );
 
   const handleDeleteLatex = useCallback(() => {
@@ -666,6 +717,56 @@ const HTMLSuperEditor = ({
       scroll: false,
     });
   }, [selectedAnnotationId, router]);
+
+  // Update the location parameter handling effect
+  useEffect(() => {
+    if (!editor) return;
+
+    const location = searchParams.get("location");
+    if (location) {
+      const [start, end] = location.split("-").map((pos) => parseInt(pos, 10));
+      if (!isNaN(start) && !isNaN(end)) {
+        try {
+          // Create a decoration for the quoted text
+          const view = editor.view;
+          const domAtPos = view.domAtPos(start);
+
+          if (domAtPos.node instanceof Node) {
+            // Find the closest parent element that we can scroll
+            let currentNode: Node | null = domAtPos.node;
+            while (currentNode && currentNode.nodeType === Node.TEXT_NODE) {
+              currentNode = currentNode.parentElement;
+            }
+
+            if (currentNode instanceof HTMLElement) {
+              // Scroll into view
+              currentNode.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+              });
+            }
+          }
+
+          // Force a re-render to apply the decoration
+          editor.view.dispatch(editor.view.state.tr);
+
+          // Remove the decoration and location parameter after 3 seconds
+          setTimeout(() => {
+            // Remove the decoration by forcing a re-render
+            editor.view.dispatch(editor.view.state.tr);
+
+            // Remove the location parameter from the URL without a page reload
+            const newParams = new URLSearchParams(window.location.search);
+            newParams.delete("location");
+            const newUrl = `${window.location.pathname}${newParams.toString() ? `?${newParams.toString()}` : ""}`;
+            window.history.replaceState({}, "", newUrl);
+          }, 3000);
+        } catch (error) {
+          console.error("Error scrolling to location:", error);
+        }
+      }
+    }
+  }, [editor, searchParams]);
 
   return (
     <div
@@ -700,6 +801,7 @@ const HTMLSuperEditor = ({
         key={`editor-content-${editable}`}
         editor={editor}
         className={`ProseMirror ${annotatable ? "annotator-container" : ""} ${!editable ? "pseudo-readonly" : ""}`}
+        spellCheck={editable}
       />
 
       {/* LaTeX and Image editors only shown in editable mode */}

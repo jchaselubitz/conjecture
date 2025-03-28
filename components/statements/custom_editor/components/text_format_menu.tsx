@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 
 import { AnnotationButton } from "./annotation-button";
 import { LatexButton } from "./latex-button";
+import { QuoteLinkButton } from "./quote-link-button";
 
 interface TextFormatMenuProps {
   editor: Editor;
@@ -79,7 +80,7 @@ export const TextFormatMenu = ({
               editor.chain().focus().toggleHeading({ level: 1 }).run()
             }
             className={cn(
-              editor.isActive("heading", { level: 1 }) && "bg-muted",
+              editor.isActive("heading", { level: 1 }) && "bg-muted"
             )}
           >
             <Heading1 className="h-4 w-4" />
@@ -91,7 +92,7 @@ export const TextFormatMenu = ({
               editor.chain().focus().toggleHeading({ level: 2 }).run()
             }
             className={cn(
-              editor.isActive("heading", { level: 2 }) && "bg-muted",
+              editor.isActive("heading", { level: 2 }) && "bg-muted"
             )}
           >
             <Heading2 className="h-4 w-4" />
@@ -103,7 +104,7 @@ export const TextFormatMenu = ({
               editor.chain().focus().toggleHeading({ level: 3 }).run()
             }
             className={cn(
-              editor.isActive("heading", { level: 3 }) && "bg-muted",
+              editor.isActive("heading", { level: 3 }) && "bg-muted"
             )}
           >
             <Heading3 className="h-4 w-4" />
@@ -155,6 +156,8 @@ export const TextFormatMenu = ({
           </Button>
         </>
       )}
+
+      {!editMode && <QuoteLinkButton editor={editor} />}
 
       {canAnnotate && onAnnotate && (
         <AnnotationButton editor={editor} onAnnotate={onAnnotate} />

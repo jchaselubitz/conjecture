@@ -399,3 +399,50 @@
   overflow: hidden;
   white-space: nowrap;
  } */
+
+.quoted-text {
+  animation: highlight-fade 7s ease-out;
+  border-radius: 10px;
+  padding: 2px 5px;
+}
+
+@keyframes highlight-fade {
+  0% {
+    background-color: rgba(255, 221, 0, 0.3);
+    transform: scale(1);
+  }
+  15% {
+    background-color: rgba(255, 221, 0, 0.9);
+    transform: scale(1.01);
+  }
+  30% {
+    background-color: rgba(255, 221, 0, 0.6);
+    transform: scale(1);
+  }
+  66% {
+    background-color: rgba(255, 221, 0, 0.2);
+    transform: scale(1);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+    transform: scale(1);
+
+  }
+}
+
+/* Link styles */
+.ProseMirror .prose-link {
+  color: var(--muted-foreground);
+  text-decoration: underline;
+  cursor: pointer;
+  
+  transition: all 0.2s ease;
+}
+
+.ProseMirror .prose-link:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--muted-foreground);
+  color: black
+  /* color: var(--primary); */
+}

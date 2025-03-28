@@ -69,7 +69,6 @@ export default function StatementDetails({
     const savedSizeString = localStorage.getItem("annotationPanelSize");
     const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
     panelGroupRef.current?.setLayout(savedSize ?? [67, 33]);
-    localStorage.setItem("selectedAnnotationId", annotationId);
 
     // Update URL with annotation ID
     const url = new URL(window.location.href);
@@ -78,7 +77,7 @@ export default function StatementDetails({
   };
 
   const handleHeaderImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const files = event.target.files?.length
       ? Array.from(event.target.files)
