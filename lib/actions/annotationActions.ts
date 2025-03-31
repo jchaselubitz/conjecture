@@ -22,7 +22,7 @@ export async function createAnnotation(
       start: number;
       end: number;
       userId: string;
-      draftId: string; //we need to supply this for a responsive UI
+      draftId: string;
     };
     statementId: string;
   },

@@ -1,9 +1,8 @@
 "use client";
 
-import { Editor } from "@tiptap/react";
 import { ImageIcon, Trash2 } from "lucide-react";
+import { nanoid } from "nanoid";
 import React, { useEffect, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,34 +10,31 @@ import {
   PopoverAnchor,
   PopoverContent,
 } from "@/components/ui/popover";
+import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
 import { deleteStatementImage } from "@/lib/actions/statementActions";
 import { deleteStoredStatementImage } from "@/lib/actions/storageActions";
 
 import { saveImage } from "./custom_extensions/helpers/helpersImageExtension";
-import { NewImageData } from "./image-node-editor";
 
 interface ImagePopoverEditorProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  imageData: NewImageData;
   children: React.ReactNode;
-  editor: Editor;
   statementId: string;
 }
 
 export function ImagePopoverEditor({
-  open,
-  onOpenChange,
-  imageData,
-  editor,
   statementId,
   children,
 }: ImagePopoverEditorProps) {
+  const { imagePopoverOpen, setImagePopoverOpen, initialImageData, editor } =
+    useStatementContext();
+
   const { userId } = useUserContext();
   const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>(imageData.src || "");
-  const [alt, setAlt] = useState(imageData.alt);
+  const [previewUrl, setPreviewUrl] = useState<string>(
+    initialImageData.src || "",
+  );
+  const [alt, setAlt] = useState(initialImageData.alt);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -80,7 +76,7 @@ export function ImagePopoverEditor({
       return;
     }
 
-    const filename = imageData.id ? imageData.id : uuidv4();
+    const filename = initialImageData.id ? initialImageData.id : nanoid();
 
     if (editor && userId && statementId && file) {
       await saveImage({
@@ -94,28 +90,32 @@ export function ImagePopoverEditor({
         },
         file,
       });
-      onOpenChange(false);
+      setImagePopoverOpen(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!imageData.id || !imageData.src || !userId) return;
+    if (!initialImageData.id || !initialImageData.src || !userId) return;
 
     try {
       // Remove from editor
-      editor?.chain().focus().deleteBlockImage({ imageId: imageData.id }).run();
+      editor
+        ?.chain()
+        .focus()
+        .deleteBlockImage({ imageId: initialImageData.id })
+        .run();
 
       // Delete from storage
       await deleteStoredStatementImage({
-        url: imageData.src,
+        url: initialImageData.src,
         creatorId: userId,
         statementId,
       });
 
       // Delete from database
-      await deleteStatementImage(imageData.id);
+      await deleteStatementImage(initialImageData.id);
 
-      onOpenChange(false);
+      setImagePopoverOpen(false);
     } catch (error) {
       console.error("Failed to delete image:", error);
       // You might want to show an error toast here
@@ -123,7 +123,7 @@ export function ImagePopoverEditor({
   };
 
   return (
-    <Popover open={open} onOpenChange={onOpenChange}>
+    <Popover open={imagePopoverOpen} onOpenChange={setImagePopoverOpen}>
       <PopoverAnchor asChild>{children}</PopoverAnchor>
       <PopoverContent className="w-screen max-w-[450px] p-0" align="start">
         <div className="flex flex-col gap-4 p-4">
@@ -176,7 +176,7 @@ export function ImagePopoverEditor({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => onOpenChange(false)}
+                onClick={() => setImagePopoverOpen(false)}
               >
                 Cancel
               </Button>

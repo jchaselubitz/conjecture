@@ -1,21 +1,23 @@
-import { Editor } from "@tiptap/react";
 import { ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useStatementContext } from "@/contexts/statementContext";
+import { openImagePopover } from "@/lib/helpers/helpersStatements";
 import { cn } from "@/lib/utils";
 
 interface ImageButtonProps {
-  editor: Editor;
-  openImagePopover: (options: {
-    src?: string;
-    alt?: string;
-    id?: string | undefined;
-    position?: { x: number; y: number; width: number; height: number } | null;
-  }) => void;
+  statementId: string;
 }
 
-export function ImageButton({ editor, openImagePopover }: ImageButtonProps) {
+export function ImageButton({ statementId }: ImageButtonProps) {
+  const {
+    setInitialImageData,
+    setSelectedNodePosition,
+    setImagePopoverOpen,
+    editor,
+  } = useStatementContext();
+
+  if (!editor) return;
   const handleClick = () => {
-    // Create a position for the popover based on editor cursor position
     const view = editor.view;
     const { from } = view.state.selection;
     const pos = view.coordsAtPos(from);
@@ -28,12 +30,15 @@ export function ImageButton({ editor, openImagePopover }: ImageButtonProps) {
       height: 1,
     };
 
-    // Open the image popover with appropriate settings
     openImagePopover({
       src: "",
       alt: "",
       id: undefined,
       position,
+      setInitialImageData,
+      setSelectedNodePosition,
+      setImagePopoverOpen,
+      statementId,
     });
   };
 

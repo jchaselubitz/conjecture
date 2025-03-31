@@ -3,7 +3,6 @@ import { DraftWithAnnotations, NewAnnotation } from "kysely-codegen";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
-import { createAnnotation } from "@/lib/actions/annotationActions";
 import { generateStatementId } from "@/lib/helpers/helpersStatements";
 
 import HTMLSuperEditor from "./custom_editor/html_super_editor";
@@ -18,7 +17,7 @@ interface RichTextDisplayProps {
   setSelectedAnnotationId: (id: string | undefined) => void;
   showAuthorComments: boolean;
   showReaderComments: boolean;
-  editable: boolean;
+  editMode: boolean;
 }
 
 const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
@@ -31,11 +30,10 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
   setSelectedAnnotationId,
   showAuthorComments,
   showReaderComments,
-  editable,
+  editMode,
 }) => {
   const { userId } = useUserContext();
   const {
-    setAnnotations,
     statement,
     setStatementUpdate,
     statementUpdate,
@@ -44,7 +42,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
 
   const prevStatementRef = useRef(statementUpdate);
   // Keep track of previous edit mode to handle transitions
-  const prevEditModeRef = useRef(editable);
+  const prevEditModeRef = useRef(editMode);
 
   const prepStatementId = statementId ? statementId : generateStatementId();
 
@@ -52,19 +50,17 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
   useEffect(() => {
     // When switching from edit to view mode, ensure we don't
     // have any pending state updates that could cause DOM issues
-    if (prevEditModeRef.current && !editable) {
+    if (prevEditModeRef.current && !editMode) {
       // We're transitioning from edit to view mode
       // Any cleanup could be done here
     }
-
     // Update the ref
-    prevEditModeRef.current = editable;
-  }, [editable]);
+    prevEditModeRef.current = editMode;
+  }, [editMode]);
 
   const handleContentChange = useCallback(
     (content: string) => {
       if (statement && content !== statement.content) {
-        // Use type-safe update function instead
         setStatementUpdate({
           content,
           statementId: prepStatementId,
@@ -93,49 +89,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
       // Initialize the ref if it's empty
       prevStatementRef.current = statementUpdate;
     }
-  }, [statementUpdate, updateStatementDraft, editable]);
-
-  const handleAnnotationChange = async (value: NewAnnotation[]) => {
-    if (!userId) {
-      throw new Error("User ID is required");
-    }
-    const recent = value[value.length - 1];
-    if (!recent.id) {
-      throw new Error("Annotation ID is required");
-    }
-
-    const annotation = {
-      id: recent.id,
-      tag: recent.tag,
-      text: recent.text,
-      userId: userId,
-      draftId: draftId,
-      isPublic: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      start: recent.start,
-      end: recent.end,
-    };
-
-    setAnnotations([...annotations, annotation as unknown as NewAnnotation]);
-    await createAnnotation({ annotation, statementId: statementId });
-  };
-
-  // const handleAnnotationUpdate = async (updatedAnnotation: NewAnnotation) => {
-  //   if (!userId) {
-  //     throw new Error("User ID is required");
-  //   }
-  //   if (!updatedAnnotation.id) {
-  //     throw new Error("Annotation ID is required");
-  //   }
-
-  //   await updateAnnotation({
-  //     annotation: {
-  //       ...updatedAnnotation,
-  //     },
-  //     statementId: statementId,
-  //   });
-  // };
+  }, [statementUpdate, updateStatementDraft, editMode]);
 
   const isStatementCreator = useMemo(() => {
     return userId === statement?.creatorId;
@@ -153,10 +107,10 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
     <div className="rounded-lg overflow-hidden bg-background">
       <HTMLSuperEditor
         statement={statementUpdate as DraftWithAnnotations}
+        style={{ minHeight: "400px" }}
         existingAnnotations={annotations}
         userId={userId}
         onAnnotationClick={handleAnnotationClick}
-        onAnnotationChange={handleAnnotationChange}
         placeholder={placeholder}
         annotatable={authorCanAnnotate || readerCanAnnotate}
         selectedAnnotationId={selectedAnnotationId}
@@ -164,8 +118,9 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = ({
         showAuthorComments={showAuthorComments}
         showReaderComments={showReaderComments}
         onContentChange={handleContentChange}
-        editable={editable}
+        editMode={editMode}
       />
+      <div className="h-14" />
     </div>
   );
 };

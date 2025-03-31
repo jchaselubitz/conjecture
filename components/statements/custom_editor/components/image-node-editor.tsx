@@ -1,7 +1,6 @@
-import { Editor } from "@tiptap/react";
+import { useStatementContext } from "@/contexts/statementContext";
 
 import { ImagePopoverEditor } from "./image-popover-editor";
-
 export type NewImageData = {
   file?: File | undefined;
   src?: string;
@@ -10,50 +9,27 @@ export type NewImageData = {
 };
 
 interface ImageNodeEditorProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  initialImageData: NewImageData;
-  editor: Editor;
   statementId: string;
-  nodePosition: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } | null;
 }
 
-export function ImageNodeEditor({
-  open,
-  onOpenChange,
-  initialImageData,
-  nodePosition,
-  editor,
-  statementId,
-}: ImageNodeEditorProps) {
-  if (!nodePosition || !open) return null;
+export function ImageNodeEditor({ statementId }: ImageNodeEditorProps) {
+  const { selectedNodePosition, imagePopoverOpen } = useStatementContext();
 
-  const { src, alt, id } = initialImageData;
+  if (!selectedNodePosition || !imagePopoverOpen) return null;
 
   return (
     <div
       className="fixed"
       style={{
-        top: `${nodePosition.y}px`,
-        left: `${nodePosition.x}px`,
+        top: `${selectedNodePosition.y}px`,
+        left: `${selectedNodePosition.x}px`,
         width: "1px",
         height: "1px",
         pointerEvents: "none",
         zIndex: 50,
       }}
     >
-      <ImagePopoverEditor
-        open={open}
-        onOpenChange={onOpenChange}
-        imageData={{ src, alt, id }}
-        editor={editor}
-        statementId={statementId}
-      >
+      <ImagePopoverEditor statementId={statementId}>
         <div />
       </ImagePopoverEditor>
     </div>

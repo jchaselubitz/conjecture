@@ -2,7 +2,12 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { Editor } from "@tiptap/react";
-import { DraftWithAnnotations, NewAnnotation, NewDraft } from "kysely-codegen";
+import {
+  DraftWithAnnotations,
+  NewAnnotation,
+  NewDraft,
+  NewStatementCitation,
+} from "kysely-codegen";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   createContext,
@@ -15,7 +20,14 @@ import {
   createDraft,
   publishDraft,
   updateDraft,
+  UpsertImageDataType,
 } from "@/lib/actions/statementActions";
+interface PositionParams {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 interface StatementContextType {
   versionOptions: {
     v: number;
@@ -37,11 +49,30 @@ interface StatementContextType {
   togglePublish: () => Promise<void>;
   isUpdating: boolean;
   error: string | null;
+  latexPopoverOpen: boolean;
+  setLatexPopoverOpen: (open: boolean) => void;
+  imagePopoverOpen: boolean;
+  setImagePopoverOpen: (open: boolean) => void;
+  citationPopoverOpen: boolean;
+  setCitationPopoverOpen: (open: boolean) => void;
+  initialImageData: UpsertImageDataType;
+  setInitialImageData: (data: UpsertImageDataType) => void;
+  initialCitationData: NewStatementCitation;
+  setInitialCitationData: (data: NewStatementCitation) => void;
+  currentLatex: string;
+  setCurrentLatex: (latex: string) => void;
+  isBlock: boolean;
+  setIsBlock: (block: boolean) => void;
+  selectedLatexId: string | null;
+  setSelectedLatexId: (id: string | null) => void;
+  selectedNodePosition: PositionParams | null;
+  setSelectedNodePosition: (position: PositionParams | null) => void;
 }
 
 const StatementContext = createContext<StatementContextType | undefined>(
-  undefined,
+  undefined
 );
+//version issue
 
 export function StatementProvider({
   children,
@@ -50,21 +81,52 @@ export function StatementProvider({
   children: ReactNode;
   drafts: DraftWithAnnotations[];
 }) {
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
   const params = useSearchParams();
   const versionString = params.get("version");
   const version = versionString ? parseInt(versionString, 10) : undefined;
-  const router = useRouter();
-
-  const [editor, setEditor] = useState<Editor | null>(null);
 
   const [statement, setStatement] = useState<DraftWithAnnotations>(
-    drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0],
+    drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0]
   );
 
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [editor, setEditor] = useState<Editor | null>(null);
+  const [latexPopoverOpen, setLatexPopoverOpen] = useState(false);
+  const [citationPopoverOpen, setCitationPopoverOpen] = useState(false);
+  const [imagePopoverOpen, setImagePopoverOpen] = useState(false);
+  const [isBlock, setIsBlock] = useState(true);
+  const [selectedLatexId, setSelectedLatexId] = useState<string | null>(null);
+  const [selectedNodePosition, setSelectedNodePosition] =
+    useState<PositionParams | null>(null);
+  const [currentLatex, setCurrentLatex] = useState("");
+  const [initialImageData, setInitialImageData] = useState<UpsertImageDataType>(
+    {
+      src: "",
+      alt: "",
+      statementId: statement.statementId,
+      id: "",
+    }
+  );
+  const [initialCitationData, setInitialCitationData] =
+    useState<NewStatementCitation>({
+      statementId: statement.statementId,
+      title: "",
+      url: "",
+      year: "",
+      authorNames: "",
+      issue: null,
+      pageEnd: null,
+      pageStart: null,
+      publisher: "",
+      titlePublication: "",
+      volume: "",
+      id: "",
+    });
+
   const [statementUpdate, setNewStatementState] = useState<NewDraft>(
-    statement ?? ({} as NewDraft),
+    statement ?? ({} as NewDraft)
   );
 
   const setStatementUpdate = (statementUpdate: Partial<NewDraft>) => {
@@ -75,14 +137,18 @@ export function StatementProvider({
   };
 
   const [annotations, setAnnotations] = useState<NewAnnotation[]>(
-    statement.annotations,
+    statement.annotations
   );
 
   useEffect(() => {
     setStatement(
-      drafts?.find((draft) => draft.versionNumber === version) || drafts[0],
+      drafts?.find((draft) => draft.versionNumber === version) || drafts[0]
     );
   }, [version, drafts, setStatement]);
+
+  useEffect(() => {
+    setNewStatementState(statement);
+  }, [statement]);
 
   const versionOptions = drafts
     .map((draft) => {
@@ -170,6 +236,24 @@ export function StatementProvider({
         error,
         togglePublish,
         isUpdating,
+        latexPopoverOpen,
+        setLatexPopoverOpen,
+        imagePopoverOpen,
+        setImagePopoverOpen,
+        citationPopoverOpen,
+        setCitationPopoverOpen,
+        currentLatex,
+        setCurrentLatex,
+        initialImageData,
+        setInitialImageData,
+        initialCitationData,
+        setInitialCitationData,
+        isBlock,
+        setIsBlock,
+        selectedLatexId,
+        setSelectedLatexId,
+        selectedNodePosition,
+        setSelectedNodePosition,
       }}
     >
       {children}
@@ -181,7 +265,7 @@ export function useStatementContext() {
   const context = useContext(StatementContext);
   if (context === undefined) {
     throw new Error(
-      "useStatementContext must be used within a StatementProvider",
+      "useStatementContext must be used within a StatementProvider"
     );
   }
   return context;

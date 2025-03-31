@@ -67,15 +67,6 @@ export default function StatementOptions({
     return updated;
   });
 
-  if (editMode) {
-    return (
-      <ViewModeButton
-        handleEditModeToggle={handleEditModeToggle}
-        className="mb-5 w-full"
-      />
-    );
-  }
-
   const voteCount = optVotes?.length || 0;
   const hasUpvoted = optVotes?.some((vote) => vote.userId === userId) || false;
 
@@ -137,13 +128,22 @@ export default function StatementOptions({
             </Tooltip>
           </TooltipProvider>
         </div>
-        <div className="flex items-center">
-          <ShareButton />
-          {statement.creatorId === userId && (
-            <CreatorOptionsButton
-              editMode={editMode}
+        <div className="flex items-center gap-3 w-full justify-end">
+          {editMode ? (
+            <ViewModeButton
               handleEditModeToggle={handleEditModeToggle}
+              className="w-full"
             />
+          ) : (
+            <>
+              <ShareButton />
+              {statement.creatorId === userId && (
+                <CreatorOptionsButton
+                  editMode={editMode}
+                  handleEditModeToggle={handleEditModeToggle}
+                />
+              )}
+            </>
           )}
         </div>
       </div>
@@ -162,7 +162,7 @@ const ViewModeButton = ({
   return (
     <Button
       variant="outline"
-      size="lg"
+      size="sm"
       onClick={handleEditModeToggle}
       className={className}
     >

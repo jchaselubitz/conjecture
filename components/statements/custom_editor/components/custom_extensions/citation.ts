@@ -1,8 +1,10 @@
 import { mergeAttributes, Node } from "@tiptap/core";
 import { Plugin, PluginKey } from "prosemirror-state";
+import { deleteCitation } from "@/lib/actions/citationActions";
 
 export interface CitationOptions {
  HTMLAttributes: Record<string, any>;
+ onDelete?: (citationId: string) => Promise<void>;
 }
 
 declare module "@tiptap/core" {
@@ -53,6 +55,7 @@ export const Citation = Node.create<CitationOptions>({
  addOptions() {
   return {
    HTMLAttributes: {},
+   onDelete: undefined,
   };
  },
 
@@ -188,7 +191,7 @@ export const Citation = Node.create<CitationOptions>({
  },
 
  addProseMirrorPlugins() {
-  return [
+  const plugins = [
    new Plugin({
     key: new PluginKey("citationProcessor"),
     view(editorView) {
@@ -216,6 +219,47 @@ export const Citation = Node.create<CitationOptions>({
      };
     },
    }),
+   new Plugin({
+    key: new PluginKey("citationDeletion"),
+    appendTransaction: (transactions, oldState, newState) => {
+     // Skip if no changes
+     if (!transactions.some((tr) => tr.docChanged)) return null;
+
+     // Find deleted citation nodes
+     const deletedCitations = new Set<string>();
+     oldState.doc.descendants((node, _pos) => {
+      if (node.type.name === this.name) {
+       const citationId = node.attrs.citationId;
+       let exists = false;
+       newState.doc.descendants((newNode) => {
+        if (
+         newNode.type.name === this.name &&
+         newNode.attrs.citationId === citationId
+        ) {
+         exists = true;
+         return false;
+        }
+        return true;
+       });
+       if (!exists) {
+        deletedCitations.add(citationId);
+       }
+      }
+      return true;
+     });
+
+     // Call onDelete for each deleted citation
+     if (deletedCitations.size > 0 && this.options.onDelete) {
+      deletedCitations.forEach((citationId) => {
+       this.options.onDelete?.(citationId);
+      });
+     }
+
+     return null;
+    },
+   }),
   ];
+
+  return plugins;
  },
 });

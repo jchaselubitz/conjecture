@@ -1,38 +1,53 @@
 "use client";
 
-import { Editor } from "@tiptap/react";
 import { NewStatementCitation } from "kysely-codegen";
 import { nanoid } from "nanoid";
+import { usePathname } from "next/navigation";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  ButtonLoadingState,
+  LoadingButton,
+} from "@/components/ui/loading-button";
 import {
   Popover,
   PopoverAnchor,
   PopoverContent,
 } from "@/components/ui/popover";
+import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
-import { createCitation, updateCitation } from "@/lib/actions/citationActions";
+import {
+  createCitation,
+  deleteCitation,
+  updateCitation,
+} from "@/lib/actions/citationActions";
 interface CitationPopoverEditorProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  citationData: NewStatementCitation;
   children: React.ReactNode;
-  editor: Editor;
+
   statementId: string;
+  creatorId: string;
 }
 
 export function CitationPopoverEditor({
-  open,
-  onOpenChange,
-  citationData,
-  editor,
   statementId,
+  creatorId,
   children,
 }: CitationPopoverEditorProps) {
   const { userId } = useUserContext();
-  const [citation, setCitation] = useState<NewStatementCitation>(citationData);
+  const {
+    citationPopoverOpen,
+    initialCitationData,
+    setCitationPopoverOpen,
+    editor,
+  } = useStatementContext();
+  const [citation, setCitation] =
+    useState<NewStatementCitation>(initialCitationData);
+  const [saveButtonState, setSaveButtonState] =
+    useState<ButtonLoadingState>("default");
   const [error, setError] = useState<string | null>(null);
+
+  const pathname = usePathname();
 
   const handleInputChange = (field: keyof NewStatementCitation, value: any) => {
     setCitation((prev) => ({
@@ -42,21 +57,29 @@ export function CitationPopoverEditor({
   };
 
   const saveCitation = async () => {
-    // This will be implemented later with the DB query
     const id = nanoid();
     await createCitation({
-      id,
-      statementId,
-      title: citation.title,
-      authorNames: citation.authorNames,
-      url: citation.url,
-      year: citation.year,
-      issue: citation.issue,
-      pageEnd: citation.pageEnd,
-      pageStart: citation.pageStart,
-      publisher: citation.publisher,
-      titlePublication: citation.titlePublication,
-      volume: citation.volume,
+      creatorId,
+      citation: {
+        id,
+        statementId,
+        title: citation.title,
+        authorNames: citation.authorNames,
+        url: citation.url,
+        year: citation.year ? citation.year : null,
+        issue: citation.issue ? citation.issue : null,
+        pageEnd: citation.pageEnd ? citation.pageEnd : null,
+        pageStart: citation.pageStart ? citation.pageStart : null,
+        publisher: citation.publisher ? citation.publisher : null,
+        titlePublication: citation.titlePublication
+          ? citation.titlePublication
+          : null,
+        volume: citation.volume ? citation.volume : null,
+      },
+      revalidationPath: {
+        path: pathname,
+        type: "page",
+      },
     });
     return id;
   };
@@ -69,8 +92,16 @@ export function CitationPopoverEditor({
 
     if (editor && userId && statementId) {
       try {
+        setSaveButtonState("loading");
         if (citation.id !== "") {
-          await updateCitation(citation);
+          await updateCitation({
+            creatorId,
+            citation,
+            revalidationPath: {
+              path: pathname,
+              type: "page",
+            },
+          });
         } else {
           //we want to save the id to the citation node
           const id = await saveCitation();
@@ -82,8 +113,8 @@ export function CitationPopoverEditor({
             })
             .run();
         }
-
-        onOpenChange(false);
+        setSaveButtonState("default");
+        setCitationPopoverOpen(false);
       } catch (error) {
         console.error("Failed to save citation:", error);
         setError("Failed to save citation");
@@ -91,8 +122,21 @@ export function CitationPopoverEditor({
     }
   };
 
+  const handleDelete = async () => {
+    if (citation.id && editor && userId) {
+      try {
+        await deleteCitation(citation.id, creatorId);
+        editor.commands.deleteCitation({ citationId: citation.id });
+        setCitationPopoverOpen(false);
+      } catch (error) {
+        console.error("Failed to delete citation:", error);
+        setError("Failed to delete citation");
+      }
+    }
+  };
+
   return (
-    <Popover open={open} onOpenChange={onOpenChange}>
+    <Popover open={citationPopoverOpen} onOpenChange={setCitationPopoverOpen}>
       <PopoverAnchor asChild>{children}</PopoverAnchor>
       <PopoverContent className="w-screen max-w-[450px] p-0" align="start">
         <div className="flex flex-col gap-4 p-4">
@@ -189,17 +233,31 @@ export function CitationPopoverEditor({
           />
           {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
 
-          <div className="flex justify-end gap-2 mt-2">
+          <div className="flex justify-between gap-2 mt-2">
             <Button
-              variant="outline"
+              variant="destructive"
               size="sm"
-              onClick={() => onOpenChange(false)}
+              onClick={handleDelete}
+              disabled={!citation.id}
             >
-              Cancel
+              Delete
             </Button>
-            <Button size="sm" onClick={handleSave}>
-              Save
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCitationPopoverOpen(false)}
+              >
+                Cancel
+              </Button>
+              <LoadingButton
+                size="sm"
+                onClick={handleSave}
+                buttonState={saveButtonState}
+                text="Save"
+                loadingText="Saving..."
+              />
+            </div>
           </div>
         </div>
       </PopoverContent>

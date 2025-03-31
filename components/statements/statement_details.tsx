@@ -2,7 +2,7 @@ import { DraftWithAnnotations } from "kysely-codegen";
 import { Upload } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { RefObject, useRef } from "react";
+import { RefObject, useCallback, useRef } from "react";
 import { useState } from "react";
 import { ImperativePanelGroupHandle } from "react-resizable-panels";
 import TextareaAutosize from "react-textarea-autosize";
@@ -10,14 +10,15 @@ import { toast } from "sonner";
 import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
 import { updateStatementHeaderImageUrl } from "@/lib/actions/statementActions";
-import { uploadStatementImage } from "@/lib/actions/storageActions";
-import { handleImageCompression } from "@/lib/helpers/helpersImages";
+import { headerImageChange } from "@/lib/helpers/helpersStatements";
 import { generateStatementId } from "@/lib/helpers/helpersStatements";
+import { cn } from "@/lib/utils";
 
 import { AspectRatio } from "../ui/aspect-ratio";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import Byline from "./byline";
+import { EditorMenu } from "./custom_editor/components/editor_menu";
 import RichTextDisplay from "./rich_text_display";
 import StatementOptions from "./statement_options";
 
@@ -47,14 +48,15 @@ export default function StatementDetails({
   panelGroupRef,
 }: StatementDetailsProps) {
   const { userId } = useUserContext();
-  const { setStatementUpdate, statementUpdate } = useStatementContext();
+  const { setStatementUpdate, statementUpdate, editor } = useStatementContext();
   const router = useRouter();
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+
   if (!statementUpdate) return null;
 
-  const { annotations, statementId } = statement;
-  const { title, subtitle, headerImg } = statementUpdate;
+  const { annotations } = statement;
+  const { statementId, title, subtitle, headerImg } = statementUpdate;
 
   const prepStatementId = statementId ? statementId : generateStatementId();
 
@@ -69,58 +71,44 @@ export default function StatementDetails({
     const savedSizeString = localStorage.getItem("annotationPanelSize");
     const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
     panelGroupRef.current?.setLayout(savedSize ?? [67, 33]);
-
     // Update URL with annotation ID
     const url = new URL(window.location.href);
+    url.searchParams.delete("annotation_id");
     url.searchParams.set("annotation_id", annotationId);
     router.push(url.pathname + url.search);
-  };
-
-  const handleHeaderImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const files = event.target.files?.length
-      ? Array.from(event.target.files)
-      : null;
-    if (files && files.length > 0) {
-      files.map(async (file) => {
-        try {
-          const compressedFile = await handleImageCompression(file);
-          if (!compressedFile) return;
-
-          const fileFormData = new FormData();
-          fileFormData.append("image", compressedFile);
-          if (!userId) {
-            alert("Please set your profile name first.");
-            return;
-          }
-          const imageUrl = await uploadStatementImage({
-            file: fileFormData,
-            creatorId: userId,
-            statementId,
-            fileName: compressedFile.name,
-            oldImageUrl: headerImg ?? null,
-          });
-          if (!imageUrl) throw new Error("Failed to upload image");
-          await updateStatementHeaderImageUrl(statementId, imageUrl);
-          toast("Success", {
-            description: "Profile picture updated successfully!",
-          });
-          router.refresh();
-        } catch (error) {
-          toast("Error", {
-            description: "Failed to upload image. Please try again.",
-          });
-        } finally {
-          setIsUploading(false);
-        }
-      });
-    }
   };
 
   const handlePhotoButtonClick = () => {
     if (photoInputRef.current !== null) {
       photoInputRef.current.click();
+    }
+  };
+
+  const handleHeaderImageChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (!userId) {
+      alert("You must be logged in to upload an image.");
+      return;
+    }
+    try {
+      await headerImageChange({
+        event,
+        userId,
+        statementId: prepStatementId,
+        headerImg: headerImg ?? "",
+        updateStatementHeaderImageUrl,
+      });
+      toast("Success", {
+        description: "Profile picture updated successfully!",
+      });
+      router.refresh();
+    } catch (error) {
+      toast("Error", {
+        description: "Failed to upload image. Please try again.",
+      });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -245,9 +233,14 @@ export default function StatementDetails({
         setSelectedAnnotationId={setSelectedAnnotationId}
         showAuthorComments={showAuthorComments}
         showReaderComments={showReaderComments}
-        editable={editMode}
+        editMode={editMode}
         key={`rich-text-display-${editMode}`}
       />
+      {editor && statementId && (
+        <div className={cn("sticky bottom-4 z-50 w-full ")}>
+          <EditorMenu statementId={statementId} editor={editor} />
+        </div>
+      )}
     </div>
   );
 }

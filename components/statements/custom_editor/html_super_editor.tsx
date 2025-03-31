@@ -1,53 +1,44 @@
 import "./prose.css";
 import "katex/dist/katex.min.css";
-import { Extension } from "@tiptap/core";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import Typography from "@tiptap/extension-typography";
-import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Step } from "@tiptap/pm/transform";
-import { Decoration, DecorationSet } from "@tiptap/pm/view";
-import {
-  BubbleMenu,
-  EditorContent,
-  FloatingMenu,
-  useEditor,
-} from "@tiptap/react";
+import { EditorContent, FloatingMenu, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { DraftWithAnnotations, NewAnnotation } from "kysely-codegen";
-import { NewStatementCitation } from "kysely-codegen";
-import { nanoid } from "nanoid";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useStatementContext } from "@/contexts/statementContext";
-import { UpsertImageDataType } from "@/lib/actions/statementActions";
+import { deleteCitation } from "@/lib/actions/citationActions";
+import {
+  createQuoteHighlight,
+  openCitationPopover,
+  openImagePopover,
+  openLatexPopover,
+} from "@/lib/helpers/helpersStatements";
 
+import { AnnotationMenu } from "./components/annotation_menu";
 import { BlockTypeChooser } from "./components/block_type_chooser";
 import { CitationNodeEditor } from "./components/citation-node-editor";
 import { AnnotationHighlight } from "./components/custom_extensions/annotation_highlight";
 import { BlockImage } from "./components/custom_extensions/block_image";
 import { BlockLatex } from "./components/custom_extensions/block_latex";
 import { Citation } from "./components/custom_extensions/citation";
-import {
-  deleteLatex,
-  saveLatex,
-} from "./components/custom_extensions/helpers/helpersLatexExtension";
 import { InlineLatex } from "./components/custom_extensions/inline_latex";
 import { QuotePasteHandler } from "./components/custom_extensions/quote_paste_handler";
 import { ImageNodeEditor } from "./components/image-node-editor";
 import { LatexNodeEditor } from "./components/latex-node-editor";
-import { TextFormatMenu } from "./components/text_format_menu";
 interface HTMLSuperEditorProps {
   statement: DraftWithAnnotations;
   existingAnnotations: NewAnnotation[];
   userId: string | undefined;
-  onAnnotationChange?: (value: NewAnnotation[]) => void;
   onAnnotationClick?: (id: string) => void;
   style?: React.CSSProperties;
   className?: string;
   placeholder?: string;
   annotatable?: boolean;
-  editable?: boolean;
+  editMode?: boolean;
   onContentChange?: (htmlContent: string) => void;
   selectedAnnotationId: string | undefined;
   setSelectedAnnotationId: (id: string | undefined) => void;
@@ -55,61 +46,36 @@ interface HTMLSuperEditorProps {
   showReaderComments: boolean;
 }
 
-const quoteHighlightKey = new PluginKey("quoteHighlight");
-
-const createQuoteHighlight = (searchParamsGetter: () => URLSearchParams) => {
-  return Extension.create({
-    name: "quoteHighlight",
-
-    addProseMirrorPlugins() {
-      let decorationSet = DecorationSet.empty;
-
-      return [
-        new Plugin({
-          key: quoteHighlightKey,
-          props: {
-            decorations(state) {
-              const location = searchParamsGetter().get("location");
-              if (!location) return DecorationSet.empty;
-
-              const [start, end] = location
-                .split("-")
-                .map((pos: string) => parseInt(pos, 10));
-              if (isNaN(start) || isNaN(end)) return DecorationSet.empty;
-
-              // Create a decoration that adds the quoted-text class
-              const decoration = Decoration.inline(start, end, {
-                class: "quoted-text",
-              });
-
-              decorationSet = DecorationSet.create(state.doc, [decoration]);
-              return decorationSet;
-            },
-          },
-        }),
-      ];
-    },
-  });
-};
-
 const HTMLSuperEditor = ({
   existingAnnotations,
   userId,
-  onAnnotationChange,
   statement,
   onAnnotationClick,
   style,
   className,
   placeholder,
   annotatable,
-  editable,
+  editMode,
   onContentChange,
   selectedAnnotationId,
   setSelectedAnnotationId,
   showAuthorComments,
   showReaderComments,
 }: HTMLSuperEditorProps) => {
-  const { setEditor } = useStatementContext();
+  const {
+    setEditor,
+    setSelectedNodePosition,
+    setCurrentLatex,
+    setInitialImageData,
+    setInitialCitationData,
+    setIsBlock,
+    annotations,
+    setAnnotations,
+    setSelectedLatexId,
+    setCitationPopoverOpen,
+    setImagePopoverOpen,
+    setLatexPopoverOpen,
+  } = useStatementContext();
   const router = useRouter();
   const searchParams = useSearchParams();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -119,47 +85,9 @@ const HTMLSuperEditor = ({
   const statementId = statement.statementId;
   const statementCreatorId = statement.creatorId;
 
-  const [annotations, setAnnotations] = useState<NewAnnotation[]>([]);
-  const [latexPopoverOpen, setLatexPopoverOpen] = useState(false);
-  const [currentLatex, setCurrentLatex] = useState("");
-  const [isBlock, setIsBlock] = useState(true);
-  const [selectedLatexId, setSelectedLatexId] = useState<string | null>(null);
-  const [selectedNodePosition, setSelectedNodePosition] = useState<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } | null>(null);
-  const [citationPopoverOpen, setCitationPopoverOpen] = useState(false);
-  const [initialCitationData, setInitialCitationData] =
-    useState<NewStatementCitation>({
-      statementId,
-      title: "",
-      url: "",
-      year: "",
-      authorNames: "",
-      issue: null,
-      pageEnd: null,
-      pageStart: null,
-      publisher: "",
-      titlePublication: "",
-      volume: "",
-      id: "",
-    });
-
-  const [imagePopoverOpen, setImagePopoverOpen] = useState(false);
-  const [initialImageData, setInitialImageData] = useState<UpsertImageDataType>(
-    {
-      src: "",
-      alt: "",
-      statementId,
-      id: "",
-    },
-  );
-
   useEffect(() => {
     setAnnotations(existingAnnotations);
-  }, [existingAnnotations]);
+  }, [existingAnnotations, setAnnotations]);
 
   useEffect(() => {
     const annotationId = searchParams.get("annotation-id");
@@ -218,10 +146,19 @@ const HTMLSuperEditor = ({
           class: "annotation",
         },
       }),
-      Citation,
+      Citation.configure({
+        onDelete: async (citationId: string) => {
+          try {
+            await deleteCitation(citationId, statementCreatorId);
+          } catch (error) {
+            console.error("Failed to delete citation:", error);
+          }
+        },
+      }),
       QuoteHighlight,
       QuotePasteHandler,
     ],
+    immediatelyRender: false,
     content: htmlContent,
     editable: true,
     onCreate: ({ editor }) => {
@@ -247,7 +184,7 @@ const HTMLSuperEditor = ({
             (a) => a.id === annotationId,
           );
 
-          if (!existingAnnotation && onAnnotationChange) {
+          if (!existingAnnotation) {
             const newAnnotation: NewAnnotation = {
               id: annotationId,
               text: node.text || "",
@@ -261,7 +198,7 @@ const HTMLSuperEditor = ({
               end: editor.state.selection.to,
             };
 
-            onAnnotationChange([...annotations, newAnnotation]);
+            setAnnotations([...annotations, newAnnotation]);
           }
         }
       });
@@ -274,7 +211,7 @@ const HTMLSuperEditor = ({
         if (!annotationId) return false;
         return mark.type.name === "annotationHighlight";
       });
-      if (!editable && !hasAnnotationChanges) {
+      if (!editMode && !hasAnnotationChanges) {
         editor.commands.setContent(htmlContent);
         return;
       }
@@ -294,8 +231,8 @@ const HTMLSuperEditor = ({
     },
     editorProps: {
       handleKeyDown: (view, event) => {
-        // Block all keyboard input in non-editable mode except selection shortcuts
-        if (!editable) {
+        // Block all keyboard input in non-editMode mode except selection shortcuts
+        if (!editMode) {
           const isSelectionKey =
             event.key === "ArrowLeft" ||
             event.key === "ArrowRight" ||
@@ -321,101 +258,52 @@ const HTMLSuperEditor = ({
         return false;
       },
       transformPastedText: (text) => {
-        // Prevent pasting in non-editable mode
-        return editable ? text : "";
+        // Prevent pasting in non-editMode mode
+        return editMode ? text : "";
       },
       handleDrop: (view, event) => {
-        // Block drag and drop in non-editable mode
-        if (!editable) {
+        // Block drag and drop in non-editMode mode
+        if (!editMode) {
           event?.preventDefault();
           return true;
         }
         return false;
       },
       handlePaste: (view, event) => {
-        // Block paste in non-editable mode
-        if (!editable) {
+        // Block paste in non-editMode mode
+        if (!editMode) {
           event?.preventDefault();
           return true;
         }
         return false;
       },
       attributes: {
-        // Add a class to indicate non-editable mode
-        class: !editable ? "pseudo-readonly" : "",
+        // Add a class to indicate non-editMode mode
+        class: !editMode ? "pseudo-readonly" : "",
       },
       handleDOMEvents: {
         click: (view, event) => {
           const element = event.target as HTMLElement;
 
-          // Handle image clicks only in editable mode
+          // Handle image clicks only in editMode mode
           const imageNode = element.closest('img[data-type="block-image"]');
-          if (imageNode && editable) {
+          if (imageNode && editMode) {
             const rect = imageNode.getBoundingClientRect();
-            setSelectedNodePosition({
-              x: rect.left,
-              y: rect.top,
-              width: rect.width,
-              height: rect.height,
-            });
 
             openImagePopover({
               src: imageNode.getAttribute("src") || "",
               alt: imageNode.getAttribute("alt") || "",
               id: imageNode.getAttribute("data-image-id") ?? undefined,
-            });
-
-            event.preventDefault();
-            event.stopPropagation();
-            return true;
-          }
-
-          // Handle citation clicks only in editable mode
-          const citationNode = element.closest(
-            '[data-type="citation"], [data-type="citation-block"]',
-          );
-
-          if (citationNode && editable) {
-            const rect = citationNode.getBoundingClientRect();
-            setSelectedNodePosition({
-              x: rect.left,
-              y: rect.top,
-              width: rect.width,
-              height: rect.height,
-            });
-
-            const id = citationNode.getAttribute("data-citation-id");
-
-            if (!id) {
-              return;
-            }
-
-            const selectedCitation = statement.citations.find(
-              (c) => c.id === id,
-            );
-
-            openCitationPopover({
-              citationData: {
-                statementId,
-                id: selectedCitation?.id ?? nanoid(),
-                title: selectedCitation?.title ?? "",
-                url: selectedCitation?.url ?? undefined,
-                year: selectedCitation?.year ?? undefined,
-                authorNames: selectedCitation?.authorNames ?? "",
-                issue: selectedCitation?.issue ?? undefined,
-                pageEnd: selectedCitation?.pageEnd ?? undefined,
-                pageStart: selectedCitation?.pageStart ?? undefined,
-                publisher: selectedCitation?.publisher ?? undefined,
-                titlePublication:
-                  selectedCitation?.titlePublication ?? undefined,
-                volume: selectedCitation?.volume ?? undefined,
-              },
               position: {
                 x: rect.left,
                 y: rect.top,
                 width: rect.width,
                 height: rect.height,
               },
+              setInitialImageData,
+              setSelectedNodePosition,
+              setImagePopoverOpen,
+              statementId,
             });
 
             event.preventDefault();
@@ -423,7 +311,63 @@ const HTMLSuperEditor = ({
             return true;
           }
 
-          // Handle LaTeX clicks only in editable mode
+          // Handle citation clicks only in editMode mode
+          const citationNode = element.closest(
+            '[data-type="citation"], [data-type="citation-block"]',
+          );
+
+          if (citationNode && editMode) {
+            const rect = citationNode.getBoundingClientRect();
+
+            const position = {
+              x: rect.left,
+              y: rect.top,
+              width: rect.width,
+              height: rect.height,
+            };
+            console.log(position);
+            setSelectedNodePosition(position);
+
+            const id = citationNode.getAttribute("data-citation-id");
+
+            if (!id) {
+              return;
+            }
+            const selectedCitation = statement.citations.find(
+              (c) => c.id === id,
+            );
+
+            if (!selectedCitation) {
+              return;
+            }
+
+            openCitationPopover({
+              citationData: {
+                statementId,
+                id: selectedCitation.id,
+                title: selectedCitation.title,
+                url: selectedCitation.url,
+                year: selectedCitation.year,
+                authorNames: selectedCitation.authorNames,
+                issue: selectedCitation.issue,
+                pageEnd: selectedCitation.pageEnd,
+                pageStart: selectedCitation.pageStart,
+                publisher: selectedCitation.publisher,
+                titlePublication: selectedCitation.titlePublication,
+                volume: selectedCitation.volume,
+              },
+              position,
+              setInitialCitationData,
+              setSelectedNodePosition,
+              setCitationPopoverOpen,
+            });
+
+            event.preventDefault();
+            event.stopPropagation();
+            return true;
+          }
+
+          // Handle LaTeX clicks only in editMode mode
           let latexNode = element.closest(
             '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
           );
@@ -439,7 +383,7 @@ const HTMLSuperEditor = ({
             }
           }
 
-          if (latexNode && editable) {
+          if (latexNode && editMode) {
             let id = latexNode.getAttribute("data-id");
             let latex = latexNode.getAttribute("data-latex");
 
@@ -474,6 +418,11 @@ const HTMLSuperEditor = ({
               latex,
               displayMode,
               latexId: id,
+              setCurrentLatex,
+              setIsBlock,
+              setSelectedLatexId,
+              setSelectedNodePosition,
+              setLatexPopoverOpen,
             });
 
             event.preventDefault();
@@ -500,86 +449,9 @@ const HTMLSuperEditor = ({
     },
   });
 
-  // Callback to open the LaTeX popover dialog
-  const openLatexPopover = useCallback(
-    ({
-      latex = "",
-      displayMode = true,
-      latexId = null,
-    }: {
-      latex?: string;
-      displayMode?: boolean;
-      latexId?: string | null;
-    }) => {
-      setCurrentLatex(latex);
-      setIsBlock(displayMode);
-      setSelectedLatexId(latexId);
-
-      // Calculate position for the popover
-      if (editor) {
-        const view = editor.view;
-        const { from } = view.state.selection;
-        const pos = view.coordsAtPos(from);
-
-        setSelectedNodePosition({
-          x: pos.left,
-          y: pos.top,
-          width: 1,
-          height: 1,
-        });
-      }
-
-      setLatexPopoverOpen(true);
-    },
-    [editor],
-  );
-
-  const openImagePopover = useCallback(
-    ({
-      src = "",
-      alt = "",
-      id = "",
-
-      position = null,
-    }: {
-      src?: string;
-      alt?: string;
-      id?: string;
-
-      position?: { x: number; y: number; width: number; height: number } | null;
-    }) => {
-      setInitialImageData({ src, alt, statementId, id });
-      if (position) {
-        setSelectedNodePosition(position);
-      }
-      setImagePopoverOpen(true);
-    },
-    [statementId],
-  );
-
-  const openCitationPopover = ({
-    citationData,
-    position = null,
-  }: {
-    citationData: NewStatementCitation;
-    position?: { x: number; y: number; width: number; height: number } | null;
-  }) => {
-    setInitialCitationData(citationData);
-    setSelectedNodePosition({
-      x: 0,
-      y: 0,
-      width: 0,
-      height: 0,
-    });
-    if (position) {
-      setSelectedNodePosition(position);
-    }
-    setCitationPopoverOpen(true);
-  };
-
   // Update annotations when they change
   useEffect(() => {
-    if (!editor?.isEditable) return;
+    if (!editor?.isEditable || editor.isEmpty) return;
 
     setEditor(editor);
 
@@ -675,88 +547,12 @@ const HTMLSuperEditor = ({
   }, [editor, selectedAnnotationId]);
 
   // Handle creating new annotations
-  const handleAnnotationCreate = useCallback(async () => {
-    if (!userId || !editor) return;
-
-    // Check if text is actually selected
-    const { from, to } = editor.state.selection;
-    if (from === to) {
-      return;
-    }
-
-    // Check if the user is allowed to create annotations based on their role
-    const isAuthor = userId === statementCreatorId;
-    if (
-      (isAuthor && !showAuthorComments) ||
-      (!isAuthor && !showReaderComments)
-    ) {
-      return; // Don't allow annotation creation if the corresponding visibility is off
-    }
-
-    try {
-      // Create a new annotation
-      const annotationId = crypto.randomUUID();
-      const newAnnotation: NewAnnotation = {
-        id: annotationId,
-        text: editor.state.doc.textBetween(from, to),
-        userId,
-        draftId,
-        start: editor.state.selection.from,
-        end: editor.state.selection.to,
-        tag: null,
-        isPublic: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      // Apply the highlight mark
-      if (!newAnnotation.id || !newAnnotation.userId) {
-        return;
-      }
-
-      editor
-        .chain()
-        .focus()
-        .setTextSelection({ from, to })
-        .setAnnotationHighlight({
-          annotationId: newAnnotation.id,
-          userId: newAnnotation.userId,
-          isAuthor: newAnnotation.userId === statementCreatorId,
-          createdAt:
-            newAnnotation.createdAt instanceof Date
-              ? newAnnotation.createdAt.toISOString()
-              : new Date().toISOString(),
-          tag: newAnnotation.tag || null,
-        })
-        .run();
-
-      if (onAnnotationChange) {
-        const formattedAnnotation = newAnnotation;
-        const newAnnotations = [...annotations, formattedAnnotation];
-        setAnnotations(newAnnotations);
-        onAnnotationChange(newAnnotations);
-        setSelectedAnnotationId(formattedAnnotation.id);
-      }
-    } catch (error) {
-      // Handle error silently
-    }
-  }, [
-    userId,
-    editor,
-    draftId,
-    annotations,
-    statementCreatorId,
-    showAuthorComments,
-    showReaderComments,
-    onAnnotationChange,
-    setSelectedAnnotationId,
-  ]);
 
   // Handle editor content updates
   useEffect(() => {
     if (!editor) return;
 
-    // Only set content if editor is not editable or if it's the initial content set
+    // Only set content if editor is not editMode or if it's the initial content set
     if (!editor.isEditable || editor.isEmpty) {
       editor.commands.setContent(htmlContent);
     }
@@ -772,28 +568,7 @@ const HTMLSuperEditor = ({
         }
       };
     }
-  }, [editor, editable]);
-
-  const handleSaveLatex = useCallback(
-    (newLatex: string) => {
-      if (editor) {
-        saveLatex({
-          latex: newLatex,
-          editor,
-          selectedLatexId,
-          isBlock,
-          setLatexPopoverOpen,
-        });
-      }
-    },
-    [editor, selectedLatexId, isBlock, setLatexPopoverOpen],
-  );
-
-  const handleDeleteLatex = useCallback(() => {
-    if (editor) {
-      deleteLatex({ editor, selectedLatexId, isBlock, setLatexPopoverOpen });
-    }
-  }, [editor, selectedLatexId, isBlock, setLatexPopoverOpen]);
+  }, [editor, editMode]);
 
   useEffect(() => {
     if (selectedAnnotationId === undefined) return;
@@ -862,70 +637,44 @@ const HTMLSuperEditor = ({
 
   return (
     <div
-      className={`relative ${editable ? "editable-container" : "annotator-container"} ${
+      className={`relative ${editMode ? "editMode-container" : "annotator-container"} ${
         showAuthorComments ? "show-author-comments" : ""
       } ${showReaderComments ? "show-reader-comments" : ""} ${className || ""}`}
       style={style}
     >
-      {editor && (
-        <>
-          <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
-            <TextFormatMenu
-              statementId={statementId}
-              isCreator={userId === statementCreatorId}
-              editMode={editable ?? false}
-              editor={editor}
-              openLatexPopover={openLatexPopover}
-              openCitationPopover={openCitationPopover}
-              onAnnotate={annotatable ? handleAnnotationCreate : undefined}
-              canAnnotate={annotatable && !!userId}
-            />
-          </BubbleMenu>
-          <FloatingMenu editor={editor} tippyOptions={{ duration: 100 }}>
-            <BlockTypeChooser
-              editor={editor}
-              openLatexPopover={openLatexPopover}
-              openImagePopover={openImagePopover}
-            />
-          </FloatingMenu>
-        </>
-      )}
-
       <EditorContent
-        key={`editor-content-${editable}`}
+        key={`editor-content-${editMode}`}
         editor={editor}
-        className={`ProseMirror ${annotatable ? "annotator-container" : ""} ${!editable ? "pseudo-readonly" : ""}`}
-        spellCheck={editable}
+        className={`ProseMirror ${annotatable ? "annotator-container" : ""} ${!editMode ? "pseudo-readonly" : ""}`}
+        spellCheck={editMode}
       />
 
-      {/* LaTeX and Image editors only shown in editable mode */}
-      {editor && editable && (
+      {/* LaTeX and Image editors only shown in editMode mode */}
+      {editor && (
         <>
-          <LatexNodeEditor
-            open={latexPopoverOpen}
-            onOpenChange={setLatexPopoverOpen}
-            initialLatex={currentLatex}
-            isBlock={isBlock}
-            nodePosition={selectedNodePosition}
-            onSave={handleSaveLatex}
-            onDelete={handleDeleteLatex}
+          <AnnotationMenu
+            editMode={editMode ?? false}
+            draftId={draftId}
+            statementCreatorId={statementCreatorId}
+            showAuthorComments={showAuthorComments}
+            showReaderComments={showReaderComments}
+            canAnnotate={annotatable && !!userId}
+            setSelectedAnnotationId={setSelectedAnnotationId}
           />
-          <ImageNodeEditor
-            open={imagePopoverOpen}
-            onOpenChange={setImagePopoverOpen}
-            initialImageData={initialImageData}
-            nodePosition={selectedNodePosition}
-            editor={editor}
-            statementId={statementId}
-          />
-          <CitationNodeEditor
-            open={citationPopoverOpen}
-            onOpenChange={setCitationPopoverOpen}
-            initialCitationData={initialCitationData}
-            nodePosition={selectedNodePosition}
-            editor={editor}
-            statementId={statementId}
-          />
+          <FloatingMenu editor={editor} tippyOptions={{ duration: 100 }}>
+            <BlockTypeChooser statementId={statementId} />
+          </FloatingMenu>
+
+          {editMode && (
+            <>
+              <LatexNodeEditor />
+              <ImageNodeEditor statementId={statementId} />
+              <CitationNodeEditor
+                statementId={statementId}
+                creatorId={statementCreatorId}
+              />
+            </>
+          )}
         </>
       )}
     </div>

@@ -11,36 +11,39 @@ import {
   PopoverContent,
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
+import { useStatementContext } from "@/contexts/statementContext";
+
+import {
+  deleteLatex,
+  saveLatex,
+} from "./custom_extensions/helpers/helpersLatexExtension";
 
 interface LatexPopoverEditorProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  initialLatex?: string;
-  onSave: (latex: string) => void;
-  onDelete?: () => void;
-  isBlock?: boolean;
   children: React.ReactNode;
 }
 
-export function LatexPopoverEditor({
-  open,
-  onOpenChange,
-  initialLatex = "\\sum_{i=1}^{n}i = \\frac{n(n+1)}{2}",
-  onSave,
-  onDelete,
-  isBlock = true,
-  children,
-}: LatexPopoverEditorProps) {
-  const [latex, setLatex] = useState(initialLatex);
+export function LatexPopoverEditor({ children }: LatexPopoverEditorProps) {
+  const {
+    latexPopoverOpen,
+    setLatexPopoverOpen,
+    editor,
+    selectedLatexId,
+    currentLatex,
+    isBlock,
+  } = useStatementContext();
+
+  const [latex, setLatex] = useState(
+    currentLatex || "\\sum_{i=1}^{n}i = \\frac{n(n+1)}{2}",
+  );
   const [renderedLatex, setRenderedLatex] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
   // Reset latex state when popover opens with new initialLatex
   useEffect(() => {
-    if (open) {
-      setLatex(initialLatex);
+    if (latexPopoverOpen) {
+      setLatex(currentLatex);
     }
-  }, [open, initialLatex]);
+  }, [latexPopoverOpen, currentLatex]);
 
   // Render LaTeX when it changes
   useEffect(() => {
@@ -58,21 +61,27 @@ export function LatexPopoverEditor({
   }, [latex, isBlock]);
 
   const handleSave = () => {
-    if (latex.trim() === "") {
+    if (latex.trim() === "" || !editor || !selectedLatexId) {
       return;
     }
-    onSave(latex);
+    saveLatex({
+      latex,
+      editor,
+      selectedLatexId,
+      isBlock,
+      setLatexPopoverOpen,
+    });
   };
 
   const handleDelete = () => {
-    if (onDelete) {
-      onDelete();
-      onOpenChange(false);
+    if (editor && selectedLatexId) {
+      deleteLatex({ editor, selectedLatexId, isBlock, setLatexPopoverOpen });
+      setLatexPopoverOpen(false);
     }
   };
 
   return (
-    <Popover open={open} onOpenChange={onOpenChange}>
+    <Popover open={latexPopoverOpen} onOpenChange={setLatexPopoverOpen}>
       <PopoverAnchor asChild>{children}</PopoverAnchor>
       <PopoverContent className="w-screen max-w-[450px] p-0" align="start">
         <div className="flex flex-col gap-2 p-4">
@@ -94,22 +103,20 @@ export function LatexPopoverEditor({
             autoFocus
           />
           <div className="flex justify-between mt-2">
-            {onDelete && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleDelete}
-                className="px-2 py-1"
-              >
-                <Trash2 className="h-4 w-4 mr-1" />
-                Delete
-              </Button>
-            )}
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDelete}
+              className="px-2 py-1"
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Delete
+            </Button>
             <div className="flex gap-2 ml-auto">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => onOpenChange(false)}
+                onClick={() => setLatexPopoverOpen(false)}
               >
                 Cancel
               </Button>

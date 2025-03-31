@@ -1,61 +1,77 @@
 import { Editor } from "@tiptap/react";
 import { NewStatementCitation } from "kysely-codegen";
-import { Quote, Superscript } from "lucide-react";
+import { Asterisk } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Tooltip } from "@/components/ui/tooltip";
+import { TooltipContent } from "@/components/ui/tooltip";
+import { TooltipTrigger } from "@/components/ui/tooltip";
+import { useStatementContext } from "@/contexts/statementContext";
+import { openCitationPopover } from "@/lib/helpers/helpersStatements";
 import { cn } from "@/lib/utils";
 interface CitationButtonProps {
   editor: Editor;
   statementId: string;
-  openCitationPopover: (options: {
-    citationData: NewStatementCitation;
-    position?: { x: number; y: number; width: number; height: number } | null;
-  }) => void;
 }
 
-export function CitationButton({
-  editor,
-  openCitationPopover,
-  statementId,
-}: CitationButtonProps) {
+export function CitationButton({ editor, statementId }: CitationButtonProps) {
+  const {
+    setSelectedNodePosition,
+    setCitationPopoverOpen,
+    setInitialCitationData,
+  } = useStatementContext();
   const handleClick = () => {
-    // Create a position for the popover based on editor cursor position
     const view = editor.view;
     const { from } = view.state.selection;
     const pos = view.coordsAtPos(from);
-
-    // Open the citation popover with empty initial values
+    const citationData: NewStatementCitation = {
+      statementId,
+      title: "",
+      url: "",
+      year: undefined,
+      authorNames: "",
+      issue: undefined,
+      pageEnd: undefined,
+      pageStart: undefined,
+      publisher: undefined,
+      titlePublication: undefined,
+      volume: undefined,
+      id: "",
+    };
     openCitationPopover({
-      citationData: {
-        statementId,
-        title: "",
-        url: "",
-        year: undefined,
-        authorNames: "",
-        issue: undefined,
-        pageEnd: undefined,
-        pageStart: undefined,
-        publisher: undefined,
-        titlePublication: undefined,
-        volume: undefined,
-        id: "",
-      },
+      citationData,
       position: {
         x: pos.left,
         y: pos.top,
         width: 1,
         height: 1,
       },
+      setSelectedNodePosition,
+      setCitationPopoverOpen,
+      setInitialCitationData,
     });
+
+    setCitationPopoverOpen(true);
+    setInitialCitationData(citationData);
   };
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={handleClick}
-      className={cn(editor.isActive("citation") && "bg-muted")}
-    >
-      Cite
-    </Button>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClick}
+            className={cn(editor.isActive("citation") && "bg-muted")}
+          >
+            <Asterisk className="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent className="z-100">
+          <p>Create citation</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

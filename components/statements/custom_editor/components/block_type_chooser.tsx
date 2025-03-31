@@ -1,4 +1,3 @@
-import { Editor } from "@tiptap/react";
 import {
   Heading1,
   Heading2,
@@ -8,30 +7,18 @@ import {
   Quote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useStatementContext } from "@/contexts/statementContext";
 import { cn } from "@/lib/utils";
 
 import { ImageButton } from "./image-button";
 import { LatexButton } from "./latex-button";
 
 interface BlockTypeChooserProps {
-  editor: Editor;
-  openLatexPopover: (options: {
-    latex?: string;
-    displayMode?: boolean;
-    latexId?: string | null;
-  }) => void;
-  openImagePopover: (options: {
-    src?: string;
-    alt?: string;
-    id?: string | undefined;
-  }) => void;
+  statementId: string;
 }
 
-export function BlockTypeChooser({
-  editor,
-  openLatexPopover,
-  openImagePopover,
-}: BlockTypeChooserProps) {
+export function BlockTypeChooser({ statementId }: BlockTypeChooserProps) {
+  const { editor } = useStatementContext();
   if (!editor) return null;
 
   return (
@@ -86,13 +73,9 @@ export function BlockTypeChooser({
       >
         <Quote className="h-4 w-4" />
       </Button>
-      <LatexButton
-        editor={editor}
-        displayMode={true}
-        openLatexPopover={openLatexPopover}
-      />
+      <LatexButton editor={editor} displayMode={true} />
 
-      <ImageButton editor={editor} openImagePopover={openImagePopover} />
+      <ImageButton statementId={statementId} />
     </div>
   );
 }

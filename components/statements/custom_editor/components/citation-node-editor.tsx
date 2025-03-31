@@ -1,53 +1,34 @@
 "use client";
 
-import { Editor } from "@tiptap/react";
-import { NewStatementCitation } from "kysely-codegen";
+import { useStatementContext } from "@/contexts/statementContext";
 
 import { CitationPopoverEditor } from "./citation-popover-editor";
-
 interface CitationNodeEditorProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  initialCitationData: NewStatementCitation;
-  editor: Editor;
   statementId: string;
-  nodePosition: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } | null;
+  creatorId: string;
 }
 
 export function CitationNodeEditor({
-  open,
-  onOpenChange,
-  initialCitationData,
-  nodePosition,
-  editor,
   statementId,
+  creatorId,
 }: CitationNodeEditorProps) {
-  if (!nodePosition || !open) return null;
+  const { selectedNodePosition } = useStatementContext();
+
+  if (!selectedNodePosition) return null;
 
   return (
     <div
       className="fixed"
       style={{
-        top: `${nodePosition.y}px`,
-        left: `${nodePosition.x}px`,
+        top: `${selectedNodePosition.y}px`,
+        left: `${selectedNodePosition.x}px`,
         width: "1px",
         height: "1px",
         pointerEvents: "none",
         zIndex: 50,
       }}
     >
-      <CitationPopoverEditor
-        open={open}
-        onOpenChange={onOpenChange}
-        citationData={initialCitationData}
-        editor={editor}
-        statementId={statementId}
-      >
+      <CitationPopoverEditor statementId={statementId} creatorId={creatorId}>
         <div />
       </CitationPopoverEditor>
     </div>
