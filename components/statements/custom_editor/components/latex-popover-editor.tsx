@@ -61,9 +61,10 @@ export function LatexPopoverEditor({ children }: LatexPopoverEditorProps) {
   }, [latex, isBlock]);
 
   const handleSave = () => {
-    if (latex.trim() === "" || !editor || !selectedLatexId) {
+    if (latex.trim() === "" || !editor) {
       return;
     }
+
     saveLatex({
       latex,
       editor,

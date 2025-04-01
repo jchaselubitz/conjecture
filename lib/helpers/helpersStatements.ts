@@ -4,7 +4,11 @@ import { uploadStatementImage } from "../actions/storageActions";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { Editor, Extension } from "@tiptap/react";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
-import { NewAnnotation, NewStatementCitation } from "kysely-codegen";
+import {
+  DraftWithAnnotations,
+  NewAnnotation,
+  NewStatementCitation,
+} from "kysely-codegen";
 import { UpsertImageDataType } from "../actions/statementActions";
 import { createAnnotation } from "../actions/annotationActions";
 
@@ -25,6 +29,100 @@ export const generateStatementId = (): string => {
     .digest("hex");
 
   return hash.slice(0, 10);
+};
+
+export const getMarks = (editor: Editor, markTypes: string[]) => {
+  const marks: { node: any }[] = [];
+  editor.state.doc.descendants((node, pos) => {
+    if (node.marks?.some((mark) => markTypes.includes(mark.type.name))) {
+      marks.push({ node });
+    }
+  });
+  return marks;
+};
+
+export const getNodes = (editor: Editor, nodeTypes: string[]) => {
+  const nodes: { node: any }[] = [];
+  editor.state.doc.descendants((node, pos) => {
+    if (nodeTypes.includes(node.type.name)) {
+      nodes.push({ node });
+    }
+  });
+  return nodes;
+};
+
+export const ensureAnnotationMarks = async ({
+  editor,
+  annotations,
+  draftId,
+  setAnnotations,
+  marks,
+}: {
+  editor: Editor;
+  annotations: NewAnnotation[];
+  draftId: string;
+  setAnnotations: (annotations: NewAnnotation[]) => void;
+  marks: { node: any }[];
+}) => {
+  marks.forEach(async ({ node }) => {
+    const annotationMark = node.marks.find(
+      (mark: any) => mark.type.name === "annotationHighlight",
+    );
+    if (annotationMark) {
+      const annotationId = annotationMark.attrs.annotationId;
+      const existingAnnotation = annotations.find(
+        (a) => a.id === annotationId,
+      );
+
+      if (!existingAnnotation) {
+        const newAnnotation: NewAnnotation = {
+          id: annotationId,
+          text: node.text || "",
+          userId: annotationMark.attrs.userId,
+          draftId: draftId,
+          tag: annotationMark.attrs.tag,
+          isPublic: true,
+          createdAt: new Date(annotationMark.attrs.createdAt),
+          updatedAt: new Date(),
+          start: editor.state.selection.from,
+          end: editor.state.selection.to,
+        };
+        setAnnotations([
+          ...annotations,
+          newAnnotation as unknown as NewAnnotation,
+        ]);
+        await createAnnotation({
+          annotation: {
+            id: newAnnotation.id,
+            tag: newAnnotation.tag || null,
+            text: newAnnotation.text,
+            start: newAnnotation.start,
+            end: newAnnotation.end,
+            userId: newAnnotation.userId,
+            draftId: newAnnotation.draftId.toString(),
+          },
+          statementId: draftId,
+        });
+      }
+    }
+  });
+};
+
+export const handleContentChange = (
+  statement: DraftWithAnnotations,
+  statementUpdate: DraftWithAnnotations,
+  content: string,
+  setStatementUpdate: (statement: DraftWithAnnotations) => void,
+  statementId: string,
+) => {
+  if (statement && content !== statement.content) {
+    const newStatement = {
+      ...statementUpdate,
+      content,
+      statementId,
+    } as DraftWithAnnotations;
+    setStatementUpdate(newStatement);
+  }
 };
 
 export const headerImageChange = async ({
@@ -175,7 +273,7 @@ export const openImagePopover = ({
 export type CitationPopoverProps = {
   citationData: NewStatementCitation;
   position?: { x: number; y: number; width: number; height: number } | null;
-  setInitialCitationData: (data: NewStatementCitation) => void;
+  setCitationData: (data: NewStatementCitation) => void;
   setSelectedNodePosition: (
     position: { x: number; y: number; width: number; height: number } | null,
   ) => void;
@@ -185,13 +283,13 @@ export type CitationPopoverProps = {
 export const openCitationPopover = ({
   citationData,
   position = null,
-  setInitialCitationData,
+  setCitationData,
   setSelectedNodePosition,
   setCitationPopoverOpen,
 }: CitationPopoverProps) => {
   if (!citationData) return;
-  setInitialCitationData(citationData);
 
+  setCitationData(citationData);
   if (position) {
     setSelectedNodePosition(position);
   }
@@ -254,7 +352,7 @@ export const createStatementAnnotation = async (
       updatedAt: new Date(),
     };
     setAnnotations([...annotations, newAnnotation as unknown as NewAnnotation]);
-    createAnnotation({
+    await createAnnotation({
       annotation: {
         id: newAnnotation.id,
         tag: newAnnotation.tag || null,

@@ -18,7 +18,8 @@ export function CitationButton({ editor, statementId }: CitationButtonProps) {
   const {
     setSelectedNodePosition,
     setCitationPopoverOpen,
-    setInitialCitationData,
+    setCitationData,
+    citationPopoverOpen,
   } = useStatementContext();
   const handleClick = () => {
     const view = editor.view;
@@ -38,21 +39,24 @@ export function CitationButton({ editor, statementId }: CitationButtonProps) {
       volume: undefined,
       id: "",
     };
-    openCitationPopover({
-      citationData,
-      position: {
-        x: pos.left,
-        y: pos.top,
-        width: 1,
-        height: 1,
-      },
-      setSelectedNodePosition,
-      setCitationPopoverOpen,
-      setInitialCitationData,
-    });
 
-    setCitationPopoverOpen(true);
-    setInitialCitationData(citationData);
+    if (!citationPopoverOpen) {
+      openCitationPopover({
+        citationData,
+        position: {
+          x: pos.left,
+          y: pos.top,
+          width: 1,
+          height: 1,
+        },
+        setSelectedNodePosition,
+        setCitationPopoverOpen,
+        setCitationData,
+      });
+    } else {
+      setCitationPopoverOpen(false);
+      setCitationData(citationData);
+    }
   };
 
   return (

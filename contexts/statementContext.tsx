@@ -11,17 +11,23 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   createContext,
+  Dispatch,
   ReactNode,
+  SetStateAction,
+  useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
+import { useDebounce } from "use-debounce";
 import {
   createDraft,
   publishDraft,
   updateDraft,
   UpsertImageDataType,
 } from "@/lib/actions/statementActions";
+import { generateStatementId } from "@/lib/helpers/helpersStatements";
 interface PositionParams {
   x: number;
   y: number;
@@ -42,10 +48,12 @@ interface StatementContextType {
   setAnnotations: (annotations: NewAnnotation[]) => void;
   statementUpdate: NewDraft | undefined;
   setStatementUpdate: (statement: Partial<NewDraft>) => void;
+  debouncedContent: string | undefined;
+  setDebouncedContent: (content: string) => void;
   saveStatementDraft: () => Promise<void>;
   nextVersionNumber: number;
   changeVersion: (version: number) => void;
-  updateStatementDraft: () => Promise<void>;
+  updateStatementDraft: (statementUpdate: NewDraft) => Promise<void>;
   togglePublish: () => Promise<void>;
   isUpdating: boolean;
   error: string | null;
@@ -57,8 +65,8 @@ interface StatementContextType {
   setCitationPopoverOpen: (open: boolean) => void;
   initialImageData: UpsertImageDataType;
   setInitialImageData: (data: UpsertImageDataType) => void;
-  initialCitationData: NewStatementCitation;
-  setInitialCitationData: (data: NewStatementCitation) => void;
+  citationData: NewStatementCitation;
+  setCitationData: Dispatch<SetStateAction<NewStatementCitation>>;
   currentLatex: string;
   setCurrentLatex: (latex: string) => void;
   isBlock: boolean;
@@ -93,9 +101,6 @@ export function StatementProvider({
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editor, setEditor] = useState<Editor | null>(null);
-  const [latexPopoverOpen, setLatexPopoverOpen] = useState(false);
-  const [citationPopoverOpen, setCitationPopoverOpen] = useState(false);
-  const [imagePopoverOpen, setImagePopoverOpen] = useState(false);
   const [isBlock, setIsBlock] = useState(true);
   const [selectedLatexId, setSelectedLatexId] = useState<string | null>(null);
   const [selectedNodePosition, setSelectedNodePosition] =
@@ -109,21 +114,33 @@ export function StatementProvider({
       id: "",
     }
   );
-  const [initialCitationData, setInitialCitationData] =
-    useState<NewStatementCitation>({
-      statementId: statement.statementId,
-      title: "",
-      url: "",
-      year: "",
-      authorNames: "",
-      issue: null,
-      pageEnd: null,
-      pageStart: null,
-      publisher: "",
-      titlePublication: "",
-      volume: "",
-      id: "",
-    });
+  const [citationData, setCitationData] = useState<NewStatementCitation>({
+    statementId: statement.statementId,
+    title: "",
+    url: "",
+    year: "",
+    authorNames: "",
+    issue: null,
+    pageEnd: null,
+    pageStart: null,
+    publisher: "",
+    titlePublication: "",
+    volume: "",
+    id: "",
+  });
+
+  const [popoverState, setPopoverState] = useState({
+    latex: false,
+    image: false,
+    citation: false,
+  });
+
+  const setLatexPopoverOpen = (open: boolean) =>
+    setPopoverState((prev) => ({ ...prev, latex: open }));
+  const setImagePopoverOpen = (open: boolean) =>
+    setPopoverState((prev) => ({ ...prev, image: open }));
+  const setCitationPopoverOpen = (open: boolean) =>
+    setPopoverState((prev) => ({ ...prev, citation: open }));
 
   const [statementUpdate, setNewStatementState] = useState<NewDraft>(
     statement ?? ({} as NewDraft)
@@ -189,22 +206,6 @@ export function StatementProvider({
     }
   };
 
-  // Update a draft of the statement - will take new PublicationId
-
-  const updateStatementDraft = async () => {
-    const { title, subtitle, content, headerImg } = statementUpdate;
-    setIsUpdating(true);
-    await updateDraft({
-      title: title || undefined,
-      subtitle: subtitle || undefined,
-      content: content || undefined,
-      headerImg: headerImg || undefined,
-      statementId: statement.statementId,
-      versionNumber: statement.versionNumber,
-    });
-    setIsUpdating(false);
-  };
-
   // Toggle the publish status of the statement
   const togglePublish = async () => {
     if (!statement) return;
@@ -216,6 +217,56 @@ export function StatementProvider({
       publish: publishedAt ? false : true,
     });
   };
+
+  const updateStatementDraft = useCallback(
+    async (statementUpdate: NewDraft) => {
+      const { title, subtitle, content, headerImg } = statementUpdate;
+      setIsUpdating(true);
+      await updateDraft({
+        title: title || undefined,
+        subtitle: subtitle || undefined,
+        content: content || undefined,
+        headerImg: headerImg || undefined,
+        statementId: statement.statementId,
+        versionNumber: statement.versionNumber,
+      });
+      setIsUpdating(false);
+    },
+    [statement.statementId, statement.versionNumber]
+  );
+
+  const [debouncedContent, setDebouncedContent] = useDebounce(
+    statementUpdate?.content ?? undefined,
+    1000
+  );
+
+  let prevStatementUpdateRef = useRef(statementUpdate);
+  const statementId = statementUpdate.statementId;
+  const prepStatementId = statementId ? statementId : generateStatementId();
+
+  useEffect(() => {
+    if (
+      statementUpdate &&
+      (debouncedContent !== prevStatementUpdateRef.current?.content ||
+        statementUpdate.title !== prevStatementUpdateRef.current?.title ||
+        statementUpdate.subtitle !== prevStatementUpdateRef.current?.subtitle)
+    ) {
+      const newStatementUpdate = {
+        ...statementUpdate,
+        title: statementUpdate.title ?? undefined,
+        subtitle: statementUpdate.subtitle ?? undefined,
+        content: debouncedContent,
+        statementId: prepStatementId,
+      } as NewDraft;
+      updateStatementDraft(newStatementUpdate);
+      prevStatementUpdateRef.current = newStatementUpdate;
+    }
+  }, [
+    debouncedContent,
+    statementUpdate,
+    prepStatementId,
+    updateStatementDraft,
+  ]);
 
   return (
     <StatementContext.Provider
@@ -233,21 +284,23 @@ export function StatementProvider({
         nextVersionNumber,
         changeVersion,
         updateStatementDraft,
+        debouncedContent,
+        setDebouncedContent,
         error,
         togglePublish,
         isUpdating,
-        latexPopoverOpen,
+        latexPopoverOpen: popoverState.latex,
         setLatexPopoverOpen,
-        imagePopoverOpen,
+        imagePopoverOpen: popoverState.image,
         setImagePopoverOpen,
-        citationPopoverOpen,
+        citationPopoverOpen: popoverState.citation,
         setCitationPopoverOpen,
         currentLatex,
         setCurrentLatex,
         initialImageData,
         setInitialImageData,
-        initialCitationData,
-        setInitialCitationData,
+        citationData,
+        setCitationData,
         isBlock,
         setIsBlock,
         selectedLatexId,

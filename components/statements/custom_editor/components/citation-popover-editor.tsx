@@ -3,7 +3,7 @@
 import { NewStatementCitation } from "kysely-codegen";
 import { nanoid } from "nanoid";
 import { usePathname } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,7 +24,6 @@ import {
 } from "@/lib/actions/citationActions";
 interface CitationPopoverEditorProps {
   children: React.ReactNode;
-
   statementId: string;
   creatorId: string;
 }
@@ -37,23 +36,40 @@ export function CitationPopoverEditor({
   const { userId } = useUserContext();
   const {
     citationPopoverOpen,
-    initialCitationData,
+    citationData,
+    setCitationData,
     setCitationPopoverOpen,
     editor,
   } = useStatementContext();
-  const [citation, setCitation] =
-    useState<NewStatementCitation>(initialCitationData);
+
   const [saveButtonState, setSaveButtonState] =
     useState<ButtonLoadingState>("default");
   const [error, setError] = useState<string | null>(null);
 
   const pathname = usePathname();
 
+  const onClose = () => {
+    setCitationPopoverOpen(false);
+    setCitationData({
+      statementId,
+      title: "",
+      authorNames: "",
+      id: "",
+    });
+  };
+
   const handleInputChange = (field: keyof NewStatementCitation, value: any) => {
-    setCitation((prev) => ({
+    setCitationData((prev) => ({
       ...prev,
       [field]: value,
     }));
+  };
+
+  const onOpenChange = (open: boolean) => {
+    setCitationPopoverOpen(open);
+    if (!open) {
+      onClose();
+    }
   };
 
   const saveCitation = async () => {
@@ -63,18 +79,18 @@ export function CitationPopoverEditor({
       citation: {
         id,
         statementId,
-        title: citation.title,
-        authorNames: citation.authorNames,
-        url: citation.url,
-        year: citation.year ? citation.year : null,
-        issue: citation.issue ? citation.issue : null,
-        pageEnd: citation.pageEnd ? citation.pageEnd : null,
-        pageStart: citation.pageStart ? citation.pageStart : null,
-        publisher: citation.publisher ? citation.publisher : null,
-        titlePublication: citation.titlePublication
-          ? citation.titlePublication
+        title: citationData.title,
+        authorNames: citationData.authorNames,
+        url: citationData.url,
+        year: citationData.year ? citationData.year : null,
+        issue: citationData.issue ? citationData.issue : null,
+        pageEnd: citationData.pageEnd ? citationData.pageEnd : null,
+        pageStart: citationData.pageStart ? citationData.pageStart : null,
+        publisher: citationData.publisher ? citationData.publisher : null,
+        titlePublication: citationData.titlePublication
+          ? citationData.titlePublication
           : null,
-        volume: citation.volume ? citation.volume : null,
+        volume: citationData.volume ? citationData.volume : null,
       },
       revalidationPath: {
         path: pathname,
@@ -85,7 +101,7 @@ export function CitationPopoverEditor({
   };
 
   const handleSave = async () => {
-    if (!citation.title || !citation.authorNames) {
+    if (!citationData.title || !citationData.authorNames) {
       setError("Title and author names are required");
       return;
     }
@@ -93,10 +109,10 @@ export function CitationPopoverEditor({
     if (editor && userId && statementId) {
       try {
         setSaveButtonState("loading");
-        if (citation.id !== "") {
+        if (citationData.id !== "") {
           await updateCitation({
             creatorId,
-            citation,
+            citation: citationData,
             revalidationPath: {
               path: pathname,
               type: "page",
@@ -114,7 +130,13 @@ export function CitationPopoverEditor({
             .run();
         }
         setSaveButtonState("default");
-        setCitationPopoverOpen(false);
+        onOpenChange(false);
+        setCitationData({
+          statementId,
+          title: "",
+          authorNames: "",
+          id: "",
+        });
       } catch (error) {
         console.error("Failed to save citation:", error);
         setError("Failed to save citation");
@@ -123,11 +145,11 @@ export function CitationPopoverEditor({
   };
 
   const handleDelete = async () => {
-    if (citation.id && editor && userId) {
+    if (citationData.id && editor && userId) {
       try {
-        await deleteCitation(citation.id, creatorId);
-        editor.commands.deleteCitation({ citationId: citation.id });
-        setCitationPopoverOpen(false);
+        await deleteCitation(citationData.id, creatorId);
+        editor.commands.deleteCitation({ citationId: citationData.id });
+        onOpenChange(false);
       } catch (error) {
         console.error("Failed to delete citation:", error);
         setError("Failed to delete citation");
@@ -136,25 +158,25 @@ export function CitationPopoverEditor({
   };
 
   return (
-    <Popover open={citationPopoverOpen} onOpenChange={setCitationPopoverOpen}>
+    <Popover open={citationPopoverOpen} onOpenChange={onOpenChange}>
       <PopoverAnchor asChild>{children}</PopoverAnchor>
       <PopoverContent className="w-screen max-w-[450px] p-0" align="start">
         <div className="flex flex-col gap-4 p-4">
           <Input
             placeholder="Title *"
-            value={citation.title}
+            value={citationData.title}
             onChange={(e) => handleInputChange("title", e.target.value)}
           />
 
           <Input
             placeholder="Author Names *"
-            value={citation.authorNames}
+            value={citationData.authorNames}
             onChange={(e) => handleInputChange("authorNames", e.target.value)}
           />
 
           <Input
             placeholder="URL"
-            value={citation.url || ""}
+            value={citationData.url || ""}
             onChange={(e) => handleInputChange("url", e.target.value)}
           />
 
@@ -162,8 +184,8 @@ export function CitationPopoverEditor({
             type="date"
             placeholder="Year"
             value={
-              citation.year
-                ? new Date(citation.year).toISOString().split("T")[0]
+              citationData.year
+                ? new Date(citationData.year).toISOString().split("T")[0]
                 : ""
             }
             onChange={(e) =>
@@ -178,7 +200,7 @@ export function CitationPopoverEditor({
             <Input
               type="number"
               placeholder="Issue"
-              value={citation.issue || ""}
+              value={citationData.issue || ""}
               onChange={(e) =>
                 handleInputChange(
                   "issue",
@@ -188,7 +210,7 @@ export function CitationPopoverEditor({
             />
             <Input
               placeholder="Volume"
-              value={citation.volume || ""}
+              value={citationData.volume || ""}
               onChange={(e) => handleInputChange("volume", e.target.value)}
             />
           </div>
@@ -197,7 +219,7 @@ export function CitationPopoverEditor({
             <Input
               type="number"
               placeholder="From page"
-              value={citation.pageStart || ""}
+              value={citationData.pageStart || ""}
               onChange={(e) =>
                 handleInputChange(
                   "pageStart",
@@ -208,7 +230,7 @@ export function CitationPopoverEditor({
             <Input
               type="number"
               placeholder="To page"
-              value={citation.pageEnd || ""}
+              value={citationData.pageEnd || ""}
               onChange={(e) =>
                 handleInputChange(
                   "pageEnd",
@@ -220,13 +242,13 @@ export function CitationPopoverEditor({
 
           <Input
             placeholder="Publisher"
-            value={citation.publisher || ""}
+            value={citationData.publisher || ""}
             onChange={(e) => handleInputChange("publisher", e.target.value)}
           />
 
           <Input
             placeholder="Publication Title"
-            value={citation.titlePublication || ""}
+            value={citationData.titlePublication || ""}
             onChange={(e) =>
               handleInputChange("titlePublication", e.target.value)
             }
@@ -238,16 +260,12 @@ export function CitationPopoverEditor({
               variant="destructive"
               size="sm"
               onClick={handleDelete}
-              disabled={!citation.id}
+              disabled={!citationData.id}
             >
               Delete
             </Button>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCitationPopoverOpen(false)}
-              >
+              <Button variant="outline" size="sm" onClick={onClose}>
                 Cancel
               </Button>
               <LoadingButton

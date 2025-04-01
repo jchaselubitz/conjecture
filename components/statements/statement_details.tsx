@@ -2,7 +2,7 @@ import { DraftWithAnnotations } from "kysely-codegen";
 import { Upload } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { RefObject, useCallback, useRef } from "react";
+import { RefObject, useRef } from "react";
 import { useState } from "react";
 import { ImperativePanelGroupHandle } from "react-resizable-panels";
 import TextareaAutosize from "react-textarea-autosize";
@@ -85,7 +85,7 @@ export default function StatementDetails({
   };
 
   const handleHeaderImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     if (!userId) {
       alert("You must be logged in to upload an image.");
@@ -225,8 +225,6 @@ export default function StatementDetails({
 
       <Byline statement={statement} />
       <RichTextDisplay
-        draftId={statement.id}
-        statementId={statement.statementId}
         annotations={annotations}
         handleAnnotationClick={handleAnnotationClick}
         selectedAnnotationId={selectedAnnotationId}

@@ -1,6 +1,5 @@
 import { mergeAttributes, Node } from "@tiptap/core";
 import { Plugin, PluginKey } from "prosemirror-state";
-import { deleteCitation } from "@/lib/actions/citationActions";
 
 export interface CitationOptions {
  HTMLAttributes: Record<string, any>;
@@ -30,25 +29,6 @@ declare module "@tiptap/core" {
  }
 }
 
-// Helper function to get citation number
-// export const getCitationNumber = (doc: any, targetId: string): number => {
-//  let count = 1;
-//  let found = false;
-
-//  doc.descendants((node: any, _pos: number) => {
-//   if (node.type.name === "citation") {
-//    if (node.attrs.citationId === targetId) {
-//     found = true;
-//     return false;
-//    }
-//    if (!found) count++;
-//   }
-//   return true;
-//  });
-
-//  return count;
-// };
-
 export const Citation = Node.create<CitationOptions>({
  name: "citation",
 
@@ -62,6 +42,9 @@ export const Citation = Node.create<CitationOptions>({
  inline: true,
  group: "inline",
  atom: true,
+ selectable: true,
+ draggable: true,
+ whitespace: "pre",
 
  addAttributes() {
   return {

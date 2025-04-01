@@ -1,15 +1,22 @@
 import { Editor } from "@tiptap/react";
 import { Sigma } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useStatementContext } from "@/contexts/statementContext";
 import { openLatexPopover } from "@/lib/helpers/helpersStatements";
 import { cn } from "@/lib/utils";
-
 interface LatexButtonProps {
   editor: Editor;
   displayMode: boolean;
 }
 
 export function LatexButton({ editor, displayMode }: LatexButtonProps) {
+  const {
+    setLatexPopoverOpen,
+    setCurrentLatex,
+    setIsBlock,
+    setSelectedLatexId,
+    setSelectedNodePosition,
+  } = useStatementContext();
   const handleClick = () => {
     // Create a position for the popover based on editor cursor position
     const view = editor.view;
@@ -28,11 +35,11 @@ export function LatexButton({ editor, displayMode }: LatexButtonProps) {
       displayMode,
       latexId: null,
       position,
-      setCurrentLatex: () => {},
-      setIsBlock: () => {},
-      setSelectedLatexId: () => {},
-      setSelectedNodePosition: () => {},
-      setLatexPopoverOpen: () => {},
+      setCurrentLatex,
+      setIsBlock,
+      setSelectedLatexId,
+      setSelectedNodePosition,
+      setLatexPopoverOpen,
     });
   };
 

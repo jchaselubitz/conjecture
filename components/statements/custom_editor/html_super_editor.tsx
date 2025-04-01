@@ -6,13 +6,21 @@ import Typography from "@tiptap/extension-typography";
 import { Step } from "@tiptap/pm/transform";
 import { EditorContent, FloatingMenu, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { DraftWithAnnotations, NewAnnotation } from "kysely-codegen";
+import {
+  DraftWithAnnotations,
+  NewAnnotation,
+  NewStatementCitation,
+} from "kysely-codegen";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useRef } from "react";
 import { useStatementContext } from "@/contexts/statementContext";
 import { deleteCitation } from "@/lib/actions/citationActions";
 import {
   createQuoteHighlight,
+  ensureAnnotationMarks,
+  generateStatementId,
+  getMarks,
+  getNodes,
   openCitationPopover,
   openImagePopover,
   openLatexPopover,
@@ -39,7 +47,6 @@ interface HTMLSuperEditorProps {
   placeholder?: string;
   annotatable?: boolean;
   editMode?: boolean;
-  onContentChange?: (htmlContent: string) => void;
   selectedAnnotationId: string | undefined;
   setSelectedAnnotationId: (id: string | undefined) => void;
   showAuthorComments: boolean;
@@ -56,7 +63,6 @@ const HTMLSuperEditor = ({
   placeholder,
   annotatable,
   editMode,
-  onContentChange,
   selectedAnnotationId,
   setSelectedAnnotationId,
   showAuthorComments,
@@ -67,10 +73,11 @@ const HTMLSuperEditor = ({
     setSelectedNodePosition,
     setCurrentLatex,
     setInitialImageData,
-    setInitialCitationData,
+    setCitationData,
     setIsBlock,
     annotations,
     setAnnotations,
+    setDebouncedContent,
     setSelectedLatexId,
     setCitationPopoverOpen,
     setImagePopoverOpen,
@@ -97,7 +104,7 @@ const HTMLSuperEditor = ({
       // Wait for the DOM to update before scrolling
       setTimeout(() => {
         const annotationElement = document.querySelector(
-          `[data-annotation-id="${annotationId}"]`,
+          `[data-annotation-id="${annotationId}"]`
         );
         if (annotationElement) {
           annotationElement.scrollIntoView({
@@ -163,45 +170,20 @@ const HTMLSuperEditor = ({
     editable: true,
     onCreate: ({ editor }) => {
       //  ensure we have DB records for all annotation marks
-      const marks: { node: any }[] = [];
-      editor.state.doc.descendants((node, pos) => {
-        if (
-          node.marks?.some((mark) => mark.type.name === "annotationHighlight")
-        ) {
-          marks.push({ node });
-        }
-        return true;
+
+      const annotationMarks = getMarks(editor, ["annotationHighlight"]);
+      const citationNodes = getNodes(editor, ["citation", "citation-block"]);
+      const latexNodes = getNodes(editor, ["latex", "latex-block"]);
+      const blockImageNodes = getNodes(editor, ["block-image"]);
+
+      ensureAnnotationMarks({
+        marks: annotationMarks,
+        editor,
+        annotations,
+        draftId,
+        setAnnotations,
       });
-
-      // Sync any marks that don't have corresponding DB records
-      marks.forEach(({ node }) => {
-        const annotationMark = node.marks.find(
-          (mark: any) => mark.type.name === "annotationHighlight",
-        );
-        if (annotationMark) {
-          const annotationId = annotationMark.attrs.annotationId;
-          const existingAnnotation = annotations.find(
-            (a) => a.id === annotationId,
-          );
-
-          if (!existingAnnotation) {
-            const newAnnotation: NewAnnotation = {
-              id: annotationId,
-              text: node.text || "",
-              userId: annotationMark.attrs.userId,
-              draftId: draftId,
-              tag: annotationMark.attrs.tag,
-              isPublic: true,
-              createdAt: new Date(annotationMark.attrs.createdAt),
-              updatedAt: new Date(),
-              start: editor.state.selection.from,
-              end: editor.state.selection.to,
-            };
-
-            setAnnotations([...annotations, newAnnotation]);
-          }
-        }
-      });
+      //we probably also want to ensure that citations are created for all citation nodes
     },
     onUpdate: ({ editor, transaction }) => {
       // Only block content updates if they're not annotation-related
@@ -216,8 +198,8 @@ const HTMLSuperEditor = ({
         return;
       }
 
-      if (onContentChange) {
-        onContentChange(editor.getHTML());
+      if (editor.getHTML()) {
+        setDebouncedContent(editor.getHTML());
       }
     },
     onSelectionUpdate: ({ editor }) => {
@@ -313,7 +295,7 @@ const HTMLSuperEditor = ({
 
           // Handle citation clicks only in editMode mode
           const citationNode = element.closest(
-            '[data-type="citation"], [data-type="citation-block"]',
+            '[data-type="citation"], [data-type="citation-block"]'
           );
 
           if (citationNode && editMode) {
@@ -325,8 +307,6 @@ const HTMLSuperEditor = ({
               width: rect.width,
               height: rect.height,
             };
-            console.log(position);
-            setSelectedNodePosition(position);
 
             const id = citationNode.getAttribute("data-citation-id");
 
@@ -334,34 +314,33 @@ const HTMLSuperEditor = ({
               return;
             }
             const selectedCitation = statement.citations.find(
-              (c) => c.id === id,
+              (c) => c.id === id
             );
 
             if (!selectedCitation) {
               return;
             }
-
+            const citationData: NewStatementCitation = {
+              statementId,
+              id: selectedCitation.id,
+              title: selectedCitation.title,
+              url: selectedCitation.url,
+              year: selectedCitation.year,
+              authorNames: selectedCitation.authorNames,
+              issue: selectedCitation.issue,
+              pageEnd: selectedCitation.pageEnd,
+              pageStart: selectedCitation.pageStart,
+              publisher: selectedCitation.publisher,
+              titlePublication: selectedCitation.titlePublication,
+              volume: selectedCitation.volume,
+            };
             openCitationPopover({
-              citationData: {
-                statementId,
-                id: selectedCitation.id,
-                title: selectedCitation.title,
-                url: selectedCitation.url,
-                year: selectedCitation.year,
-                authorNames: selectedCitation.authorNames,
-                issue: selectedCitation.issue,
-                pageEnd: selectedCitation.pageEnd,
-                pageStart: selectedCitation.pageStart,
-                publisher: selectedCitation.publisher,
-                titlePublication: selectedCitation.titlePublication,
-                volume: selectedCitation.volume,
-              },
+              citationData,
               position,
-              setInitialCitationData,
+              setCitationData,
               setSelectedNodePosition,
               setCitationPopoverOpen,
             });
-
             event.preventDefault();
             event.stopPropagation();
             return true;
@@ -369,16 +348,16 @@ const HTMLSuperEditor = ({
 
           // Handle LaTeX clicks only in editMode mode
           let latexNode = element.closest(
-            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
           );
 
           if (!latexNode) {
             const katexElement = element.closest(
-              ".katex, .katex-html, .katex-rendered",
+              ".katex, .katex-html, .katex-rendered"
             );
             if (katexElement) {
               latexNode = katexElement.closest(
-                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
               );
             }
           }
@@ -393,7 +372,7 @@ const HTMLSuperEditor = ({
 
             if (!latex) {
               const katexWrapper = latexNode.querySelector(
-                ".katex-rendered, .katex",
+                ".katex-rendered, .katex"
               );
               if (katexWrapper) {
                 latex = "";
@@ -500,7 +479,7 @@ const HTMLSuperEditor = ({
     // Update all annotations to reflect new selection state
     editor.state.doc.descendants((node, pos) => {
       const annotationMark = node.marks.find(
-        (mark) => mark.type.name === "annotationHighlight",
+        (mark) => mark.type.name === "annotationHighlight"
       );
 
       if (annotationMark) {
@@ -527,7 +506,7 @@ const HTMLSuperEditor = ({
             // Use setTimeout to ensure the DOM has updated
             setTimeout(() => {
               const annotationElement = document.querySelector(
-                `[data-annotation-id="${selectedAnnotationId}"]`,
+                `[data-annotation-id="${selectedAnnotationId}"]`
               );
               if (annotationElement) {
                 annotationElement.scrollIntoView({
