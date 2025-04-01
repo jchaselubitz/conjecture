@@ -17,6 +17,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -154,15 +155,17 @@ export function StatementProvider({
     setStatement(statement);
   }, [statement]);
 
-  const versionOptions = drafts
-    .map((draft) => {
-      return {
-        v: draft.versionNumber,
-        versionNumber: draft.versionNumber.toString(),
-        createdAt: draft.createdAt,
-      };
-    })
-    .sort((a, b) => a.v - b.v);
+  const versionOptions = useMemo(() => {
+    return drafts
+      .map((draft) => {
+        return {
+          v: draft.versionNumber,
+          versionNumber: draft.versionNumber.toString(),
+          createdAt: draft.createdAt,
+        };
+      })
+      .sort((a, b) => a.v - b.v);
+  }, [drafts]);
 
   const nextVersionNumber = versionOptions.length + 1;
 

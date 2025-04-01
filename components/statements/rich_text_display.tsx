@@ -1,5 +1,5 @@
 "use client";
-import { DraftWithAnnotations, NewAnnotation } from "kysely-codegen";
+import { NewAnnotation } from "kysely-codegen";
 import React, { useEffect, useMemo, useRef } from "react";
 import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
@@ -69,7 +69,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = React.memo(
         <div className="h-14" />
       </div>
     );
-  },
+  }
 );
 
 export default RichTextDisplay;

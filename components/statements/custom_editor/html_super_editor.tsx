@@ -103,7 +103,7 @@ const HTMLSuperEditor = ({
       // Wait for the DOM to update before scrolling
       setTimeout(() => {
         const annotationElement = document.querySelector(
-          `[data-annotation-id="${annotationId}"]`,
+          `[data-annotation-id="${annotationId}"]`
         );
         if (annotationElement) {
           annotationElement.scrollIntoView({
@@ -186,19 +186,21 @@ const HTMLSuperEditor = ({
     },
     onUpdate: ({ editor, transaction }) => {
       // Only block content updates if they're not annotation-related
-      const hasAnnotationChanges = transaction.steps.some((step: Step) => {
-        const mark = (step as any).mark;
-        const annotationId = mark?.attrs?.annotationId;
-        if (!annotationId) return false;
-        return mark.type.name === "annotationHighlight";
-      });
-      if (!editMode && !hasAnnotationChanges) {
-        editor.commands.setContent(htmlContent);
-        return;
-      }
+      if (transaction.docChanged) {
+        const hasAnnotationChanges = transaction.steps.some((step: Step) => {
+          const mark = (step as any).mark;
+          const annotationId = mark?.attrs?.annotationId;
+          if (!annotationId) return false;
+          return mark.type.name === "annotationHighlight";
+        });
+        if (!editMode && !hasAnnotationChanges) {
+          editor.commands.setContent(htmlContent);
+          return;
+        }
 
-      if (editor.getHTML()) {
-        setDebouncedContent(editor.getHTML());
+        if (editor.getHTML()) {
+          setDebouncedContent(editor.getHTML());
+        }
       }
     },
     onSelectionUpdate: ({ editor }) => {
@@ -294,7 +296,7 @@ const HTMLSuperEditor = ({
 
           // Handle citation clicks only in editMode mode
           const citationNode = element.closest(
-            '[data-type="citation"], [data-type="citation-block"]',
+            '[data-type="citation"], [data-type="citation-block"]'
           );
 
           if (citationNode && editMode) {
@@ -313,7 +315,7 @@ const HTMLSuperEditor = ({
               return;
             }
             const selectedCitation = statement.citations.find(
-              (c) => c.id === id,
+              (c) => c.id === id
             );
 
             if (!selectedCitation) {
@@ -347,16 +349,16 @@ const HTMLSuperEditor = ({
 
           // Handle LaTeX clicks only in editMode mode
           let latexNode = element.closest(
-            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
           );
 
           if (!latexNode) {
             const katexElement = element.closest(
-              ".katex, .katex-html, .katex-rendered",
+              ".katex, .katex-html, .katex-rendered"
             );
             if (katexElement) {
               latexNode = katexElement.closest(
-                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
               );
             }
           }
@@ -371,7 +373,7 @@ const HTMLSuperEditor = ({
 
             if (!latex) {
               const katexWrapper = latexNode.querySelector(
-                ".katex-rendered, .katex",
+                ".katex-rendered, .katex"
               );
               if (katexWrapper) {
                 latex = "";
@@ -427,22 +429,19 @@ const HTMLSuperEditor = ({
     },
   });
 
-  // Update annotations when they change
   useEffect(() => {
     if (!editor?.isEditable || editor.isEmpty) return;
 
-    setEditor(editor);
-
-    // Clear all existing annotation highlights
-    editor.commands.unsetAnnotationHighlight();
-
-    // Apply highlights for each annotation using the editor's mark system
-    annotations.forEach((annotation) => {
-      if (!annotation.id || !annotation.userId) {
-        return;
-      }
-
-      if (annotation.start >= 0 && annotation.end >= 0) {
+    const applyAnnotations = () => {
+      editor.commands.unsetAnnotationHighlight();
+      annotations.forEach((annotation) => {
+        if (
+          !annotation.id ||
+          !annotation.userId ||
+          annotation.start < 0 ||
+          annotation.end < 0
+        )
+          return;
         editor
           .chain()
           .setTextSelection({ from: annotation.start, to: annotation.end })
@@ -458,18 +457,13 @@ const HTMLSuperEditor = ({
             selected: annotation.id === selectedAnnotationId,
           })
           .run();
-      }
-    });
+      });
+    };
 
-    // Reset selection after applying all annotations
+    setEditor(editor);
+    applyAnnotations();
     editor.commands.setTextSelection({ from: 0, to: 0 });
-  }, [
-    editor,
-    annotations,
-    statementCreatorId,
-    setEditor,
-    selectedAnnotationId,
-  ]);
+  }, [editor, annotations, selectedAnnotationId]);
 
   // Add a new effect to update selection state when selectedAnnotationId changes
   useEffect(() => {
@@ -478,7 +472,7 @@ const HTMLSuperEditor = ({
     // Update all annotations to reflect new selection state
     editor.state.doc.descendants((node, pos) => {
       const annotationMark = node.marks.find(
-        (mark) => mark.type.name === "annotationHighlight",
+        (mark) => mark.type.name === "annotationHighlight"
       );
 
       if (annotationMark) {
@@ -505,7 +499,7 @@ const HTMLSuperEditor = ({
             // Use setTimeout to ensure the DOM has updated
             setTimeout(() => {
               const annotationElement = document.querySelector(
-                `[data-annotation-id="${selectedAnnotationId}"]`,
+                `[data-annotation-id="${selectedAnnotationId}"]`
               );
               if (annotationElement) {
                 annotationElement.scrollIntoView({
