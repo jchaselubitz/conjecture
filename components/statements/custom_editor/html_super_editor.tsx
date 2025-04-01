@@ -175,6 +175,11 @@ const HTMLSuperEditor = ({
       const latexNodes = getNodes(editor, ["latex", "latex-block"]);
       const blockImageNodes = getNodes(editor, ["block-image"]);
 
+      console.log(
+        "citationNodes",
+        citationNodes.map((node) => node.node.attrs.citationId)
+      );
+
       ensureAnnotationMarks({
         marks: annotationMarks,
         editor,
@@ -295,10 +300,10 @@ const HTMLSuperEditor = ({
           }
 
           // Handle citation clicks only in editMode mode
+
           const citationNode = element.closest(
             '[data-type="citation"], [data-type="citation-block"]'
           );
-
           if (citationNode && editMode) {
             const rect = citationNode.getBoundingClientRect();
 
@@ -310,13 +315,16 @@ const HTMLSuperEditor = ({
             };
 
             const id = citationNode.getAttribute("data-citation-id");
-
+            console.log("id", id);
             if (!id) {
               return;
             }
+            console.log("statement.citations", statement.citations);
+
             const selectedCitation = statement.citations.find(
-              (c) => c.id === id
+              (c) => c.id.toString() === id.toString()
             );
+            console.log("selectedCitation", selectedCitation);
 
             if (!selectedCitation) {
               return;

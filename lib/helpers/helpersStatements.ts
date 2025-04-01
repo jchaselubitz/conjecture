@@ -108,23 +108,6 @@ export const ensureAnnotationMarks = async ({
   });
 };
 
-export const handleContentChange = (
-  statement: DraftWithAnnotations,
-  statementUpdate: DraftWithAnnotations,
-  content: string,
-  setStatementUpdate: (statement: DraftWithAnnotations) => void,
-  statementId: string,
-) => {
-  if (statement && content !== statement.content) {
-    const newStatement = {
-      ...statementUpdate,
-      content,
-      statementId,
-    } as DraftWithAnnotations;
-    setStatementUpdate(newStatement);
-  }
-};
-
 export const headerImageChange = async ({
   event,
   userId,

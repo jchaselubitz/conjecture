@@ -210,25 +210,25 @@ export const Citation = Node.create<CitationOptions>({
 
      // Find deleted citation nodes
      const deletedCitations = new Set<string>();
-     oldState.doc.descendants((node, _pos) => {
+     const existingCitations = new Set<string>();
+
+     // First, collect all citations in the new state
+     newState.doc.descendants((newNode) => {
+      if (newNode.type.name === this.name) {
+       existingCitations.add(newNode.attrs.citationId);
+      }
+      return true; // Continue traversing
+     });
+
+     // Then check old state for citations that no longer exist
+     oldState.doc.descendants((node) => {
       if (node.type.name === this.name) {
        const citationId = node.attrs.citationId;
-       let exists = false;
-       newState.doc.descendants((newNode) => {
-        if (
-         newNode.type.name === this.name &&
-         newNode.attrs.citationId === citationId
-        ) {
-         exists = true;
-         return false;
-        }
-        return true;
-       });
-       if (!exists) {
+       if (!existingCitations.has(citationId)) {
         deletedCitations.add(citationId);
        }
       }
-      return true;
+      return true; // Continue traversing
      });
 
      // Call onDelete for each deleted citation

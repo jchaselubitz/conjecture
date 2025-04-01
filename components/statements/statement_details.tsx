@@ -84,7 +84,7 @@ export default function StatementDetails({
   };
 
   const handleHeaderImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     if (!userId) {
       alert("You must be logged in to upload an image.");
@@ -233,7 +233,7 @@ export default function StatementDetails({
         editMode={editMode}
         key={`rich-text-display-${editMode}`}
       />
-      {editor && statementId && (
+      {editor && statementId && editMode && (
         <div className={cn("sticky bottom-4 z-50 w-full ")}>
           <EditorMenu statementId={statementId} editor={editor} />
         </div>
