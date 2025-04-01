@@ -28,7 +28,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = React.memo(
     editMode,
   }) => {
     const { userId } = useUserContext();
-    const { statement, statementUpdate } = useStatementContext();
+    const { statement } = useStatementContext();
 
     // Keep track of previous edit mode to handle transitions
     const prevEditModeRef = useRef(editMode);
@@ -53,7 +53,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = React.memo(
     return (
       <div className="rounded-lg overflow-hidden bg-background">
         <HTMLSuperEditor
-          statement={statementUpdate as DraftWithAnnotations}
+          statement={statement}
           style={{ minHeight: "400px" }}
           existingAnnotations={annotations}
           userId={userId}
@@ -69,7 +69,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = React.memo(
         <div className="h-14" />
       </div>
     );
-  }
+  },
 );
 
 export default RichTextDisplay;

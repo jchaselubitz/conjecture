@@ -46,14 +46,12 @@ interface StatementContextType {
   setStatement: (statement: DraftWithAnnotations) => void;
   annotations: NewAnnotation[];
   setAnnotations: (annotations: NewAnnotation[]) => void;
-  statementUpdate: NewDraft | undefined;
-  setStatementUpdate: (statement: Partial<NewDraft>) => void;
   debouncedContent: string | undefined;
   setDebouncedContent: (content: string) => void;
   saveStatementDraft: () => Promise<void>;
   nextVersionNumber: number;
   changeVersion: (version: number) => void;
-  updateStatementDraft: (statementUpdate: NewDraft) => Promise<void>;
+  updateStatementDraft: (statement: NewDraft) => Promise<void>;
   togglePublish: () => Promise<void>;
   isUpdating: boolean;
   error: string | null;
@@ -142,17 +140,6 @@ export function StatementProvider({
   const setCitationPopoverOpen = (open: boolean) =>
     setPopoverState((prev) => ({ ...prev, citation: open }));
 
-  const [statementUpdate, setNewStatementState] = useState<NewDraft>(
-    statement ?? ({} as NewDraft)
-  );
-
-  const setStatementUpdate = (statementUpdate: Partial<NewDraft>) => {
-    setNewStatementState((prev) => ({
-      ...prev,
-      ...statementUpdate,
-    }));
-  };
-
   const [annotations, setAnnotations] = useState<NewAnnotation[]>(
     statement.annotations
   );
@@ -164,7 +151,7 @@ export function StatementProvider({
   }, [version, drafts, setStatement]);
 
   useEffect(() => {
-    setNewStatementState(statement);
+    setStatement(statement);
   }, [statement]);
 
   const versionOptions = drafts
@@ -183,9 +170,8 @@ export function StatementProvider({
     router.push(`/statements/${statement.statementId}?version=${newVersion}`);
   };
 
-  //if the new // Save a draft of the statement - new ones will take new PublicationId
   const saveStatementDraft = async () => {
-    const { title, content, headerImg, statementId } = statementUpdate || {};
+    const { title, content, headerImg, statementId } = statement || {};
     if (!title || !content) {
       setError("Missing required fields");
       return;
@@ -198,7 +184,7 @@ export function StatementProvider({
         statementId: statementId || undefined,
         versionNumber: drafts?.length + 1,
         annotations,
-        subtitle: statementUpdate?.subtitle || undefined,
+        subtitle: statement?.subtitle || undefined,
       });
     } catch (err) {
       setError("Error saving draft");
@@ -222,6 +208,7 @@ export function StatementProvider({
     async (statementUpdate: NewDraft) => {
       const { title, subtitle, content, headerImg } = statementUpdate;
       setIsUpdating(true);
+      setStatement(statement as DraftWithAnnotations);
       await updateDraft({
         title: title || undefined,
         subtitle: subtitle || undefined,
@@ -232,41 +219,37 @@ export function StatementProvider({
       });
       setIsUpdating(false);
     },
-    [statement.statementId, statement.versionNumber]
+    [statement]
   );
 
   const [debouncedContent, setDebouncedContent] = useDebounce(
-    statementUpdate?.content ?? undefined,
+    statement?.content ?? undefined,
     1000
   );
 
-  let prevStatementUpdateRef = useRef(statementUpdate);
-  const statementId = statementUpdate.statementId;
+  let prevStatementUpdateRef = useRef(statement);
+  const statementId = statement.statementId;
   const prepStatementId = statementId ? statementId : generateStatementId();
 
   useEffect(() => {
+    const newStatementUpdate = {
+      ...statement,
+      title: statement.title ?? undefined,
+      subtitle: statement.subtitle ?? undefined,
+      content: debouncedContent,
+      statementId: prepStatementId,
+    } as NewDraft;
     if (
-      statementUpdate &&
+      statement &&
       (debouncedContent !== prevStatementUpdateRef.current?.content ||
-        statementUpdate.title !== prevStatementUpdateRef.current?.title ||
-        statementUpdate.subtitle !== prevStatementUpdateRef.current?.subtitle)
+        statement.title !== prevStatementUpdateRef.current?.title ||
+        statement.subtitle !== prevStatementUpdateRef.current?.subtitle)
     ) {
-      const newStatementUpdate = {
-        ...statementUpdate,
-        title: statementUpdate.title ?? undefined,
-        subtitle: statementUpdate.subtitle ?? undefined,
-        content: debouncedContent,
-        statementId: prepStatementId,
-      } as NewDraft;
       updateStatementDraft(newStatementUpdate);
-      prevStatementUpdateRef.current = newStatementUpdate;
+      prevStatementUpdateRef.current =
+        newStatementUpdate as DraftWithAnnotations;
     }
-  }, [
-    debouncedContent,
-    statementUpdate,
-    prepStatementId,
-    updateStatementDraft,
-  ]);
+  }, [debouncedContent, statement, prepStatementId, updateStatementDraft]);
 
   return (
     <StatementContext.Provider
@@ -275,11 +258,9 @@ export function StatementProvider({
         editor,
         setEditor,
         statement,
+        setStatement,
         annotations,
         setAnnotations,
-        setStatement,
-        statementUpdate,
-        setStatementUpdate,
         saveStatementDraft,
         nextVersionNumber,
         changeVersion,

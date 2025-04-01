@@ -36,7 +36,7 @@ export interface StatementDetailsProps {
 }
 
 export default function StatementDetails({
-  statement,
+  // statement,
   editMode,
   showAuthorComments,
   showReaderComments,
@@ -48,15 +48,14 @@ export default function StatementDetails({
   panelGroupRef,
 }: StatementDetailsProps) {
   const { userId } = useUserContext();
-  const { setStatementUpdate, statementUpdate, editor } = useStatementContext();
+  const { statement, setStatement, editor } = useStatementContext();
   const router = useRouter();
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  if (!statementUpdate) return null;
+  if (!statement) return null;
 
-  const { annotations } = statement;
-  const { statementId, title, subtitle, headerImg } = statementUpdate;
+  const { statementId, title, subtitle, headerImg, annotations } = statement;
 
   const prepStatementId = statementId ? statementId : generateStatementId();
 
@@ -172,7 +171,7 @@ export default function StatementDetails({
               minRows={1}
               maxRows={2}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setStatementUpdate({
+                setStatement({
                   ...statement,
                   title: e.target.value,
                   statementId: prepStatementId,
@@ -181,7 +180,7 @@ export default function StatementDetails({
             />
           ) : (
             <h1 className="md:text-5xl text-3xl font-bold py-1">
-              {statementUpdate?.title ?? title}
+              {statement?.title ?? title}
             </h1>
           )}
         </div>
@@ -197,7 +196,7 @@ export default function StatementDetails({
               minRows={1}
               maxRows={2}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setStatementUpdate({
+                setStatement({
                   ...statement,
                   subtitle: e.target.value,
                   statementId: prepStatementId,
@@ -206,7 +205,7 @@ export default function StatementDetails({
             />
           ) : (
             <h2 className="font-medium py-1 md:text-xl text-zinc-500">
-              {statementUpdate?.subtitle ?? subtitle}
+              {statement?.subtitle ?? subtitle}
             </h2>
           )}
         </div>
