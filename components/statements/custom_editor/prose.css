@@ -81,6 +81,26 @@
   margin: 0;
 }
 
+.citation-reference {
+  text-decoration: none;
+}
+.citation-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e2e8f0;
+  color: #475569;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+.citation-number:hover {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background-color: #f1f5f9;
+}
+
 /* Error display */
 .latex-error {
   color: red;

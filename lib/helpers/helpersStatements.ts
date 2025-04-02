@@ -5,11 +5,14 @@ import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { Editor, Extension } from "@tiptap/react";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import {
+  BaseDraft,
+  BaseStatementCitation,
   DraftWithAnnotations,
   NewAnnotation,
+  NewDraft,
   NewStatementCitation,
 } from "kysely-codegen";
-import { UpsertImageDataType } from "../actions/statementActions";
+import { updateDraft, UpsertImageDataType } from "../actions/statementActions";
 import { createAnnotation } from "../actions/annotationActions";
 
 export type PositionParams = {
@@ -20,6 +23,7 @@ export type PositionParams = {
 };
 
 import { nanoid } from "nanoid";
+import { deleteCitations } from "../actions/citationActions";
 
 export const generateStatementId = (): string => {
   const randomNumber = Math.floor(Math.random() * 100000);
@@ -106,6 +110,24 @@ export const ensureAnnotationMarks = async ({
       }
     }
   });
+};
+
+export const ensureCitations = async ({
+  citations,
+  nodeIds,
+  statementCreatorId,
+}: {
+  citations: BaseStatementCitation[];
+  nodeIds: string[];
+  statementCreatorId: string;
+}) => {
+  // here we want to delete any citations in the DB that do not exist in the editor
+  const citationsToDelete = citations
+    .filter((citation) => !nodeIds.includes(citation.id))
+    .map((citation) => citation.id);
+  if (citationsToDelete.length > 0) {
+    await deleteCitations(citationsToDelete, statementCreatorId);
+  }
 };
 
 export const headerImageChange = async ({

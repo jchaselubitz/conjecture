@@ -69,7 +69,7 @@ const RichTextDisplay: React.FC<RichTextDisplayProps> = React.memo(
         <div className="h-14" />
       </div>
     );
-  }
+  },
 );
 
 export default RichTextDisplay;

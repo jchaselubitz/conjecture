@@ -18,6 +18,7 @@ import { deleteCitation } from "@/lib/actions/citationActions";
 import {
   createQuoteHighlight,
   ensureAnnotationMarks,
+  ensureCitations,
   getMarks,
   getNodes,
   openCitationPopover,
@@ -175,11 +176,6 @@ const HTMLSuperEditor = ({
       const latexNodes = getNodes(editor, ["latex", "latex-block"]);
       const blockImageNodes = getNodes(editor, ["block-image"]);
 
-      console.log(
-        "citationNodes",
-        citationNodes.map((node) => node.node.attrs.citationId)
-      );
-
       ensureAnnotationMarks({
         marks: annotationMarks,
         editor,
@@ -187,7 +183,15 @@ const HTMLSuperEditor = ({
         draftId,
         setAnnotations,
       });
-      //we probably also want to ensure that citations are created for all citation nodes
+
+      const citationIds = citationNodes.map(
+        (node) => node.node.attrs.citationId
+      );
+      ensureCitations({
+        citations: statement.citations,
+        nodeIds: citationIds,
+        statementCreatorId,
+      });
     },
     onUpdate: ({ editor, transaction }) => {
       // Only block content updates if they're not annotation-related
@@ -319,12 +323,10 @@ const HTMLSuperEditor = ({
             if (!id) {
               return;
             }
-            console.log("statement.citations", statement.citations);
 
             const selectedCitation = statement.citations.find(
               (c) => c.id.toString() === id.toString()
             );
-            console.log("selectedCitation", selectedCitation);
 
             if (!selectedCitation) {
               return;
@@ -471,7 +473,13 @@ const HTMLSuperEditor = ({
     setEditor(editor);
     applyAnnotations();
     editor.commands.setTextSelection({ from: 0, to: 0 });
-  }, [editor, annotations, selectedAnnotationId]);
+  }, [
+    editor,
+    annotations,
+    selectedAnnotationId,
+    setEditor,
+    statementCreatorId,
+  ]);
 
   // Add a new effect to update selection state when selectedAnnotationId changes
   useEffect(() => {
@@ -526,12 +534,8 @@ const HTMLSuperEditor = ({
     editor.commands.setTextSelection({ from: 0, to: 0 });
   }, [editor, selectedAnnotationId]);
 
-  // Handle creating new annotations
-
-  // Handle editor content updates
   useEffect(() => {
     if (!editor) return;
-
     // Only set content if editor is not editMode or if it's the initial content set
     if (!editor.isEditable || editor.isEmpty) {
       editor.commands.setContent(htmlContent);

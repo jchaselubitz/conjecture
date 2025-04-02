@@ -26,7 +26,6 @@ export default function EditNav() {
     saveStatementDraft,
     updateStatementDraft,
     togglePublish,
-    statementUpdate,
     isUpdating,
     nextVersionNumber,
     changeVersion,
@@ -52,7 +51,7 @@ export default function EditNav() {
   const handleUpdate = async () => {
     try {
       setUpdateButtonState("loading");
-      await updateStatementDraft();
+      await updateStatementDraft(statement);
       setUpdateButtonState("success");
     } catch (error) {
       console.error(error);
@@ -115,7 +114,7 @@ export default function EditNav() {
                 ))}
               </SelectContent>
             </Select>
-            {statementUpdate && (
+            {statement && (
               <LoadingButton
                 variant="outline"
                 onClick={handleSaveDraft}

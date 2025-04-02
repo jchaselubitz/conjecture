@@ -61,6 +61,9 @@ export default function StatementDetails({
 
   const handleEditModeToggle = () => {
     setEditMode(!editMode);
+    //remove cookie edit_mode
+    document.cookie =
+      "edit_mode=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     const newEditMode = !editMode;
     document.cookie = `edit_mode=${newEditMode.toString()}`;
   };
@@ -84,7 +87,7 @@ export default function StatementDetails({
   };
 
   const handleHeaderImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     if (!userId) {
       alert("You must be logged in to upload an image.");

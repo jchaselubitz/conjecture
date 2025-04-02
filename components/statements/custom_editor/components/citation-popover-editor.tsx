@@ -3,7 +3,8 @@
 import { NewStatementCitation } from "kysely-codegen";
 import { nanoid } from "nanoid";
 import { usePathname } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { TextSelection } from "prosemirror-state";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -22,6 +23,7 @@ import {
   deleteCitation,
   updateCitation,
 } from "@/lib/actions/citationActions";
+
 interface CitationPopoverEditorProps {
   children: React.ReactNode;
   statementId: string;
@@ -40,6 +42,7 @@ export function CitationPopoverEditor({
     setCitationData,
     setCitationPopoverOpen,
     editor,
+    updateStatementDraft,
   } = useStatementContext();
 
   const [saveButtonState, setSaveButtonState] =
@@ -105,8 +108,8 @@ export function CitationPopoverEditor({
       setError("Title and author names are required");
       return;
     }
-
     if (editor && userId && statementId) {
+      const pos = editor.state.selection.$from.pos;
       try {
         setSaveButtonState("loading");
         if (citationData.id !== "") {
@@ -119,24 +122,29 @@ export function CitationPopoverEditor({
             },
           });
         } else {
-          //we want to save the id to the citation node
           const id = await saveCitation();
-          editor
-            .chain()
-            .focus()
-            .insertCitation({
-              id,
-            })
-            .run();
+          const tr = editor.state.tr;
+          const node = editor.schema.nodes.citation.create({ citationId: id });
+          tr.replaceSelectionWith(node);
+          tr.setSelection(TextSelection.create(tr.doc, pos + 1));
+          editor.view.dispatch(tr);
         }
-        setSaveButtonState("default");
-        onOpenChange(false);
-        setCitationData({
-          statementId,
-          title: "",
-          authorNames: "",
-          id: "",
-        });
+        //Update draft instantly instead of waiting for debounce cause otherwise the citation will not consistently be updated in the draft
+        setTimeout(() => {
+          updateStatementDraft({
+            statementId,
+            content: editor.getHTML(),
+            creatorId,
+          });
+          setSaveButtonState("default");
+          onOpenChange(false);
+          setCitationData({
+            statementId,
+            title: "",
+            authorNames: "",
+            id: "",
+          });
+        }, 0);
       } catch (error) {
         console.error("Failed to save citation:", error);
         setError("Failed to save citation");

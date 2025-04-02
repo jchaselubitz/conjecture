@@ -1,5 +1,6 @@
 import { mergeAttributes, Node } from "@tiptap/core";
-import { Plugin, PluginKey } from "prosemirror-state";
+import { Plugin, PluginKey, TextSelection } from "prosemirror-state";
+import { createCitationMarker } from "./citation_marker";
 
 export interface CitationOptions {
  HTMLAttributes: Record<string, any>;
@@ -43,8 +44,6 @@ export const Citation = Node.create<CitationOptions>({
  group: "inline",
  atom: true,
  selectable: true,
- draggable: true,
- whitespace: "pre",
 
  addAttributes() {
   return {
@@ -88,20 +87,25 @@ export const Citation = Node.create<CitationOptions>({
      "data-citation-id": node.attrs.citationId,
     },
    ),
-   "[•]",
+   createCitationMarker(0),
   ];
  },
 
  addCommands() {
   return {
-   insertCitation: (options = { id: "" }) => ({ chain, commands }) => {
+   insertCitation: (options = { id: "" }) => ({ tr, dispatch, state }) => {
     const citationId = options.id;
-    return commands.insertContent({
-     type: this.name,
-     attrs: {
-      citationId,
-     },
-    });
+    if (!citationId) {
+     console.error("Attempted to insert citation without an ID.");
+     return false;
+    }
+    const node = this.type.create({ citationId });
+    tr.replaceSelectionWith(node);
+
+    if (dispatch) {
+     dispatch(tr);
+    }
+    return true;
    },
 
    updateCitation: (options) => ({ tr, state, dispatch }) => {
@@ -179,24 +183,33 @@ export const Citation = Node.create<CitationOptions>({
     key: new PluginKey("citationProcessor"),
     view(editorView) {
      const updateCitationNumbers = () => {
-      const citations = editorView.dom.querySelectorAll(
-       "sup.citation-reference",
-      );
+      // Instead of directly manipulating DOM, collect citations and their positions
+      const doc = editorView.state.doc;
       let count = 1;
-      citations.forEach((citation: Element) => {
-       citation.textContent = `[${count}]`;
-       count++;
+
+      doc.descendants((node, pos) => {
+       if (node.type.name === "citation") {
+        const dom = editorView.nodeDOM(pos) as HTMLElement | null;
+        if (dom) {
+         const span = dom.querySelector(".citation-number");
+         if (span) {
+          span.textContent = `${count}`;
+          count++;
+         }
+        }
+       }
+       return true;
       });
      };
 
-     // Initial update
-     setTimeout(updateCitationNumbers, 0);
+     // Initial update using requestAnimationFrame instead of setTimeout
+     requestAnimationFrame(updateCitationNumbers);
 
      return {
       update(view, prevState) {
-       // Update citation numbers if the document has changed
+       // Only update if document content changed
        if (!view.state.doc.eq(prevState.doc)) {
-        setTimeout(updateCitationNumbers, 0);
+        requestAnimationFrame(updateCitationNumbers);
        }
       },
      };
