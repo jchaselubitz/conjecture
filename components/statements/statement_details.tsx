@@ -1,4 +1,4 @@
-import { DraftWithAnnotations } from "kysely-codegen";
+import { BaseStatementCitation, DraftWithAnnotations } from "kysely-codegen";
 import { Upload } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -21,6 +21,7 @@ import Byline from "./byline";
 import { EditorMenu } from "./custom_editor/components/editor_menu";
 import HTMLSuperEditor from "./custom_editor/html_super_editor";
 import StatementOptions from "./statement_options";
+import { FootnoteList } from "./footnote/footnote_list";
 
 export interface StatementDetailsProps {
   statement: DraftWithAnnotations;
@@ -51,8 +52,22 @@ export default function StatementDetails({
   const router = useRouter();
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [footnoteIds, setFootnoteIds] = useState<string[]>([]);
 
-  const { statementId, title, subtitle, headerImg, annotations } = statement;
+  const { statementId, title, subtitle, headerImg, annotations, citations } =
+    statement;
+
+  const orderedFootnotes = useMemo(() => {
+    const footnotes: BaseStatementCitation[] = [];
+    footnoteIds.forEach((id) => {
+      const footnote = citations.find((citation) => citation.id === id);
+      if (footnote) {
+        footnotes.push(footnote);
+      }
+    });
+    return footnotes;
+  }, [citations, footnoteIds]);
+
   const prepStatementId = statementId ? statementId : generateStatementId();
 
   const handleEditModeToggle = () => {
@@ -83,7 +98,7 @@ export default function StatementDetails({
   };
 
   const handleHeaderImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     if (!userId) {
       alert("You must be logged in to upload an image.");
@@ -260,12 +275,18 @@ export default function StatementDetails({
           showAuthorComments={showAuthorComments}
           showReaderComments={showReaderComments}
           editMode={editMode}
+          setFootnoteIds={setFootnoteIds}
         />
       </div>
-      {editor && statementId && editMode && (
-        <div className={cn("sticky bottom-4 z-50 w-full ")}>
-          <EditorMenu statementId={statementId} editor={editor} />
-        </div>
+      {editor && statementId && (
+        <>
+          {editMode && (
+            <div className={cn("sticky bottom-4 z-50 w-full ")}>
+              <EditorMenu statementId={statementId} editor={editor} />
+            </div>
+          )}
+          <FootnoteList citations={orderedFootnotes} />
+        </>
       )}
       <div className="h-14" />
     </div>

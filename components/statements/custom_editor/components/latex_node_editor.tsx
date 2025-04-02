@@ -1,6 +1,6 @@
 import { useStatementContext } from "@/contexts/statementContext";
 
-import { LatexPopoverEditor } from "./latex-popover-editor";
+import { LatexPopoverEditor } from "./latex_popover_editor";
 
 export function LatexNodeEditor() {
   const { selectedNodePosition, latexPopoverOpen, editor } =
