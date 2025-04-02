@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import { useStatementContext } from "@/contexts/statementContext";
 import { cn } from "@/lib/utils";
 
-import { ImageButton } from "./image-button";
-import { LatexButton } from "./latex-button";
+import { ImageButton } from "./image_button";
+import { LatexButton } from "./latex_button";
 
 interface BlockTypeChooserProps {
   statementId: string;

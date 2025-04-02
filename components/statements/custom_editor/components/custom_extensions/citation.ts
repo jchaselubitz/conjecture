@@ -217,39 +217,65 @@ export const Citation = Node.create<CitationOptions>({
    }),
    new Plugin({
     key: new PluginKey("citationDeletion"),
-    appendTransaction: (transactions, oldState, newState) => {
-     // Skip if no changes
-     if (!transactions.some((tr) => tr.docChanged)) return null;
+    props: {
+     handleKeyDown: (view, event) => {
+      // Process only intentional deletion keypresses
+      if (event.key === "Delete" || event.key === "Backspace") {
+       const { selection } = view.state;
+       if (selection.empty) return false;
+       const fragment = selection.content().content;
+       const deletedCitations = new Set<string>();
+       fragment.descendants((node) => {
+        if (node.type.name === this.name) {
+         deletedCitations.add(node.attrs.citationId);
+        }
+        return true;
+       });
 
-     // Find deleted citation nodes
-     const deletedCitations = new Set<string>();
-     const existingCitations = new Set<string>();
-
-     // First, collect all citations in the new state
-     newState.doc.descendants((newNode) => {
-      if (newNode.type.name === this.name) {
-       existingCitations.add(newNode.attrs.citationId);
-      }
-      return true; // Continue traversing
-     });
-
-     // Then check old state for citations that no longer exist
-     oldState.doc.descendants((node) => {
-      if (node.type.name === this.name) {
-       const citationId = node.attrs.citationId;
-       if (!existingCitations.has(citationId)) {
-        deletedCitations.add(citationId);
+       if (deletedCitations.size > 0) {
+        this.editor.storage.citationDeletion = {
+         pendingDeletions: deletedCitations,
+        };
        }
       }
-      return true; // Continue traversing
+      return false;
+     },
+    },
+    appendTransaction: (transactions, oldState, newState) => {
+     // Skip if editor is remounting or we're not in edit mode
+     const view = this.editor.view;
+     const isEditModeTransitioning =
+      view?.dom.closest('[data-edit-transitioning="true"]') != null;
+
+     if (isEditModeTransitioning) return null;
+     const pendingDeletions = this.editor.storage.citationDeletion
+      ?.pendingDeletions;
+     if (!pendingDeletions || pendingDeletions.size === 0) return null;
+
+     const existingCitations = new Set<string>();
+
+     newState.doc.descendants((node) => {
+      if (node.type.name === this.name) {
+       existingCitations.add(node.attrs.citationId);
+      }
+      return true;
+     });
+     const confirmedDeletions = new Set<string>();
+     pendingDeletions.forEach((citationId: string) => {
+      if (!existingCitations.has(citationId)) {
+       confirmedDeletions.add(citationId);
+      }
      });
 
-     // Call onDelete for each deleted citation
-     if (deletedCitations.size > 0 && this.options.onDelete) {
-      deletedCitations.forEach((citationId) => {
+     if (confirmedDeletions.size > 0 && this.options.onDelete) {
+      confirmedDeletions.forEach((citationId) => {
        this.options.onDelete?.(citationId);
       });
      }
+
+     this.editor.storage.citationDeletion = {
+      pendingDeletions: new Set(),
+     };
 
      return null;
     },

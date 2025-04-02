@@ -2,7 +2,8 @@
 
 import { useStatementContext } from "@/contexts/statementContext";
 
-import { CitationPopoverEditor } from "./citation-popover-editor";
+import { CitationPopover } from "./citation_popover";
+import { NewStatementCitation } from "kysely-codegen";
 interface CitationNodeEditorProps {
   statementId: string;
   creatorId: string;
@@ -28,9 +29,9 @@ export function CitationNodeEditor({
         zIndex: 50,
       }}
     >
-      <CitationPopoverEditor statementId={statementId} creatorId={creatorId}>
+      <CitationPopover statementId={statementId} creatorId={creatorId}>
         <div />
-      </CitationPopoverEditor>
+      </CitationPopover>
     </div>
   );
 }

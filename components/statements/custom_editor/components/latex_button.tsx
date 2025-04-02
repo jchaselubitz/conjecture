@@ -49,7 +49,7 @@ export function LatexButton({ editor, displayMode }: LatexButtonProps) {
       size="sm"
       onClick={handleClick}
       className={cn(
-        editor.isActive("popoverLatex", { displayMode }) && "bg-muted",
+        editor.isActive("popoverLatex", { displayMode }) && "bg-muted"
       )}
     >
       <Sigma className="h-4 w-4" />

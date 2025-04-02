@@ -2,7 +2,7 @@ import { DraftWithAnnotations } from "kysely-codegen";
 import { Upload } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { RefObject, useRef } from "react";
+import { RefObject, useEffect, useMemo, useRef } from "react";
 import { useState } from "react";
 import { ImperativePanelGroupHandle } from "react-resizable-panels";
 import TextareaAutosize from "react-textarea-autosize";
@@ -19,8 +19,8 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import Byline from "./byline";
 import { EditorMenu } from "./custom_editor/components/editor_menu";
-import RichTextDisplay from "./rich_text_display";
 import StatementOptions from "./statement_options";
+import HTMLSuperEditor from "./custom_editor/html_super_editor";
 
 export interface StatementDetailsProps {
   statement: DraftWithAnnotations;
@@ -56,7 +56,6 @@ export default function StatementDetails({
   if (!statement) return null;
 
   const { statementId, title, subtitle, headerImg, annotations } = statement;
-
   const prepStatementId = statementId ? statementId : generateStatementId();
 
   const handleEditModeToggle = () => {
@@ -87,7 +86,7 @@ export default function StatementDetails({
   };
 
   const handleHeaderImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     if (!userId) {
       alert("You must be logged in to upload an image.");
@@ -113,6 +112,26 @@ export default function StatementDetails({
       setIsUploading(false);
     }
   };
+
+  const isStatementCreator = useMemo(() => {
+    return userId === statement?.creatorId;
+  }, [userId, statement]);
+
+  const authorCanAnnotate = useMemo(() => {
+    return isStatementCreator && showAuthorComments;
+  }, [isStatementCreator, showAuthorComments]);
+
+  const readerCanAnnotate = useMemo(() => {
+    return !isStatementCreator && showReaderComments;
+  }, [isStatementCreator, showReaderComments]);
+
+  const prevEditModeRef = useRef(editMode);
+  useEffect(() => {
+    if (prevEditModeRef.current && !editMode) {
+      console.log("editMode changed to false");
+    }
+    prevEditModeRef.current = editMode;
+  }, [editMode]);
 
   return (
     <div className="flex flex-col mt-12 gap-6 mx-auto max-w-3xl px-4">
@@ -226,21 +245,30 @@ export default function StatementDetails({
       />
 
       <Byline statement={statement} />
-      <RichTextDisplay
-        annotations={annotations}
-        handleAnnotationClick={handleAnnotationClick}
-        selectedAnnotationId={selectedAnnotationId}
-        setSelectedAnnotationId={setSelectedAnnotationId}
-        showAuthorComments={showAuthorComments}
-        showReaderComments={showReaderComments}
-        editMode={editMode}
-        key={`rich-text-display-${editMode}`}
-      />
+
+      <div className="rounded-lg overflow-hidden bg-background">
+        <HTMLSuperEditor
+          key={`editor-content-${editMode}`}
+          statement={statement}
+          style={{ minHeight: "400px" }}
+          existingAnnotations={annotations}
+          userId={userId}
+          onAnnotationClick={handleAnnotationClick}
+          placeholder="Start typing or paste content here..."
+          annotatable={!editMode && (authorCanAnnotate || readerCanAnnotate)}
+          selectedAnnotationId={selectedAnnotationId}
+          setSelectedAnnotationId={setSelectedAnnotationId}
+          showAuthorComments={showAuthorComments}
+          showReaderComments={showReaderComments}
+          editMode={editMode}
+        />
+      </div>
       {editor && statementId && editMode && (
         <div className={cn("sticky bottom-4 z-50 w-full ")}>
           <EditorMenu statementId={statementId} editor={editor} />
         </div>
       )}
+      <div className="h-14" />
     </div>
   );
 }

@@ -15,8 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
-import { CitationButton } from "./citation-button";
-import { LatexButton } from "./latex-button";
+import { CitationButton } from "./citation_button";
+import { LatexButton } from "./latex_button";
 interface EditorMenuProps {
   editor: Editor;
   statementId: string;

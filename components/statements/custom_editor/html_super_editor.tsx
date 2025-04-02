@@ -28,15 +28,15 @@ import {
 
 import { AnnotationMenu } from "./components/annotation_menu";
 import { BlockTypeChooser } from "./components/block_type_chooser";
-import { CitationNodeEditor } from "./components/citation-node-editor";
+import { CitationNodeEditor } from "./components/citation_node_editor";
+import { ImageNodeEditor } from "./components/image_node_editor";
 import { AnnotationHighlight } from "./components/custom_extensions/annotation_highlight";
 import { BlockImage } from "./components/custom_extensions/block_image";
 import { BlockLatex } from "./components/custom_extensions/block_latex";
 import { Citation } from "./components/custom_extensions/citation";
 import { InlineLatex } from "./components/custom_extensions/inline_latex";
 import { QuotePasteHandler } from "./components/custom_extensions/quote_paste_handler";
-import { ImageNodeEditor } from "./components/image-node-editor";
-import { LatexNodeEditor } from "./components/latex-node-editor";
+import { LatexNodeEditor } from "./components/latex_node_editor";
 interface HTMLSuperEditorProps {
   statement: DraftWithAnnotations;
   existingAnnotations: NewAnnotation[];
@@ -91,6 +91,7 @@ const HTMLSuperEditor = ({
   const draftId = statement.id;
   const statementId = statement.statementId;
   const statementCreatorId = statement.creatorId;
+  const citations = statement.citations;
 
   useEffect(() => {
     setAnnotations(existingAnnotations);
@@ -169,12 +170,12 @@ const HTMLSuperEditor = ({
     content: htmlContent,
     editable: true,
     onCreate: ({ editor }) => {
-      //  ensure we have DB records for all annotation marks
-
       const annotationMarks = getMarks(editor, ["annotationHighlight"]);
       const citationNodes = getNodes(editor, ["citation", "citation-block"]);
       const latexNodes = getNodes(editor, ["latex", "latex-block"]);
       const blockImageNodes = getNodes(editor, ["block-image"]);
+
+      //  ensure we have DB records for all annotation marks
 
       ensureAnnotationMarks({
         marks: annotationMarks,
@@ -187,11 +188,14 @@ const HTMLSuperEditor = ({
       const citationIds = citationNodes.map(
         (node) => node.node.attrs.citationId
       );
-      ensureCitations({
-        citations: statement.citations,
-        nodeIds: citationIds,
-        statementCreatorId,
-      });
+      // remove any citations from the db that are not in the citationIds array
+      if (citationIds.length > 0 && editMode) {
+        ensureCitations({
+          citations,
+          nodeIds: citationIds,
+          statementCreatorId,
+        });
+      }
     },
     onUpdate: ({ editor, transaction }) => {
       // Only block content updates if they're not annotation-related
@@ -319,7 +323,7 @@ const HTMLSuperEditor = ({
             };
 
             const id = citationNode.getAttribute("data-citation-id");
-            console.log("id", id);
+
             if (!id) {
               return;
             }
@@ -620,48 +624,53 @@ const HTMLSuperEditor = ({
   }, [editor, searchParams]);
 
   return (
-    <div
-      className={`relative ${editMode ? "editMode-container" : "annotator-container"} ${
-        showAuthorComments ? "show-author-comments" : ""
-      } ${showReaderComments ? "show-reader-comments" : ""} ${className || ""}`}
-      style={style}
-    >
-      <EditorContent
-        key={`editor-content-${editMode}`}
-        editor={editor}
-        className={`ProseMirror ${annotatable ? "annotator-container" : ""} ${!editMode ? "pseudo-readonly" : ""}`}
-        spellCheck={editMode}
-      />
+    <>
+      <div
+        className={`relative ${editMode ? "editMode-container" : "annotator-container"} ${
+          showAuthorComments ? "show-author-comments" : ""
+        } ${showReaderComments ? "show-reader-comments" : ""} ${className || ""}`}
+        style={style}
+      >
+        <EditorContent
+          editor={editor}
+          className={`ProseMirror ${annotatable ? "annotator-container" : ""} 
+          ${!editMode ? "pseudo-readonly" : ""}`}
+          spellCheck={editMode}
+        />
 
-      {/* LaTeX and Image editors only shown in editMode mode */}
-      {editor && (
-        <>
-          <AnnotationMenu
-            editMode={editMode ?? false}
-            draftId={draftId}
-            statementCreatorId={statementCreatorId}
-            showAuthorComments={showAuthorComments}
-            showReaderComments={showReaderComments}
-            canAnnotate={annotatable && !!userId}
-            setSelectedAnnotationId={setSelectedAnnotationId}
-          />
-          <FloatingMenu editor={editor} tippyOptions={{ duration: 100 }}>
-            <BlockTypeChooser statementId={statementId} />
-          </FloatingMenu>
-
-          {editMode && (
-            <>
-              <LatexNodeEditor />
-              <ImageNodeEditor statementId={statementId} />
+        {/* LaTeX and Image editors only shown in editMode mode */}
+        {editor && (
+          <>
+            <AnnotationMenu
+              editMode={editMode ?? false}
+              draftId={draftId}
+              statementCreatorId={statementCreatorId}
+              showAuthorComments={showAuthorComments}
+              showReaderComments={showReaderComments}
+              canAnnotate={annotatable && !!userId}
+              setSelectedAnnotationId={setSelectedAnnotationId}
+            />
+            <div>
+              <FloatingMenu editor={editor} tippyOptions={{ duration: 100 }}>
+                <BlockTypeChooser statementId={statementId} />
+              </FloatingMenu>
+            </div>
+            <div>
               <CitationNodeEditor
                 statementId={statementId}
                 creatorId={statementCreatorId}
               />
-            </>
-          )}
-        </>
-      )}
-    </div>
+            </div>
+            {editMode && (
+              <>
+                <LatexNodeEditor />
+                <ImageNodeEditor statementId={statementId} />
+              </>
+            )}
+          </>
+        )}
+      </div>
+    </>
   );
 };
 

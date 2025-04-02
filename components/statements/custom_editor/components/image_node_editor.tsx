@@ -1,6 +1,6 @@
 import { useStatementContext } from "@/contexts/statementContext";
 
-import { ImagePopoverEditor } from "./image-popover-editor";
+import { ImagePopoverEditor } from "./image_popover_editor";
 export type NewImageData = {
   file?: File | undefined;
   src?: string;
