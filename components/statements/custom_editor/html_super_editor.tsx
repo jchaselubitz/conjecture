@@ -29,13 +29,13 @@ import {
 import { AnnotationMenu } from "./components/annotation_menu";
 import { BlockTypeChooser } from "./components/block_type_chooser";
 import { CitationNodeEditor } from "./components/citation_node_editor";
-import { ImageNodeEditor } from "./components/image_node_editor";
 import { AnnotationHighlight } from "./components/custom_extensions/annotation_highlight";
 import { BlockImage } from "./components/custom_extensions/block_image";
 import { BlockLatex } from "./components/custom_extensions/block_latex";
 import { Citation } from "./components/custom_extensions/citation";
 import { InlineLatex } from "./components/custom_extensions/inline_latex";
 import { QuotePasteHandler } from "./components/custom_extensions/quote_paste_handler";
+import { ImageNodeEditor } from "./components/image_node_editor";
 import { LatexNodeEditor } from "./components/latex_node_editor";
 interface HTMLSuperEditorProps {
   statement: DraftWithAnnotations;
@@ -46,7 +46,7 @@ interface HTMLSuperEditorProps {
   className?: string;
   placeholder?: string;
   annotatable?: boolean;
-  editMode?: boolean;
+  editMode: boolean;
   selectedAnnotationId: string | undefined;
   setSelectedAnnotationId: (id: string | undefined) => void;
   showAuthorComments: boolean;
@@ -105,7 +105,7 @@ const HTMLSuperEditor = ({
       // Wait for the DOM to update before scrolling
       setTimeout(() => {
         const annotationElement = document.querySelector(
-          `[data-annotation-id="${annotationId}"]`
+          `[data-annotation-id="${annotationId}"]`,
         );
         if (annotationElement) {
           annotationElement.scrollIntoView({
@@ -186,7 +186,7 @@ const HTMLSuperEditor = ({
       });
 
       const citationIds = citationNodes.map(
-        (node) => node.node.attrs.citationId
+        (node) => node.node.attrs.citationId,
       );
       // remove any citations from the db that are not in the citationIds array
       if (citationIds.length > 0 && editMode) {
@@ -307,12 +307,10 @@ const HTMLSuperEditor = ({
             return true;
           }
 
-          // Handle citation clicks only in editMode mode
-
           const citationNode = element.closest(
-            '[data-type="citation"], [data-type="citation-block"]'
+            '[data-type="citation"], [data-type="citation-block"]',
           );
-          if (citationNode && editMode) {
+          if (citationNode) {
             const rect = citationNode.getBoundingClientRect();
 
             const position = {
@@ -329,7 +327,7 @@ const HTMLSuperEditor = ({
             }
 
             const selectedCitation = statement.citations.find(
-              (c) => c.id.toString() === id.toString()
+              (c) => c.id.toString() === id.toString(),
             );
 
             if (!selectedCitation) {
@@ -363,16 +361,16 @@ const HTMLSuperEditor = ({
 
           // Handle LaTeX clicks only in editMode mode
           let latexNode = element.closest(
-            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
+            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
           );
 
           if (!latexNode) {
             const katexElement = element.closest(
-              ".katex, .katex-html, .katex-rendered"
+              ".katex, .katex-html, .katex-rendered",
             );
             if (katexElement) {
               latexNode = katexElement.closest(
-                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
+                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
               );
             }
           }
@@ -387,7 +385,7 @@ const HTMLSuperEditor = ({
 
             if (!latex) {
               const katexWrapper = latexNode.querySelector(
-                ".katex-rendered, .katex"
+                ".katex-rendered, .katex",
               );
               if (katexWrapper) {
                 latex = "";
@@ -492,7 +490,7 @@ const HTMLSuperEditor = ({
     // Update all annotations to reflect new selection state
     editor.state.doc.descendants((node, pos) => {
       const annotationMark = node.marks.find(
-        (mark) => mark.type.name === "annotationHighlight"
+        (mark) => mark.type.name === "annotationHighlight",
       );
 
       if (annotationMark) {
@@ -519,7 +517,7 @@ const HTMLSuperEditor = ({
             // Use setTimeout to ensure the DOM has updated
             setTimeout(() => {
               const annotationElement = document.querySelector(
-                `[data-annotation-id="${selectedAnnotationId}"]`
+                `[data-annotation-id="${selectedAnnotationId}"]`,
               );
               if (annotationElement) {
                 annotationElement.scrollIntoView({
@@ -637,7 +635,13 @@ const HTMLSuperEditor = ({
           ${!editMode ? "pseudo-readonly" : ""}`}
           spellCheck={editMode}
         />
-
+        <div>
+          <CitationNodeEditor
+            statementId={statementId}
+            creatorId={statementCreatorId}
+            editMode={editMode}
+          />
+        </div>
         {/* LaTeX and Image editors only shown in editMode mode */}
         {editor && (
           <>
@@ -655,12 +659,7 @@ const HTMLSuperEditor = ({
                 <BlockTypeChooser statementId={statementId} />
               </FloatingMenu>
             </div>
-            <div>
-              <CitationNodeEditor
-                statementId={statementId}
-                creatorId={statementCreatorId}
-              />
-            </div>
+
             {editMode && (
               <>
                 <LatexNodeEditor />

@@ -1,5 +1,10 @@
 "use client";
 
+import { NewStatementCitation } from "kysely-codegen";
+import { nanoid } from "nanoid";
+import { usePathname } from "next/navigation";
+import { TextSelection } from "prosemirror-state";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -8,16 +13,11 @@ import {
 } from "@/components/ui/loading-button";
 import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
-import { NewStatementCitation } from "kysely-codegen";
-import { TextSelection } from "prosemirror-state";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
 import {
   createCitation,
   deleteCitation,
   updateCitation,
 } from "@/lib/actions/citationActions";
-import { nanoid } from "nanoid";
 
 interface CitationFormProps {
   statementId: string;
@@ -168,7 +168,7 @@ export function CitationForm({
         onChange={(e) =>
           handleInputChange(
             "year",
-            e.target.value ? new Date(e.target.value) : null
+            e.target.value ? new Date(e.target.value) : null,
           )
         }
       />
@@ -181,7 +181,7 @@ export function CitationForm({
           onChange={(e) =>
             handleInputChange(
               "issue",
-              e.target.value ? parseInt(e.target.value, 10) : null
+              e.target.value ? parseInt(e.target.value, 10) : null,
             )
           }
         />
@@ -200,7 +200,7 @@ export function CitationForm({
           onChange={(e) =>
             handleInputChange(
               "pageStart",
-              e.target.value ? parseInt(e.target.value, 10) : null
+              e.target.value ? parseInt(e.target.value, 10) : null,
             )
           }
         />
@@ -211,7 +211,7 @@ export function CitationForm({
           onChange={(e) =>
             handleInputChange(
               "pageEnd",
-              e.target.value ? parseInt(e.target.value, 10) : null
+              e.target.value ? parseInt(e.target.value, 10) : null,
             )
           }
         />

@@ -19,8 +19,8 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import Byline from "./byline";
 import { EditorMenu } from "./custom_editor/components/editor_menu";
-import StatementOptions from "./statement_options";
 import HTMLSuperEditor from "./custom_editor/html_super_editor";
+import StatementOptions from "./statement_options";
 
 export interface StatementDetailsProps {
   statement: DraftWithAnnotations;
@@ -36,7 +36,6 @@ export interface StatementDetailsProps {
 }
 
 export default function StatementDetails({
-  // statement,
   editMode,
   showAuthorComments,
   showReaderComments,
@@ -52,8 +51,6 @@ export default function StatementDetails({
   const router = useRouter();
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-
-  if (!statement) return null;
 
   const { statementId, title, subtitle, headerImg, annotations } = statement;
   const prepStatementId = statementId ? statementId : generateStatementId();
@@ -86,7 +83,7 @@ export default function StatementDetails({
   };
 
   const handleHeaderImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     if (!userId) {
       alert("You must be logged in to upload an image.");
@@ -132,6 +129,8 @@ export default function StatementDetails({
     }
     prevEditModeRef.current = editMode;
   }, [editMode]);
+
+  if (!statement) return null;
 
   return (
     <div className="flex flex-col mt-12 gap-6 mx-auto max-w-3xl px-4">

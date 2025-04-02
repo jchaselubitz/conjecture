@@ -64,11 +64,17 @@ export default function StatementLayout({
 
   const onShowAuthorCommentsChange = (checked: boolean) => {
     setShowAuthorComments(checked);
+    if (!checked) {
+      setSelectedAnnotationId(undefined);
+    }
     document.cookie = `show_author_comments=${checked.toString()}`;
   };
 
   const onShowReaderCommentsChange = (checked: boolean) => {
     setShowReaderComments(checked);
+    if (!checked) {
+      setSelectedAnnotationId(undefined);
+    }
     document.cookie = `show_reader_comments=${checked.toString()}`;
   };
 

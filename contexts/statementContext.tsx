@@ -77,7 +77,7 @@ interface StatementContextType {
 }
 
 const StatementContext = createContext<StatementContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export function StatementProvider({
@@ -93,7 +93,7 @@ export function StatementProvider({
   const version = versionString ? parseInt(versionString, 10) : undefined;
 
   const [statement, setStatement] = useState<DraftWithAnnotations>(
-    drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0]
+    drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0],
   );
 
   const [isUpdating, setIsUpdating] = useState(false);
@@ -110,7 +110,7 @@ export function StatementProvider({
       alt: "",
       statementId: statement.statementId,
       id: "",
-    }
+    },
   );
   const [citationData, setCitationData] = useState<NewStatementCitation>({
     statementId: statement.statementId,
@@ -141,12 +141,12 @@ export function StatementProvider({
     setPopoverState((prev) => ({ ...prev, citation: open }));
 
   const [annotations, setAnnotations] = useState<NewAnnotation[]>(
-    statement.annotations
+    statement.annotations,
   );
 
   useEffect(() => {
     setStatement(
-      drafts?.find((draft) => draft.versionNumber === version) || drafts[0]
+      drafts?.find((draft) => draft.versionNumber === version) || drafts[0],
     );
   }, [version, drafts, setStatement]);
 
@@ -221,12 +221,12 @@ export function StatementProvider({
       });
       setIsUpdating(false);
     },
-    [statement]
+    [statement],
   );
 
   const [debouncedContent, setDebouncedContent] = useDebounce(
     statement?.content ?? undefined,
-    1000
+    1000,
   );
 
   let prevStatementUpdateRef = useRef(statement);
@@ -301,7 +301,7 @@ export function useStatementContext() {
   const context = useContext(StatementContext);
   if (context === undefined) {
     throw new Error(
-      "useStatementContext must be used within a StatementProvider"
+      "useStatementContext must be used within a StatementProvider",
     );
   }
   return context;
