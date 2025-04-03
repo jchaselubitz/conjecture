@@ -3,8 +3,9 @@ import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
 import { createStatementAnnotation } from "@/lib/helpers/helpersStatements";
 import { cn } from "@/lib/utils";
-import { QuoteLinkButton } from "./quote_link_button";
+
 import { AnnotationButton } from "./annotation_button";
+import { QuoteLinkButton } from "./quote_link_button";
 interface AnnotationMenuProps {
   draftId: string;
   statementCreatorId: string;
@@ -47,7 +48,7 @@ export const AnnotationMenu = ({
       <div
         className={cn(
           "flex flex-wrap w-fit gap-2 p-2 rounded-lg bg-background border shadow-sm",
-          editMode && !canAnnotate && "hidden"
+          editMode && !canAnnotate && "hidden",
         )}
       >
         {!editMode && <QuoteLinkButton editor={editor} />}

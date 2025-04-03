@@ -1,7 +1,8 @@
-import React from "react";
 import { BaseStatementCitation } from "kysely-codegen";
-import { Footnote } from "./footnote";
+import React from "react";
 import { cn } from "@/lib/utils";
+
+import { Footnote } from "./footnote";
 
 interface FootnoteListProps {
   citations: BaseStatementCitation[];
@@ -18,7 +19,12 @@ export function FootnoteList({ citations, className }: FootnoteListProps) {
       <h3 className="text-lg font-semibold border-b pb-2">References</h3>
       <div className="space-y-4">
         {citations.map((citation, index) => (
-          <Footnote key={citation.id} order={index + 1} citation={citation} />
+          <Footnote
+            key={citation.id}
+            order={index + 1}
+            citation={citation}
+            anchorId={`citation-${citation.id}`}
+          />
         ))}
       </div>
     </div>

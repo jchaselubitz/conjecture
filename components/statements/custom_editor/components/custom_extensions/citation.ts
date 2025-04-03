@@ -1,5 +1,5 @@
 import { mergeAttributes, Node } from "@tiptap/core";
-import { Plugin, PluginKey, TextSelection } from "prosemirror-state";
+import { Plugin, PluginKey } from "prosemirror-state";
 import { createCitationMarker } from "./citation_marker";
 
 export interface CitationOptions {
@@ -81,6 +81,7 @@ export const Citation = Node.create<CitationOptions>({
     this.options.HTMLAttributes,
     HTMLAttributes,
     {
+     id: `citation-${node.attrs.citationId}`,
      "data-type": "citation",
      class: "citation-reference",
      style: "cursor: pointer;",

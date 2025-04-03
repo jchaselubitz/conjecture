@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useStatementContext } from "@/contexts/statementContext";
+import { formatDateForCitation } from "@/lib/helpers/helpersDate";
 
 export function CitationDisplay() {
   const { citationData } = useStatementContext();
@@ -57,7 +58,13 @@ export function CitationDisplay() {
         {citation.year && (
           <div className="flex items-start gap-2">
             <CalendarIcon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-            <span className="text-sm">{String(citation.year)}</span>
+            <span className="text-sm">
+              {formatDateForCitation({
+                year: citation.year,
+                month: citation.month,
+                day: citation.day,
+              })}
+            </span>
           </div>
         )}
 

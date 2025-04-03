@@ -35,11 +35,13 @@ import {
   deleteCitation,
   updateCitation,
 } from "@/lib/actions/citationActions";
+import { MonthsArray } from "@/lib/lists";
 
 const citationFormSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
   authorNames: z.string().min(1, { message: "Author names are required" }),
   url: z.string().optional(),
+  date: z.date().optional(),
   year: z.string().optional(),
   month: z.string().optional(),
   day: z.string().optional(),
@@ -74,17 +76,13 @@ export function CitationForm({
     useState<ButtonLoadingState>("default");
   const [error, setError] = useState<string | null>(null);
 
-  // Extract date components if they exist
-  const date = citationData.year ? new Date(citationData.year) : null;
-
-  // Set default values based on citation data
   const defaultValues: CitationFormValues = {
     title: citationData.title || "",
     authorNames: citationData.authorNames || "",
     url: citationData.url || "",
-    year: date ? date.getFullYear().toString() : "",
-    month: date ? (date.getMonth() + 1).toString() : "none",
-    day: date ? date.getDate().toString() : "none",
+    year: citationData.year ? citationData.year.toString() : "",
+    month: citationData.month ? citationData.month.toString() : "none",
+    day: citationData.day ? citationData.day.toString() : "none",
     issue: citationData.issue ? citationData.issue.toString() : "",
     volume: citationData.volume || "",
     pageStart: citationData.pageStart ? citationData.pageStart.toString() : "",
@@ -99,40 +97,76 @@ export function CitationForm({
     mode: "onChange",
   });
 
+  const dateCreator = ({
+    year,
+    month,
+    day,
+  }: {
+    year: string | undefined;
+    month: string | undefined;
+    day: string | undefined;
+  }) => {
+    let dateValue = null;
+    if (year) {
+      const y = parseInt(year, 10);
+      const m = month && month !== "none" ? parseInt(month, 10) : 1;
+      const f = day && day !== "none" ? parseInt(day, 10) : 1;
+      dateValue = new Date(y, m, f);
+    }
+    return dateValue;
+  };
+
   const saveCitation = async () => {
     const id = nanoid();
     const formData = form.getValues();
+    const {
+      month,
+      day,
+      year,
+      url,
+      authorNames,
+      title,
+      issue,
+      pageEnd,
+      pageStart,
+      publisher,
+      titlePublication,
+      volume,
+    } = formData;
 
-    // Create date from form values if year is provided
-    let dateValue = null;
-    if (formData.year) {
-      const year = parseInt(formData.year, 10);
-      const month =
-        formData.month && formData.month !== "none"
-          ? parseInt(formData.month, 10) - 1
-          : 0;
-      const day =
-        formData.day && formData.day !== "none"
-          ? parseInt(formData.day, 10)
-          : 1;
-      dateValue = new Date(year, month, day);
+    if (day && !month) {
+      setError("Month is required if day is provided");
+      return;
     }
+    if (month && !year) {
+      setError("Year is required if month is provided");
+      return;
+    }
+
+    const dateValue = dateCreator({
+      year,
+      month,
+      day,
+    });
 
     await createCitation({
       creatorId,
       citation: {
         id,
         statementId,
-        title: formData.title,
-        authorNames: formData.authorNames,
-        url: formData.url || null,
-        year: dateValue,
-        issue: formData.issue ? parseInt(formData.issue, 10) : null,
-        pageEnd: formData.pageEnd ? parseInt(formData.pageEnd, 10) : null,
-        pageStart: formData.pageStart ? parseInt(formData.pageStart, 10) : null,
-        publisher: formData.publisher || null,
-        titlePublication: formData.titlePublication || null,
-        volume: formData.volume || null,
+        title,
+        authorNames,
+        url,
+        date: dateValue,
+        year: year ? parseInt(year, 10) : null,
+        month: month && month !== "none" ? parseInt(month, 10) : null,
+        day: day && day !== "none" ? parseInt(day, 10) : null,
+        issue: issue ? parseInt(issue, 10) : null,
+        pageEnd: pageEnd ? parseInt(pageEnd, 10) : null,
+        pageStart: pageStart ? parseInt(pageStart, 10) : null,
+        publisher: publisher || null,
+        titlePublication: titlePublication || null,
+        volume: volume || null,
       },
       revalidationPath: {
         path: pathname,
@@ -149,32 +183,57 @@ export function CitationForm({
         setSaveButtonState("loading");
         if (citationData.id !== "") {
           // Create date from form values if year is provided
-          let dateValue = null;
-          if (data.year) {
-            const year = parseInt(data.year, 10);
-            const month =
-              data.month && data.month !== "none"
-                ? parseInt(data.month, 10) - 1
-                : 0;
-            const day =
-              data.day && data.day !== "none" ? parseInt(data.day, 10) : 1;
-            dateValue = new Date(year, month, day);
-          }
+          const dateValue = dateCreator({
+            year: data.year,
+            month: data.month,
+            day: data.day,
+          });
 
+          const {
+            month,
+            day,
+            year,
+            url,
+            authorNames,
+            title,
+            issue,
+            pageEnd,
+            pageStart,
+            publisher,
+            titlePublication,
+            volume,
+          } = data;
+          console.log(
+            year,
+            month,
+            day,
+            url,
+            authorNames,
+            title,
+            issue,
+            pageEnd,
+            pageStart,
+            publisher,
+            titlePublication,
+            volume,
+          );
           await updateCitation({
             creatorId,
             citation: {
               ...citationData,
-              title: data.title,
-              authorNames: data.authorNames,
-              url: data.url || null,
-              year: dateValue,
-              issue: data.issue ? parseInt(data.issue, 10) : null,
-              pageEnd: data.pageEnd ? parseInt(data.pageEnd, 10) : null,
-              pageStart: data.pageStart ? parseInt(data.pageStart, 10) : null,
-              publisher: data.publisher || null,
-              titlePublication: data.titlePublication || null,
-              volume: data.volume || null,
+              title: title,
+              authorNames: authorNames,
+              url: url || null,
+              date: dateValue,
+              year: year ? parseInt(year, 10) : null,
+              month: month && month !== "none" ? parseInt(month, 10) : null,
+              day: day && day !== "none" ? parseInt(day, 10) : null,
+              issue: issue ? parseInt(issue, 10) : null,
+              pageEnd: pageEnd ? parseInt(pageEnd, 10) : null,
+              pageStart: pageStart ? parseInt(pageStart, 10) : null,
+              publisher: publisher || null,
+              titlePublication: titlePublication || null,
+              volume: volume || null,
             },
             revalidationPath: {
               path: pathname,
@@ -300,8 +359,7 @@ export function CitationForm({
                       <Input
                         type="number"
                         placeholder="Year"
-                        min="1000"
-                        max="9999"
+                        max={new Date().getFullYear()}
                         {...field}
                       />
                     </FormControl>
@@ -322,12 +380,14 @@ export function CitationForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="none">Select Month</SelectItem>
-                        {Array.from({ length: 12 }, (_, i) => (
-                          <SelectItem key={i} value={(i + 1).toString()}>
-                            {new Date(0, i).toLocaleString("default", {
-                              month: "long",
-                            })}
+                        <SelectItem value="none">None</SelectItem>
+
+                        {MonthsArray.map((month) => (
+                          <SelectItem
+                            key={month.value}
+                            value={month.value.toString()}
+                          >
+                            {month.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -349,7 +409,8 @@ export function CitationForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="none">Select Day</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
+
                         {Array.from({ length: 31 }, (_, i) => (
                           <SelectItem key={i} value={(i + 1).toString()}>
                             {i + 1}

@@ -20,8 +20,8 @@ import { Input } from "../ui/input";
 import Byline from "./byline";
 import { EditorMenu } from "./custom_editor/components/editor_menu";
 import HTMLSuperEditor from "./custom_editor/html_super_editor";
-import StatementOptions from "./statement_options";
 import { FootnoteList } from "./footnote/footnote_list";
+import StatementOptions from "./statement_options";
 
 export interface StatementDetailsProps {
   statement: DraftWithAnnotations;
@@ -98,7 +98,7 @@ export default function StatementDetails({
   };
 
   const handleHeaderImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     if (!userId) {
       alert("You must be logged in to upload an image.");
