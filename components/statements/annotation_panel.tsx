@@ -70,7 +70,7 @@ export default function AnnotationPanel({
 
   return (
     <div className="flex flex-col mt-4 gap-6 mx-auto  ">
-      <div className="flex justify-between mx-auto max-w-11/12 w-full items-center">
+      <div className="hidden md:flex justify-between mx-auto max-w-11/12 w-full items-center">
         <h2 className="text-lg font-bold">Comments</h2>
         <Button variant="ghost" onClick={handleCloseAnnotationPanel}>
           <X className="w-4 h-4" />

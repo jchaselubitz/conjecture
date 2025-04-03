@@ -27,7 +27,7 @@ export async function StatementContainer({
     drafts[drafts.length - 1];
 
   return (
-    <div className="flex-1 bg-background  h-screen">
+    <div className="md:flex-1 bg-background md:h-screen h-full">
       <StatementLayout
         statement={statement}
         authorCommentsEnabled={authorCommentsEnabled}

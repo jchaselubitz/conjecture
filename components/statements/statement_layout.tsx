@@ -2,17 +2,19 @@
 
 import { DraftWithAnnotations } from "kysely-codegen";
 import { useEffect, useRef, useState } from "react";
+import "./prose.css";
 import AnnotationPanel from "@/components/statements/annotation_panel";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-
 import AppNav from "../navigation/app_nav";
 import EditNav from "../navigation/edit_nav";
 import StatementDetails from "./statement_details";
-
+import { useWindowSize } from "react-use";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "../ui/drawer";
+import { CommentIndicatorButton } from "./comments_menu";
 interface StatementDetailsProps {
   statement: DraftWithAnnotations;
   authorCommentsEnabled: boolean;
@@ -27,22 +29,48 @@ export default function StatementLayout({
   editModeEnabled,
 }: StatementDetailsProps) {
   const [editMode, setEditMode] = useState(editModeEnabled);
+  const [showAnnotationDrawer, setShowAnnotationDrawer] = useState(false);
+  const isMobile = useWindowSize().width < 768;
 
   const { annotations } = statement;
 
   const panelGroupRef =
     useRef<React.ElementRef<typeof ResizablePanelGroup>>(null);
 
+  const [visualViewport, setVisualViewport] = useState<number | null>(null);
+
+  // Add effect to handle viewport changes
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.visualViewport) return;
+    const handleResize = () => {
+      setVisualViewport(window.visualViewport?.height ?? null);
+    };
+    window.visualViewport.addEventListener("resize", handleResize);
+    handleResize(); // Initial measurement
+    return () =>
+      window.visualViewport?.removeEventListener("resize", handleResize);
+  }, []);
+
+  const drawerStyle = visualViewport
+    ? { height: `${visualViewport * 0.6}px` }
+    : { height: "60dvh" };
+
   const [showAuthorComments, setShowAuthorComments] = useState(
-    authorCommentsEnabled,
+    authorCommentsEnabled
   );
   const [showReaderComments, setShowReaderComments] = useState(
-    readerCommentsEnabled,
+    readerCommentsEnabled
   );
 
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<
     string | undefined
   >(undefined);
+
+  useEffect(() => {
+    if (selectedAnnotationId) {
+      setShowAnnotationDrawer(true);
+    }
+  }, [selectedAnnotationId]);
 
   useEffect(() => {
     const savedSizeString = localStorage.getItem("annotationPanelSize");
@@ -54,6 +82,11 @@ export default function StatementLayout({
     setSelectedAnnotationId(undefined);
     panelGroupRef.current?.setLayout([100, 0]);
     localStorage.removeItem("annotationPanelSize");
+  };
+
+  const handleCloseAnnotationDrawer = () => {
+    setShowAnnotationDrawer(false);
+    handleCloseAnnotationPanel();
   };
 
   const onLayout = (layout: number[]) => {
@@ -78,35 +111,38 @@ export default function StatementLayout({
     document.cookie = `show_reader_comments=${checked.toString()}`;
   };
 
-  return (
-    <div className="flex flex-col h-full">
-      {editMode ? <EditNav /> : <AppNav />}
-      <ResizablePanelGroup
-        direction="horizontal"
-        ref={panelGroupRef}
-        onLayout={onLayout}
+  const mobileLayout = (
+    <div className="h-full">
+      <StatementDetails
+        statement={statement}
+        editMode={editMode}
+        showAuthorComments={showAuthorComments}
+        showReaderComments={showReaderComments}
+        setEditMode={setEditMode}
+        onShowAuthorCommentsChange={onShowAuthorCommentsChange}
+        onShowReaderCommentsChange={onShowReaderCommentsChange}
+        setSelectedAnnotationId={setSelectedAnnotationId}
+        selectedAnnotationId={selectedAnnotationId}
+        panelGroupRef={panelGroupRef}
+      />
+      <Drawer
+        open={showAnnotationDrawer}
+        onOpenChange={handleCloseAnnotationDrawer}
       >
-        <ResizablePanel id="editor" defaultSize={100} minSize={60}>
-          <div className="flex flex-col overflow-y-auto h-full">
-            <StatementDetails
-              statement={statement}
-              editMode={editMode}
-              showAuthorComments={showAuthorComments}
-              showReaderComments={showReaderComments}
-              setEditMode={setEditMode}
-              onShowAuthorCommentsChange={onShowAuthorCommentsChange}
-              onShowReaderCommentsChange={onShowReaderCommentsChange}
-              setSelectedAnnotationId={setSelectedAnnotationId}
-              selectedAnnotationId={selectedAnnotationId}
-              panelGroupRef={panelGroupRef}
-            />
-          </div>
-        </ResizablePanel>
-        <ResizableHandle />
+        <DrawerContent style={drawerStyle}>
+          <DrawerHeader>
+            <DrawerTitle>
+              <CommentIndicatorButton
+                showAuthorComments={showAuthorComments}
+                showReaderComments={showReaderComments}
+                onShowAuthorCommentsChange={onShowAuthorCommentsChange}
+                onShowReaderCommentsChange={onShowReaderCommentsChange}
+              />
+            </DrawerTitle>
+          </DrawerHeader>
 
-        <ResizablePanel id="annotation-panel" defaultSize={0}>
-          <div className="overflow-y-auto h-full">
-            {annotations && (
+          {annotations && (
+            <div className="h-full overflow-y-auto">
               <AnnotationPanel
                 annotations={annotations}
                 statementId={statement.statementId}
@@ -117,31 +153,61 @@ export default function StatementLayout({
                 showAuthorComments={showAuthorComments}
                 showReaderComments={showReaderComments}
               />
-            )}
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+            </div>
+          )}
+        </DrawerContent>
+      </Drawer>
+    </div>
+  );
+
+  const desktopLayout = (
+    <ResizablePanelGroup
+      direction="horizontal"
+      ref={panelGroupRef}
+      onLayout={onLayout}
+    >
+      <ResizablePanel id="editor" defaultSize={100} minSize={60}>
+        <div className="flex flex-col overflow-y-auto h-full">
+          <StatementDetails
+            statement={statement}
+            editMode={editMode}
+            showAuthorComments={showAuthorComments}
+            showReaderComments={showReaderComments}
+            setEditMode={setEditMode}
+            onShowAuthorCommentsChange={onShowAuthorCommentsChange}
+            onShowReaderCommentsChange={onShowReaderCommentsChange}
+            setSelectedAnnotationId={setSelectedAnnotationId}
+            selectedAnnotationId={selectedAnnotationId}
+            panelGroupRef={panelGroupRef}
+          />
+        </div>
+      </ResizablePanel>
+      <ResizableHandle />
+
+      <ResizablePanel id="annotation-panel" defaultSize={0}>
+        <div className="overflow-y-auto h-full">
+          {annotations && (
+            <AnnotationPanel
+              annotations={annotations}
+              statementId={statement.statementId}
+              statementCreatorId={statement.creatorId}
+              handleCloseAnnotationPanel={handleCloseAnnotationPanel}
+              selectedAnnotationId={selectedAnnotationId}
+              setSelectedAnnotationId={setSelectedAnnotationId}
+              showAuthorComments={showAuthorComments}
+              showReaderComments={showReaderComments}
+            />
+          )}
+        </div>
+      </ResizablePanel>
+    </ResizablePanelGroup>
+  );
+
+  return (
+    <div className="flex flex-col h-full w-full">
+      {editMode ? <EditNav /> : <AppNav />}
+
+      {isMobile ? mobileLayout : desktopLayout}
     </div>
   );
 }
-// const titleInputRef = useRef<HTMLInputElement>(null);
-
-//   useEffect(() => {
-//     const handleResize = () => {
-//       if (titleInputRef.current) {
-//         const input = titleInputRef.current;
-//         const parentWidth = input.parentElement?.offsetWidth || 0;
-//         let fontSize = parseInt(window.getComputedStyle(input).fontSize, 10);
-
-//         while (input.scrollWidth > parentWidth && fontSize > 10) {
-//           fontSize -= 1;
-//           input.style.fontSize = `${fontSize}px`;
-//         }
-//       }
-//     };
-
-//     handleResize(); // Initial call to set the font size
-
-//     window.addEventListener("resize", handleResize);
-//     return () => window.removeEventListener("resize", handleResize);
-//   }, [statementUpdate]);

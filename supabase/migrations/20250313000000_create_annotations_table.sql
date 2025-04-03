@@ -1,5 +1,5 @@
 create table "public"."annotation" (
-    "id" uuid not null default gen_random_uuid(),
+    "id" text not null,
     "created_at" timestamp with time zone not null default now(),
     "updated_at" timestamp with time zone not null default now(),
     "user_id" uuid not null,

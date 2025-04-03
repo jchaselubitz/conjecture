@@ -31,7 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Card } from "../ui/card";
 import { ButtonLoadingState, LoadingButton } from "../ui/loading-button";
 import Comment, { CommentWithReplies } from "./comment";
-
+import { useWindowSize } from "react-use";
 interface AnnotationDetailProps {
   annotation: AnnotationWithComments;
   onDelete: (annotation: BaseAnnotation) => void;
@@ -48,10 +48,11 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
   selectedAnnotationId,
 }) => {
   const [comments, setComments] = useState<BaseCommentWithUser[]>(
-    annotation.comments,
+    annotation.comments
   );
   const selected = selectedAnnotationId === annotation.id;
   const annotationRef = useRef<HTMLDivElement>(null);
+  const isMobile = useWindowSize().width < 768;
 
   const { userId } = useUserContext();
   const [deletingButtonState, setDeletingButtonState] =
@@ -153,7 +154,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
 
   const handleCommentDeleted = (commentId: string) => {
     setComments((prevComments) =>
-      prevComments.filter((comment) => comment.id !== commentId),
+      prevComments.filter((comment) => comment.id !== commentId)
     );
 
     // If we were replying to this comment, cancel the reply
@@ -170,9 +171,16 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Submit on Enter
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmitComment();
+    if (isMobile) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleSubmitComment();
+      }
+    } else {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSubmitComment();
+      }
     }
 
     // Cancel reply on Escape
@@ -195,7 +203,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
           "p-0 gap-0",
           selected
             ? "shadow-2xl my-4 animate-ring-flash"
-            : "shadow-none hover:shadow-md ",
+            : "shadow-none hover:shadow-md "
         )}
       >
         <AccordionTrigger className={cn("p-4 hover:no-underline")}>

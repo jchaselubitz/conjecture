@@ -18,7 +18,7 @@ import { AspectRatio } from "../ui/aspect-ratio";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import Byline from "./byline";
-import { EditorMenu } from "./custom_editor/components/editor_menu";
+import { EditorMenu } from "./custom_editor/editor_menu";
 import HTMLSuperEditor from "./custom_editor/html_super_editor";
 import { FootnoteList } from "./footnote/footnote_list";
 import StatementOptions from "./statement_options";
@@ -98,7 +98,7 @@ export default function StatementDetails({
   };
 
   const handleHeaderImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     if (!userId) {
       alert("You must be logged in to upload an image.");
@@ -148,7 +148,7 @@ export default function StatementDetails({
   if (!statement) return null;
 
   return (
-    <div className="flex flex-col mt-12 gap-6 mx-auto max-w-3xl px-4">
+    <div className="flex flex-col mt-12 gap-6  md:mx-auto w-full md:max-w-3xl px-4 ">
       {headerImg ? (
         <div className="relative group">
           <AspectRatio ratio={16 / 9} className="bg-muted rounded-md">

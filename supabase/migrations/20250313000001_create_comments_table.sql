@@ -3,7 +3,7 @@ create table "public"."comment" (
     "created_at" timestamp with time zone not null default now(),
     "updated_at" timestamp with time zone not null default now(),
     "user_id" uuid not null,
-    "annotation_id" uuid not null,
+    "annotation_id" text not null,
     "content" text not null
 );
 
