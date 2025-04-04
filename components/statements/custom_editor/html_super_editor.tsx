@@ -34,6 +34,7 @@ import { BlockImage } from "./custom_extensions/block_image";
 import { BlockLatex } from "./custom_extensions/block_latex";
 import { Citation } from "./custom_extensions/citation";
 import { InlineLatex } from "./custom_extensions/inline_latex";
+import { handleCitationPaste } from "./custom_extensions/quote_paste_handler";
 import { QuotePasteHandler } from "./custom_extensions/quote_paste_handler";
 import { ImageNodeEditor } from "./image_node_editor";
 import { LatexNodeEditor } from "./latex_node_editor";
@@ -84,12 +85,13 @@ const HTMLSuperEditor = ({
     setCitationPopoverOpen,
     setImagePopoverOpen,
     setLatexPopoverOpen,
+    debouncedContent,
   } = useStatementContext();
   const router = useRouter();
   const searchParams = useSearchParams();
   const containerRef = useRef<HTMLDivElement>(null);
   const isMobile = useWindowSize().width < 768;
-  const htmlContent = statement.content;
+  const htmlContent = debouncedContent ?? statement.content;
   const draftId = statement.id;
   const statementId = statement.statementId;
   const statementCreatorId = statement.creatorId;
@@ -107,7 +109,7 @@ const HTMLSuperEditor = ({
       // Wait for the DOM to update before scrolling
       setTimeout(() => {
         const annotationElement = document.querySelector(
-          `[data-annotation-id="${annotationId}"]`,
+          `[data-annotation-id="${annotationId}"]`
         );
         if (annotationElement) {
           annotationElement.scrollIntoView({
@@ -167,7 +169,11 @@ const HTMLSuperEditor = ({
         },
       }),
       QuoteHighlight,
-      QuotePasteHandler,
+      QuotePasteHandler.configure({
+        creatorId: statementCreatorId,
+        currentStatementId: statementId,
+        handleCitationPaste,
+      }),
     ],
     immediatelyRender: false,
     content: htmlContent,
@@ -189,12 +195,13 @@ const HTMLSuperEditor = ({
       });
 
       const citationIds = citationNodes.map(
-        (node) => node.node.attrs.citationId,
+        (node) => node.node.attrs.citationId
       );
       setFootnoteIds(citationIds);
 
       // remove any citations from the db that are not in the citationIds array
-      if (citationIds.length > 0 && editMode) {
+
+      if (citations.length > 0 && editMode) {
         ensureCitations({
           citations,
           nodeIds: citationIds,
@@ -222,11 +229,12 @@ const HTMLSuperEditor = ({
             "citation-block",
           ]);
           const citationIds = citationNodes.map(
-            (node) => node.node.attrs.citationId,
+            (node) => node.node.attrs.citationId
           );
           setFootnoteIds(citationIds);
+          const currentHTML = editor.getHTML();
 
-          setDebouncedContent(editor.getHTML());
+          setDebouncedContent(currentHTML);
         }
       }
     },
@@ -322,7 +330,7 @@ const HTMLSuperEditor = ({
           }
 
           const citationNode = element.closest(
-            '[data-type="citation"], [data-type="citation-block"]',
+            '[data-type="citation"], [data-type="citation-block"]'
           );
           if (citationNode) {
             const rect = citationNode.getBoundingClientRect();
@@ -341,7 +349,7 @@ const HTMLSuperEditor = ({
             }
 
             const selectedCitation = statement.citations.find(
-              (c) => c.id.toString() === id.toString(),
+              (c) => c.id.toString() === id.toString()
             );
 
             if (!selectedCitation) {
@@ -378,16 +386,16 @@ const HTMLSuperEditor = ({
 
           // Handle LaTeX clicks only in editMode mode
           let latexNode = element.closest(
-            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
           );
 
           if (!latexNode) {
             const katexElement = element.closest(
-              ".katex, .katex-html, .katex-rendered",
+              ".katex, .katex-html, .katex-rendered"
             );
             if (katexElement) {
               latexNode = katexElement.closest(
-                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
               );
             }
           }
@@ -402,7 +410,7 @@ const HTMLSuperEditor = ({
 
             if (!latex) {
               const katexWrapper = latexNode.querySelector(
-                ".katex-rendered, .katex",
+                ".katex-rendered, .katex"
               );
               if (katexWrapper) {
                 latex = "";
@@ -507,7 +515,7 @@ const HTMLSuperEditor = ({
     // Update all annotations to reflect new selection state
     editor.state.doc.descendants((node, pos) => {
       const annotationMark = node.marks.find(
-        (mark) => mark.type.name === "annotationHighlight",
+        (mark) => mark.type.name === "annotationHighlight"
       );
 
       if (annotationMark) {
@@ -534,7 +542,7 @@ const HTMLSuperEditor = ({
             // Use setTimeout to ensure the DOM has updated
             setTimeout(() => {
               const annotationElement = document.querySelector(
-                `[data-annotation-id="${selectedAnnotationId}"]`,
+                `[data-annotation-id="${selectedAnnotationId}"]`
               );
               if (annotationElement) {
                 annotationElement.scrollIntoView({
@@ -670,6 +678,7 @@ const HTMLSuperEditor = ({
               showReaderComments={showReaderComments}
               canAnnotate={annotatable && !!userId}
               setSelectedAnnotationId={setSelectedAnnotationId}
+              statementId={statementId}
             />
             <div>
               <FloatingMenu editor={editor} tippyOptions={{ duration: 100 }}>

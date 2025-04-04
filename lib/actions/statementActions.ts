@@ -7,6 +7,7 @@ import {
   AnnotationWithComments,
   BaseCommentWithUser,
   BaseDraft,
+  BaseProfile,
   BaseStatementCitation,
   BaseStatementVote,
   DraftWithAnnotations,
@@ -131,13 +132,37 @@ export async function getDrafts({
 
 export async function getPublishedStatement(
   statementId: string,
-): Promise<BaseDraft | null> {
+): Promise<
+  BaseDraft & {
+    creatorName: string | null;
+    creatorImageUrl: string | null;
+    creatorSlug: string | null;
+  } | null
+> {
   const statement = await db
     .selectFrom("draft")
-    .selectAll()
+    .innerJoin("profile", "draft.creatorId", "profile.id")
+    .select([
+      "draft.id",
+      "draft.title",
+      "draft.subtitle",
+      "draft.content",
+      "draft.headerImg",
+      "draft.publishedAt",
+      "draft.creatorId",
+      "draft.createdAt",
+      "draft.updatedAt",
+      "draft.parentStatementId",
+      "draft.threadId",
+      "draft.statementId",
+      "draft.versionNumber",
+      "profile.name as creatorName",
+      "profile.imageUrl as creatorImageUrl",
+      "profile.username as creatorSlug",
+    ])
     .where("statementId", "=", statementId)
-    .where("publishedAt", "is not", null)
     .executeTakeFirst();
+
   return statement ?? null;
 }
 
@@ -338,7 +363,7 @@ export async function updateDraft({
   headerImg?: string;
   publishedAt?: Date;
   versionNumber: number;
-  statementId?: string;
+  statementId: string;
   creatorId: string;
 }) {
   const user = await authenticatedUser(creatorId);

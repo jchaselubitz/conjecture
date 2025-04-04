@@ -6,9 +6,13 @@ import { cn } from "@/lib/utils";
 
 interface QuoteLinkButtonProps {
   editor: Editor;
+  statementId: string;
 }
 
-export const QuoteLinkButton = ({ editor }: QuoteLinkButtonProps) => {
+export const QuoteLinkButton = ({
+  editor,
+  statementId,
+}: QuoteLinkButtonProps) => {
   const handleCopyQuoteLink = () => {
     const { from, to } = editor.state.selection;
     if (from === to) return;
@@ -21,6 +25,7 @@ export const QuoteLinkButton = ({ editor }: QuoteLinkButtonProps) => {
     url.search = ""; // Clear all existing parameters
 
     // Add both location and content parameters
+    url.searchParams.set("statementId", statementId);
     url.searchParams.set("location", `${from}-${to}`);
     url.searchParams.set("content", selectedText);
 

@@ -44,7 +44,7 @@ interface StatementContextType {
   editor: Editor | null;
   setEditor: (editor: Editor | null) => void;
   statement: DraftWithAnnotations;
-  setStatement: (statement: DraftWithAnnotations) => void;
+  setStatement: Dispatch<SetStateAction<DraftWithAnnotations>>;
   annotations: NewAnnotation[];
   setAnnotations: (annotations: NewAnnotation[]) => void;
   debouncedContent: string | undefined;
@@ -52,7 +52,7 @@ interface StatementContextType {
   saveStatementDraft: () => Promise<void>;
   nextVersionNumber: number;
   changeVersion: (version: number) => void;
-  updateStatementDraft: (statement: NewDraft) => Promise<void>;
+  updateStatementDraft: (statementUpdate: Partial<NewDraft>) => Promise<void>;
   togglePublish: () => Promise<void>;
   isUpdating: boolean;
   error: string | null;
@@ -152,9 +152,14 @@ export function StatementProvider({
     );
   }, [version, drafts, setStatement]);
 
-  useEffect(() => {
-    setStatement(statement);
-  }, [statement]);
+  // const currentHTML = editor?.getHTML();
+
+  // useEffect(() => {
+  //   setStatement((prev) => ({
+  //     ...prev,
+  //     content: currentHTML ?? prev.content,
+  //   }));
+  // }, [currentHTML]);
 
   const versionOptions = useMemo(() => {
     return drafts
@@ -209,28 +214,30 @@ export function StatementProvider({
     });
   };
 
+  const [debouncedContent, setDebouncedContent] = useDebounce(
+    statement?.content ?? undefined,
+    500,
+  );
+
   const updateStatementDraft = useCallback(
-    async (statementUpdate: NewDraft) => {
+    async (statementUpdate: Partial<NewDraft>) => {
       const { title, subtitle, content, headerImg } = statementUpdate;
       setIsUpdating(true);
       setStatement(statement as DraftWithAnnotations);
+      setDebouncedContent(content ?? statement.content ?? undefined);
       await updateDraft({
-        title: title || undefined,
-        subtitle: subtitle || undefined,
-        content: content || undefined,
-        headerImg: headerImg || undefined,
+        title: title ?? statement.title ?? undefined,
+        subtitle: subtitle ?? statement.subtitle ?? undefined,
+        content: content ?? statement.content ?? undefined,
+        headerImg: headerImg ?? statement.headerImg ?? undefined,
+        publishedAt: statement.publishedAt ?? undefined,
         statementId: statement.statementId,
         versionNumber: statement.versionNumber,
         creatorId: statement.creatorId,
       });
       setIsUpdating(false);
     },
-    [statement],
-  );
-
-  const [debouncedContent, setDebouncedContent] = useDebounce(
-    statement?.content ?? undefined,
-    1000,
+    [statement, setDebouncedContent],
   );
 
   let prevStatementUpdateRef = useRef(statement);

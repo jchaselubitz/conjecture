@@ -54,7 +54,8 @@ export default function StatementDetails({
   parentStatement,
 }: StatementDetailsProps) {
   const { userId } = useUserContext();
-  const { statement, setStatement, editor } = useStatementContext();
+  const { statement, setStatement, debouncedContent, editor } =
+    useStatementContext();
   const router = useRouter();
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -140,9 +141,13 @@ export default function StatementDetails({
   }, [isStatementCreator, showReaderComments]);
 
   const prevEditModeRef = useRef(editMode);
+
   useEffect(() => {
     if (prevEditModeRef.current && !editMode) {
-      console.log("editMode changed to false");
+      // setStatement({
+      //   ...statement,
+      //   content: debouncedContent ?? statement.content,
+      // });
     }
     prevEditModeRef.current = editMode;
   }, [editMode]);
@@ -200,8 +205,6 @@ export default function StatementDetails({
         disabled={isUploading || !editMode}
       />
       <div className="flex flex-col gap-1 mt-10 mb-5 ">
-        {/* Here we should put some an indicator of the parent statement. it should
-        be the the title of the published draft of the parent statement, maybe a very light yellow background with very dark yellow text. should be linked to the parent statement. */}
         {statement.parentStatementId && (
           <Link href={`/statements/${statement.parentStatementId}`}>
             <p className="bg-yellow-50 text-lg text-yellow-900 px-2 py-1 rounded-md flex items-center gap-2 w-fit hover:bg-yellow-100 transition-colors">

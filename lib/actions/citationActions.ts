@@ -1,10 +1,6 @@
 "use server";
 
-import {
-  BaseStatementCitation,
-  NewStatementCitation,
-  RevalidationPath,
-} from "kysely-codegen";
+import { NewStatementCitation, RevalidationPath } from "kysely-codegen";
 import db from "../database";
 import { revalidatePath } from "next/cache";
 
@@ -17,7 +13,7 @@ export async function createCitation({
 }: {
   creatorId: string;
   citation: NewStatementCitation;
-  revalidationPath: RevalidationPath;
+  revalidationPath?: RevalidationPath;
 }) {
   await authenticatedUser(creatorId);
   await db
@@ -25,7 +21,10 @@ export async function createCitation({
     .values(citation)
     .executeTakeFirst();
 
-  revalidatePath("/", revalidationPath.type);
+  revalidatePath(
+    revalidationPath?.path || "/",
+    revalidationPath?.type || "page",
+  );
 }
 
 export async function updateCitation({

@@ -14,6 +14,7 @@ interface AnnotationMenuProps {
   setSelectedAnnotationId: (id: string) => void;
   canAnnotate?: boolean;
   editMode: boolean;
+  statementId: string;
 }
 
 export const AnnotationMenu = ({
@@ -22,6 +23,7 @@ export const AnnotationMenu = ({
   showAuthorComments,
   showReaderComments,
   editMode,
+  statementId,
   setSelectedAnnotationId,
   canAnnotate = false,
 }: AnnotationMenuProps) => {
@@ -51,7 +53,9 @@ export const AnnotationMenu = ({
           editMode && !canAnnotate && "hidden",
         )}
       >
-        {!editMode && <QuoteLinkButton editor={editor} />}
+        {!editMode && (
+          <QuoteLinkButton editor={editor} statementId={statementId} />
+        )}
 
         {canAnnotate && (
           <AnnotationButton

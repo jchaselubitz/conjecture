@@ -44,6 +44,7 @@ export const Citation = Node.create<CitationOptions>({
  group: "inline",
  atom: true,
  selectable: true,
+ focusable: true,
 
  addAttributes() {
   return {
@@ -247,14 +248,12 @@ export const Citation = Node.create<CitationOptions>({
      const view = this.editor.view;
      const isEditModeTransitioning =
       view?.dom.closest('[data-edit-transitioning="true"]') != null;
-
      if (isEditModeTransitioning) return null;
      const pendingDeletions = this.editor.storage.citationDeletion
       ?.pendingDeletions;
      if (!pendingDeletions || pendingDeletions.size === 0) return null;
 
      const existingCitations = new Set<string>();
-
      newState.doc.descendants((node) => {
       if (node.type.name === this.name) {
        existingCitations.add(node.attrs.citationId);

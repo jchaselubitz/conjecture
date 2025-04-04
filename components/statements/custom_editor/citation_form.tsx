@@ -1,9 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { nanoid } from "nanoid";
 import { usePathname } from "next/navigation";
-import { TextSelection } from "prosemirror-state";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -30,12 +28,13 @@ import {
 } from "@/components/ui/select";
 import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
-import {
-  createCitation,
-  deleteCitation,
-  updateCitation,
-} from "@/lib/actions/citationActions";
+import { deleteCitation } from "@/lib/actions/citationActions";
 import { MonthsArray } from "@/lib/lists";
+
+import {
+  citationDateCreator,
+  upsertCitation,
+} from "./custom_extensions/helpers/helpersCitationExtension";
 
 const citationFormSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
@@ -97,66 +96,35 @@ export function CitationForm({
     mode: "onChange",
   });
 
-  const dateCreator = ({
-    year,
-    month,
-    day,
-  }: {
-    year: string | undefined;
-    month: string | undefined;
-    day: string | undefined;
-  }) => {
-    let dateValue = null;
-    if (year) {
-      const y = parseInt(year, 10);
-      const m = month && month !== "none" ? parseInt(month, 10) : 1;
-      const f = day && day !== "none" ? parseInt(day, 10) : 1;
-      dateValue = new Date(y, m, f);
-    }
-    return dateValue;
-  };
-
-  const saveCitation = async () => {
-    const id = nanoid();
-    const formData = form.getValues();
-    const {
-      month,
-      day,
-      year,
-      url,
-      authorNames,
-      title,
-      issue,
-      pageEnd,
-      pageStart,
-      publisher,
-      titlePublication,
-      volume,
-    } = formData;
-
-    if (day && !month) {
-      setError("Month is required if day is provided");
-      return;
-    }
-    if (month && !year) {
-      setError("Year is required if month is provided");
-      return;
-    }
-
-    const dateValue = dateCreator({
-      year,
-      month,
-      day,
-    });
-
-    await createCitation({
-      creatorId,
-      citation: {
-        id,
-        statementId,
-        title,
-        authorNames,
+  const onSubmit = async (data: CitationFormValues) => {
+    if (editor && userId && statementId) {
+      const {
+        month,
+        day,
+        year,
         url,
+        authorNames,
+        title,
+        issue,
+        pageEnd,
+        pageStart,
+        publisher,
+        titlePublication,
+        volume,
+      } = data;
+
+      const dateValue = citationDateCreator({
+        year: data.year ? parseInt(data.year, 10) : null,
+        month:
+          data.month && data.month !== "none" ? parseInt(data.month, 10) : null,
+        day: data.day && data.day !== "none" ? parseInt(data.day, 10) : null,
+      });
+
+      const newCitationData = {
+        ...citationData,
+        title: title,
+        authorNames: authorNames,
+        url: url || null,
         date: dateValue,
         year: year ? parseInt(year, 10) : null,
         month: month && month !== "none" ? parseInt(month, 10) : null,
@@ -167,124 +135,29 @@ export function CitationForm({
         publisher: publisher || null,
         titlePublication: titlePublication || null,
         volume: volume || null,
-      },
-      revalidationPath: {
-        path: pathname,
-        type: "page",
-      },
-    });
-    return id;
-  };
-
-  const onSubmit = async (data: CitationFormValues) => {
-    if (editor && userId && statementId) {
-      const pos = editor.state.selection.$from.pos;
-      try {
-        setSaveButtonState("loading");
-        if (citationData.id !== "") {
-          // Create date from form values if year is provided
-          const dateValue = dateCreator({
-            year: data.year,
-            month: data.month,
-            day: data.day,
-          });
-
-          const {
-            month,
-            day,
-            year,
-            url,
-            authorNames,
-            title,
-            issue,
-            pageEnd,
-            pageStart,
-            publisher,
-            titlePublication,
-            volume,
-          } = data;
-          console.log(
-            year,
-            month,
-            day,
-            url,
-            authorNames,
-            title,
-            issue,
-            pageEnd,
-            pageStart,
-            publisher,
-            titlePublication,
-            volume,
-          );
-          await updateCitation({
-            creatorId,
-            citation: {
-              ...citationData,
-              title: title,
-              authorNames: authorNames,
-              url: url || null,
-              date: dateValue,
-              year: year ? parseInt(year, 10) : null,
-              month: month && month !== "none" ? parseInt(month, 10) : null,
-              day: day && day !== "none" ? parseInt(day, 10) : null,
-              issue: issue ? parseInt(issue, 10) : null,
-              pageEnd: pageEnd ? parseInt(pageEnd, 10) : null,
-              pageStart: pageStart ? parseInt(pageStart, 10) : null,
-              publisher: publisher || null,
-              titlePublication: titlePublication || null,
-              volume: volume || null,
-            },
-            revalidationPath: {
-              path: pathname,
-              type: "page",
-            },
-          });
-        } else {
-          const id = await saveCitation();
-          const tr = editor.state.tr;
-          const node = editor.schema.nodes.citation.create({ citationId: id });
-          tr.replaceSelectionWith(node);
-          tr.setSelection(TextSelection.create(tr.doc, pos + 1));
-          editor.view.dispatch(tr);
-        }
-
-        //Update draft instantly instead of waiting for debounce cause otherwise the citation will not consistently be updated in the draft
-        setTimeout(() => {
-          updateStatementDraft({
-            statementId,
-            content: editor.getHTML(),
-            creatorId,
-          });
-          setSaveButtonState("default");
-          onOpenChange(false);
-          setCitationData({
-            statementId,
-            title: "",
-            authorNames: "",
-            id: "",
-          });
-          // Reset the form
-          form.reset({
-            title: "",
-            authorNames: "",
-            url: "",
-            year: "",
-            month: "none",
-            day: "none",
-            issue: "",
-            volume: "",
-            pageStart: "",
-            pageEnd: "",
-            publisher: "",
-            titlePublication: "",
-          });
-        }, 0);
-      } catch (error) {
-        console.error("Failed to save citation:", error);
-        setError("Failed to save citation");
-        setSaveButtonState("default");
-      }
+      };
+      setSaveButtonState("loading");
+      const updateDraft = async () => {
+        await updateStatementDraft({ content: editor.getHTML() });
+      };
+      await upsertCitation({
+        citationData: newCitationData,
+        setError,
+        creatorId,
+        statementId,
+        pathname,
+        position: editor.state.selection.$from.pos + 1,
+        view: editor.view,
+        updateDraft,
+      });
+      onOpenChange(false);
+      setCitationData({
+        statementId,
+        title: "",
+        authorNames: "",
+        id: "",
+      });
+      setSaveButtonState("default");
     }
   };
 

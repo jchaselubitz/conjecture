@@ -95,11 +95,18 @@
   height: 20px;
   font-size: 12px;
   transition: all 0.2s ease;
+  cursor: pointer;
+  font-style:normal !important;
+  margin-left: 0.25rem;
 }
 .citation-number:hover {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   background-color: #f1f5f9;
 }
+.citation-number:focus {
+  border: 1px solid #1454a8;
+}
+
 
 /* Error display */
 .latex-error {
@@ -322,6 +329,7 @@
 /* Style for the container when used as an annotator */
 .ProseMirror.annotator-container {
   position: relative;
+  caret-color: transparent;
 }
 
 /* Add a subtle indicator when the text is annotatable */
