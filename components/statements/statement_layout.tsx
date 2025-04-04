@@ -1,25 +1,27 @@
 "use client";
 
-import { DraftWithAnnotations } from "kysely-codegen";
-import { useEffect, useRef, useState } from "react";
 import "./prose.css";
+import { BaseDraft, DraftWithAnnotations } from "kysely-codegen";
+import { useEffect, useRef, useState } from "react";
+import { useWindowSize } from "react-use";
 import AnnotationPanel from "@/components/statements/annotation_panel";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+
 import AppNav from "../navigation/app_nav";
 import EditNav from "../navigation/edit_nav";
-import StatementDetails from "./statement_details";
-import { useWindowSize } from "react-use";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "../ui/drawer";
 import { CommentIndicatorButton } from "./comments_menu";
+import StatementDetails from "./statement_details";
 interface StatementDetailsProps {
   statement: DraftWithAnnotations;
   authorCommentsEnabled: boolean;
   readerCommentsEnabled: boolean;
   editModeEnabled: boolean;
+  parentStatement: BaseDraft | null;
 }
 
 export default function StatementLayout({
@@ -27,6 +29,7 @@ export default function StatementLayout({
   authorCommentsEnabled,
   readerCommentsEnabled,
   editModeEnabled,
+  parentStatement,
 }: StatementDetailsProps) {
   const [editMode, setEditMode] = useState(editModeEnabled);
   const [showAnnotationDrawer, setShowAnnotationDrawer] = useState(false);
@@ -56,10 +59,10 @@ export default function StatementLayout({
     : { height: "60dvh" };
 
   const [showAuthorComments, setShowAuthorComments] = useState(
-    authorCommentsEnabled
+    authorCommentsEnabled,
   );
   const [showReaderComments, setShowReaderComments] = useState(
-    readerCommentsEnabled
+    readerCommentsEnabled,
   );
 
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<
@@ -115,6 +118,7 @@ export default function StatementLayout({
     <div className="h-full">
       <StatementDetails
         statement={statement}
+        parentStatement={parentStatement}
         editMode={editMode}
         showAuthorComments={showAuthorComments}
         showReaderComments={showReaderComments}
@@ -170,6 +174,7 @@ export default function StatementLayout({
         <div className="flex flex-col overflow-y-auto h-full">
           <StatementDetails
             statement={statement}
+            parentStatement={parentStatement}
             editMode={editMode}
             showAuthorComments={showAuthorComments}
             showReaderComments={showReaderComments}

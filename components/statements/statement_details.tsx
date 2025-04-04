@@ -1,6 +1,11 @@
-import { BaseStatementCitation, DraftWithAnnotations } from "kysely-codegen";
-import { Upload } from "lucide-react";
+import {
+  BaseDraft,
+  BaseStatementCitation,
+  DraftWithAnnotations,
+} from "kysely-codegen";
+import { ChevronLeft, Upload } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { RefObject, useEffect, useMemo, useRef } from "react";
 import { useState } from "react";
@@ -22,7 +27,6 @@ import { EditorMenu } from "./custom_editor/editor_menu";
 import HTMLSuperEditor from "./custom_editor/html_super_editor";
 import { FootnoteList } from "./footnote/footnote_list";
 import StatementOptions from "./statement_options";
-
 export interface StatementDetailsProps {
   statement: DraftWithAnnotations;
   editMode: boolean;
@@ -34,6 +38,7 @@ export interface StatementDetailsProps {
   setSelectedAnnotationId: (annotationId: string | undefined) => void;
   selectedAnnotationId: string | undefined;
   panelGroupRef: RefObject<ImperativePanelGroupHandle | null>;
+  parentStatement: BaseDraft | null;
 }
 
 export default function StatementDetails({
@@ -46,6 +51,7 @@ export default function StatementDetails({
   setSelectedAnnotationId,
   selectedAnnotationId,
   panelGroupRef,
+  parentStatement,
 }: StatementDetailsProps) {
   const { userId } = useUserContext();
   const { statement, setStatement, editor } = useStatementContext();
@@ -72,11 +78,7 @@ export default function StatementDetails({
 
   const handleEditModeToggle = () => {
     setEditMode(!editMode);
-    //remove cookie edit_mode
-    document.cookie =
-      "edit_mode=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    const newEditMode = !editMode;
-    document.cookie = `edit_mode=${newEditMode.toString()}`;
+    router.push(`/statements/${prepStatementId}?edit=${!editMode}`);
   };
 
   const handleAnnotationClick = async (annotationId: string) => {
@@ -98,7 +100,7 @@ export default function StatementDetails({
   };
 
   const handleHeaderImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     if (!userId) {
       alert("You must be logged in to upload an image.");
@@ -148,7 +150,7 @@ export default function StatementDetails({
   if (!statement) return null;
 
   return (
-    <div className="flex flex-col mt-12 gap-6  md:mx-auto w-full md:max-w-3xl px-4 ">
+    <div className="flex flex-col mt-12 gap-6 md:mx-auto w-full md:max-w-3xl px-4 ">
       {headerImg ? (
         <div className="relative group">
           <AspectRatio ratio={16 / 9} className="bg-muted rounded-md">
@@ -172,7 +174,7 @@ export default function StatementDetails({
             )}
           </AspectRatio>
         </div>
-      ) : (
+      ) : editMode ? (
         <div className="flex items-center justify-center w-full my-14">
           <Button
             variant="outline"
@@ -185,6 +187,8 @@ export default function StatementDetails({
             </span>
           </Button>
         </div>
+      ) : (
+        <></>
       )}
       <Input
         type="file"
@@ -195,7 +199,18 @@ export default function StatementDetails({
         onChange={handleHeaderImageChange}
         disabled={isUploading || !editMode}
       />
-      <div className="flex flex-col gap-1 mt-10 mb-5">
+      <div className="flex flex-col gap-1 mt-10 mb-5 ">
+        {/* Here we should put some an indicator of the parent statement. it should
+        be the the title of the published draft of the parent statement, maybe a very light yellow background with very dark yellow text. should be linked to the parent statement. */}
+        {statement.parentStatementId && (
+          <Link href={`/statements/${statement.parentStatementId}`}>
+            <p className="bg-yellow-50 text-lg text-yellow-900 px-2 py-1 rounded-md flex items-center gap-2 w-fit hover:bg-yellow-100 transition-colors">
+              <ChevronLeft className="w-4 h-4" />
+              Response to: {parentStatement?.title}
+            </p>
+          </Link>
+        )}
+
         <div className="flex justify-between items-center">
           {editMode ? (
             <TextareaAutosize
@@ -220,7 +235,6 @@ export default function StatementDetails({
             </h1>
           )}
         </div>
-
         <div className="flex justify-between items-center">
           {editMode ? (
             <TextareaAutosize
@@ -247,16 +261,18 @@ export default function StatementDetails({
         </div>
       </div>
 
-      <StatementOptions
-        className="mb-5"
-        statement={statement}
-        editMode={editMode}
-        showAuthorComments={showAuthorComments}
-        showReaderComments={showReaderComments}
-        handleEditModeToggle={handleEditModeToggle}
-        onShowAuthorCommentsChange={onShowAuthorCommentsChange}
-        onShowReaderCommentsChange={onShowReaderCommentsChange}
-      />
+      <div className="flex items-center justify-between mb-5">
+        <StatementOptions
+          className="mb-0 w-full"
+          statement={statement}
+          editMode={editMode}
+          showAuthorComments={showAuthorComments}
+          showReaderComments={showReaderComments}
+          handleEditModeToggle={handleEditModeToggle}
+          onShowAuthorCommentsChange={onShowAuthorCommentsChange}
+          onShowReaderCommentsChange={onShowReaderCommentsChange}
+        />
+      </div>
 
       <Byline statement={statement} />
 

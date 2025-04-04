@@ -1,9 +1,12 @@
-import { cn } from "@/lib/utils";
-import { Button } from "../ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { MessageCircle } from "lucide-react";
-import { Switch } from "../ui/switch";
+import { cn } from "@/lib/utils";
+
+import { Button } from "../ui/button";
 import { Label } from "../ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Switch } from "../ui/switch";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { TooltipProvider } from "../ui/tooltip";
 
 export const CommentIndicatorButton = ({
   showAuthorComments,
@@ -18,30 +21,39 @@ export const CommentIndicatorButton = ({
 }) => {
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center min-w-24 gap-3"
-        >
-          <MessageCircle className="h-4 w-4" />
-          <span>Comments</span>
-          <span className="flex items-center gap-2">
-            <span
-              className={cn(
-                " h-2 w-2 rounded-full border border-orange-500",
-                showAuthorComments ? "bg-orange-500" : "bg-transparent"
-              )}
-            />
-            <span
-              className={cn(
-                " h-2 w-2 rounded-full border border-blue-500",
-                showReaderComments ? "bg-blue-500" : "bg-transparent"
-              )}
-            />
-          </span>
-        </Button>
-      </PopoverTrigger>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center min-w-24 gap-3"
+              >
+                <MessageCircle className="h-4 w-4" />
+                <span className="hidden md:block">Comments</span>
+                <span className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      " h-2 w-2 rounded-full border border-orange-500",
+                      showAuthorComments ? "bg-orange-500" : "bg-transparent",
+                    )}
+                  />
+                  <span
+                    className={cn(
+                      " h-2 w-2 rounded-full border border-blue-500",
+                      showReaderComments ? "bg-blue-500" : "bg-transparent",
+                    )}
+                  />
+                </span>
+              </Button>
+            </PopoverTrigger>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Comment settings</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <PopoverContent className="w-72" align="end">
         <div className="flex flex-col gap-4 p-3">
           <div className="flex items-center space-x-2">

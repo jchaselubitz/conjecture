@@ -24,9 +24,9 @@ export default async function Feed() {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen ">
       <AppNav />
-      <main className="flex-1 mx-auto bg-background container ">
+      <main className="flex-1 mx-auto bg-background container px-4 md:px-0 ">
         <div className="flex items-center justify-between my-8">
           <h1 className="text-3xl font-bold">Feed</h1>
         </div>

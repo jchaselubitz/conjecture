@@ -1,21 +1,20 @@
-import { BaseStatementVote, DraftWithAnnotations } from "kysely-codegen";
+import { DraftWithAnnotations } from "kysely-codegen";
 import {
-  ArrowUp,
   BarChart3,
   Eye,
   Facebook,
   Link,
   Linkedin,
-  MessageCircle,
   MoreHorizontal,
   PencilLine,
   Send,
   Share2,
+  Trash2,
   Twitter,
 } from "lucide-react";
-import { startTransition, useOptimistic } from "react";
+import { useRouter } from "next/navigation";
 import { useUserContext } from "@/contexts/userContext";
-import { toggleStatementUpvote } from "@/lib/actions/statementActions";
+import { deleteDraft, deleteStatement } from "@/lib/actions/statementActions";
 import { cn } from "@/lib/utils";
 
 import { Button } from "../ui/button";
@@ -27,11 +26,9 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Separator } from "../ui/separator";
-import { TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { Tooltip } from "../ui/tooltip";
-import { TooltipProvider } from "../ui/tooltip";
 import { CommentIndicatorButton } from "./comments_menu";
-
+import RebuttalButton from "./rebuttal_button";
+import VoteButton from "./vote_button";
 interface StatementOptionsProps {
   statement: DraftWithAnnotations;
 
@@ -55,42 +52,18 @@ export default function StatementOptions({
   className,
 }: StatementOptionsProps) {
   const { userId } = useUserContext();
+  const router = useRouter();
 
-  const [optVotes, setOptVotes] = useOptimistic<
-    BaseStatementVote[],
-    BaseStatementVote[]
-  >(statement.upvotes, (current, updated) => {
-    return updated;
-  });
-
-  const voteCount = optVotes?.length || 0;
-  const hasUpvoted = optVotes?.some((vote) => vote.userId === userId) || false;
-
-  const handleVote = async () => {
-    if (!userId) return;
+  const handleDelete = async () => {
     try {
-      const newVotes = hasUpvoted
-        ? optVotes.filter((vote) => vote.userId !== userId)
-        : [
-            ...optVotes,
-            {
-              id: crypto.randomUUID(),
-              userId,
-              statementId: statement.statementId,
-              createdAt: new Date(),
-            },
-          ];
-      startTransition(() => {
-        setOptVotes(newVotes);
-      });
-
-      await toggleStatementUpvote({
-        statementId: statement.statementId,
-        isUpvoted: hasUpvoted,
-      });
+      await deleteStatement(
+        statement.statementId,
+        statement.creatorId,
+        statement.headerImg || "",
+      );
+      router.push("/statements");
     } catch (error) {
-      console.error("Error upvoting comment:", error);
-    } finally {
+      console.error(error);
     }
   };
 
@@ -105,24 +78,19 @@ export default function StatementOptions({
             onShowAuthorCommentsChange={onShowAuthorCommentsChange}
             onShowReaderCommentsChange={onShowReaderCommentsChange}
           />
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={hasUpvoted ? "default" : "outline"}
-                  size="sm"
-                  onClick={handleVote}
-                  className=" text-xs opacity-70 hover:opacity-100 hover:cursor-pointer"
-                >
-                  <ArrowUp className="w-3 h-3 " />
-                  {voteCount > 0 && voteCount}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{hasUpvoted ? "Remove upvote" : "Upvote comment"}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          {!editMode && statement.statementId && (
+            <RebuttalButton
+              existingStatementId={statement.statementId}
+              existingTitle={statement.title || ""}
+              existingThreadId={statement.threadId}
+            />
+          )}
+          {statement.statementId && (
+            <VoteButton
+              statementId={statement.statementId}
+              upvotes={statement.upvotes || []}
+            />
+          )}
         </div>
         <div className="flex items-center gap-3 w-full justify-end">
           {editMode ? (
@@ -137,6 +105,7 @@ export default function StatementOptions({
                 <CreatorOptionsButton
                   editMode={editMode}
                   handleEditModeToggle={handleEditModeToggle}
+                  handleDelete={handleDelete}
                 />
               )}
             </>
@@ -206,9 +175,11 @@ const ShareButton = () => {
 const CreatorOptionsButton = ({
   editMode,
   handleEditModeToggle,
+  handleDelete,
 }: {
   editMode: boolean;
   handleEditModeToggle: () => void;
+  handleDelete: () => void;
 }) => {
   return (
     <DropdownMenu>
@@ -219,14 +190,19 @@ const CreatorOptionsButton = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem>
+          <BarChart3 className="mr-2 h-4 w-4" />
+          Stats
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+
         <DropdownMenuItem onClick={handleEditModeToggle}>
           <PencilLine className="mr-2 h-4 w-4" />
           {editMode ? "View" : "Edit"}
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <BarChart3 className="mr-2 h-4 w-4" />
-          Stats
+        <DropdownMenuItem onClick={handleDelete}>
+          <Trash2 className="mr-2 h-4 w-4" />
+          Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

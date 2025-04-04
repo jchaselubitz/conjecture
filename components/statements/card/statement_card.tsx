@@ -40,11 +40,11 @@ export async function StatementCard({
 
   const isDraft = statement.publishedAt === null;
 
-  const href = isDraft
-    ? `/${pathname}/${statement.statementId}/edit`
-    : `/${pathname}/${statement.statementId}`;
   return (
-    <Link href={href} className="block transition-transform hover:scale-[1.01]">
+    <Link
+      href={`/${pathname}/${statement.statementId}`}
+      className="block transition-transform hover:scale-[1.01]"
+    >
       <Card className="h-full overflow-hidden pt-0">
         {statement.headerImg && (
           <AspectRatio ratio={16 / 8} className="bg-muted rounded-md ">

@@ -11,7 +11,7 @@ export default async function DraftsPage() {
   return (
     <div>
       <AppNav />
-      <main className="flex-1 mx-auto bg-background container py-8">
+      <main className="flex-1 mx-auto bg-background container py-8 px-4 md:px-0">
         <StatementListContainer
           statements={statements}
           pathname={"statements"}

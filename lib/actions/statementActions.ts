@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import {
   AnnotationWithComments,
   BaseCommentWithUser,
+  BaseDraft,
   BaseStatementCitation,
   BaseStatementVote,
   DraftWithAnnotations,
@@ -15,6 +16,9 @@ import {
 import { redirect } from "next/navigation";
 import { generateStatementId } from "../helpers/helpersStatements";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
+import { authenticatedUser } from "./baseActions";
+import { nanoid } from "nanoid";
+import { deleteStoredStatementImage } from "./storageActions";
 
 export async function getDrafts({
   forCurrentUser = false,
@@ -48,6 +52,8 @@ export async function getDrafts({
       "draft.creatorId",
       "draft.createdAt",
       "draft.updatedAt",
+      "draft.parentStatementId",
+      "draft.threadId",
       "profile.name as creatorName",
       "profile.imageUrl as creatorImageUrl",
       "profile.username as creatorSlug",
@@ -123,6 +129,18 @@ export async function getDrafts({
 //   return draft;
 // }
 
+export async function getPublishedStatement(
+  statementId: string,
+): Promise<BaseDraft | null> {
+  const statement = await db
+    .selectFrom("draft")
+    .selectAll()
+    .where("statementId", "=", statementId)
+    .where("publishedAt", "is not", null)
+    .executeTakeFirst();
+  return statement ?? null;
+}
+
 export async function getDraftsByStatementId(
   statementId: string,
 ): Promise<DraftWithAnnotations[]> {
@@ -141,6 +159,8 @@ export async function getDraftsByStatementId(
       "draft.creatorId",
       "draft.createdAt",
       "draft.updatedAt",
+      "draft.parentStatementId",
+      "draft.threadId",
       "profile.name as creatorName",
       "profile.imageUrl as creatorImageUrl",
       "profile.username as creatorSlug",
@@ -235,6 +255,8 @@ export async function createDraft({
   statementId,
   versionNumber,
   annotations,
+  parentId,
+  threadId,
 }: {
   title?: string;
   subtitle?: string;
@@ -243,16 +265,15 @@ export async function createDraft({
   statementId?: string;
   versionNumber: number;
   annotations?: NewAnnotation[];
+  parentId?: string | null;
+  threadId?: string | null;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await authenticatedUser();
 
-  if (!user) {
-    return { error: "Unauthorized" };
-  }
   const prepStatementId = statementId ? statementId : generateStatementId();
+
+  const prepThreadId = threadId ? threadId : nanoid();
+  const statementThreadId = parentId ? prepThreadId : null;
 
   const { statementId: returnedStatementId } = await db.transaction().execute(
     async (tx) => {
@@ -266,6 +287,8 @@ export async function createDraft({
           statementId: prepStatementId,
           versionNumber,
           subtitle,
+          parentStatementId: parentId,
+          threadId: statementThreadId,
         })
         .returning(["statementId", "id"])
         .executeTakeFirstOrThrow();
@@ -276,6 +299,13 @@ export async function createDraft({
           draftId,
         }));
         await tx.insertInto("annotation").values(annotationsWithDraftId)
+          .execute();
+      }
+
+      if (parentId) {
+        await tx.updateTable("draft").set({
+          threadId: prepThreadId,
+        }).where("statementId", "=", parentId).where("threadId", "is", null)
           .execute();
       }
 
@@ -300,6 +330,7 @@ export async function updateDraft({
   publishedAt,
   versionNumber,
   statementId,
+  creatorId,
 }: {
   title?: string;
   subtitle?: string;
@@ -308,15 +339,10 @@ export async function updateDraft({
   publishedAt?: Date;
   versionNumber: number;
   statementId?: string;
+  creatorId: string;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await authenticatedUser(creatorId);
 
-  if (!user) {
-    return { error: "Unauthorized" };
-  }
   await db.updateTable("draft")
     .set({
       title,
@@ -336,19 +362,14 @@ export async function publishDraft({
   statementId,
   id,
   publish,
+  creatorId,
 }: {
   statementId: string;
   id: string;
   publish: boolean;
+  creatorId: string;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "Unauthorized" };
-  }
+  await authenticatedUser(creatorId);
 
   const now = new Date();
   await db.transaction().execute(async (tx) => {
@@ -370,8 +391,10 @@ export async function publishDraft({
 
 export async function updateStatementHeaderImageUrl(
   statementId: string,
+  creatorId: string,
   imageUrl: string,
 ) {
+  await authenticatedUser(creatorId);
   await db.updateTable("draft").set({ headerImg: imageUrl }).where(
     "statementId",
     "=",
@@ -380,17 +403,25 @@ export async function updateStatementHeaderImageUrl(
   revalidatePath(`/statements/${statementId}`, "page");
 }
 
-export async function deleteDraft(id: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "Unauthorized" };
-  }
-
+export async function deleteDraft(id: string, creatorId: string) {
+  await authenticatedUser(creatorId);
   await db.deleteFrom("draft").where("id", "=", id).execute();
+  revalidatePath(`/statements}`, "page");
+}
+
+export async function deleteStatement(
+  statementId: string,
+  creatorId: string,
+  headerImg: string,
+) {
+  await authenticatedUser(creatorId);
+  await deleteStoredStatementImage({
+    url: headerImg,
+    creatorId,
+    statementId,
+  });
+  await db.deleteFrom("draft").where("statementId", "=", statementId)
+    .execute();
 
   revalidatePath(`/statements}`, "page");
 }
@@ -413,15 +444,7 @@ export async function upsertStatementImage({
   statementId: string;
   id: string;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "Unauthorized" };
-  }
-
+  const user = await authenticatedUser();
   await db.insertInto("statementImage").values({
     id,
     src,
@@ -444,15 +467,7 @@ export async function upsertStatementImage({
 }
 
 export async function deleteStatementImage(id: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "Unauthorized" };
-  }
-
+  const user = await authenticatedUser();
   await db.deleteFrom("statementImage").where("id", "=", id).where(
     "creatorId",
     "=",
@@ -467,14 +482,7 @@ export async function toggleStatementUpvote({
   statementId: string;
   isUpvoted: boolean;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "Unauthorized" };
-  }
+  const user = await authenticatedUser();
 
   if (isUpvoted) {
     await db.deleteFrom("statementVote").where("statementId", "=", statementId)

@@ -5,14 +5,11 @@ import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { Editor, Extension } from "@tiptap/react";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import {
-  BaseDraft,
   BaseStatementCitation,
-  DraftWithAnnotations,
   NewAnnotation,
-  NewDraft,
   NewStatementCitation,
 } from "kysely-codegen";
-import { updateDraft, UpsertImageDataType } from "../actions/statementActions";
+import { UpsertImageDataType } from "../actions/statementActions";
 import { createAnnotation } from "../actions/annotationActions";
 
 export type PositionParams = {
@@ -144,6 +141,7 @@ export const headerImageChange = async ({
   updateStatementHeaderImageUrl: (
     statementId: string,
     imageUrl: string,
+    creatorId: string,
   ) => Promise<void>;
 }) => {
   const files = event.target.files?.length
@@ -168,7 +166,7 @@ export const headerImageChange = async ({
         oldImageUrl: headerImg ?? null,
       });
       if (!imageUrl) throw new Error("Failed to upload image");
-      await updateStatementHeaderImageUrl(statementId, imageUrl);
+      await updateStatementHeaderImageUrl(statementId, imageUrl, userId);
     });
   }
 };
