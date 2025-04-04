@@ -1,5 +1,4 @@
 import "katex/dist/katex.min.css";
-import BlockQuote from "@tiptap/extension-blockquote";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import Typography from "@tiptap/extension-typography";
@@ -148,7 +147,6 @@ const HTMLSuperEditor = ({
           class: "latex-popover-editor",
         },
       }),
-      BlockQuote,
       BlockImage.configure({
         HTMLAttributes: {
           class: "block-image",

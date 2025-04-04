@@ -1,5 +1,3 @@
-// make a component that displays the options for the statement
-
 import { BaseStatementVote, DraftWithAnnotations } from "kysely-codegen";
 import {
   ArrowUp,
@@ -15,7 +13,7 @@ import {
   Share2,
   Twitter,
 } from "lucide-react";
-import { startTransition, useOptimistic, useState } from "react";
+import { startTransition, useOptimistic } from "react";
 import { useUserContext } from "@/contexts/userContext";
 import { toggleStatementUpvote } from "@/lib/actions/statementActions";
 import { cn } from "@/lib/utils";

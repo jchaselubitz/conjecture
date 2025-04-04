@@ -208,7 +208,7 @@ export async function getDraftsByStatementId(
     ...draft,
     upvotes: draft.upvotes.map((u) => ({
       id: u.id,
-      userId: u.creatorId,
+      userId: u.userId,
       statementId: u.statementId,
       createdAt: u.createdAt,
     })) as BaseStatementVote[],

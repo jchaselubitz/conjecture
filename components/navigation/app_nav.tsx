@@ -6,7 +6,7 @@ export default function AppNav() {
   return (
     <header className="border-b px-4">
       <div className="flex h-16 items-center justify-between w-full ">
-        <Link href="/feed" className="font-semibold text-xl hidden md:block">
+        <Link href="/feed" className="font-semibold text-xl hidden md:bloc">
           Conjecture
         </Link>
         <nav className="flex items-center gap-6">
