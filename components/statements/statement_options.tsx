@@ -1,6 +1,7 @@
 import { DraftWithAnnotations } from "kysely-codegen";
 import {
   BarChart3,
+  Check,
   Eye,
   Facebook,
   Link,
@@ -13,6 +14,8 @@ import {
   Twitter,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
 import { deleteDraft, deleteStatement } from "@/lib/actions/statementActions";
 import { cn } from "@/lib/utils";
@@ -29,6 +32,7 @@ import { Separator } from "../ui/separator";
 import { CommentIndicatorButton } from "./comments_menu";
 import RebuttalButton from "./rebuttal_button";
 import VoteButton from "./vote_button";
+
 interface StatementOptionsProps {
   statement: DraftWithAnnotations;
 
@@ -138,6 +142,49 @@ const ViewModeButton = ({
 };
 
 const ShareButton = () => {
+  const { statement } = useStatementContext();
+  const [copied, setCopied] = useState(false);
+
+  const shareUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/statements/${statement.statementId}`
+      : "";
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+
+  const handleEmailShare = () => {
+    const subject = encodeURIComponent(
+      statement.title || "Check out this statement",
+    );
+    const body = encodeURIComponent(
+      `I thought you might be interested in this statement:\n\n${shareUrl}`,
+    );
+    window.open(`mailto:?subject=${subject}&body=${body}`);
+  };
+
+  const handleSocialShare = (platform: "facebook" | "linkedin" | "twitter") => {
+    const text = encodeURIComponent(
+      statement.title || "Check out this statement",
+    );
+    const url = encodeURIComponent(shareUrl);
+
+    const shareUrls = {
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
+      twitter: `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
+    };
+
+    window.open(shareUrls[platform], "_blank", "width=600,height=400");
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -146,24 +193,28 @@ const ShareButton = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuItem>
-          <Link className="mr-2 h-4 w-4" />
-          Copy link
+        <DropdownMenuItem onClick={handleCopyLink}>
+          {copied ? (
+            <Check className="mr-2 h-4 w-4 text-green-500" />
+          ) : (
+            <Link className="mr-2 h-4 w-4" />
+          )}
+          {copied ? "Copied!" : "Copy link"}
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleEmailShare}>
           <Send className="mr-2 h-4 w-4" />
           Send as message
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleSocialShare("facebook")}>
           <Facebook className="mr-2 h-4 w-4" />
           Share to Facebook
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleSocialShare("linkedin")}>
           <Linkedin className="mr-2 h-4 w-4" />
           Share to LinkedIn
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleSocialShare("twitter")}>
           <Twitter className="mr-2 h-4 w-4" />
           Share to X
         </DropdownMenuItem>

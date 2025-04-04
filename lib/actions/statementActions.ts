@@ -161,6 +161,7 @@ export async function getPublishedStatement(
       "profile.username as creatorSlug",
     ])
     .where("statementId", "=", statementId)
+    .where("publishedAt", "is not", null)
     .executeTakeFirst();
 
   return statement ?? null;

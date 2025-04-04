@@ -1,4 +1,4 @@
-import { BaseStatementCitation } from "kysely-codegen";
+import { BaseDraft, BaseStatementCitation } from "kysely-codegen";
 import {
   BookIcon,
   CalendarIcon,
@@ -6,6 +6,10 @@ import {
   LinkIcon,
   UsersIcon,
 } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useAsyncFn } from "react-use";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import {
   Card,
   CardContent,
@@ -14,13 +18,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useStatementContext } from "@/contexts/statementContext";
+import { getPublishedStatement } from "@/lib/actions/statementActions";
 import { formatDateForCitation } from "@/lib/helpers/helpersDate";
-
 export function CitationDisplay() {
   const { citationData } = useStatementContext();
   const citation = citationData as BaseStatementCitation;
+  const [conjecture, setConjecture] = useState<BaseDraft | null>(null);
 
-  // Helper function to handle optional fields
   const formatPageRange = () => {
     if (citation.pageStart && citation.pageEnd) {
       return `pp. ${citation.pageStart}-${citation.pageEnd}`;
@@ -37,8 +41,42 @@ export function CitationDisplay() {
     return parts.length > 0 ? parts.join(", ") : null;
   };
 
+  const [state, fetch] = useAsyncFn(async () => {
+    if (citation.url) {
+      const url = new URL(citation.url);
+      if (url.origin === window.location.origin) {
+        const statementId = url.searchParams.get("statementId");
+        if (!statementId) return;
+        try {
+          const statement = await getPublishedStatement(statementId);
+          if (statement) {
+            setConjecture(statement);
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    }
+    return null;
+  });
+
+  useEffect(() => {
+    fetch();
+  }, [citation.url, fetch]);
+
   return (
-    <Card className="w-full border-none shadow-none">
+    <Card className="w-full border-none   overflow-hidden shadow-none pt-0">
+      {conjecture?.headerImg && (
+        <AspectRatio ratio={16 / 6} className="bg-muted rounded-md ">
+          <Image
+            src={conjecture.headerImg}
+            alt={conjecture.title || "Statement header image"}
+            fill
+            className="object-cover"
+            priority={false}
+          />
+        </AspectRatio>
+      )}
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-bold">{citation.title}</CardTitle>
         {citation.titlePublication && (
