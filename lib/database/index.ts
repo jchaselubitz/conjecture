@@ -75,6 +75,7 @@ declare module "kysely-codegen" {
     comments: BaseCommentWithUser[];
     userName: string;
     userImageUrl: string;
+    id: string;
   };
   export type NewAnnotation = Insertable<Annotation> & {
     id: string;
