@@ -1,0 +1,36 @@
+
+[context.production]
+command = "yarn generate-deploy && next build"
+publish = ".next"
+[context.production.environment]
+NEXT_PUBLIC_SUPABASE_URL = 'https://bewgymyresxixvkkqbzl.supabase.co'
+NEXT_PUBLIC_SUPABASE_PROJECT_ID = "bewgymyresxixvkkqbzl"
+NEXT_PUBLIC_SITE_URL = 'https://app.conject.io'
+NEXT_PUBLIC_CONTEXT = "prod"
+NEXT_PUBLIC_LANGFUSE_HOST="https://cloud.langfuse.com"
+
+[context.branch-deploy]
+command = "yarn generate-deploy && next build"
+publish = ".next"
+[context.branch-deploy.environment]
+NEXT_PUBLIC_SUPABASE_URL = 'https://bewgymyresxixvkkqbzl.supabase.co'
+NEXT_PUBLIC_SUPABASE_PROJECT_ID = "bewgymyresxixvkkqbzl"
+NEXT_PUBLIC_SITE_URL = 'https://app.conject.io'
+NEXT_PUBLIC_CONTEXT = "branch-deploy"
+NEXT_PUBLIC_LANGFUSE_HOST="https://cloud.langfuse.com"
+
+[context.development]
+command = "yarn generate && next build"
+publish = ".next"
+[context.development.environment]
+NEXT_PUBLIC_SUPABASE_URL = 'https://bewgymyresxixvkkqbzl.supabase.co'
+NEXT_PUBLIC_SUPABASE_PROJECT_ID = "bewgymyresxixvkkqbzl"
+NEXT_PUBLIC_SITE_URL = 'https://app.conject.io'
+NEXT_PUBLIC_CONTEXT = "development"
+NEXT_PUBLIC_LANGFUSE_HOST="https://cloud.langfuse.com"
+
+[dev]
+command = "next dev"
+port = 8888
+targetPort = 3000
+context = "dev"
