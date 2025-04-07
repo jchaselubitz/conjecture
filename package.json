@@ -5,8 +5,8 @@
   "scripts": {
     "start": "supabase start",
     "stop": "supabase stop",
-    "generate": "kysely-codegen --dialect=postgres --env-file .env.local",
-    "generate-deploy": "kysely-codegen --dialect=postgres --camel-case",
+    "generate": "kysely-codegen --env-file .env.local",
+    "generate-deploy": "kysely-codegen",
     "new": "rm -rf node_modules && yarn cache clean && yarn install && yarn generate",
     "nuke": "yarn install && supabase db reset && supabase start && supabase status && yarn generate",
     "create-migration": "supabase db diff --use-migra -f local_schema",
