@@ -83,7 +83,7 @@ export async function uploadStatementImage({
     throw new Error("Unauthorized");
   }
 
-  const bucket = "statement_images";
+  const bucket = "statement-images";
   if (oldImageUrl) {
     await deleteFile({
       bucket,
@@ -131,7 +131,7 @@ export async function deleteStoredStatementImage({
     throw new Error("Unauthorized");
   }
 
-  const bucket = "statement_images";
+  const bucket = "statement-images";
   await deleteFile({ bucket, url, folderPath: `${userId}/${statementId}` });
 }
 
@@ -161,7 +161,7 @@ export async function uploadProfileImage({
     throw new Error("Unauthorized");
   }
 
-  const bucket = "user_images";
+  const bucket = "user-images";
   if (oldImageUrl) {
     await deleteFile({ bucket, url: oldImageUrl, folderPath: profileId });
   }
@@ -199,7 +199,7 @@ export async function deleteProfileImage(
     throw new Error("Unauthorized");
   }
 
-  const bucket = "user_images";
+  const bucket = "user-images";
   await deleteFile({ bucket, url, folderPath: profileId });
   revalidatePath("/", "page");
 }
@@ -213,7 +213,7 @@ export async function getStatementImages({
 }) {
   const supabase = await createClient();
   const statementImages = await supabase.storage
-    .from("statement_images")
+    .from("statement-images")
     .createSignedUrls([`${creatorId}/${statementId}/`], 3600);
 
   return statementImages;
