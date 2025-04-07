@@ -47,8 +47,9 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
   statementId,
   selectedAnnotationId,
 }) => {
+  const { imageUrl, name } = useUserContext();
   const [comments, setComments] = useState<BaseCommentWithUser[]>(
-    annotation.comments,
+    annotation.comments
   );
   const selected = selectedAnnotationId === annotation.id;
   const annotationRef = useRef<HTMLDivElement>(null);
@@ -103,13 +104,19 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
         annotationId: annotation.id,
         content: commentText,
         id: crypto.randomUUID(),
-        parentId: replyToComment?.id,
+        parentId: replyToComment?.id || null,
       };
 
       // Update UI optimistically
       setComments((prevComments) => [
         ...prevComments,
-        newComment as BaseCommentWithUser,
+        {
+          ...newComment,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          userImageUrl: imageUrl || "",
+          userName: name || "",
+        },
       ]);
 
       await createComment({
@@ -154,7 +161,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
 
   const handleCommentDeleted = (commentId: string) => {
     setComments((prevComments) =>
-      prevComments.filter((comment) => comment.id !== commentId),
+      prevComments.filter((comment) => comment.id !== commentId)
     );
 
     // If we were replying to this comment, cancel the reply
@@ -203,7 +210,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
           "p-0 gap-0",
           selected
             ? "shadow-2xl my-4 animate-ring-flash"
-            : "shadow-none hover:shadow-md ",
+            : "shadow-none hover:shadow-md "
         )}
       >
         <AccordionTrigger className={cn("p-4 hover:no-underline")}>
