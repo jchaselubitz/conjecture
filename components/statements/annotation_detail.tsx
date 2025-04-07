@@ -172,7 +172,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
 
   // Organize comments into a tree structure
 
-  const nestedComments = nestComments(comments) as CommentWithReplies[];
+  const nestedComments = nestComments(comments);
 
   // const firstComment = nestedComments.find((c) => !c.parentId);
 
