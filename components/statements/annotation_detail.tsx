@@ -20,7 +20,7 @@ import {
 import { useUserContext } from "@/contexts/userContext";
 import { createComment } from "@/lib/actions/commentActions";
 import { formatDate } from "@/lib/helpers/helpersDate";
-import { nestObject } from "@/lib/helpers/helpersGeneral";
+import { nestComments } from "@/lib/helpers/helpersGeneral";
 import { cn } from "@/lib/utils";
 
 import {
@@ -172,7 +172,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
 
   // Organize comments into a tree structure
 
-  const nestedComments = nestObject(comments) as CommentWithReplies[];
+  const nestedComments = nestComments(comments) as CommentWithReplies[];
 
   // const firstComment = nestedComments.find((c) => !c.parentId);
 

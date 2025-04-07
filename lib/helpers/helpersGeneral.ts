@@ -1,9 +1,22 @@
-export const nestObject = <
- T extends { id: string; parentId: string | null | undefined },
+import { CommentWithReplies } from "@/components/statements/comment";
+
+export const nestComments = <
+ T extends {
+  id: string;
+  parentId: string | null;
+  annotationId: string;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
+  userId: string;
+  userName: string;
+  userImageUrl: string;
+  votes?: { createdAt: Date; id: string; userId: string; commentId: string }[];
+ },
 >(
  objects: T[],
  rootParentId = null,
-): (T & { children: (T & { children: any[] })[] })[] => {
+): CommentWithReplies[] => {
  const objectMap = new Map<string, T & { children: any[] }>();
  objects.forEach((object) => {
   objectMap.set(object.id, { ...object, children: [] });
