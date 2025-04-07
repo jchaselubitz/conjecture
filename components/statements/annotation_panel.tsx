@@ -1,7 +1,11 @@
 "use client";
 
 import * as Sentry from "@sentry/nextjs";
-import { AnnotationWithComments, BaseAnnotation } from "kysely-codegen";
+import {
+  AnnotationWithComments,
+  BaseAnnotation,
+  NewAnnotation,
+} from "kysely-codegen";
 import { X } from "lucide-react";
 import { useStatementContext } from "@/contexts/statementContext";
 import { deleteAnnotation } from "@/lib/actions/annotationActions";
@@ -35,7 +39,11 @@ export default function AnnotationPanel({
   const handleDeleteAnnotation = async (annotation: BaseAnnotation) => {
     const annotationId = annotation.id;
     if (!annotationId) return;
-    setAnnotations(annotations.filter((a) => a.id !== annotationId));
+    setAnnotations(
+      annotations.filter(
+        (a) => a.id !== annotationId
+      ) as unknown as NewAnnotation[]
+    );
 
     try {
       await deleteAnnotation({
