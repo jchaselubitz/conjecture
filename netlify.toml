@@ -8,6 +8,11 @@ NEXT_PUBLIC_SITE_URL = 'https://app.conject.io'
 NEXT_PUBLIC_CONTEXT = "prod"
 NEXT_PUBLIC_LANGFUSE_HOST="https://cloud.langfuse.com"
 
+
+
+[functions]
+  directory = "netlify/functions"
+
 [context.branch-deploy]
 command = "yarn generate-deploy && next build"
 publish = ".next"
@@ -33,3 +38,34 @@ command = "next dev"
 port = 8888
 targetPort = 3000
 context = "dev"
+
+
+[[redirects]]
+  from = "https://conject.io/posts/*"
+  to = "https://app.conject.io/posts/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://conject.io/explore/*"
+  to = "https://app.conject.io/explore/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://conject.io/join/*"
+  to = "https://app.conject.io/join/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://conject.io/feed"
+  to = "https://app.conject.io/feed"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://conject.io/statements/*"
+  to = "https://app.conject.io/statements/:splat"
+  status = 301
+  force = true
