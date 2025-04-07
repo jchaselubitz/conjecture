@@ -9549,8 +9549,8 @@ __metadata:
     eslint-plugin-simple-import-sort: "npm:^12.1.1"
     eslint-plugin-sort-imports-es6-autofix: "npm:^0.6.0"
     katex: "npm:^0.16.21"
-    kysely: "npm:^0.27.4"
-    kysely-codegen: "npm:^0.17.0"
+    kysely: "npm:^0.27.3"
+    kysely-codegen: "npm:^0.16.0"
     lucide-react: "npm:^0.479.0"
     netlify-cli: "npm:^19.1.5"
     next: "npm:^15.2.1"
@@ -13499,9 +13499,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"kysely-codegen@npm:^0.17.0":
-  version: 0.17.0
-  resolution: "kysely-codegen@npm:0.17.0"
+"kysely-codegen@npm:^0.16.0":
+  version: 0.16.8
+  resolution: "kysely-codegen@npm:0.16.8"
   dependencies:
     chalk: "npm:4.1.2"
     dotenv: "npm:^16.4.5"
@@ -13544,11 +13544,11 @@ __metadata:
       optional: true
   bin:
     kysely-codegen: dist/cli/bin.js
-  checksum: 10c0/9e780972aa5301f9df43e1e9018ef5aa5a26e6eed14af28fa1a5cdde5e8d0a2c7a6a46633eaa5dabfad4cda68d53b9612626692b4e45997ae33af288f87c6944
+  checksum: 10c0/617ad8db6ecb62f447201790f409d6d4f4f65a54fad90d6afb8bd763adea7e1a011b0ba0cfeb4dc7fd774823a6016af25a9bc8b9a61f30a93bf469991f372b33
   languageName: node
   linkType: hard
 
-"kysely@npm:^0.27.4":
+"kysely@npm:^0.27.3":
   version: 0.27.6
   resolution: "kysely@npm:0.27.6"
   checksum: 10c0/81cf668d196be265fa6782afb72d051590ce3f5c72b6456cc4a6eccbdfbac12bb1c938a8ec09b45de995854cfffb9972ce19553df2a4cf13dded3dc6cdddc326

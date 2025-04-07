@@ -4,6 +4,7 @@ import { createClient } from "@/supabase/server";
 import db from "../database";
 import { EditedAnnotation } from "kysely-codegen";
 import { revalidatePath } from "next/cache";
+
 export async function getAnnotationsForDraft({ draftId }: { draftId: string }) {
   const annotations = await db
     .selectFrom("annotation")
