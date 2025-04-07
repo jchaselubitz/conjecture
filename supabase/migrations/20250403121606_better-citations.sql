@@ -4,7 +4,9 @@ alter table "public"."statement_citation" add column "day" smallint;
 
 alter table "public"."statement_citation" add column "month" smallint;
 
-alter table "public"."statement_citation" alter column "year" set data type smallint using "year"::smallint;
+alter table "public"."statement_citation" drop column "year";
+
+alter table "public"."statement_citation" add column "year" smallint;
 
 alter table "public"."statement_citation" add constraint "statement_citation_day_check" CHECK (((day > 0) AND (day < 32))) not valid;
 
