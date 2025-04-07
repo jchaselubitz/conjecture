@@ -6,8 +6,8 @@ import { Step } from "@tiptap/pm/transform";
 import { EditorContent, FloatingMenu, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import {
+  AnnotationWithComments,
   DraftWithAnnotations,
-  NewAnnotation,
   NewStatementCitation,
 } from "kysely-codegen";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -40,7 +40,7 @@ import { ImageNodeEditor } from "./image_node_editor";
 import { LatexNodeEditor } from "./latex_node_editor";
 interface HTMLSuperEditorProps {
   statement: DraftWithAnnotations;
-  existingAnnotations: NewAnnotation[];
+  existingAnnotations: AnnotationWithComments[];
   userId: string | undefined;
   onAnnotationClick?: (id: string) => void;
   style?: React.CSSProperties;
@@ -109,7 +109,7 @@ const HTMLSuperEditor = ({
       // Wait for the DOM to update before scrolling
       setTimeout(() => {
         const annotationElement = document.querySelector(
-          `[data-annotation-id="${annotationId}"]`,
+          `[data-annotation-id="${annotationId}"]`
         );
         if (annotationElement) {
           annotationElement.scrollIntoView({
@@ -195,7 +195,7 @@ const HTMLSuperEditor = ({
       });
 
       const citationIds = citationNodes.map(
-        (node) => node.node.attrs.citationId,
+        (node) => node.node.attrs.citationId
       );
       setFootnoteIds(citationIds);
 
@@ -229,7 +229,7 @@ const HTMLSuperEditor = ({
             "citation-block",
           ]);
           const citationIds = citationNodes.map(
-            (node) => node.node.attrs.citationId,
+            (node) => node.node.attrs.citationId
           );
           setFootnoteIds(citationIds);
           const currentHTML = editor.getHTML();
@@ -330,7 +330,7 @@ const HTMLSuperEditor = ({
           }
 
           const citationNode = element.closest(
-            '[data-type="citation"], [data-type="citation-block"]',
+            '[data-type="citation"], [data-type="citation-block"]'
           );
           if (citationNode) {
             const rect = citationNode.getBoundingClientRect();
@@ -349,7 +349,7 @@ const HTMLSuperEditor = ({
             }
 
             const selectedCitation = statement.citations.find(
-              (c) => c.id.toString() === id.toString(),
+              (c) => c.id.toString() === id.toString()
             );
 
             if (!selectedCitation) {
@@ -386,16 +386,16 @@ const HTMLSuperEditor = ({
 
           // Handle LaTeX clicks only in editMode mode
           let latexNode = element.closest(
-            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
           );
 
           if (!latexNode) {
             const katexElement = element.closest(
-              ".katex, .katex-html, .katex-rendered",
+              ".katex, .katex-html, .katex-rendered"
             );
             if (katexElement) {
               latexNode = katexElement.closest(
-                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
               );
             }
           }
@@ -410,7 +410,7 @@ const HTMLSuperEditor = ({
 
             if (!latex) {
               const katexWrapper = latexNode.querySelector(
-                ".katex-rendered, .katex",
+                ".katex-rendered, .katex"
               );
               if (katexWrapper) {
                 latex = "";
@@ -515,7 +515,7 @@ const HTMLSuperEditor = ({
     // Update all annotations to reflect new selection state
     editor.state.doc.descendants((node, pos) => {
       const annotationMark = node.marks.find(
-        (mark) => mark.type.name === "annotationHighlight",
+        (mark) => mark.type.name === "annotationHighlight"
       );
 
       if (annotationMark) {
@@ -542,7 +542,7 @@ const HTMLSuperEditor = ({
             // Use setTimeout to ensure the DOM has updated
             setTimeout(() => {
               const annotationElement = document.querySelector(
-                `[data-annotation-id="${selectedAnnotationId}"]`,
+                `[data-annotation-id="${selectedAnnotationId}"]`
               );
               if (annotationElement) {
                 annotationElement.scrollIntoView({

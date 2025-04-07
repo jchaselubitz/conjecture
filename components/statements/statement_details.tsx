@@ -2,6 +2,7 @@ import {
   BaseDraft,
   BaseStatementCitation,
   DraftWithAnnotations,
+  NewAnnotation,
 } from "kysely-codegen";
 import { ChevronLeft, Upload } from "lucide-react";
 import Image from "next/image";
@@ -101,7 +102,7 @@ export default function StatementDetails({
   };
 
   const handleHeaderImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     if (!userId) {
       alert("You must be logged in to upload an image.");
