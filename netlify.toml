@@ -1,5 +1,5 @@
 [context.production]
-command = "DATABASE_URL=$DATABASE_URL yarn generate-deploy && next build"
+command = "yarn generate-deploy && next build"
 publish = ".next"
 [context.production.environment]
 NEXT_PUBLIC_SUPABASE_URL = 'https://bewgymyresxixvkkqbzl.supabase.co'
@@ -9,7 +9,7 @@ NEXT_PUBLIC_CONTEXT = "prod"
 NEXT_PUBLIC_LANGFUSE_HOST="https://cloud.langfuse.com"
 
 [context.branch-deploy]
-command = "DATABASE_URL=$DATABASE_URL yarn generate-deploy && next build"
+command = "yarn generate-deploy && next build"
 publish = ".next"
 [context.branch-deploy.environment]
 NEXT_PUBLIC_SUPABASE_URL = 'https://bewgymyresxixvkkqbzl.supabase.co'
@@ -19,7 +19,7 @@ NEXT_PUBLIC_CONTEXT = "branch-deploy"
 NEXT_PUBLIC_LANGFUSE_HOST="https://cloud.langfuse.com"
 
 [context.development]
-command = "DATABASE_URL=$DATABASE_URL yarn generate && next build"
+command = "yarn generate && next build"
 publish = ".next"
 [context.development.environment]
 NEXT_PUBLIC_SUPABASE_URL = 'https://bewgymyresxixvkkqbzl.supabase.co'
