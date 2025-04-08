@@ -4,6 +4,6 @@ export const createCitationMarker = (
   return [
     "span",
     { class: "citation-number" },
-    `${count}`,
+    `${count} &nbsp;`,
   ];
 };

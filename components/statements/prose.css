@@ -83,6 +83,7 @@
 
 .citation-reference {
   text-decoration: none;
+  cursor: pointer;
 }
 .citation-number {
   display: inline-flex;
@@ -99,6 +100,7 @@
   font-style:normal !important;
   margin-left: 0.25rem;
 }
+
 .citation-number:hover {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   background-color: #f1f5f9;

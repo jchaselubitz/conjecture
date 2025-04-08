@@ -85,7 +85,6 @@ export const Citation = Node.create<CitationOptions>({
      id: `citation-${node.attrs.citationId}`,
      "data-type": "citation",
      class: "citation-reference",
-     style: "cursor: pointer;",
      "data-citation-id": node.attrs.citationId,
     },
    ),

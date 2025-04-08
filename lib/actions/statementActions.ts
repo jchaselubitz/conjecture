@@ -37,9 +37,6 @@ export async function getDrafts({
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    return [];
-  }
   let drafts = db
     .selectFrom("draft")
     .innerJoin("profile", "draft.creatorId", "profile.id")
@@ -79,7 +76,7 @@ export async function getDrafts({
     drafts = drafts.where("publishedAt", "is not", null);
   }
 
-  if (forCurrentUser) {
+  if (forCurrentUser && user) {
     drafts = drafts.where("creatorId", "=", user.id);
   }
 
