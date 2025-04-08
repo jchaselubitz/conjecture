@@ -11,7 +11,8 @@ export const authenticatedUser = async (
  if (!user) {
   throw new Error("User not found");
  }
- if (compareId && user?.id !== compareId) {
+ const isCreator = user?.id.toString() === compareId?.toString();
+ if (compareId && !isCreator) {
   throw new Error("User not authorized");
  }
  return user;

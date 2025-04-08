@@ -10,6 +10,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { useUserContext } from "@/contexts/userContext";
 
 import AppNav from "../navigation/app_nav";
 import EditNav from "../navigation/edit_nav";
@@ -31,8 +32,10 @@ export default function StatementLayout({
   editModeEnabled,
   parentStatement,
 }: StatementDetailsProps) {
+  const { userId } = useUserContext();
   const [editMode, setEditMode] = useState(editModeEnabled);
   const [showAnnotationDrawer, setShowAnnotationDrawer] = useState(false);
+  const isCreator = statement.creatorId === userId;
   const isMobile = useWindowSize().width < 768;
 
   const { annotations } = statement;
@@ -119,7 +122,7 @@ export default function StatementLayout({
       <StatementDetails
         statement={statement}
         parentStatement={parentStatement}
-        editMode={editMode}
+        editMode={editMode && isCreator}
         showAuthorComments={showAuthorComments}
         showReaderComments={showReaderComments}
         setEditMode={setEditMode}
@@ -175,7 +178,7 @@ export default function StatementLayout({
           <StatementDetails
             statement={statement}
             parentStatement={parentStatement}
-            editMode={editMode}
+            editMode={editMode && isCreator}
             showAuthorComments={showAuthorComments}
             showReaderComments={showReaderComments}
             setEditMode={setEditMode}

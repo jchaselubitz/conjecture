@@ -2,9 +2,12 @@
 
 import { ImageIcon, Trash2 } from "lucide-react";
 import { nanoid } from "nanoid";
+import { usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { ButtonLoadingState } from "@/components/ui/loading-button";
+import { LoadingButton } from "@/components/ui/loading-button";
 import {
   Popover,
   PopoverAnchor,
@@ -12,7 +15,10 @@ import {
 } from "@/components/ui/popover";
 import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
-import { deleteStatementImage } from "@/lib/actions/statementActions";
+import {
+  deleteStatementImage,
+  upsertStatementImage,
+} from "@/lib/actions/statementActions";
 import { deleteStoredStatementImage } from "@/lib/actions/storageActions";
 
 import { saveImage } from "./custom_extensions/helpers/helpersImageExtension";
@@ -26,8 +32,14 @@ export function ImagePopoverEditor({
   statementId,
   children,
 }: ImagePopoverEditorProps) {
-  const { imagePopoverOpen, setImagePopoverOpen, initialImageData, editor } =
-    useStatementContext();
+  const pathname = usePathname();
+  const {
+    imagePopoverOpen,
+    setImagePopoverOpen,
+    initialImageData,
+    setInitialImageData,
+    editor,
+  } = useStatementContext();
 
   const { userId } = useUserContext();
   const [file, setFile] = useState<File | null>(null);
@@ -36,6 +48,22 @@ export function ImagePopoverEditor({
   );
   const [alt, setAlt] = useState(initialImageData.alt);
   const [error, setError] = useState<string | null>(null);
+  const [saveButtonState, setSaveButtonState] =
+    useState<ButtonLoadingState>("default");
+
+  const handleClosePopover = () => {
+    setImagePopoverOpen(false);
+    setPreviewUrl("");
+    setFile(null);
+    setAlt("");
+    setError(null);
+    setInitialImageData({
+      src: "",
+      alt: "",
+      id: "",
+      statementId,
+    });
+  };
 
   useEffect(() => {
     // Cleanup preview URL when component unmounts
@@ -66,7 +94,7 @@ export function ImagePopoverEditor({
   };
 
   const handleSave = async () => {
-    if (!previewUrl && !file) {
+    if (!previewUrl && !file && !initialImageData.id) {
       setError("Please select an image");
       return;
     }
@@ -78,19 +106,40 @@ export function ImagePopoverEditor({
 
     const filename = initialImageData.id ? initialImageData.id : nanoid();
 
-    if (editor && userId && statementId && file) {
-      await saveImage({
-        editor,
-        userId,
-        statementId,
-        imageData: {
-          alt,
-          src: previewUrl,
-          id: filename,
-        },
-        file,
-      });
-      setImagePopoverOpen(false);
+    if (editor && userId && statementId) {
+      try {
+        setSaveButtonState("loading");
+        if (file) {
+          await saveImage({
+            editor,
+            userId,
+            statementId,
+            imageData: {
+              alt,
+              src: previewUrl,
+              id: filename,
+            },
+            file,
+          });
+        }
+        if (initialImageData.id) {
+          await upsertStatementImage({
+            alt,
+            src: initialImageData.src,
+            id: initialImageData.id,
+            statementId,
+            revalidationPath: {
+              path: pathname,
+              type: "layout",
+            },
+          });
+        }
+        setSaveButtonState("success");
+        handleClosePopover();
+      } catch (error) {
+        setSaveButtonState("error");
+        console.error("Failed to save image:", error);
+      }
     }
   };
 
@@ -113,9 +162,12 @@ export function ImagePopoverEditor({
       });
 
       // Delete from database
-      await deleteStatementImage(initialImageData.id);
+      await deleteStatementImage(initialImageData.id, {
+        path: pathname,
+        type: "layout",
+      });
 
-      setImagePopoverOpen(false);
+      handleClosePopover();
     } catch (error) {
       console.error("Failed to delete image:", error);
       // You might want to show an error toast here
@@ -123,7 +175,7 @@ export function ImagePopoverEditor({
   };
 
   return (
-    <Popover open={imagePopoverOpen} onOpenChange={setImagePopoverOpen}>
+    <Popover open={imagePopoverOpen} onOpenChange={handleClosePopover}>
       <PopoverAnchor asChild>{children}</PopoverAnchor>
       <PopoverContent className="w-screen max-w-[450px] p-0" align="start">
         <div className="flex flex-col gap-4 p-4">
@@ -180,9 +232,15 @@ export function ImagePopoverEditor({
               >
                 Cancel
               </Button>
-              <Button size="sm" onClick={handleSave}>
-                Save
-              </Button>
+              <LoadingButton
+                size="sm"
+                onClick={handleSave}
+                buttonState={saveButtonState}
+                text="Save"
+                loadingText="Saving..."
+                successText="Saved"
+                errorText="Error"
+              />
             </div>
           </div>
         </div>

@@ -23,7 +23,7 @@ export default async function Home() {
               Join the Conversation
             </Button>
           </Link>
-          <Link href="/explore">
+          <Link href="/feed">
             <Button size="lg" variant="outline" className="text-lg">
               Explore Discussions
             </Button>

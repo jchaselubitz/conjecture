@@ -3,6 +3,7 @@
 import { createClient } from "@/supabase/server";
 import { revalidatePath } from "next/cache";
 import * as Sentry from "@sentry/nextjs";
+import { authenticatedUser } from "./baseActions";
 
 async function uploadFile({
   bucket,
@@ -64,26 +65,16 @@ export async function uploadStatementImage({
   creatorId,
   statementId,
 }: {
-  oldImageUrl: string | null;
+  oldImageUrl: string | undefined;
   file: FormData;
   creatorId: string;
   statementId: string;
   fileName: string;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const userId = user?.id;
-  if (!userId) {
-    throw new Error("Unauthorized");
-  }
-
-  if (userId !== creatorId) {
-    throw new Error("Unauthorized");
-  }
-
+  const user = await authenticatedUser(creatorId);
+  const userId = user.id;
   const bucket = "statement-images";
+
   if (oldImageUrl) {
     await deleteFile({
       bucket,
@@ -100,13 +91,21 @@ export async function uploadStatementImage({
   });
 
   if (error) {
+    if (error.message === "The resource already exists") {
+      const publicUrl = getPublicFile({
+        bucket,
+        path: `${userId}/${statementId}/${fileName}`,
+      });
+      return publicUrl;
+    }
     Sentry.captureException(error);
   }
   if (!data) {
     return null;
   }
 
-  return getPublicFile({ bucket, path: data?.path });
+  const publicUrl = getPublicFile({ bucket, path: data?.path });
+  return publicUrl;
 }
 
 export async function deleteStoredStatementImage({

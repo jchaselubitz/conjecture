@@ -6,6 +6,7 @@ import { Editor, Extension } from "@tiptap/react";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import {
   BaseStatementCitation,
+  BaseStatementImage,
   NewAnnotation,
   NewStatementCitation,
 } from "kysely-codegen";
@@ -138,11 +139,15 @@ export const headerImageChange = async ({
   userId: string;
   statementId: string;
   headerImg: string;
-  updateStatementHeaderImageUrl: (
-    statementId: string,
-    imageUrl: string,
-    creatorId: string,
-  ) => Promise<void>;
+  updateStatementHeaderImageUrl: ({
+    statementId,
+    imageUrl,
+    creatorId,
+  }: {
+    statementId: string;
+    imageUrl: string;
+    creatorId: string;
+  }) => Promise<void>;
 }) => {
   const files = event.target.files?.length
     ? Array.from(event.target.files)
@@ -166,7 +171,11 @@ export const headerImageChange = async ({
         oldImageUrl: headerImg ?? null,
       });
       if (!imageUrl) throw new Error("Failed to upload image");
-      await updateStatementHeaderImageUrl(statementId, imageUrl, userId);
+      await updateStatementHeaderImageUrl({
+        statementId,
+        imageUrl,
+        creatorId: userId,
+      });
     });
   }
 };
@@ -248,6 +257,7 @@ export type ImagePopoverProps = {
   alt?: string;
   id?: string;
   position?: { x: number; y: number; width: number; height: number } | null;
+  statementImages?: BaseStatementImage[];
   setInitialImageData: (data: UpsertImageDataType) => void;
   setSelectedNodePosition: (
     position: { x: number; y: number; width: number; height: number } | null,
@@ -257,16 +267,23 @@ export type ImagePopoverProps = {
 };
 
 export const openImagePopover = ({
-  src = "",
-  alt = "",
   id = "",
   position = null,
+  statementImages = [],
   setInitialImageData,
   setSelectedNodePosition,
   setImagePopoverOpen,
   statementId,
 }: ImagePopoverProps) => {
-  setInitialImageData({ src, alt, statementId, id });
+  const existingImage = statementImages.find((image) => image.id === id);
+  if (existingImage) {
+    setInitialImageData({
+      src: existingImage.src ?? "",
+      alt: existingImage.alt ?? "",
+      statementId,
+      id,
+    });
+  }
   if (position) {
     setSelectedNodePosition(position);
   }

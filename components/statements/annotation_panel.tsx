@@ -41,8 +41,8 @@ export default function AnnotationPanel({
     if (!annotationId) return;
     setAnnotations(
       annotations.filter(
-        (a) => a.id !== annotationId
-      ) as unknown as NewAnnotation[]
+        (a) => a.id !== annotationId,
+      ) as unknown as NewAnnotation[],
     );
 
     try {

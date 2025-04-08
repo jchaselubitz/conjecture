@@ -80,7 +80,11 @@ export default function StatementDetails({
 
   const handleEditModeToggle = () => {
     setEditMode(!editMode);
-    router.push(`/statements/${prepStatementId}?edit=${!editMode}`);
+    if (!editMode) {
+      router.push(`/statements/${prepStatementId}?edit=true`);
+    } else {
+      router.push(`/statements/${prepStatementId}`);
+    }
   };
 
   const handleAnnotationClick = async (annotationId: string) => {
@@ -102,7 +106,7 @@ export default function StatementDetails({
   };
 
   const handleHeaderImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     if (!userId) {
       alert("You must be logged in to upload an image.");

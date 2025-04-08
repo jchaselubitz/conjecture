@@ -55,13 +55,16 @@ declare module "kysely-codegen" {
   };
   export type EditedStatementCitation = Updateable<StatementCitation>;
 
-  export type BaseDraft = Selectable<Draft>;
+  export type BaseDraft = Selectable<Draft> & {
+    annotations: BaseAnnotation[];
+  };
   export type DraftWithUser = BaseDraft & {
     creatorName: string | null | undefined;
     creatorImageUrl: string | null | undefined;
     creatorSlug: string | null | undefined;
   };
   export type DraftWithAnnotations = DraftWithUser & {
+    images: BaseStatementImage[];
     annotations: AnnotationWithComments[];
     upvotes: BaseStatementVote[];
     citations: BaseStatementCitation[];

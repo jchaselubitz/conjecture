@@ -17,6 +17,7 @@ import { StatusBadge } from "./status_badge";
 
 interface StatementCardProps {
   statement: DraftWithUser;
+
   isPublic?: boolean;
   pathname: string;
 }
@@ -38,16 +39,16 @@ export async function StatementCard({
       (statement.content.length > previewLength ? "..." : "")
     : statement.subtitle || "No preview available";
 
-  const isDraft = statement.publishedAt === null;
+  const annotationCount = statement.annotations?.length || 0;
 
   return (
     <Link
       href={`/${pathname}/${statement.statementId}`}
       className="block transition-transform hover:scale-[1.01]"
     >
-      <Card className="h-full overflow-hidden pt-0">
-        {statement.headerImg && (
-          <AspectRatio ratio={16 / 8} className="bg-muted rounded-md ">
+      <Card className="relative h-full overflow-hidden pt-0 ">
+        <AspectRatio ratio={16 / 8} className="bg-muted rounded-md ">
+          {statement.headerImg ? (
             <Image
               src={statement.headerImg}
               alt={statement.title || "Statement header image"}
@@ -55,15 +56,12 @@ export async function StatementCard({
               className="object-cover"
               priority={false}
             />
-          </AspectRatio>
-        )}
+          ) : (
+            <div className="rounded-b-md h-4" />
+          )}
+        </AspectRatio>
+
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <StatusBadge isPublished={statement.publishedAt !== null} />
-            <CardDescription className="text-sm text-muted-foreground">
-              {formattedDate}
-            </CardDescription>
-          </div>
           <CardTitle className="mt-2 text-xl">
             {statement.title || "Untitled Statement"}
           </CardTitle>
@@ -79,15 +77,16 @@ export async function StatementCard({
           )}
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">{contentPreview}</p>
+          <p className="text-sm text-muted-foreground mb-8">{contentPreview}</p>
         </CardContent>
-        <CardFooter className="flex justify-between">
-          <div className="text-sm text-muted-foreground">
-            {statement.publishedAt
-              ? `Published on ${formattedDate}`
-              : `Last updated on ${formattedDate}`}
+        <CardFooter className="absolute bottom-0 left-0 right-0 flex justify-between py-3">
+          <div className="flex items-center gap-2">
+            <StatusBadge isPublished={statement.publishedAt !== null} />
+            <CardDescription className="text-sm text-muted-foreground">
+              {formattedDate}
+            </CardDescription>
           </div>
-          <div className="text-sm font-medium">v{statement.versionNumber}</div>
+          <div className="text-sm font-medium">{annotationCount}</div>
         </CardFooter>
       </Card>
     </Link>

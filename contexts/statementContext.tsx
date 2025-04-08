@@ -77,7 +77,7 @@ interface StatementContextType {
 }
 
 const StatementContext = createContext<StatementContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export function StatementProvider({
@@ -93,7 +93,7 @@ export function StatementProvider({
   const version = versionString ? parseInt(versionString, 10) : undefined;
 
   const [statement, setStatement] = useState<DraftWithAnnotations>(
-    drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0]
+    drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0],
   );
 
   const [isUpdating, setIsUpdating] = useState(false);
@@ -110,7 +110,7 @@ export function StatementProvider({
       alt: "",
       statementId: statement.statementId,
       id: "",
-    }
+    },
   );
   const [citationData, setCitationData] = useState<NewStatementCitation>({
     statementId: statement.statementId,
@@ -143,23 +143,14 @@ export function StatementProvider({
     setPopoverState((prev) => ({ ...prev, citation: open }));
 
   const [annotations, setAnnotations] = useState<NewAnnotation[]>(
-    statement.annotations
+    statement.annotations,
   );
 
   useEffect(() => {
     setStatement(
-      drafts?.find((draft) => draft.versionNumber === version) || drafts[0]
+      drafts?.find((draft) => draft.versionNumber === version) || drafts[0],
     );
   }, [version, drafts, setStatement]);
-
-  // const currentHTML = editor?.getHTML();
-
-  // useEffect(() => {
-  //   setStatement((prev) => ({
-  //     ...prev,
-  //     content: currentHTML ?? prev.content,
-  //   }));
-  // }, [currentHTML]);
 
   const versionOptions = useMemo(() => {
     return drafts
@@ -216,7 +207,15 @@ export function StatementProvider({
 
   const [debouncedContent, setDebouncedContent] = useDebounce(
     statement?.content ?? undefined,
-    500
+    500,
+  );
+  const [debouncedTitle, setDebouncedTitle] = useDebounce(
+    statement?.title ?? undefined,
+    500,
+  );
+  const [debouncedSubtitle, setDebouncedSubtitle] = useDebounce(
+    statement?.subtitle ?? undefined,
+    500,
   );
 
   const updateStatementDraft = useCallback(
@@ -225,6 +224,8 @@ export function StatementProvider({
       setIsUpdating(true);
       setStatement(statement as DraftWithAnnotations);
       setDebouncedContent(content ?? statement.content ?? undefined);
+      setDebouncedTitle(title ?? statement.title ?? undefined);
+      setDebouncedSubtitle(subtitle ?? statement.subtitle ?? undefined);
       await updateDraft({
         title: title ?? statement.title ?? undefined,
         subtitle: subtitle ?? statement.subtitle ?? undefined,
@@ -237,7 +238,7 @@ export function StatementProvider({
       });
       setIsUpdating(false);
     },
-    [statement, setDebouncedContent]
+    [statement, setDebouncedContent, setDebouncedTitle, setDebouncedSubtitle],
   );
 
   let prevStatementUpdateRef = useRef(statement);
@@ -247,22 +248,29 @@ export function StatementProvider({
   useEffect(() => {
     const newStatementUpdate = {
       ...statement,
-      title: statement.title ?? undefined,
-      subtitle: statement.subtitle ?? undefined,
+      title: debouncedTitle ?? statement.title ?? undefined,
+      subtitle: debouncedSubtitle ?? statement.subtitle ?? undefined,
       content: debouncedContent,
       statementId: prepStatementId,
     } as NewDraft;
     if (
       statement &&
       (debouncedContent !== prevStatementUpdateRef.current?.content ||
-        statement.title !== prevStatementUpdateRef.current?.title ||
-        statement.subtitle !== prevStatementUpdateRef.current?.subtitle)
+        debouncedTitle !== prevStatementUpdateRef.current?.title ||
+        debouncedSubtitle !== prevStatementUpdateRef.current?.subtitle)
     ) {
       updateStatementDraft(newStatementUpdate);
       prevStatementUpdateRef.current =
         newStatementUpdate as DraftWithAnnotations;
     }
-  }, [debouncedContent, statement, prepStatementId, updateStatementDraft]);
+  }, [
+    debouncedContent,
+    debouncedTitle,
+    debouncedSubtitle,
+    statement,
+    prepStatementId,
+    updateStatementDraft,
+  ]);
 
   return (
     <StatementContext.Provider
@@ -312,7 +320,7 @@ export function useStatementContext() {
   const context = useContext(StatementContext);
   if (context === undefined) {
     throw new Error(
-      "useStatementContext must be used within a StatementProvider"
+      "useStatementContext must be used within a StatementProvider",
     );
   }
   return context;

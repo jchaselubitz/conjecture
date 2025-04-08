@@ -5,10 +5,11 @@ import db from "@/lib/database";
 import { revalidatePath } from "next/cache";
 import {
   AnnotationWithComments,
+  BaseAnnotation,
   BaseCommentWithUser,
   BaseDraft,
-  BaseProfile,
   BaseStatementCitation,
+  BaseStatementImage,
   BaseStatementVote,
   DraftWithAnnotations,
   NewAnnotation,
@@ -20,7 +21,7 @@ import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { authenticatedUser } from "./baseActions";
 import { nanoid } from "nanoid";
 import { deleteStoredStatementImage } from "./storageActions";
-
+import { RevalidationPath } from "kysely-codegen";
 export async function getDrafts({
   forCurrentUser = false,
   publishedOnly = true,
@@ -58,6 +59,12 @@ export async function getDrafts({
       "profile.name as creatorName",
       "profile.imageUrl as creatorImageUrl",
       "profile.username as creatorSlug",
+      jsonArrayFrom(
+        eb
+          .selectFrom("annotation")
+          .selectAll()
+          .whereRef("annotation.draftId", "=", "draft.id"),
+      ).as("annotations"),
       jsonArrayFrom(
         eb
           .selectFrom("statementVote")
@@ -137,12 +144,13 @@ export async function getPublishedStatement(
     creatorName: string | null;
     creatorImageUrl: string | null;
     creatorSlug: string | null;
+    annotations: BaseAnnotation[];
   } | null
 > {
   const statement = await db
     .selectFrom("draft")
     .innerJoin("profile", "draft.creatorId", "profile.id")
-    .select([
+    .select(({ eb }) => [
       "draft.id",
       "draft.title",
       "draft.subtitle",
@@ -159,6 +167,12 @@ export async function getPublishedStatement(
       "profile.name as creatorName",
       "profile.imageUrl as creatorImageUrl",
       "profile.username as creatorSlug",
+      jsonArrayFrom(
+        eb
+          .selectFrom("annotation")
+          .selectAll()
+          .whereRef("annotation.draftId", "=", "draft.id"),
+      ).as("annotations"),
     ])
     .where("statementId", "=", statementId)
     .where("publishedAt", "is not", null)
@@ -190,6 +204,12 @@ export async function getDraftsByStatementId(
       "profile.name as creatorName",
       "profile.imageUrl as creatorImageUrl",
       "profile.username as creatorSlug",
+      jsonArrayFrom(
+        eb
+          .selectFrom("statementImage")
+          .select(["id", "src", "alt"])
+          .whereRef("statementImage.statementId", "=", "draft.statementId"),
+      ).as("images"),
       jsonArrayFrom(
         eb
           .selectFrom("statementCitation")
@@ -247,11 +267,14 @@ export async function getDraftsByStatementId(
           .orderBy("annotation.createdAt", "desc"),
       ).as("annotations"),
     ])
-    .where("statementId", "=", statementId)
+    .where("draft.statementId", "=", statementId)
     .execute();
 
   const draftWithAnnotations = draft.map((draft) => ({
     ...draft,
+    images: draft.images.map((i) => ({
+      ...i,
+    })) as BaseStatementImage[],
     upvotes: draft.upvotes.map((u) => ({
       id: u.id,
       userId: u.userId,
@@ -341,7 +364,7 @@ export async function createDraft({
 
   if (returnedStatementId) {
     redirect(
-      `/statements/${returnedStatementId}?version=${versionNumber}`,
+      `/statements/${returnedStatementId}?version=${versionNumber}&edit=true`,
     );
   } else {
     return { error: "Failed to create draft" };
@@ -415,30 +438,40 @@ export async function publishDraft({
   });
 }
 
-export async function updateStatementHeaderImageUrl(
-  statementId: string,
-  creatorId: string,
-  imageUrl: string,
-) {
+export async function updateStatementHeaderImageUrl({
+  statementId,
+  creatorId,
+  imageUrl,
+  revalidationPath,
+}: {
+  statementId: string;
+  creatorId: string;
+  imageUrl: string;
+  revalidationPath?: RevalidationPath;
+}) {
   await authenticatedUser(creatorId);
   await db.updateTable("draft").set({ headerImg: imageUrl }).where(
     "statementId",
     "=",
     statementId,
   ).execute();
-  revalidatePath(`/statements/${statementId}`, "page");
+  revalidatePath(
+    revalidationPath?.path ?? `/statements/${statementId}`,
+    "layout",
+  );
 }
 
 export async function deleteDraft(id: string, creatorId: string) {
   await authenticatedUser(creatorId);
   await db.deleteFrom("draft").where("id", "=", id).execute();
-  revalidatePath(`/statements}`, "page");
+  revalidatePath(`/statements`, "layout");
 }
 
 export async function deleteStatement(
   statementId: string,
   creatorId: string,
   headerImg: string,
+  revalidationPath?: RevalidationPath,
 ) {
   await authenticatedUser(creatorId);
   await deleteStoredStatementImage({
@@ -449,7 +482,7 @@ export async function deleteStatement(
   await db.deleteFrom("draft").where("statementId", "=", statementId)
     .execute();
 
-  revalidatePath(`/statements}`, "page");
+  revalidatePath(revalidationPath?.path ?? `/statements`, "layout");
 }
 
 export type UpsertImageDataType = {
@@ -464,11 +497,13 @@ export async function upsertStatementImage({
   src,
   statementId,
   id,
+  revalidationPath,
 }: {
   alt: string;
   src: string;
   statementId: string;
   id: string;
+  revalidationPath?: RevalidationPath;
 }) {
   const user = await authenticatedUser();
   await db.insertInto("statementImage").values({
@@ -490,23 +525,36 @@ export async function upsertStatementImage({
     )
   )
     .execute();
+  revalidatePath(
+    revalidationPath?.path ?? `/statements/[statementId]`,
+    "layout",
+  );
 }
 
-export async function deleteStatementImage(id: string) {
+export async function deleteStatementImage(
+  id: string,
+  revalidationPath?: RevalidationPath,
+) {
   const user = await authenticatedUser();
   await db.deleteFrom("statementImage").where("id", "=", id).where(
     "creatorId",
     "=",
     user.id,
   ).execute();
+  revalidatePath(
+    revalidationPath?.path ?? `/statements/[statementId]`,
+    "layout",
+  );
 }
 
 export async function toggleStatementUpvote({
   statementId,
   isUpvoted,
+  revalidationPath,
 }: {
   statementId: string;
   isUpvoted: boolean;
+  revalidationPath?: RevalidationPath;
 }) {
   const user = await authenticatedUser();
 
@@ -520,5 +568,8 @@ export async function toggleStatementUpvote({
     }).execute();
   }
 
-  revalidatePath(`/statements/[statementId]`, "page");
+  revalidatePath(
+    revalidationPath?.path ?? `/statements/[statementId]`,
+    "layout",
+  );
 }
