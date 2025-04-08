@@ -2,6 +2,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 // Import the necessary modules
 import { NextConfig } from "next";
 import withPWA from "next-pwa";
+import { env } from "process";
 /** @type {NextConfig} */
 
 const pwaConfig = withPWA({
@@ -15,7 +16,14 @@ const pwaConfig = withPWA({
 const config: NextConfig = {
   ...pwaConfig,
   images: {
-    domains: ["conject.io", "app.conject.io", "127.0.0.1", "localhost"],
+    domains: [
+      "conject.io",
+      "app.conject.io",
+      "127.0.0.1",
+      "localhost",
+      process.env.NEXT_PUBLIC_SUPABASE_URL ??
+        "bewgymyresxixvkkqbzl.supabase.co",
+    ],
   },
   async headers() {
     return [
