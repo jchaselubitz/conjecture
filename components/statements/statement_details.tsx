@@ -149,10 +149,6 @@ export default function StatementDetails({
 
   useEffect(() => {
     if (prevEditModeRef.current && !editMode) {
-      // setStatement({
-      //   ...statement,
-      //   content: debouncedContent ?? statement.content,
-      // });
     }
     prevEditModeRef.current = editMode;
   }, [editMode]);
@@ -218,7 +214,6 @@ export default function StatementDetails({
             </p>
           </Link>
         )}
-
         <div className="flex justify-between items-center">
           {editMode ? (
             <TextareaAutosize

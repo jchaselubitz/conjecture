@@ -20,7 +20,6 @@ interface BlockTypeChooserProps {
 export function BlockTypeChooser({ statementId }: BlockTypeChooserProps) {
   const { editor } = useStatementContext();
   if (!editor) return null;
-
   return (
     <div className="flex items-center gap-1 rounded-lg border bg-background p-1 shadow-sm">
       <Button

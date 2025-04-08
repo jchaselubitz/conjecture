@@ -10,9 +10,13 @@ export type NewImageData = {
 
 interface ImageNodeEditorProps {
   statementId: string;
+  statementCreatorId: string;
 }
 
-export function ImageNodeEditor({ statementId }: ImageNodeEditorProps) {
+export function ImageNodeEditor({
+  statementId,
+  statementCreatorId,
+}: ImageNodeEditorProps) {
   const { selectedNodePosition, imagePopoverOpen } = useStatementContext();
 
   if (!selectedNodePosition || !imagePopoverOpen) return null;
@@ -29,7 +33,10 @@ export function ImageNodeEditor({ statementId }: ImageNodeEditorProps) {
         zIndex: 50,
       }}
     >
-      <ImagePopoverEditor statementId={statementId}>
+      <ImagePopoverEditor
+        statementId={statementId}
+        statementCreatorId={statementCreatorId}
+      >
         <div />
       </ImagePopoverEditor>
     </div>

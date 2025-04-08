@@ -20,6 +20,7 @@ export function ImageButton({ statementId }: ImageButtonProps) {
   const handleClick = () => {
     const view = editor.view;
     const { from } = view.state.selection;
+
     const pos = view.coordsAtPos(from);
 
     // Prepare position data for the popover

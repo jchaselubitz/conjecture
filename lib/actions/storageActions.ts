@@ -41,8 +41,10 @@ export async function deleteFile({
 }) {
   const fileName = url.split("/").pop();
   const path = `${folderPath}/${fileName}`;
+
   const supabase = await createClient();
   const { data, error } = await supabase.storage.from(bucket).remove([path]);
+  console.log(data, error);
   if (error) {
     Sentry.captureException(error);
     throw new Error("Failed to delete image");
@@ -131,7 +133,8 @@ export async function deleteStoredStatementImage({
   }
 
   const bucket = "statement-images";
-  await deleteFile({ bucket, url, folderPath: `${userId}/${statementId}` });
+  const path = `${userId}/${statementId}`;
+  await deleteFile({ bucket, url, folderPath: path });
 }
 
 export async function uploadProfileImage({

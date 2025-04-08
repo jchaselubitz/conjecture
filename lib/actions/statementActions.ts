@@ -22,6 +22,7 @@ import { authenticatedUser } from "./baseActions";
 import { nanoid } from "nanoid";
 import { deleteStoredStatementImage } from "./storageActions";
 import { RevalidationPath } from "kysely-codegen";
+import { createStatementImageUrl } from "../helpers/helpersStorage";
 export async function getDrafts({
   forCurrentUser = false,
   publishedOnly = true,
@@ -533,18 +534,31 @@ export async function upsertStatementImage({
 
 export async function deleteStatementImage(
   id: string,
+  statementId: string,
+  creatorId: string,
   revalidationPath?: RevalidationPath,
 ) {
-  const user = await authenticatedUser();
+  const user = await authenticatedUser(creatorId);
+  const imageUrl = createStatementImageUrl({
+    userId: creatorId,
+    statementId,
+    imageId: id,
+  });
+  await deleteStoredStatementImage({
+    url: imageUrl,
+    creatorId: user.id,
+    statementId,
+  });
+
   await db.deleteFrom("statementImage").where("id", "=", id).where(
     "creatorId",
     "=",
     user.id,
   ).execute();
-  revalidatePath(
-    revalidationPath?.path ?? `/statements/[statementId]`,
-    "layout",
-  );
+  // revalidatePath(
+  //   revalidationPath?.path ?? `/statements/[statementId]`,
+  //   "layout",
+  // );
 }
 
 export async function toggleStatementUpvote({

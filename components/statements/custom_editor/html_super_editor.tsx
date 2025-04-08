@@ -11,12 +11,13 @@ import {
   NewStatementCitation,
 } from "kysely-codegen";
 import { nanoid } from "nanoid";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useRef } from "react";
 import { useWindowSize } from "react-use";
 import { toast } from "sonner";
 import { useStatementContext } from "@/contexts/statementContext";
 import { deleteCitation } from "@/lib/actions/citationActions";
+import { deleteStatementImage } from "@/lib/actions/statementActions";
 import {
   createQuoteHighlight,
   ensureAnnotationMarks,
@@ -94,6 +95,7 @@ const HTMLSuperEditor = ({
     debouncedContent,
   } = useStatementContext();
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const containerRef = useRef<HTMLDivElement>(null);
   const isMobile = useWindowSize().width < 768;
@@ -158,6 +160,24 @@ const HTMLSuperEditor = ({
       BlockImage.configure({
         HTMLAttributes: {
           class: "block-image",
+        },
+        userId,
+        statementId,
+        editMode,
+        onDelete: async (imageId: string) => {
+          try {
+            await deleteStatementImage(
+              imageId,
+              statementId,
+              statementCreatorId,
+              {
+                path: pathname,
+                type: "layout",
+              },
+            );
+          } catch (error) {
+            console.error("Failed to delete image:", error);
+          }
         },
       }),
       AnnotationHighlight.configure({
@@ -473,89 +493,12 @@ const HTMLSuperEditor = ({
 
           return false;
         },
-        drop: (view, event) => {
-          if (!editMode || !userId || !statementId) return false;
-
-          const variable = event.dataTransfer?.getData("variable");
-          if (variable) {
-            const position = editor?.view.posAtCoords({
-              top: event.clientY,
-              left: event.clientX,
-            });
-
-            if (!position) {
-              return false;
-            }
-
-            editor?.commands.insertContentAt(position.pos, {
-              type: "mention",
-              attrs: {
-                id: variable,
-                label: variable,
-              },
-            });
-            return true;
-          }
-
-          if (event.dataTransfer?.files.length) {
-            const file = event.dataTransfer.files[0];
-            if (!file.type.startsWith("image/")) {
-              return false;
-            }
-
-            event.preventDefault();
-
-            const position = editor?.view.posAtCoords({
-              top: event.clientY,
-              left: event.clientX,
-            });
-
-            if (!position) {
-              return false;
-            }
-
-            // Create a temporary URL for the image
-            const imageUrl = URL.createObjectURL(file);
-            const imageId = nanoid();
-
-            handleImageChange({
-              file,
-              userId,
-              statementId,
-              imageData: {
-                id: imageId,
-                alt: file.name,
-              },
-            })
-              .then((newImage) => {
-                if (newImage) {
-                  editor
-                    ?.chain()
-                    .focus()
-                    .insertBlockImage({
-                      src: newImage.imageUrl,
-                      alt: file.name,
-                      imageId: newImage.imageId,
-                    })
-                    .run();
-                }
-              })
-              .catch((error) => {
-                console.error("Failed to upload image:", error);
-                toast.error("Failed to upload image");
-              });
-
-            return true;
-          }
-
-          return false;
-        },
       },
     },
   });
 
   useEffect(() => {
-    if (!editor?.isEditable || editor.isEmpty) return;
+    if (!editor?.isEditable) return;
 
     const applyAnnotations = () => {
       editor.commands.unsetAnnotationHighlight();
@@ -779,7 +722,10 @@ const HTMLSuperEditor = ({
             {editMode && (
               <>
                 <LatexNodeEditor />
-                <ImageNodeEditor statementId={statementId} />
+                <ImageNodeEditor
+                  statementId={statementId}
+                  statementCreatorId={statementCreatorId}
+                />
               </>
             )}
           </>

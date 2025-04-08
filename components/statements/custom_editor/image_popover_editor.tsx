@@ -26,10 +26,12 @@ import { saveImage } from "./custom_extensions/helpers/helpersImageExtension";
 interface ImagePopoverEditorProps {
   children: React.ReactNode;
   statementId: string;
+  statementCreatorId: string;
 }
 
 export function ImagePopoverEditor({
   statementId,
+  statementCreatorId,
   children,
 }: ImagePopoverEditorProps) {
   const pathname = usePathname();
@@ -38,6 +40,7 @@ export function ImagePopoverEditor({
     setImagePopoverOpen,
     initialImageData,
     setInitialImageData,
+    updateStatementDraft,
     editor,
   } = useStatementContext();
 
@@ -107,6 +110,10 @@ export function ImagePopoverEditor({
     const filename = initialImageData.id ? initialImageData.id : nanoid();
 
     if (editor && userId && statementId) {
+      const updateDraft = async () => {
+        await updateStatementDraft({ content: editor.getHTML() });
+      };
+
       try {
         setSaveButtonState("loading");
         if (file) {
@@ -133,6 +140,7 @@ export function ImagePopoverEditor({
               type: "layout",
             },
           });
+          updateDraft();
         }
         setSaveButtonState("success");
         handleClosePopover();
@@ -154,18 +162,12 @@ export function ImagePopoverEditor({
         .deleteBlockImage({ imageId: initialImageData.id })
         .run();
 
-      // Delete from storage
-      await deleteStoredStatementImage({
-        url: initialImageData.src,
-        creatorId: userId,
+      await deleteStatementImage(
+        initialImageData.id,
         statementId,
-      });
-
-      // Delete from database
-      await deleteStatementImage(initialImageData.id, {
-        path: pathname,
-        type: "layout",
-      });
+        statementCreatorId,
+      );
+      //update html right away
 
       handleClosePopover();
     } catch (error) {

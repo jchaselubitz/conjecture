@@ -1,9 +1,15 @@
 import { mergeAttributes, Node } from "@tiptap/core";
 import { nanoid } from "nanoid";
 import { Plugin, PluginKey } from "prosemirror-state";
+import { handleImageChange } from "./helpers/helpersImageExtension";
+import { toast } from "sonner";
 
 export interface BlockImageOptions {
   HTMLAttributes: Record<string, any>;
+  userId: string | null;
+  statementId: string | null;
+  editMode: boolean | null;
+  onDelete?: (imageUrl: string) => Promise<void>;
 }
 
 declare module "@tiptap/core" {
@@ -34,6 +40,9 @@ export const BlockImage = Node.create<BlockImageOptions>({
   addOptions() {
     return {
       HTMLAttributes: {},
+      userId: null,
+      statementId: null,
+      editMode: null,
     };
   },
 
@@ -145,7 +154,6 @@ export const BlockImage = Node.create<BlockImageOptions>({
       },
       deleteBlockImage: (options) => ({ tr, state, dispatch }) => {
         let nodePos = -1;
-
         state.doc.descendants((node, pos) => {
           if (
             node.type.name === this.name &&
@@ -172,29 +180,152 @@ export const BlockImage = Node.create<BlockImageOptions>({
   },
 
   addProseMirrorPlugins() {
+    const userId = this.options.userId;
+    const statementId = this.options.statementId;
+    const editMode = this.options.editMode;
+    const editor = this.editor;
     return [
       new Plugin({
         key: new PluginKey("blockImageHandler"),
         props: {
           handleDOMEvents: {
             drop(view, event) {
-              if (!event.dataTransfer?.files.length) {
-                return false;
+              if (!editMode || !userId || !statementId) return false;
+
+              const variable = event.dataTransfer?.getData("variable");
+              if (variable) {
+                const position = view.posAtCoords({
+                  top: event.clientY,
+                  left: event.clientX,
+                });
+
+                if (!position) {
+                  return false;
+                }
+
+                editor?.commands.insertContentAt(position.pos, {
+                  type: "mention",
+                  attrs: {
+                    id: variable,
+                    label: variable,
+                  },
+                });
+                return true;
               }
 
-              const file = event.dataTransfer.files[0];
-              if (!file.type.startsWith("image/")) {
-                return false;
+              if (event.dataTransfer?.files.length) {
+                const file = event.dataTransfer.files[0];
+                if (!file.type.startsWith("image/")) {
+                  return false;
+                }
+
+                event.preventDefault();
+
+                const position = view.posAtCoords({
+                  top: event.clientY,
+                  left: event.clientX,
+                });
+
+                if (!position) {
+                  return false;
+                }
+
+                const imageId = nanoid();
+
+                handleImageChange({
+                  file,
+                  userId,
+                  statementId,
+                  imageData: {
+                    id: imageId,
+                    alt: file.name,
+                  },
+                })
+                  .then((newImage) => {
+                    if (newImage) {
+                      editor
+                        ?.chain()
+                        .focus()
+                        .insertBlockImage({
+                          src: newImage.imageUrl,
+                          alt: file.name,
+                          imageId: newImage.imageId,
+                        })
+                        .run();
+                    }
+                  })
+                  .catch((error) => {
+                    console.error("Failed to upload image:", error);
+                    toast.error("Failed to upload image");
+                  });
+
+                return true;
               }
 
-              event.preventDefault();
-
-              // Here you would typically handle the file upload
-              // For now, we just log it as per requirements
-
-              return true;
+              return false;
             },
           },
+        },
+      }),
+      new Plugin({
+        key: new PluginKey("blockImageDeletion"),
+        props: {
+          handleKeyDown: (view, event) => {
+            // Process only intentional deletion keypresses
+            if (event.key === "Delete" || event.key === "Backspace") {
+              const { selection } = view.state;
+              if (selection.empty) return false;
+              const fragment = selection.content().content;
+              const deletedImages = new Set<string>();
+              fragment.descendants((node) => {
+                if (node.type.name === this.name) {
+                  deletedImages.add(node.attrs.imageId);
+                }
+                return true;
+              });
+
+              if (deletedImages.size > 0) {
+                this.editor.storage.blockImageDeletion = {
+                  pendingDeletions: deletedImages,
+                };
+              }
+            }
+            return false;
+          },
+        },
+        appendTransaction: (transactions, oldState, newState) => {
+          // Skip if editor is remounting or we're not in edit mode
+          const view = this.editor.view;
+          const isEditModeTransitioning =
+            view?.dom.closest('[data-edit-transitioning="true"]') != null;
+          if (isEditModeTransitioning) return null;
+          const pendingDeletions = this.editor.storage.blockImageDeletion
+            ?.pendingDeletions;
+          if (!pendingDeletions || pendingDeletions.size === 0) return null;
+
+          const existingImages = new Set<string>();
+          newState.doc.descendants((node) => {
+            if (node.type.name === this.name) {
+              existingImages.add(node.attrs.imageId);
+            }
+            return true;
+          });
+          const confirmedDeletions = new Set<string>();
+          pendingDeletions.forEach((imageId: string) => {
+            if (!existingImages.has(imageId)) {
+              confirmedDeletions.add(imageId);
+            }
+          });
+          if (confirmedDeletions.size > 0 && this.options.onDelete) {
+            confirmedDeletions.forEach((imageId) => {
+              this.options.onDelete?.(imageId);
+            });
+          }
+          this.editor.storage.blockImageDeletion = {
+            pendingDeletions: new Set(),
+          };
+
+          return null;
         },
       }),
     ];
