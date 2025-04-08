@@ -17,7 +17,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
-import { deleteDraft, deleteStatement } from "@/lib/actions/statementActions";
+import { deleteStatement } from "@/lib/actions/statementActions";
 import { cn } from "@/lib/utils";
 
 import { Button } from "../ui/button";
@@ -58,12 +58,21 @@ export default function StatementOptions({
   const { userId } = useUserContext();
   const router = useRouter();
 
+  if (!userId) {
+    return (
+      <div className={cn("space-y-2", className)}>
+        <Separator />
+        <div className="py-2">Create an account to interact with this post</div>
+        <Separator />
+      </div>
+    );
+  }
   const handleDelete = async () => {
     try {
       await deleteStatement(
         statement.statementId,
         statement.creatorId,
-        statement.headerImg || "",
+        statement.headerImg || ""
       );
       router.push("/statements");
     } catch (error) {
@@ -162,17 +171,17 @@ const ShareButton = () => {
 
   const handleEmailShare = () => {
     const subject = encodeURIComponent(
-      statement.title || "Check out this statement",
+      statement.title || "Check out this statement"
     );
     const body = encodeURIComponent(
-      `I thought you might be interested in this statement:\n\n${shareUrl}`,
+      `I thought you might be interested in this statement:\n\n${shareUrl}`
     );
     window.open(`mailto:?subject=${subject}&body=${body}`);
   };
 
   const handleSocialShare = (platform: "facebook" | "linkedin" | "twitter") => {
     const text = encodeURIComponent(
-      statement.title || "Check out this statement",
+      statement.title || "Check out this statement"
     );
     const url = encodeURIComponent(shareUrl);
 
