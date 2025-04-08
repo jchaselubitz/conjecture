@@ -106,7 +106,7 @@ export default function StatementDetails({
   };
 
   const handleHeaderImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     if (!userId) {
       alert("You must be logged in to upload an image.");
@@ -138,12 +138,12 @@ export default function StatementDetails({
   }, [userId, statement]);
 
   const authorCanAnnotate = useMemo(() => {
-    return isStatementCreator && showAuthorComments;
-  }, [isStatementCreator, showAuthorComments]);
+    return (isStatementCreator && showAuthorComments) || !userId;
+  }, [isStatementCreator, showAuthorComments, userId]);
 
   const readerCanAnnotate = useMemo(() => {
-    return !isStatementCreator && showReaderComments;
-  }, [isStatementCreator, showReaderComments]);
+    return (!isStatementCreator && showReaderComments) || !userId;
+  }, [isStatementCreator, showReaderComments, userId]);
 
   const prevEditModeRef = useRef(editMode);
 
