@@ -16,6 +16,13 @@ const pwaConfig = withPWA({
 const config: NextConfig = {
   ...pwaConfig,
   images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "bewgymyresxixvkkqbzl.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
     domains: [
       "conject.io",
       "app.conject.io",
