@@ -85,7 +85,7 @@ export default function RebuttalButton({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className={className}>
+        <Button variant="outline" className={className} disabled={!userId}>
           Respond
         </Button>
       </DialogTrigger>

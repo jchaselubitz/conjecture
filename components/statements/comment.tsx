@@ -165,7 +165,7 @@ const Comment: React.FC<CommentProps> = ({
   const commentControls = () => {
     return (
       <div className="flex items-center gap-1">
-        {!editingComment && (
+        {!editingComment && userId && (
           <>
             <TooltipProvider>
               <Tooltip>

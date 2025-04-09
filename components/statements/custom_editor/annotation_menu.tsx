@@ -1,7 +1,10 @@
 import { BubbleMenu } from "@tiptap/react";
+import { Check, Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
 import { createStatementAnnotation } from "@/lib/helpers/helpersStatements";
+import { useCopyToClipboard } from "@/lib/hooks/useCopyToClipboard";
 import { cn } from "@/lib/utils";
 
 import { AnnotationButton } from "./annotation_button";
@@ -29,6 +32,10 @@ export const AnnotationMenu = ({
 }: AnnotationMenuProps) => {
   const { userId } = useUserContext();
   const { editor, annotations, setAnnotations } = useStatementContext();
+  const { copy, copied } = useCopyToClipboard(
+    editor?.state.selection.toString() ?? "",
+  );
+
   if (!editor) return null;
 
   const handleAnnotationCreate = async () => {
@@ -54,7 +61,17 @@ export const AnnotationMenu = ({
         )}
       >
         {!editMode && (
-          <QuoteLinkButton editor={editor} statementId={statementId} />
+          <>
+            <QuoteLinkButton editor={editor} statementId={statementId} />
+            <Button variant="ghost" size="sm" onClick={copy}>
+              {copied ? (
+                <Check className="h-4 w-4" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+              Copy
+            </Button>
+          </>
         )}
 
         {canAnnotate && (

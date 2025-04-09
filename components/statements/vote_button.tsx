@@ -70,6 +70,7 @@ export default function VoteButton({
             variant={hasUpvoted ? "default" : "outline"}
             size="sm"
             onClick={handleVote}
+            disabled={!userId}
             className={`text-xs opacity-70 hover:opacity-100 hover:cursor-pointer ${className}`}
           >
             <ArrowUp className="w-3 h-3 mr-1" />

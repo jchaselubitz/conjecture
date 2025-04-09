@@ -24,7 +24,7 @@ import { deleteStoredStatementImage } from "./storageActions";
 import { RevalidationPath } from "kysely-codegen";
 import { createStatementImageUrl } from "../helpers/helpersStorage";
 export async function getDrafts({
-  forCurrentUser = false,
+  forCurrentUser,
   publishedOnly = true,
   creatorId,
 }: {
@@ -32,6 +32,7 @@ export async function getDrafts({
   publishedOnly?: boolean;
   creatorId?: string;
 }): Promise<Statement[]> {
+  console.log("forCurrentUser", forCurrentUser);
   const supabase = await createClient();
   const {
     data: { user },
@@ -75,6 +76,7 @@ export async function getDrafts({
   if (publishedOnly) {
     drafts = drafts.where("publishedAt", "is not", null);
   }
+  console.log("forCurrentUser", forCurrentUser);
 
   if (forCurrentUser && user) {
     drafts = drafts.where("creatorId", "=", user.id);

@@ -69,7 +69,7 @@ export function CitationDisplay() {
     <Card
       className={cn(
         "w-full border-none overflow-hidden shadow-none pt-0",
-        !conjecture?.headerImg && "pt-4"
+        !conjecture?.headerImg && "pt-4",
       )}
     >
       {conjecture?.headerImg && (

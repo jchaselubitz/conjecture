@@ -2,7 +2,7 @@
 
 import "./prose.css";
 import { BaseDraft, DraftWithAnnotations } from "kysely-codegen";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useWindowSize } from "react-use";
 import AnnotationPanel from "@/components/statements/annotation_panel";
 import {
@@ -39,6 +39,10 @@ export default function StatementLayout({
     setEditMode(editModeEnabled);
   }, [editModeEnabled]);
 
+  // const newUserWithAnnotation = useMemo(() => {
+  //   return userId && statement.annotations.length > 0;
+  // }, [userId, statement.annotations]);
+
   const [showAnnotationDrawer, setShowAnnotationDrawer] = useState(false);
   const isCreator = statement.creatorId === userId;
   const isMobile = useWindowSize().width < 768;
@@ -63,8 +67,8 @@ export default function StatementLayout({
   }, []);
 
   const drawerStyle = visualViewport
-    ? { height: `${visualViewport * 0.6}px` }
-    : { height: "60dvh" };
+    ? { height: `${visualViewport * 0.7}px` }
+    : { height: "70dvh" };
 
   const [showAuthorComments, setShowAuthorComments] = useState(
     authorCommentsEnabled,
@@ -142,14 +146,15 @@ export default function StatementLayout({
       >
         <DrawerContent style={drawerStyle}>
           <DrawerHeader>
-            <DrawerTitle>
+            <DrawerTitle className="sr-only">Comments</DrawerTitle>
+            {/* <DrawerTitle>
               <CommentIndicatorButton
                 showAuthorComments={showAuthorComments}
                 showReaderComments={showReaderComments}
                 onShowAuthorCommentsChange={onShowAuthorCommentsChange}
                 onShowReaderCommentsChange={onShowReaderCommentsChange}
               />
-            </DrawerTitle>
+            </DrawerTitle> */}
           </DrawerHeader>
 
           {annotations && (

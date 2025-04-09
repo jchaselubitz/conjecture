@@ -118,7 +118,7 @@ const HTMLSuperEditor = ({
       // Wait for the DOM to update before scrolling
       setTimeout(() => {
         const annotationElement = document.querySelector(
-          `[data-annotation-id="${annotationId}"]`
+          `[data-annotation-id="${annotationId}"]`,
         );
         if (annotationElement) {
           annotationElement.scrollIntoView({
@@ -179,7 +179,7 @@ const HTMLSuperEditor = ({
               {
                 path: pathname,
                 type: "layout",
-              }
+              },
             );
           } catch (error) {
             console.error("Failed to delete image:", error);
@@ -227,7 +227,7 @@ const HTMLSuperEditor = ({
       });
 
       const citationIds = citationNodes.map(
-        (node) => node.node.attrs.citationId
+        (node) => node.node.attrs.citationId,
       );
       setFootnoteIds(citationIds);
 
@@ -261,7 +261,7 @@ const HTMLSuperEditor = ({
             "citation-block",
           ]);
           const citationIds = citationNodes.map(
-            (node) => node.node.attrs.citationId
+            (node) => node.node.attrs.citationId,
           );
           setFootnoteIds(citationIds);
           const currentHTML = editor.getHTML();
@@ -341,19 +341,19 @@ const HTMLSuperEditor = ({
 
           const imageNode = element.closest('img[data-type="block-image"]');
           const citationNode = element.closest(
-            '[data-type="citation"], [data-type="citation-block"]'
+            '[data-type="citation"], [data-type="citation-block"]',
           );
           let latexNode = element.closest(
-            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
+            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
           );
 
           if (!latexNode) {
             const katexElement = element.closest(
-              ".katex, .katex-html, .katex-rendered"
+              ".katex, .katex-html, .katex-rendered",
             );
             if (katexElement) {
               latexNode = katexElement.closest(
-                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
+                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
               );
             }
           }
@@ -414,7 +414,7 @@ const HTMLSuperEditor = ({
             }
 
             const selectedCitation = statement.citations.find(
-              (c) => c.id.toString() === id.toString()
+              (c) => c.id.toString() === id.toString(),
             );
 
             if (!selectedCitation) {
@@ -461,7 +461,7 @@ const HTMLSuperEditor = ({
 
             if (!latex) {
               const katexWrapper = latexNode.querySelector(
-                ".katex-rendered, .katex"
+                ".katex-rendered, .katex",
               );
               if (katexWrapper) {
                 latex = "";
@@ -566,7 +566,7 @@ const HTMLSuperEditor = ({
     // Update all annotations to reflect new selection state
     editor.state.doc.descendants((node, pos) => {
       const annotationMark = node.marks.find(
-        (mark) => mark.type.name === "annotationHighlight"
+        (mark) => mark.type.name === "annotationHighlight",
       );
 
       if (annotationMark) {
@@ -593,7 +593,7 @@ const HTMLSuperEditor = ({
             // Use setTimeout to ensure the DOM has updated
             setTimeout(() => {
               const annotationElement = document.querySelector(
-                `[data-annotation-id="${selectedAnnotationId}"]`
+                `[data-annotation-id="${selectedAnnotationId}"]`,
               );
               if (annotationElement) {
                 annotationElement.scrollIntoView({

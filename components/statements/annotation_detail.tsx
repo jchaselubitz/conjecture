@@ -7,6 +7,7 @@ import {
   BaseCommentWithUser,
 } from "kysely-codegen";
 import { RefreshCw, Trash2, X } from "lucide-react";
+import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
 import { useWindowSize } from "react-use";
 import { Button } from "@/components/ui/button";
@@ -47,7 +48,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
   statementId,
   selectedAnnotationId,
 }) => {
-  const { imageUrl, name } = useUserContext();
+  const { imageUrl, name, userId } = useUserContext();
   const [comments, setComments] = useState<BaseCommentWithUser[]>(
     annotation.comments,
   );
@@ -55,7 +56,6 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
   const annotationRef = useRef<HTMLDivElement>(null);
   const isMobile = useWindowSize().width < 768;
 
-  const { userId } = useUserContext();
   const [deletingButtonState, setDeletingButtonState] =
     useState<ButtonLoadingState>("default");
   const [replyToComment, setReplyToComment] =
@@ -266,119 +266,134 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
               ))}
             </div>
           )}
-          <div id="comment-input" className=" ">
-            {replyToComment && (
-              <div className="flex items-center gap-2 mb-2 p-2 bg-muted/50 rounded-md">
-                <span className="text-xs flex-1 truncate">
-                  Replying to:{" "}
-                  <span className="font-medium italic">
-                    {replyToComment.content.substring(0, 40)}
-                    {replyToComment.content.length > 40 ? "..." : ""}
+          {userId ? (
+            <div id="comment-input" className=" ">
+              {replyToComment && (
+                <div className="flex items-center gap-2 mb-2 p-2 bg-muted/50 rounded-md">
+                  <span className="text-xs flex-1 truncate">
+                    Replying to:{" "}
+                    <span className="font-medium italic">
+                      {replyToComment.content.substring(0, 40)}
+                      {replyToComment.content.length > 40 ? "..." : ""}
+                    </span>
                   </span>
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 shrink-0"
-                  onClick={cancelReply}
-                  aria-label="Cancel reply"
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-            )}
-
-            <Textarea
-              ref={commentInputRef}
-              placeholder={
-                replyToComment
-                  ? "Write your reply..."
-                  : "Share your thoughts..."
-              }
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="min-h-[80px] focus-visible:ring-0"
-            />
-
-            <div className="flex flex-row justify-between mt-2 gap-2">
-              <div className="flex flex-row gap-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <LoadingButton
-                        buttonState={submittingButtonState}
-                        onClick={handleSubmitComment}
-                        text={replyToComment ? "Reply" : "Comment"}
-                        loadingText="Submitting..."
-                        successText="Submitted"
-                        errorText="Error"
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>
-                        {replyToComment
-                          ? "Submit your reply"
-                          : "Submit your comment"}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setCommentText("");
-                          setReplyToComment(null);
-                        }}
-                      >
-                        {commentText ? "Clear" : "Cancel"}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>
-                        {commentText ? "Clear comment text" : "Cancel reply"}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <div className="text-xs text-muted-foreground self-center">
-                  Press <kbd className="px-1 py-0.5 bg-muted rounded">⇧</kbd>+
-                  <kbd className="px-1 py-0.5 bg-muted rounded">Enter</kbd> for
-                  new line
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 shrink-0"
+                    onClick={cancelReply}
+                    aria-label="Cancel reply"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
                 </div>
-              </div>
-
-              {isCreator && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <LoadingButton
-                        buttonState={deletingButtonState}
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent accordion from toggling
-                          handleDeleteAnnotation();
-                        }}
-                        text={<Trash2 className="w-4 h-4" color="red" />}
-                        variant="ghost"
-                        size="sm"
-                        loadingText={
-                          <RefreshCw className="w-4 h-4 animate-spin" />
-                        }
-                        successText="Deleted"
-                        errorText="Error deleting annotation"
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Delete annotation</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
               )}
+
+              <Textarea
+                ref={commentInputRef}
+                placeholder={
+                  replyToComment
+                    ? "Write your reply..."
+                    : "Share your thoughts..."
+                }
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="min-h-[80px] focus-visible:ring-0"
+              />
+
+              <div className="flex flex-row justify-between mt-2 gap-2">
+                <div className="flex flex-row gap-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <LoadingButton
+                          buttonState={submittingButtonState}
+                          onClick={handleSubmitComment}
+                          text={replyToComment ? "Reply" : "Comment"}
+                          loadingText="Submitting..."
+                          successText="Submitted"
+                          errorText="Error"
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          {replyToComment
+                            ? "Submit your reply"
+                            : "Submit your comment"}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setCommentText("");
+                            setReplyToComment(null);
+                          }}
+                        >
+                          {commentText ? "Clear" : "Cancel"}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          {commentText ? "Clear comment text" : "Cancel reply"}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <div className="text-xs text-muted-foreground self-center">
+                    Press <kbd className="px-1 py-0.5 bg-muted rounded">⇧</kbd>+
+                    <kbd className="px-1 py-0.5 bg-muted rounded">Enter</kbd>{" "}
+                    for new line
+                  </div>
+                </div>
+
+                {isCreator && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <LoadingButton
+                          buttonState={deletingButtonState}
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent accordion from toggling
+                            handleDeleteAnnotation();
+                          }}
+                          text={<Trash2 className="w-4 h-4" color="red" />}
+                          variant="ghost"
+                          size="sm"
+                          loadingText={
+                            <RefreshCw className="w-4 h-4 animate-spin" />
+                          }
+                          successText="Deleted"
+                          errorText="Error deleting annotation"
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Delete annotation</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex items-center gap-2 justify-end">
+              <Link href="/login">
+                <Button variant="default" size="sm">
+                  Login
+                </Button>
+              </Link>
+              <Link href="/signup">
+                <Button variant="outline" size="sm">
+                  Create Account
+                </Button>
+              </Link>
+            </div>
+          )}
         </AccordionContent>
       </Card>
     </AccordionItem>

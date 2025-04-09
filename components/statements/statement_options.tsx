@@ -57,15 +57,6 @@ export default function StatementOptions({
   const { userId } = useUserContext();
   const router = useRouter();
 
-  if (!userId) {
-    return (
-      <div className={cn("space-y-2", className)}>
-        <Separator />
-        <div className="py-2">Create an account to interact with this post</div>
-        <Separator />
-      </div>
-    );
-  }
   const handleDelete = async () => {
     try {
       await deleteStatement(

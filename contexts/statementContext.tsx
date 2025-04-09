@@ -85,9 +85,11 @@ const StatementContext = createContext<StatementContextType | undefined>(
 export function StatementProvider({
   children,
   drafts,
+  userId,
 }: {
   children: ReactNode;
   drafts: DraftWithAnnotations[];
+  userId: string | undefined;
 }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -264,6 +266,9 @@ export function StatementProvider({
         debouncedTitle !== prevStatementUpdateRef.current?.title ||
         debouncedSubtitle !== prevStatementUpdateRef.current?.subtitle)
     ) {
+      if (!userId) {
+        return;
+      }
       updateStatementDraft(newStatementUpdate);
       prevStatementUpdateRef.current =
         newStatementUpdate as DraftWithAnnotations;
@@ -275,6 +280,7 @@ export function StatementProvider({
     statement,
     prepStatementId,
     updateStatementDraft,
+    userId,
   ]);
 
   return (

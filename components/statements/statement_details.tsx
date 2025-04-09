@@ -154,15 +154,15 @@ export default function StatementDetails({
   if (!statement) return null;
 
   return (
-    <div className="flex flex-col mt-12 gap-6 md:mx-auto w-full md:max-w-3xl px-4 ">
+    <div className="flex flex-col md:mt-12 md:mx-auto w-full md:max-w-3xl  ">
       {headerImg ? (
-        <div className="relative group">
+        <div className="relative group md:px-4">
           <AspectRatio ratio={16 / 9} className="bg-muted rounded-md">
             <Image
               src={headerImg ?? ""}
               alt="Statement cover image"
               fill
-              className="h-full w-full rounded-md object-cover"
+              className="h-full w-full md:rounded-md object-cover"
             />
             {statement.creatorId === userId && editMode && (
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -179,7 +179,7 @@ export default function StatementDetails({
           </AspectRatio>
         </div>
       ) : editMode ? (
-        <div className="flex items-center justify-center w-full my-14">
+        <div className="flex items-center justify-center w-full my-14 md:px-4">
           <Button
             variant="outline"
             className="gap-2"
@@ -194,118 +194,120 @@ export default function StatementDetails({
       ) : (
         <></>
       )}
-      <Input
-        type="file"
-        ref={photoInputRef}
-        accept="image/*"
-        className="hidden"
-        id="avatar-upload"
-        onChange={handleHeaderImageChange}
-        disabled={isUploading || !editMode}
-      />
-      <div className="flex flex-col gap-1 mt-10 mb-5 ">
-        {statement.parentStatementId && (
-          <Link href={`/statements/${statement.parentStatementId}`}>
-            <p className="bg-yellow-50 text-lg text-yellow-900 px-2 py-1 rounded-md flex items-center gap-2 w-fit hover:bg-yellow-100 transition-colors">
-              <ChevronLeft className="w-4 h-4" />
-              Response to: {parentStatement?.title}
-            </p>
-          </Link>
+      <div className="flex flex-col px-4 gap-6 ">
+        <Input
+          type="file"
+          ref={photoInputRef}
+          accept="image/*"
+          className="hidden"
+          id="avatar-upload"
+          onChange={handleHeaderImageChange}
+          disabled={isUploading || !editMode}
+        />
+        <div className="flex flex-col gap-1 mt-6 md:mt-10 md:mb-5 ">
+          {statement.parentStatementId && (
+            <Link href={`/statements/${statement.parentStatementId}`}>
+              <p className="bg-yellow-50 text-lg text-yellow-900 px-2 py-1 rounded-md flex items-center gap-2 w-fit hover:bg-yellow-100 transition-colors">
+                <ChevronLeft className="w-4 h-4" />
+                Response to: {parentStatement?.title}
+              </p>
+            </Link>
+          )}
+          <div className="flex justify-between items-center">
+            {editMode ? (
+              <TextareaAutosize
+                name="title"
+                disabled={!editMode}
+                placeholder="Give it a title..."
+                className="shadow-none rounded-none border-0 border-b py-4 md:text-5xl text-3xl font-bold h-fit focus:outline-none focus:border-zinc-500 focus-visible:ring-0 w-full resize-none bg-transparent"
+                defaultValue={statement?.title || ""}
+                minRows={1}
+                maxRows={2}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  setStatement({
+                    ...statement,
+                    title: e.target.value,
+                    statementId: prepStatementId,
+                  })
+                }
+              />
+            ) : (
+              <h1 className="md:text-5xl text-3xl font-bold py-1">
+                {statement?.title ?? title}
+              </h1>
+            )}
+          </div>
+          <div className="flex justify-between items-center">
+            {editMode ? (
+              <TextareaAutosize
+                name="subtitle"
+                disabled={!editMode}
+                placeholder="Give it a subtitle..."
+                className="shadow-none rounded-none border-0 border-b py-4 font-medium focus:outline-none focus:border-zinc-500 focus-visible:ring-0 w-full text-zinc-700 md:text-xl resize-none bg-transparent"
+                defaultValue={statement?.subtitle || ""}
+                minRows={1}
+                maxRows={2}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  setStatement({
+                    ...statement,
+                    subtitle: e.target.value,
+                    statementId: prepStatementId,
+                  })
+                }
+              />
+            ) : (
+              <h2 className="font-medium py-1 md:text-xl text-zinc-500">
+                {statement?.subtitle ?? subtitle}
+              </h2>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between mb-5">
+          <StatementOptions
+            className="mb-0 w-full"
+            statement={statement}
+            editMode={editMode}
+            showAuthorComments={showAuthorComments}
+            showReaderComments={showReaderComments}
+            handleEditModeToggle={handleEditModeToggle}
+            onShowAuthorCommentsChange={onShowAuthorCommentsChange}
+            onShowReaderCommentsChange={onShowReaderCommentsChange}
+          />
+        </div>
+
+        <Byline statement={statement} />
+
+        <div className="rounded-lg overflow-hidden bg-background">
+          <HTMLSuperEditor
+            key={`editor-content-${editMode}`}
+            statement={statement}
+            style={{ minHeight: "400px" }}
+            existingAnnotations={annotations}
+            userId={userId}
+            onAnnotationClick={handleAnnotationClick}
+            placeholder="Start typing or paste content here..."
+            annotatable={!editMode && (authorCanAnnotate || readerCanAnnotate)}
+            selectedAnnotationId={selectedAnnotationId}
+            setSelectedAnnotationId={setSelectedAnnotationId}
+            showAuthorComments={showAuthorComments}
+            showReaderComments={showReaderComments}
+            editMode={editMode}
+            setFootnoteIds={setFootnoteIds}
+          />
+        </div>
+        {editor && statementId && (
+          <>
+            {editMode && (
+              <div className={cn("sticky bottom-4 z-50 w-full ")}>
+                <EditorMenu statementId={statementId} editor={editor} />
+              </div>
+            )}
+            <FootnoteList citations={orderedFootnotes} />
+          </>
         )}
-        <div className="flex justify-between items-center">
-          {editMode ? (
-            <TextareaAutosize
-              name="title"
-              disabled={!editMode}
-              placeholder="Give it a title..."
-              className="shadow-none rounded-none border-0 border-b py-4 md:text-5xl text-3xl font-bold h-fit focus:outline-none focus:border-zinc-500 focus-visible:ring-0 w-full resize-none bg-transparent"
-              defaultValue={statement?.title || ""}
-              minRows={1}
-              maxRows={2}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setStatement({
-                  ...statement,
-                  title: e.target.value,
-                  statementId: prepStatementId,
-                })
-              }
-            />
-          ) : (
-            <h1 className="md:text-5xl text-3xl font-bold py-1">
-              {statement?.title ?? title}
-            </h1>
-          )}
-        </div>
-        <div className="flex justify-between items-center">
-          {editMode ? (
-            <TextareaAutosize
-              name="subtitle"
-              disabled={!editMode}
-              placeholder="Give it a subtitle..."
-              className="shadow-none rounded-none border-0 border-b py-4 font-medium focus:outline-none focus:border-zinc-500 focus-visible:ring-0 w-full text-zinc-700 md:text-xl resize-none bg-transparent"
-              defaultValue={statement?.subtitle || ""}
-              minRows={1}
-              maxRows={2}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setStatement({
-                  ...statement,
-                  subtitle: e.target.value,
-                  statementId: prepStatementId,
-                })
-              }
-            />
-          ) : (
-            <h2 className="font-medium py-1 md:text-xl text-zinc-500">
-              {statement?.subtitle ?? subtitle}
-            </h2>
-          )}
-        </div>
+        <div className="h-14" />
       </div>
-
-      <div className="flex items-center justify-between mb-5">
-        <StatementOptions
-          className="mb-0 w-full"
-          statement={statement}
-          editMode={editMode}
-          showAuthorComments={showAuthorComments}
-          showReaderComments={showReaderComments}
-          handleEditModeToggle={handleEditModeToggle}
-          onShowAuthorCommentsChange={onShowAuthorCommentsChange}
-          onShowReaderCommentsChange={onShowReaderCommentsChange}
-        />
-      </div>
-
-      <Byline statement={statement} />
-
-      <div className="rounded-lg overflow-hidden bg-background">
-        <HTMLSuperEditor
-          key={`editor-content-${editMode}`}
-          statement={statement}
-          style={{ minHeight: "400px" }}
-          existingAnnotations={annotations}
-          userId={userId}
-          onAnnotationClick={handleAnnotationClick}
-          placeholder="Start typing or paste content here..."
-          annotatable={!editMode && (authorCanAnnotate || readerCanAnnotate)}
-          selectedAnnotationId={selectedAnnotationId}
-          setSelectedAnnotationId={setSelectedAnnotationId}
-          showAuthorComments={showAuthorComments}
-          showReaderComments={showReaderComments}
-          editMode={editMode}
-          setFootnoteIds={setFootnoteIds}
-        />
-      </div>
-      {editor && statementId && (
-        <>
-          {editMode && (
-            <div className={cn("sticky bottom-4 z-50 w-full ")}>
-              <EditorMenu statementId={statementId} editor={editor} />
-            </div>
-          )}
-          <FootnoteList citations={orderedFootnotes} />
-        </>
-      )}
-      <div className="h-14" />
     </div>
   );
 }
