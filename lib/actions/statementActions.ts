@@ -32,7 +32,6 @@ export async function getDrafts({
   publishedOnly?: boolean;
   creatorId?: string;
 }): Promise<Statement[]> {
-  console.log("forCurrentUser", forCurrentUser);
   const supabase = await createClient();
   const {
     data: { user },
@@ -76,7 +75,6 @@ export async function getDrafts({
   if (publishedOnly) {
     drafts = drafts.where("publishedAt", "is not", null);
   }
-  console.log("forCurrentUser", forCurrentUser);
 
   if (forCurrentUser && user) {
     drafts = drafts.where("creatorId", "=", user.id);
