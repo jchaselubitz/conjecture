@@ -35,7 +35,6 @@ import VoteButton from "./vote_button";
 
 interface StatementOptionsProps {
   statement: DraftWithAnnotations;
-
   editMode: boolean;
   showAuthorComments: boolean;
   showReaderComments: boolean;
@@ -72,7 +71,7 @@ export default function StatementOptions({
       await deleteStatement(
         statement.statementId,
         statement.creatorId,
-        statement.headerImg || ""
+        statement.headerImg || "",
       );
       router.push("/statements");
     } catch (error) {
@@ -171,17 +170,17 @@ const ShareButton = () => {
 
   const handleEmailShare = () => {
     const subject = encodeURIComponent(
-      statement.title || "Check out this statement"
+      statement.title || "Check out this statement",
     );
     const body = encodeURIComponent(
-      `I thought you might be interested in this statement:\n\n${shareUrl}`
+      `I thought you might be interested in this statement:\n\n${shareUrl}`,
     );
     window.open(`mailto:?subject=${subject}&body=${body}`);
   };
 
   const handleSocialShare = (platform: "facebook" | "linkedin" | "twitter") => {
     const text = encodeURIComponent(
-      statement.title || "Check out this statement"
+      statement.title || "Check out this statement",
     );
     const url = encodeURIComponent(shareUrl);
 

@@ -2,7 +2,6 @@ import {
   BaseDraft,
   BaseStatementCitation,
   DraftWithAnnotations,
-  NewAnnotation,
 } from "kysely-codegen";
 import { ChevronLeft, Upload } from "lucide-react";
 import Image from "next/image";
@@ -33,7 +32,6 @@ export interface StatementDetailsProps {
   editMode: boolean;
   showAuthorComments: boolean;
   showReaderComments: boolean;
-  setEditMode: (editMode: boolean) => void;
   onShowAuthorCommentsChange: (checked: boolean) => void;
   onShowReaderCommentsChange: (checked: boolean) => void;
   setSelectedAnnotationId: (annotationId: string | undefined) => void;
@@ -46,7 +44,6 @@ export default function StatementDetails({
   editMode,
   showAuthorComments,
   showReaderComments,
-  setEditMode,
   onShowAuthorCommentsChange,
   onShowReaderCommentsChange,
   setSelectedAnnotationId,
@@ -55,8 +52,7 @@ export default function StatementDetails({
   parentStatement,
 }: StatementDetailsProps) {
   const { userId } = useUserContext();
-  const { statement, setStatement, debouncedContent, editor } =
-    useStatementContext();
+  const { statement, setStatement, editor } = useStatementContext();
   const router = useRouter();
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -79,11 +75,13 @@ export default function StatementDetails({
   const prepStatementId = statementId ? statementId : generateStatementId();
 
   const handleEditModeToggle = () => {
-    setEditMode(!editMode);
+    setSelectedAnnotationId(undefined);
+    const url = new URL(window.location.href);
     if (!editMode) {
-      router.push(`/statements/${prepStatementId}?edit=true`);
+      router.push(`${url.pathname}?edit=true`);
     } else {
-      router.push(`/statements/${prepStatementId}`);
+      url.searchParams.delete("edit");
+      router.push(`${url.pathname}`);
     }
   };
 
@@ -92,10 +90,9 @@ export default function StatementDetails({
     const savedSizeString = localStorage.getItem("annotationPanelSize");
     const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
     panelGroupRef.current?.setLayout(savedSize ?? [67, 33]);
-    // Update URL with annotation ID
     const url = new URL(window.location.href);
-    url.searchParams.delete("annotation_id");
-    url.searchParams.set("annotation_id", annotationId);
+    url.searchParams.delete("annotation-id");
+    url.searchParams.set("annotation-id", annotationId);
     router.push(url.pathname + url.search);
   };
 
@@ -106,7 +103,7 @@ export default function StatementDetails({
   };
 
   const handleHeaderImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     if (!userId) {
       alert("You must be logged in to upload an image.");
@@ -149,6 +146,7 @@ export default function StatementDetails({
 
   useEffect(() => {
     if (prevEditModeRef.current && !editMode) {
+      //
     }
     prevEditModeRef.current = editMode;
   }, [editMode]);

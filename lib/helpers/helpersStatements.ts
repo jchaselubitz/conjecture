@@ -22,6 +22,7 @@ export type PositionParams = {
 
 import { nanoid } from "nanoid";
 import { deleteCitations } from "../actions/citationActions";
+import { Dispatch, SetStateAction } from "react";
 
 export const generateStatementId = (): string => {
   const randomNumber = Math.floor(Math.random() * 100000);
@@ -252,13 +253,38 @@ export const openLatexPopover = ({
   setLatexPopoverOpen(true);
 };
 
+export type ImageLightboxProps = {
+  id: string;
+  statementImages: BaseStatementImage[];
+  setInitialImageData: Dispatch<SetStateAction<UpsertImageDataType>>;
+  setImageLightboxOpen: (open: boolean) => void;
+};
+
+export const openImageLightbox = ({
+  id,
+  statementImages,
+  setInitialImageData,
+  setImageLightboxOpen,
+}: ImageLightboxProps) => {
+  if (id) {
+    const existingImage = statementImages.find((image) => image.id === id);
+    setInitialImageData({
+      src: existingImage?.src ?? "",
+      alt: existingImage?.alt ?? "",
+      id: existingImage?.id ?? "",
+      statementId: existingImage?.statementId ?? "",
+    });
+    setImageLightboxOpen(true);
+  }
+};
+
 export type ImagePopoverProps = {
   src?: string;
   alt?: string;
   id?: string;
   position?: { x: number; y: number; width: number; height: number } | null;
   statementImages?: BaseStatementImage[];
-  setInitialImageData: (data: UpsertImageDataType) => void;
+  setInitialImageData: Dispatch<SetStateAction<UpsertImageDataType>>;
   setSelectedNodePosition: (
     position: { x: number; y: number; width: number; height: number } | null,
   ) => void;

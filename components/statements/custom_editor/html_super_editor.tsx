@@ -10,11 +10,9 @@ import {
   DraftWithAnnotations,
   NewStatementCitation,
 } from "kysely-codegen";
-import { nanoid } from "nanoid";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useRef } from "react";
 import { useWindowSize } from "react-use";
-import { toast } from "sonner";
 import { useStatementContext } from "@/contexts/statementContext";
 import { deleteCitation } from "@/lib/actions/citationActions";
 import { deleteStatementImage } from "@/lib/actions/statementActions";
@@ -25,6 +23,7 @@ import {
   getMarks,
   getNodes,
   openCitationPopover,
+  openImageLightbox,
   openImagePopover,
   openLatexPopover,
 } from "@/lib/helpers/helpersStatements";
@@ -36,10 +35,10 @@ import { AnnotationHighlight } from "./custom_extensions/annotation_highlight";
 import { BlockImage } from "./custom_extensions/block_image";
 import { BlockLatex } from "./custom_extensions/block_latex";
 import { Citation } from "./custom_extensions/citation";
-import { handleImageChange } from "./custom_extensions/helpers/helpersImageExtension";
 import { InlineLatex } from "./custom_extensions/inline_latex";
 import { handleCitationPaste } from "./custom_extensions/quote_paste_handler";
 import { QuotePasteHandler } from "./custom_extensions/quote_paste_handler";
+import { ImageLightbox } from "./image_lightbox";
 import { ImageNodeEditor } from "./image_node_editor";
 import { LatexNodeEditor } from "./latex_node_editor";
 
@@ -80,6 +79,7 @@ const HTMLSuperEditor = ({
     setEditor,
     setSelectedNodePosition,
     setCurrentLatex,
+    initialImageData,
     setInitialImageData,
     setCitationData,
     setIsBlock,
@@ -89,6 +89,7 @@ const HTMLSuperEditor = ({
     setSelectedLatexId,
     setCitationPopoverOpen,
     setImagePopoverOpen,
+    setImageLightboxOpen,
     setLatexPopoverOpen,
     latexPopoverOpen,
     imagePopoverOpen,
@@ -333,36 +334,64 @@ const HTMLSuperEditor = ({
         click: (view, event) => {
           const element = event.target as HTMLElement;
 
-          // Handle image clicks only in editMode mode
           const imageNode = element.closest('img[data-type="block-image"]');
-          if (imageNode && editMode) {
-            const rect = imageNode.getBoundingClientRect();
-
-            openImagePopover({
-              src: imageNode.getAttribute("src") || "",
-              alt: imageNode.getAttribute("alt") || "",
-              id: imageNode.getAttribute("data-image-id") ?? undefined,
-              position: {
-                x: rect.left,
-                y: rect.top,
-                width: rect.width,
-                height: rect.height,
-              },
-              statementImages: statement.images,
-              setInitialImageData,
-              setSelectedNodePosition,
-              setImagePopoverOpen,
-              statementId,
-            });
-
-            event.preventDefault();
-            event.stopPropagation();
-            return true;
-          }
-
           const citationNode = element.closest(
             '[data-type="citation"], [data-type="citation-block"]',
           );
+          let latexNode = element.closest(
+            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+          );
+
+          if (!latexNode) {
+            const katexElement = element.closest(
+              ".katex, .katex-html, .katex-rendered",
+            );
+            if (katexElement) {
+              latexNode = katexElement.closest(
+                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+              );
+            }
+          }
+
+          if (imageNode) {
+            if (editMode) {
+              const rect = imageNode.getBoundingClientRect();
+              openImagePopover({
+                src: imageNode.getAttribute("src") || "",
+                alt: imageNode.getAttribute("alt") || "",
+                id: imageNode.getAttribute("data-image-id") ?? undefined,
+                position: {
+                  x: rect.left,
+                  y: rect.top,
+                  width: rect.width,
+                  height: rect.height,
+                },
+                statementImages: statement.images,
+                setInitialImageData,
+                setSelectedNodePosition,
+                setImagePopoverOpen,
+                statementId,
+              });
+
+              event.preventDefault();
+              event.stopPropagation();
+              return true;
+            } else {
+              const id = imageNode.getAttribute("data-image-id");
+              if (id) {
+                openImageLightbox({
+                  id,
+                  statementImages: statement.images,
+                  setInitialImageData,
+                  setImageLightboxOpen,
+                });
+              }
+              event.preventDefault();
+              event.stopPropagation();
+              return true;
+            }
+          }
+
           if (citationNode) {
             const rect = citationNode.getBoundingClientRect();
 
@@ -416,20 +445,6 @@ const HTMLSuperEditor = ({
           }
 
           // Handle LaTeX clicks only in editMode mode
-          let latexNode = element.closest(
-            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
-          );
-
-          if (!latexNode) {
-            const katexElement = element.closest(
-              ".katex, .katex-html, .katex-rendered",
-            );
-            if (katexElement) {
-              latexNode = katexElement.closest(
-                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
-              );
-            }
-          }
 
           if (latexNode && editMode) {
             let id = latexNode.getAttribute("data-id");
@@ -711,6 +726,7 @@ const HTMLSuperEditor = ({
               setSelectedAnnotationId={setSelectedAnnotationId}
               statementId={statementId}
             />
+
             {editMode && !latexPopoverOpen && !imagePopoverOpen && (
               <div>
                 <FloatingMenu editor={editor} tippyOptions={{ duration: 100 }}>
@@ -719,7 +735,7 @@ const HTMLSuperEditor = ({
               </div>
             )}
 
-            {editMode && (
+            {editMode ? (
               <>
                 <LatexNodeEditor />
                 <ImageNodeEditor
@@ -727,6 +743,15 @@ const HTMLSuperEditor = ({
                   statementCreatorId={statementCreatorId}
                 />
               </>
+            ) : (
+              <ImageLightbox
+                src={initialImageData.src}
+                alt={initialImageData.alt ?? ""}
+                id={initialImageData.id}
+                statementId={statementId}
+                setInitialImageData={setInitialImageData}
+                setImageLightboxOpen={setImageLightboxOpen}
+              />
             )}
           </>
         )}

@@ -62,8 +62,10 @@ interface StatementContextType {
   setImagePopoverOpen: (open: boolean) => void;
   citationPopoverOpen: boolean;
   setCitationPopoverOpen: (open: boolean) => void;
+  imageLightboxOpen: boolean;
+  setImageLightboxOpen: (open: boolean) => void;
   initialImageData: UpsertImageDataType;
-  setInitialImageData: (data: UpsertImageDataType) => void;
+  setInitialImageData: Dispatch<SetStateAction<UpsertImageDataType>>;
   citationData: NewStatementCitation;
   setCitationData: Dispatch<SetStateAction<NewStatementCitation>>;
   currentLatex: string;
@@ -133,6 +135,7 @@ export function StatementProvider({
     latex: false,
     image: false,
     citation: false,
+    imageLightbox: false,
   });
 
   const setLatexPopoverOpen = (open: boolean) =>
@@ -141,6 +144,8 @@ export function StatementProvider({
     setPopoverState((prev) => ({ ...prev, image: open }));
   const setCitationPopoverOpen = (open: boolean) =>
     setPopoverState((prev) => ({ ...prev, citation: open }));
+  const setImageLightboxOpen = (open: boolean) =>
+    setPopoverState((prev) => ({ ...prev, imageLightbox: open }));
 
   const [annotations, setAnnotations] = useState<NewAnnotation[]>(
     statement.annotations,
@@ -297,6 +302,8 @@ export function StatementProvider({
         setImagePopoverOpen,
         citationPopoverOpen: popoverState.citation,
         setCitationPopoverOpen,
+        imageLightboxOpen: popoverState.imageLightbox,
+        setImageLightboxOpen,
         currentLatex,
         setCurrentLatex,
         initialImageData,

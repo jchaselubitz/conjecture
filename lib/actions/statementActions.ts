@@ -485,7 +485,7 @@ export async function deleteStatement(
 
 export type UpsertImageDataType = {
   src: string;
-  alt: string;
+  alt?: string;
   statementId: string;
   id: string;
 };

@@ -17,6 +17,7 @@ import { useStatementContext } from "@/contexts/statementContext";
 import { useUserContext } from "@/contexts/userContext";
 import {
   deleteStatementImage,
+  updateDraft,
   upsertStatementImage,
 } from "@/lib/actions/statementActions";
 import { deleteStoredStatementImage } from "@/lib/actions/storageActions";
@@ -43,7 +44,6 @@ export function ImagePopoverEditor({
     updateStatementDraft,
     editor,
   } = useStatementContext();
-
   const { userId } = useUserContext();
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>(
@@ -102,11 +102,6 @@ export function ImagePopoverEditor({
       return;
     }
 
-    if (!alt) {
-      setError("Please provide alt text for accessibility");
-      return;
-    }
-
     const filename = initialImageData.id ? initialImageData.id : nanoid();
 
     if (editor && userId && statementId) {
@@ -122,7 +117,7 @@ export function ImagePopoverEditor({
             userId,
             statementId,
             imageData: {
-              alt,
+              alt: alt || file?.name || "",
               src: previewUrl,
               id: filename,
             },
@@ -131,7 +126,7 @@ export function ImagePopoverEditor({
         }
         if (initialImageData.id) {
           await upsertStatementImage({
-            alt,
+            alt: alt || file?.name || "",
             src: initialImageData.src,
             id: initialImageData.id,
             statementId,
@@ -168,7 +163,6 @@ export function ImagePopoverEditor({
         statementCreatorId,
       );
       //update html right away
-
       handleClosePopover();
     } catch (error) {
       console.error("Failed to delete image:", error);
@@ -181,7 +175,6 @@ export function ImagePopoverEditor({
       <PopoverAnchor asChild>{children}</PopoverAnchor>
       <PopoverContent className="w-screen max-w-[450px] p-0" align="start">
         <div className="flex flex-col gap-4 p-4">
-          {/* Image Preview */}
           <div className="border rounded-md p-3 min-h-[200px] flex items-center justify-center bg-slate-50">
             {error ? (
               <div className="text-red-500 text-sm">{error}</div>

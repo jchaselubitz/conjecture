@@ -34,6 +34,11 @@ export default function StatementLayout({
 }: StatementDetailsProps) {
   const { userId } = useUserContext();
   const [editMode, setEditMode] = useState(editModeEnabled);
+
+  useEffect(() => {
+    setEditMode(editModeEnabled);
+  }, [editModeEnabled]);
+
   const [showAnnotationDrawer, setShowAnnotationDrawer] = useState(false);
   const isCreator = statement.creatorId === userId;
   const isMobile = useWindowSize().width < 768;
@@ -125,7 +130,6 @@ export default function StatementLayout({
         editMode={editMode && isCreator}
         showAuthorComments={showAuthorComments}
         showReaderComments={showReaderComments}
-        setEditMode={setEditMode}
         onShowAuthorCommentsChange={onShowAuthorCommentsChange}
         onShowReaderCommentsChange={onShowReaderCommentsChange}
         setSelectedAnnotationId={setSelectedAnnotationId}
@@ -181,7 +185,6 @@ export default function StatementLayout({
             editMode={editMode && isCreator}
             showAuthorComments={showAuthorComments}
             showReaderComments={showReaderComments}
-            setEditMode={setEditMode}
             onShowAuthorCommentsChange={onShowAuthorCommentsChange}
             onShowReaderCommentsChange={onShowReaderCommentsChange}
             setSelectedAnnotationId={setSelectedAnnotationId}

@@ -43,11 +43,14 @@ export const BlockImage = Node.create<BlockImageOptions>({
       userId: null,
       statementId: null,
       editMode: null,
+      draggable: false,
     };
   },
 
   group: "block",
-  draggable: true,
+  draggable() {
+    return this.options.editMode ?? false;
+  },
   selectable: true,
   atom: true,
 
