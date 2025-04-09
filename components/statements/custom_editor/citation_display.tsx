@@ -20,6 +20,7 @@ import {
 import { useStatementContext } from "@/contexts/statementContext";
 import { getPublishedStatement } from "@/lib/actions/statementActions";
 import { formatDateForCitation } from "@/lib/helpers/helpersDate";
+import { cn } from "@/lib/utils";
 export function CitationDisplay() {
   const { citationData } = useStatementContext();
   const citation = citationData as BaseStatementCitation;
@@ -65,7 +66,12 @@ export function CitationDisplay() {
   }, [citation.url, fetch]);
 
   return (
-    <Card className="w-full border-none   overflow-hidden shadow-none pt-0">
+    <Card
+      className={cn(
+        "w-full border-none overflow-hidden shadow-none pt-0",
+        !conjecture?.headerImg && "pt-4"
+      )}
+    >
       {conjecture?.headerImg && (
         <AspectRatio ratio={16 / 6} className="bg-muted rounded-md ">
           <Image

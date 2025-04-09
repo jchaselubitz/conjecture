@@ -38,7 +38,7 @@ import {
 
 const citationFormSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
-  authorNames: z.string().min(1, { message: "Author names are required" }),
+  authorNames: z.string().min(1).optional(),
   url: z.string().optional(),
   date: z.date().optional(),
   year: z.string().optional(),
@@ -148,8 +148,10 @@ export function CitationForm({
         pathname,
         position: editor.state.selection.$from.pos + 1,
         view: editor.view,
-        updateDraft,
       });
+      // setTimeout(() => {
+      await updateDraft();
+      // }, 0);
       onOpenChange(false);
       setCitationData({
         statementId,

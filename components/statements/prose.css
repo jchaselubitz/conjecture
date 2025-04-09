@@ -41,6 +41,16 @@
   margin-bottom: 1.2em;
 }
 
+.ProseMirror p .citation-reference {
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+.ProseMirror p .citation-number {
+  vertical-align:middle;
+
+}
+
 /* List styles */
 .ProseMirror ul,
 .ProseMirror ol {
@@ -498,4 +508,15 @@
 
 .ProseMirror blockquote p:last-child {
   margin-bottom: 0;
+}
+
+.ProseMirror blockquote .citation-reference {
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+.ProseMirror blockquote .citation-number {
+  vertical-align:middle;
+  margin-left: 0.25rem;
+  line-height: 0;
 }

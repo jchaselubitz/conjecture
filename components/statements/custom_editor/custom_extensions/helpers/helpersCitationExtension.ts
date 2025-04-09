@@ -32,7 +32,6 @@ export const upsertCitation = async ({
  statementId,
  position,
  view,
- updateDraft,
 }: {
  citationData: NewStatementCitation;
  setError: (error: string) => void;
@@ -41,7 +40,6 @@ export const upsertCitation = async ({
  pathname: string;
  position: number;
  view: EditorView;
- updateDraft?: () => Promise<void>;
 }) => {
  const citationId = citationData.id === "" ? nanoid() : citationData.id;
 
@@ -88,11 +86,6 @@ export const upsertCitation = async ({
   }
 
   //Update draft instantly instead of waiting for debounce cause otherwise the citation will not consistently be updated in the draft
-  if (updateDraft) {
-   setTimeout(() => {
-    updateDraft();
-   }, 0);
-  }
  } catch (error) {
   console.error("Failed to save citation:", error);
   setError("Failed to save citation");
