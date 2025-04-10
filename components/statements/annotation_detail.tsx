@@ -185,10 +185,7 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
     <AccordionItem value={annotation.id} className="border-0">
       <Card
         ref={annotationRef}
-        className={cn(
-          'p-0 gap-0',
-          selected ? 'shadow-2xl my-4 animate-ring-flash' : 'shadow-none hover:shadow-md '
-        )}
+        className={cn('p-0 gap-0', selected ? 'shadow-2xl my-4' : 'shadow-none hover:shadow-md ')}
       >
         <AccordionTrigger className={cn('p-4 hover:no-underline')}>
           <div className="flex flex-col gap-3 w-full">

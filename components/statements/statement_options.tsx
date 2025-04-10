@@ -32,6 +32,7 @@ import { Separator } from '../ui/separator';
 import { CommentIndicatorButton } from './comments_menu';
 import RebuttalButton from './rebuttal_button';
 import VoteButton from './vote_button';
+import ViewModeButton from '../view_mode_button';
 
 interface StatementOptionsProps {
   statement: DraftWithAnnotations;
@@ -90,7 +91,11 @@ export default function StatementOptions({
         </div>
         <div className="flex items-center gap-3 w-full justify-end">
           {editMode ? (
-            <ViewModeButton handleEditModeToggle={handleEditModeToggle} className="w-full" />
+            <ViewModeButton
+              size="sm"
+              handleEditModeToggle={handleEditModeToggle}
+              className="w-full"
+            />
           ) : (
             <>
               <ShareButton />
@@ -109,21 +114,6 @@ export default function StatementOptions({
     </div>
   );
 }
-
-const ViewModeButton = ({
-  handleEditModeToggle,
-  className
-}: {
-  handleEditModeToggle: () => void;
-  className?: string;
-}) => {
-  return (
-    <Button variant="outline" size="sm" onClick={handleEditModeToggle} className={className}>
-      <Eye className="h-4 w-4" />
-      Switch back to view mode
-    </Button>
-  );
-};
 
 const ShareButton = () => {
   const { statement } = useStatementContext();

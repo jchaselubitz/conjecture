@@ -35,7 +35,7 @@ import {
 } from './custom_extensions/helpers/helpersCitationExtension';
 const citationFormSchema = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
-  authorNames: z.string().min(1).optional(),
+  authorNames: z.string().optional(),
   url: z.string().optional(),
   date: z.date().optional(),
   year: z.string().optional(),

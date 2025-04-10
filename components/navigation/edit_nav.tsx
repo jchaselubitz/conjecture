@@ -1,6 +1,6 @@
 'use client';
 
-import { Settings } from 'lucide-react';
+import { ChevronDown, Settings } from 'lucide-react';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -10,6 +10,16 @@ import { formatDate } from '@/lib/helpers/helpersDate';
 
 import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { useWindowSize } from 'react-use';
+import {
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent
+} from '../ui/dropdown-menu';
+
+import ViewModeButton from '../view_mode_button';
 export default function EditNav() {
   const {
     versionOptions,
@@ -27,6 +37,7 @@ export default function EditNav() {
   const [publishButtonState, setPublishButtonState] = useState<ButtonLoadingState>('default');
 
   const router = useRouter();
+  const isMobile = useWindowSize().width < 768;
 
   useEffect(() => {
     if (!isUpdating) {
@@ -69,41 +80,41 @@ export default function EditNav() {
     }
   };
 
-  return (
-    <header className="h-16">
-      <div className="fixed z-50 top-0 left-0 right-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex h-14 items-center justify-between px-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push(`/statements/${statement?.statementId}`)}
-          >
-            <ArrowLeft className="h-5 w-5" />
+  const versionMenu = () => {
+    if (!statement) return null;
+    // if (isMobile) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm">
+            {`v${statement.versionNumber}`} <ChevronDown className="h-4 w-4" />
           </Button>
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon">
-              <Settings className="h-5 w-5" />
-            </Button>
-            <Select
-              value={statement?.versionNumber.toString()}
-              onValueChange={(value) => changeVersion(parseInt(value, 10))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a version" />
-              </SelectTrigger>
-              <SelectContent>
-                {versionOptions.map((v) => (
-                  <SelectItem key={v.versionNumber} value={v.versionNumber}>
-                    v{v.versionNumber} -{' '}
-                    <span className="text-sm text-zinc-500">
-                      {formatDate({ date: v.createdAt })}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {statement && (
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuGroup>
+            <DropdownMenuItem>
+              <Select
+                value={statement?.versionNumber.toString()}
+                onValueChange={(value) => changeVersion(parseInt(value, 10))}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a version" />
+                </SelectTrigger>
+                <SelectContent>
+                  {versionOptions.map((v) => (
+                    <SelectItem key={v.versionNumber} value={v.versionNumber}>
+                      v{v.versionNumber} -{' '}
+                      <span className="text-sm text-zinc-500">
+                        {formatDate({ date: v.createdAt })}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
               <LoadingButton
+                className="w-full"
                 variant="outline"
                 onClick={handleSaveDraft}
                 buttonState={saveButtonState}
@@ -114,14 +125,33 @@ export default function EditNav() {
                 reset
                 errorText="Failed to save"
               />
-            )}
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  };
+
+  return (
+    <header className="h-14">
+      <div className="fixed z-50 top-0 left-0 right-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="flex h-14 items-center justify-between px-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push(`/statements/${statement?.statementId}`)}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div className="flex items-center gap-3">
             {statement && (
               <>
+                {versionMenu()}
                 <LoadingButton
                   variant="outline"
                   onClick={handleUpdate}
                   buttonState={updateButtonState}
-                  text={`Update v${statement.versionNumber}`}
+                  text={`Update`}
                   loadingText="Updating..."
                   successText="Updated"
                   setButtonState={setUpdateButtonState}
@@ -132,16 +162,17 @@ export default function EditNav() {
                 <LoadingButton
                   onClick={handlePublish}
                   buttonState={publishButtonState}
-                  text={
-                    statement.publishedAt
-                      ? `Hide v${statement.versionNumber}`
-                      : `Publish v${statement.versionNumber}`
-                  }
+                  text={statement.publishedAt ? `Hide` : `Publish v${statement.versionNumber}`}
                   loadingText={statement.publishedAt ? 'Hiding...' : 'Publishing...'}
                   setButtonState={setPublishButtonState}
                   reset
                   successText={statement.publishedAt ? 'Hidden' : 'Published'}
                   errorText="Failed to publish"
+                />
+                <ViewModeButton
+                  handleEditModeToggle={() => router.push(`/statements/${statement?.statementId}`)}
+                  iconOnly={isMobile}
+                  variant="default"
                 />
               </>
             )}

@@ -85,13 +85,14 @@ const HTMLSuperEditor = ({
         inputMode={editMode ? 'text' : 'none'}
         readOnly={!editMode}
       />
-
-      <CitationNodeEditor
-        statementId={statementId}
-        creatorId={statementCreatorId}
-        editMode={editMode}
-        editor={editor}
-      />
+      <div>
+        <CitationNodeEditor
+          statementId={statementId}
+          creatorId={statementCreatorId}
+          editMode={editMode}
+          editor={editor}
+        />
+      </div>
 
       <AnnotationMenu
         editMode={editMode ?? false}
