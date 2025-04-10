@@ -12,9 +12,10 @@ import { cn } from '@/lib/utils';
 interface CitationButtonProps {
   editor: Editor;
   statementId: string;
+  className?: string;
 }
 
-export function CitationButton({ editor, statementId }: CitationButtonProps) {
+export function CitationButton({ editor, statementId, className }: CitationButtonProps) {
   const { setSelectedNodePosition, setCitationPopoverOpen, setCitationData, citationPopoverOpen } =
     useStatementContext();
   const handleClick = () => {
@@ -66,7 +67,7 @@ export function CitationButton({ editor, statementId }: CitationButtonProps) {
             variant="ghost"
             size="sm"
             onClick={handleClick}
-            className={cn(editor.isActive('citation') && 'bg-muted')}
+            className={cn(editor.isActive('citation') && 'bg-muted', className)}
           >
             <Asterisk className="h-4 w-4" />
           </Button>

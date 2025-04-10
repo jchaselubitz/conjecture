@@ -63,10 +63,10 @@ export const AnnotationMenu = ({
         {!editMode && canAnnotate && (
           <div>
             <QuoteLinkButton editor={editor} statementId={statementId} />
-            <Button variant="ghost" size="sm" onClick={copy}>
+            {/* <Button variant="ghost" size="sm" onClick={copy}>
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               Copy
-            </Button>
+            </Button> */}
           </div>
         )}
 

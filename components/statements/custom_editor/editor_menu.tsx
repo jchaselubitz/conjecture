@@ -11,11 +11,12 @@ import {
   ListOrdered,
   Quote
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
 import ViewModeButton from '@/components/view_mode_button';
-import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
+
 import { CitationButton } from './citation_button';
 import { LatexButton } from './latex_button';
 interface EditorMenuProps {
@@ -39,11 +40,15 @@ export function EditorMenu({ editor, statementId }: EditorMenuProps) {
     editor.chain().focus().setLink({ href: url }).run();
   };
 
+  const buttonClassName = 'md:text-zinc-50 hover:text-zinc-600';
+
+  const activeButtonClassName = 'bg-muted md:bg-zinc-500';
+
   return (
-    <div className="bg-background rounded-lg border shadow-xl flex items-center mx-auto w-full">
-      <div className="flex items-center justify-center border-r h-full">
+    <div className="md:bg-zinc-600/85 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-lg border md:border-zinc-500 shadow-xl flex items-center mx-auto w-full">
+      <div className="flex items-center justify-center border-r md:border-zinc-500 h-full">
         <ViewModeButton
-          className="flex items-center justify-center "
+          className={cn('flex items-center justify-center ', buttonClassName)}
           handleEditModeToggle={() => router.push(`/statements/${statementId}`)}
           iconOnly={true}
           variant="ghost"
@@ -55,7 +60,7 @@ export function EditorMenu({ editor, statementId }: EditorMenuProps) {
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={cn(editor.isActive('bold') && 'bg-muted')}
+          className={cn(editor.isActive('bold') && activeButtonClassName, buttonClassName)}
         >
           <Bold className="h-4 w-4" />
         </Button>
@@ -63,7 +68,7 @@ export function EditorMenu({ editor, statementId }: EditorMenuProps) {
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={cn(editor.isActive('italic') && 'bg-muted')}
+          className={cn(editor.isActive('italic') && activeButtonClassName, buttonClassName)}
         >
           <Italic className="h-4 w-4" />
         </Button>
@@ -71,7 +76,10 @@ export function EditorMenu({ editor, statementId }: EditorMenuProps) {
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          className={cn(editor.isActive('heading', { level: 1 }) && 'bg-muted')}
+          className={cn(
+            editor.isActive('heading', { level: 1 }) && activeButtonClassName,
+            buttonClassName
+          )}
         >
           <Heading1 className="h-4 w-4" />
         </Button>
@@ -79,7 +87,10 @@ export function EditorMenu({ editor, statementId }: EditorMenuProps) {
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={cn(editor.isActive('heading', { level: 2 }) && 'bg-muted')}
+          className={cn(
+            editor.isActive('heading', { level: 2 }) && activeButtonClassName,
+            buttonClassName
+          )}
         >
           <Heading2 className="h-4 w-4" />
         </Button>
@@ -87,7 +98,10 @@ export function EditorMenu({ editor, statementId }: EditorMenuProps) {
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={cn(editor.isActive('heading', { level: 3 }) && 'bg-muted')}
+          className={cn(
+            editor.isActive('heading', { level: 3 }) && activeButtonClassName,
+            buttonClassName
+          )}
         >
           <Heading3 className="h-4 w-4" />
         </Button>
@@ -95,7 +109,7 @@ export function EditorMenu({ editor, statementId }: EditorMenuProps) {
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={cn(editor.isActive('bulletList') && 'bg-muted')}
+          className={cn(editor.isActive('bulletList') && activeButtonClassName, buttonClassName)}
         >
           <List className="h-4 w-4" />
         </Button>
@@ -103,18 +117,18 @@ export function EditorMenu({ editor, statementId }: EditorMenuProps) {
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={cn(editor.isActive('orderedList') && 'bg-muted')}
+          className={cn(editor.isActive('orderedList') && activeButtonClassName, buttonClassName)}
         >
           <ListOrdered className="h-4 w-4" />
         </Button>
         <div>
-          <Separator orientation="vertical" />
+          <Separator orientation="vertical" className="md:bg-zinc-500" />
         </div>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          className={cn(editor.isActive('codeBlock') && 'bg-muted')}
+          className={cn(editor.isActive('codeBlock') && activeButtonClassName, buttonClassName)}
         >
           <Code className="h-4 w-4" />
         </Button>
@@ -123,22 +137,22 @@ export function EditorMenu({ editor, statementId }: EditorMenuProps) {
           variant="ghost"
           size="sm"
           onClick={setLink}
-          className={cn(editor.isActive('link') && 'bg-muted')}
+          className={cn(editor.isActive('link') && activeButtonClassName, buttonClassName)}
         >
           <LinkIcon className="h-4 w-4" />
         </Button>
 
-        <CitationButton editor={editor} statementId={statementId} />
+        <CitationButton editor={editor} statementId={statementId} className={buttonClassName} />
         <Button
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={cn(editor.isActive('blockquote') && 'bg-muted')}
+          className={cn(editor.isActive('blockquote') && activeButtonClassName, buttonClassName)}
         >
           <Quote className="h-4 w-4" />
         </Button>
 
-        <LatexButton editor={editor} displayMode={false} />
+        <LatexButton editor={editor} displayMode={false} className={buttonClassName} />
       </div>
     </div>
   );

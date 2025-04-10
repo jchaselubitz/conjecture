@@ -113,20 +113,6 @@ const HTMLSuperEditor = ({
           </FloatingMenu>
         </div>
       )}
-
-      {editMode && editor && (
-        <div
-          className="fixed flex z-50 bottom-0 left-0 right-0 mx-auto md:bottom-5 md:left-auto md:right-auto md:mx-auto md:ml-20 px-2 justify-center "
-          style={{
-            height: 'fit-content',
-            ...(visualViewport && {
-              bottom: `${Math.max(10, window.innerHeight - visualViewport)}px`
-            })
-          }}
-        >
-          <EditorMenu statementId={statementId} editor={editor} />
-        </div>
-      )}
     </div>
   );
 };

@@ -4,21 +4,20 @@ import { ChevronDown, Settings } from 'lucide-react';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useWindowSize } from 'react-use';
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
 import { useStatementContext } from '@/contexts/statementContext';
 import { formatDate } from '@/lib/helpers/helpersDate';
 
 import { Button } from '../ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { useWindowSize } from 'react-use';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent
+  DropdownMenuTrigger
 } from '../ui/dropdown-menu';
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import ViewModeButton from '../view_mode_button';
 export default function EditNav() {
   const {

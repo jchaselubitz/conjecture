@@ -51,8 +51,15 @@ export default function StatementDetails({
   parentStatement
 }: StatementDetailsProps) {
   const { userId } = useUserContext();
-  const { statement, setStatement, initialImageData, setInitialImageData, setImageLightboxOpen } =
-    useStatementContext();
+  const {
+    statement,
+    setStatement,
+    initialImageData,
+    setInitialImageData,
+    setImageLightboxOpen,
+    editor,
+    visualViewport
+  } = useStatementContext();
   const router = useRouter();
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -274,7 +281,7 @@ export default function StatementDetails({
           <HTMLSuperEditor
             key={`editor-content-${editMode}`}
             statement={statement}
-            style={{ minHeight: '400px' }}
+            style={{ minHeight: '20px' }}
             existingAnnotations={annotations}
             userId={userId}
             onAnnotationClick={handleAnnotationClick}
@@ -303,7 +310,19 @@ export default function StatementDetails({
             <ImageNodeEditor statementId={statementId} statementCreatorId={statement.creatorId} />
           </>
         )}
-
+        {editMode && editor && (
+          <div
+            className="fixed flex z-50 md:bottom-10 left-0 right-0 mx-auto md:left-auto md:right-auto md:mx-auto md:ml-20 px-2 justify-center "
+            style={{
+              height: 'fit-content',
+              ...(visualViewport && {
+                bottom: `${Math.max(2, window.innerHeight - visualViewport + 10)}px`
+              })
+            }}
+          >
+            <EditorMenu statementId={statementId} editor={editor} />
+          </div>
+        )}
         <FootnoteList citations={orderedFootnotes} />
 
         <div className="h-14" />

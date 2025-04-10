@@ -2,7 +2,6 @@ import { DraftWithAnnotations } from 'kysely-codegen';
 import {
   BarChart3,
   Check,
-  Eye,
   Facebook,
   Link,
   Linkedin,
@@ -29,10 +28,10 @@ import {
   DropdownMenuTrigger
 } from '../ui/dropdown-menu';
 import { Separator } from '../ui/separator';
+import ViewModeButton from '../view_mode_button';
 import { CommentIndicatorButton } from './comments_menu';
 import RebuttalButton from './rebuttal_button';
 import VoteButton from './vote_button';
-import ViewModeButton from '../view_mode_button';
 
 interface StatementOptionsProps {
   statement: DraftWithAnnotations;

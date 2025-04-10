@@ -7,9 +7,10 @@ import { cn } from '@/lib/utils';
 interface LatexButtonProps {
   editor: Editor;
   displayMode: boolean;
+  className?: string;
 }
 
-export function LatexButton({ editor, displayMode }: LatexButtonProps) {
+export function LatexButton({ editor, displayMode, className }: LatexButtonProps) {
   const {
     setLatexPopoverOpen,
     setCurrentLatex,
@@ -48,7 +49,7 @@ export function LatexButton({ editor, displayMode }: LatexButtonProps) {
       variant="ghost"
       size="sm"
       onClick={handleClick}
-      className={cn(editor.isActive('popoverLatex', { displayMode }) && 'bg-muted')}
+      className={cn(editor.isActive('popoverLatex', { displayMode }) && 'bg-muted', className)}
     >
       <Sigma className="h-4 w-4" />
     </Button>

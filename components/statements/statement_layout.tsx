@@ -12,7 +12,6 @@ import { useUserContext } from '@/contexts/userContext';
 import AppNav from '../navigation/app_nav';
 import EditNav from '../navigation/edit_nav';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '../ui/drawer';
-import { CommentIndicatorButton } from './comments_menu';
 import StatementDetails from './statement_details';
 interface StatementDetailsProps {
   statement: DraftWithAnnotations;
@@ -132,14 +131,6 @@ export default function StatementLayout({
         <DrawerContent style={drawerStyle}>
           <DrawerHeader>
             <DrawerTitle className="sr-only">Comments</DrawerTitle>
-            {/* <DrawerTitle>
-              <CommentIndicatorButton
-                showAuthorComments={showAuthorComments}
-                showReaderComments={showReaderComments}
-                onShowAuthorCommentsChange={onShowAuthorCommentsChange}
-                onShowReaderCommentsChange={onShowReaderCommentsChange}
-              />
-            </DrawerTitle> */}
           </DrawerHeader>
 
           {annotations && (

@@ -34,7 +34,7 @@ export const QuoteLinkButton = ({ editor, statementId }: QuoteLinkButtonProps) =
   return (
     <Button variant="ghost" size="sm" onClick={copy} className={cn('gap-2')}>
       {copied ? <Check className="h-4 w-4" /> : <Quote className="h-4 w-4" />}
-      <span className="hidden sm:inline">Quote Link</span>
+      <span className="">Quote Link</span>
     </Button>
   );
 };
