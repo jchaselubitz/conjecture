@@ -36,10 +36,6 @@ export default function StatementLayout({
     setEditMode(editModeEnabled);
   }, [editModeEnabled]);
 
-  // const newUserWithAnnotation = useMemo(() => {
-  //   return userId && statement.annotations.length > 0;
-  // }, [userId, statement.annotations]);
-
   const [showAnnotationDrawer, setShowAnnotationDrawer] = useState(false);
   const isCreator = statement.creatorId === userId;
   const isMobile = useWindowSize().width < 768;
@@ -128,13 +124,11 @@ export default function StatementLayout({
         panelGroupRef={panelGroupRef}
       />
       <Drawer open={showAnnotationDrawer} onOpenChange={handleCloseAnnotationDrawer}>
-        <DrawerContent style={drawerStyle}>
-          <DrawerHeader>
-            <DrawerTitle className="sr-only">Comments</DrawerTitle>
-          </DrawerHeader>
+        <DrawerContent style={drawerStyle} className="p-0 w-full">
+          <DrawerTitle className="sr-only">Comments</DrawerTitle>
 
           {annotations && (
-            <div className="h-full overflow-y-auto">
+            <div className="h-full overflow-y-auto w-full">
               <AnnotationPanel
                 annotations={annotations}
                 statementId={statement.statementId}

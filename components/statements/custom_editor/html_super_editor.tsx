@@ -44,7 +44,7 @@ const HTMLSuperEditor = ({
   showReaderComments,
   setFootnoteIds
 }: HTMLSuperEditorProps) => {
-  const { latexPopoverOpen, imagePopoverOpen, visualViewport } = useStatementContext();
+  const { latexPopoverOpen, imagePopoverOpen } = useStatementContext();
 
   const draftId = statement.id;
   const statementId = statement.statementId;

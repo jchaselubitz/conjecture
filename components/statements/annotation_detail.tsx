@@ -180,174 +180,193 @@ const AnnotationDetail: React.FC<AnnotationDetailProps> = ({
   //   annotation.text.length > 100
   //     ? annotation.text.substring(0, 100) + "..."
   //     : annotation.text;
+  const annotationHeader = (
+    <>
+      <div className="flex flex-col gap-3 w-full">
+        {annotation.text && (
+          <div className="bg-muted p-3 rounded-md">
+            <p className="text-sm italic line-clamp-2">{`"${annotation.text}"`}</p>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center space-x-2">
+            <Avatar className="border ">
+              <AvatarImage src={annotation.userImageUrl} className="object-cover" />
+              <AvatarFallback>{annotation.userName?.charAt(0) || 'U'}</AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="text-sm font-medium">{annotation.userName || 'User'}</p>
+              <p className="text-xs text-muted-foreground">
+                {formatDate({
+                  date: new Date(annotation.createdAt),
+                  withTime: true
+                })}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+  const annotationContent = (
+    <>
+      {nestedComments.length > 0 && (
+        <div className="border-b pb-1 border-muted">
+          {nestedComments.map((comment) => (
+            <Comment
+              key={comment.id}
+              comment={comment}
+              replies={(comment.children as CommentWithReplies[]) || []}
+              statementId={statementId}
+              statementCreatorId={statementCreatorId}
+              annotationId={annotation.id}
+              onReplyClick={handleReplyClick}
+              onCommentDeleted={handleCommentDeleted}
+              isRootComment={nestedComments[0]?.id === comment.id}
+            />
+          ))}
+        </div>
+      )}
+      {userId ? (
+        <div id="comment-input" className=" ">
+          {replyToComment && (
+            <div className="flex items-center gap-2 mb-2 p-2 bg-muted/50 rounded-md">
+              <span className="text-xs flex-1 truncate">
+                Replying to:{' '}
+                <span className="font-medium italic">
+                  {replyToComment.content.substring(0, 40)}
+                  {replyToComment.content.length > 40 ? '...' : ''}
+                </span>
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 shrink-0"
+                onClick={cancelReply}
+                aria-label="Cancel reply"
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
+
+          <Textarea
+            ref={commentInputRef}
+            placeholder={replyToComment ? 'Write your reply...' : 'Share your thoughts...'}
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="min-h-[80px] focus-visible:ring-0"
+          />
+
+          <div className="flex flex-row justify-between mt-2 gap-2">
+            <div className="flex flex-row gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <LoadingButton
+                      buttonState={submittingButtonState}
+                      onClick={handleSubmitComment}
+                      text={replyToComment ? 'Reply' : 'Comment'}
+                      loadingText="Submitting..."
+                      successText="Submitted"
+                      errorText="Error"
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{replyToComment ? 'Submit your reply' : 'Submit your comment'}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setCommentText('');
+                        setReplyToComment(null);
+                      }}
+                    >
+                      {commentText ? 'Clear' : 'Cancel'}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{commentText ? 'Clear comment text' : 'Cancel reply'}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <div className="text-xs text-muted-foreground self-center">
+                Press <kbd className="px-1 py-0.5 bg-muted rounded">⇧</kbd>+
+                <kbd className="px-1 py-0.5 bg-muted rounded">Enter</kbd> for new line
+              </div>
+            </div>
+
+            {isCreator && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <LoadingButton
+                      buttonState={deletingButtonState}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent accordion from toggling
+                        handleDeleteAnnotation();
+                      }}
+                      text={<Trash2 className="w-4 h-4" color="red" />}
+                      variant="ghost"
+                      size="sm"
+                      loadingText={<RefreshCw className="w-4 h-4 animate-spin" />}
+                      successText="Deleted"
+                      errorText="Error deleting annotation"
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Delete annotation</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 justify-end">
+          <Link href="/login">
+            <Button variant="default" size="sm">
+              Login
+            </Button>
+          </Link>
+          <Link href="/signup">
+            <Button variant="outline" size="sm">
+              Create Account
+            </Button>
+          </Link>
+        </div>
+      )}
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <div className="flex flex-col gap-3 min-w-screen px-2 snap-center">
+        {annotationHeader}
+        {annotationContent}
+      </div>
+    );
+  }
 
   return (
-    <AccordionItem value={annotation.id} className="border-0">
+    <AccordionItem value={annotation.id} className="border-0 ">
       <Card
         ref={annotationRef}
         className={cn('p-0 gap-0', selected ? 'shadow-2xl my-4' : 'shadow-none hover:shadow-md ')}
       >
-        <AccordionTrigger className={cn('p-4 hover:no-underline')}>
-          <div className="flex flex-col gap-3 w-full">
-            {annotation.text && (
-              <div className="bg-muted p-3 rounded-md">
-                <p className="text-sm italic line-clamp-2">{`"${annotation.text}"`}</p>
-              </div>
-            )}
-
-            <div className="flex items-center justify-between w-full">
-              <div className="flex items-center space-x-2">
-                <Avatar className="border ">
-                  <AvatarImage src={annotation.userImageUrl} className="object-cover" />
-                  <AvatarFallback>{annotation.userName?.charAt(0) || 'U'}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-sm font-medium">{annotation.userName || 'User'}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatDate({
-                      date: new Date(annotation.createdAt),
-                      withTime: true
-                    })}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+        <AccordionTrigger className={cn('w-full p-4 hover:no-underline')}>
+          {annotationHeader}
         </AccordionTrigger>
 
         <AccordionContent className="flex flex-col px-4 pb-4 gap-3">
-          {nestedComments.length > 0 && (
-            <div className="border-b pb-1 border-muted">
-              {nestedComments.map((comment) => (
-                <Comment
-                  key={comment.id}
-                  comment={comment}
-                  replies={(comment.children as CommentWithReplies[]) || []}
-                  statementId={statementId}
-                  statementCreatorId={statementCreatorId}
-                  annotationId={annotation.id}
-                  onReplyClick={handleReplyClick}
-                  onCommentDeleted={handleCommentDeleted}
-                  isRootComment={nestedComments[0]?.id === comment.id}
-                />
-              ))}
-            </div>
-          )}
-          {userId ? (
-            <div id="comment-input" className=" ">
-              {replyToComment && (
-                <div className="flex items-center gap-2 mb-2 p-2 bg-muted/50 rounded-md">
-                  <span className="text-xs flex-1 truncate">
-                    Replying to:{' '}
-                    <span className="font-medium italic">
-                      {replyToComment.content.substring(0, 40)}
-                      {replyToComment.content.length > 40 ? '...' : ''}
-                    </span>
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 shrink-0"
-                    onClick={cancelReply}
-                    aria-label="Cancel reply"
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              )}
-
-              <Textarea
-                ref={commentInputRef}
-                placeholder={replyToComment ? 'Write your reply...' : 'Share your thoughts...'}
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="min-h-[80px] focus-visible:ring-0"
-              />
-
-              <div className="flex flex-row justify-between mt-2 gap-2">
-                <div className="flex flex-row gap-2">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <LoadingButton
-                          buttonState={submittingButtonState}
-                          onClick={handleSubmitComment}
-                          text={replyToComment ? 'Reply' : 'Comment'}
-                          loadingText="Submitting..."
-                          successText="Submitted"
-                          errorText="Error"
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{replyToComment ? 'Submit your reply' : 'Submit your comment'}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            setCommentText('');
-                            setReplyToComment(null);
-                          }}
-                        >
-                          {commentText ? 'Clear' : 'Cancel'}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{commentText ? 'Clear comment text' : 'Cancel reply'}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <div className="text-xs text-muted-foreground self-center">
-                    Press <kbd className="px-1 py-0.5 bg-muted rounded">⇧</kbd>+
-                    <kbd className="px-1 py-0.5 bg-muted rounded">Enter</kbd> for new line
-                  </div>
-                </div>
-
-                {isCreator && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <LoadingButton
-                          buttonState={deletingButtonState}
-                          onClick={(e) => {
-                            e.stopPropagation(); // Prevent accordion from toggling
-                            handleDeleteAnnotation();
-                          }}
-                          text={<Trash2 className="w-4 h-4" color="red" />}
-                          variant="ghost"
-                          size="sm"
-                          loadingText={<RefreshCw className="w-4 h-4 animate-spin" />}
-                          successText="Deleted"
-                          errorText="Error deleting annotation"
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Delete annotation</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 justify-end">
-              <Link href="/login">
-                <Button variant="default" size="sm">
-                  Login
-                </Button>
-              </Link>
-              <Link href="/signup">
-                <Button variant="outline" size="sm">
-                  Create Account
-                </Button>
-              </Link>
-            </div>
-          )}
+          {annotationContent}
         </AccordionContent>
       </Card>
     </AccordionItem>
