@@ -1,18 +1,18 @@
 'use client';
 
+import { Editor } from '@tiptap/react';
 import React from 'react';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { useStatementContext } from '@/contexts/statementContext';
 
 import { CitationDisplay } from './citation_display';
 import { CitationForm } from './citation_form';
-import { Editor } from '@tiptap/react';
 interface CitationPopoverProps {
   children: React.ReactNode;
   statementId: string;
   creatorId: string;
   editMode: boolean;
-  editor: Editor;
+  editor?: Editor | null;
 }
 
 export function CitationPopover({
@@ -20,7 +20,7 @@ export function CitationPopover({
   creatorId,
   children,
   editMode,
-  editor,
+  editor
 }: CitationPopoverProps) {
   const { citationPopoverOpen, setCitationData, setCitationPopoverOpen } = useStatementContext();
 
@@ -30,7 +30,7 @@ export function CitationPopover({
       statementId,
       title: '',
       authorNames: '',
-      id: '',
+      id: ''
     });
   };
 

@@ -21,9 +21,11 @@ import { Input } from '../ui/input';
 import Byline from './byline';
 import { EditorMenu } from './custom_editor/editor_menu';
 import HTMLSuperEditor from './custom_editor/html_super_editor';
+import { ImageLightbox } from './custom_editor/image_lightbox';
+import { ImageNodeEditor } from './custom_editor/image_node_editor';
+import { LatexNodeEditor } from './custom_editor/latex_node_editor';
 import { FootnoteList } from './footnote/footnote_list';
 import StatementOptions from './statement_options';
-import { ImageLightbox } from './custom_editor/image_lightbox';
 export interface StatementDetailsProps {
   statement: DraftWithAnnotations;
   editMode: boolean;
@@ -46,7 +48,7 @@ export default function StatementDetails({
   setSelectedAnnotationId,
   selectedAnnotationId,
   panelGroupRef,
-  parentStatement,
+  parentStatement
 }: StatementDetailsProps) {
   const { userId } = useUserContext();
   const { statement, setStatement, initialImageData, setInitialImageData, setImageLightboxOpen } =
@@ -110,15 +112,15 @@ export default function StatementDetails({
         userId,
         statementId: prepStatementId,
         headerImg: headerImg ?? '',
-        updateStatementHeaderImageUrl,
+        updateStatementHeaderImageUrl
       });
       toast('Success', {
-        description: 'Profile picture updated successfully!',
+        description: 'Profile picture updated successfully!'
       });
       router.refresh();
     } catch (error) {
       toast('Error', {
-        description: 'Failed to upload image. Please try again.',
+        description: 'Failed to upload image. Please try again.'
       });
     } finally {
       setIsUploading(false);
@@ -137,11 +139,16 @@ export default function StatementDetails({
     return (!isStatementCreator && showReaderComments) || !userId;
   }, [isStatementCreator, showReaderComments, userId]);
 
+  const annotatable = useMemo(() => {
+    return !!userId && !editMode && (authorCanAnnotate || readerCanAnnotate);
+  }, [userId, editMode, authorCanAnnotate, readerCanAnnotate]);
+
   const prevEditModeRef = useRef(editMode);
 
   useEffect(() => {
     if (prevEditModeRef.current && !editMode) {
       //
+      return;
     }
     prevEditModeRef.current = editMode;
   }, [editMode]);
@@ -214,7 +221,7 @@ export default function StatementDetails({
                   setStatement({
                     ...statement,
                     title: e.target.value,
-                    statementId: prepStatementId,
+                    statementId: prepStatementId
                   })
                 }
               />
@@ -236,7 +243,7 @@ export default function StatementDetails({
                   setStatement({
                     ...statement,
                     subtitle: e.target.value,
-                    statementId: prepStatementId,
+                    statementId: prepStatementId
                   })
                 }
               />
@@ -272,7 +279,7 @@ export default function StatementDetails({
             userId={userId}
             onAnnotationClick={handleAnnotationClick}
             placeholder="Start typing or paste content here..."
-            annotatable={!editMode && (authorCanAnnotate || readerCanAnnotate)}
+            annotatable={annotatable}
             selectedAnnotationId={selectedAnnotationId}
             setSelectedAnnotationId={setSelectedAnnotationId}
             showAuthorComments={showAuthorComments}
@@ -281,7 +288,7 @@ export default function StatementDetails({
             setFootnoteIds={setFootnoteIds}
           />
         </div>
-        {!editMode && (
+        {!editMode ? (
           <ImageLightbox
             src={initialImageData.src}
             alt={initialImageData.alt ?? ''}
@@ -290,6 +297,11 @@ export default function StatementDetails({
             setInitialImageData={setInitialImageData}
             setImageLightboxOpen={setImageLightboxOpen}
           />
+        ) : (
+          <>
+            <LatexNodeEditor />
+            <ImageNodeEditor statementId={statementId} statementCreatorId={statement.creatorId} />
+          </>
         )}
 
         <FootnoteList citations={orderedFootnotes} />

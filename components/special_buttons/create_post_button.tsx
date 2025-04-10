@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { VariantProps } from "class-variance-authority";
-import { useState } from "react";
-import { createDraft } from "@/lib/actions/statementActions";
-import { generateStatementId } from "@/lib/helpers/helpersStatements";
+import { VariantProps } from 'class-variance-authority';
+import { useState } from 'react';
+import { createDraft } from '@/lib/actions/statementActions';
+import { generateStatementId } from '@/lib/helpers/helpersStatements';
 
-import { buttonVariants } from "../ui/button";
-import { ButtonLoadingState, LoadingButton } from "../ui/loading-button";
+import { buttonVariants } from '../ui/button';
+import { ButtonLoadingState, LoadingButton } from '../ui/loading-button';
 export default function CreatePostButton({
   classNames,
   variant,
@@ -14,27 +14,27 @@ export default function CreatePostButton({
   text,
   loadingText,
   successText,
-  errorText,
+  errorText
 }: {
   classNames?: string;
-  variant?: VariantProps<typeof buttonVariants>["variant"];
-  size?: VariantProps<typeof buttonVariants>["size"];
+  variant?: VariantProps<typeof buttonVariants>['variant'];
+  size?: VariantProps<typeof buttonVariants>['size'];
   text: string;
   loadingText: string;
   successText?: string;
   errorText?: string;
 }) {
-  const [buttonState, setButtonState] = useState<ButtonLoadingState>("default");
+  const [buttonState, setButtonState] = useState<ButtonLoadingState>('default');
 
   const handleClick = async () => {
     const statementId = generateStatementId();
-    setButtonState("loading");
+    setButtonState('loading');
     try {
       await createDraft({
         statementId,
-        versionNumber: 1,
+        versionNumber: 1
       });
-      setButtonState("success");
+      setButtonState('success');
     } catch (error) {
       console.error(error);
     }

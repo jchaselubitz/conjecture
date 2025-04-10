@@ -1,7 +1,3 @@
-export default function UserPageLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function UserPageLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

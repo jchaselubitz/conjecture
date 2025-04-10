@@ -1,8 +1,8 @@
-import { MessageSquareIcon, ShieldCheckIcon, UsersIcon } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
+import { MessageSquareIcon, ShieldCheckIcon, UsersIcon } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
 
-import { Button } from "../components/ui/button";
+import { Button } from '../components/ui/button';
 
 export default async function Home() {
   return (
@@ -14,8 +14,8 @@ export default async function Home() {
           <span className="text-primary"> Civilized Debate</span>
         </h1>
         <p className="max-w-[700px] mt-6 text-lg text-muted-foreground md:text-xl">
-          Engage in thoughtful discussions, share perspectives, and explore
-          ideas in a space designed for meaningful dialogue.
+          Engage in thoughtful discussions, share perspectives, and explore ideas in a space
+          designed for meaningful dialogue.
         </p>
         <div className="flex gap-4 mt-8">
           <Link href="/join">
@@ -40,8 +40,8 @@ export default async function Home() {
             </div>
             <h3 className="text-xl font-semibold">Structured Discussions</h3>
             <p className="text-muted-foreground">
-              Engage in well-organized debates with clear context and threading
-              for better understanding.
+              Engage in well-organized debates with clear context and threading for better
+              understanding.
             </p>
           </div>
           <div className="space-y-4">
@@ -50,8 +50,7 @@ export default async function Home() {
             </div>
             <h3 className="text-xl font-semibold">Civil Environment</h3>
             <p className="text-muted-foreground">
-              A community committed to respectful dialogue and intellectual
-              discourse.
+              A community committed to respectful dialogue and intellectual discourse.
             </p>
           </div>
           <div className="space-y-4">
@@ -60,8 +59,7 @@ export default async function Home() {
             </div>
             <h3 className="text-xl font-semibold">Diverse Perspectives</h3>
             <p className="text-muted-foreground">
-              Connect with thinkers from various backgrounds and expand your
-              understanding.
+              Connect with thinkers from various backgrounds and expand your understanding.
             </p>
           </div>
         </div>
@@ -93,8 +91,7 @@ export default async function Home() {
             </div>
             <h3 className="mt-4 text-xl font-semibold">Engage & Respond</h3>
             <p className="mt-2 text-muted-foreground">
-              Participate in discussions with thoughtful responses and
-              counter-arguments.
+              Participate in discussions with thoughtful responses and counter-arguments.
             </p>
           </div>
           <div className="relative p-6 border rounded-lg">
@@ -103,8 +100,7 @@ export default async function Home() {
             </div>
             <h3 className="mt-4 text-xl font-semibold">Learn & Grow</h3>
             <p className="mt-2 text-muted-foreground">
-              Develop deeper understanding through civil discourse and diverse
-              perspectives.
+              Develop deeper understanding through civil discourse and diverse perspectives.
             </p>
           </div>
         </div>
@@ -117,8 +113,7 @@ export default async function Home() {
             Ready to Join the Conversation?
           </h2>
           <p className="max-w-[600px] mx-auto mt-4 text-lg text-muted-foreground">
-            Be part of a community that values thoughtful discussion and mutual
-            understanding.
+            Be part of a community that values thoughtful discussion and mutual understanding.
           </p>
           <Link href="/join" className="inline-block mt-8">
             <Button size="lg" className="text-lg">

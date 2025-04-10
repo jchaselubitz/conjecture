@@ -1,4 +1,4 @@
-import ProfileForm from "./(components)/profile_form";
+import ProfileForm from './(components)/profile_form';
 
 export default function SettingsPage() {
   return (

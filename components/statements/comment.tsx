@@ -1,28 +1,19 @@
-"use client";
+'use client';
 
-import * as Sentry from "@sentry/nextjs";
-import { BaseCommentVote, BaseCommentWithUser } from "kysely-codegen";
-import { ArrowUp, Edit2, RefreshCw, Reply, Trash2 } from "lucide-react";
-import React, { startTransition, useOptimistic, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { useUserContext } from "@/contexts/userContext";
-import {
-  deleteComment,
-  editComment,
-  toggleCommentUpvote,
-} from "@/lib/actions/commentActions";
-import { formatDate } from "@/lib/helpers/helpersDate";
-import { cn } from "@/lib/utils";
+import * as Sentry from '@sentry/nextjs';
+import { BaseCommentVote, BaseCommentWithUser } from 'kysely-codegen';
+import { ArrowUp, Edit2, RefreshCw, Reply, Trash2 } from 'lucide-react';
+import React, { startTransition, useOptimistic, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { useUserContext } from '@/contexts/userContext';
+import { deleteComment, editComment, toggleCommentUpvote } from '@/lib/actions/commentActions';
+import { formatDate } from '@/lib/helpers/helpersDate';
+import { cn } from '@/lib/utils';
 
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { ButtonLoadingState, LoadingButton } from "../ui/loading-button";
-import { Textarea } from "../ui/textarea";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { ButtonLoadingState, LoadingButton } from '../ui/loading-button';
+import { Textarea } from '../ui/textarea';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 export type CommentWithReplies = BaseCommentWithUser & {
   children: BaseCommentWithUser[];
 };
@@ -47,23 +38,21 @@ const Comment: React.FC<CommentProps> = ({
   onReplyClick,
   onCommentDeleted,
   level = 0,
-  isRootComment = false,
+  isRootComment = false
 }) => {
   const { userId } = useUserContext();
-  const [deletingButtonState, setDeletingButtonState] =
-    useState<ButtonLoadingState>("default");
+  const [deletingButtonState, setDeletingButtonState] = useState<ButtonLoadingState>('default');
   const [editingComment, setEditingComment] = useState(false);
   const [commentContent, setCommentContent] = useState(comment.content);
-  const [editingButtonState, setEditingButtonState] =
-    useState<ButtonLoadingState>("default");
+  const [editingButtonState, setEditingButtonState] = useState<ButtonLoadingState>('default');
   const [isHovered, setIsHovered] = useState(false);
 
-  const [optVotes, setOptVotes] = useOptimistic<
-    BaseCommentVote[] | undefined,
-    BaseCommentVote[]
-  >(comment.votes, (current, updated) => {
-    return updated;
-  });
+  const [optVotes, setOptVotes] = useOptimistic<BaseCommentVote[] | undefined, BaseCommentVote[]>(
+    comment.votes,
+    (current, updated) => {
+      return updated;
+    }
+  );
 
   const voteCount = optVotes?.length || 0;
   const hasUpvoted = optVotes?.some((vote) => vote.userId === userId) || false;
@@ -74,13 +63,13 @@ const Comment: React.FC<CommentProps> = ({
     try {
       await editComment({
         id: comment.id,
-        content: commentContent,
+        content: commentContent
       });
     } catch (error) {
-      console.error("Error editing comment:", error);
-      setEditingButtonState("error");
+      console.error('Error editing comment:', error);
+      setEditingButtonState('error');
     } finally {
-      setEditingButtonState("default");
+      setEditingButtonState('default');
     }
   };
 
@@ -95,8 +84,8 @@ const Comment: React.FC<CommentProps> = ({
               id: crypto.randomUUID(),
               userId,
               commentId: comment.id,
-              createdAt: new Date(),
-            },
+              createdAt: new Date()
+            }
           ];
       startTransition(() => {
         if (newVotes) {
@@ -106,10 +95,10 @@ const Comment: React.FC<CommentProps> = ({
 
       await toggleCommentUpvote({
         commentId: comment.id,
-        isUpvoted: hasUpvoted,
+        isUpvoted: hasUpvoted
       });
     } catch (error) {
-      console.error("Error upvoting comment:", error);
+      console.error('Error upvoting comment:', error);
     } finally {
     }
   };
@@ -117,21 +106,21 @@ const Comment: React.FC<CommentProps> = ({
   const handleDeleteComment = async () => {
     if (!userId) return;
 
-    setDeletingButtonState("loading");
+    setDeletingButtonState('loading');
     try {
       await deleteComment({
         id: comment.id,
         commenterId: comment.userId,
-        statementCreatorId,
+        statementCreatorId
       });
 
       onCommentDeleted(comment.id);
     } catch (error) {
-      console.error("Error deleting comment:", error);
+      console.error('Error deleting comment:', error);
       Sentry.captureException(error);
-      setDeletingButtonState("error");
+      setDeletingButtonState('error');
     } finally {
-      setDeletingButtonState("default");
+      setDeletingButtonState('default');
     }
   };
 
@@ -144,21 +133,21 @@ const Comment: React.FC<CommentProps> = ({
   const borderColor = () => {
     switch (currentLevel) {
       case 0:
-        return "border-zinc-50/50";
+        return 'border-zinc-50/50';
       case 1:
-        return "border-zinc-100/50";
+        return 'border-zinc-100/50';
       case 2:
-        return "border-zinc-200/50";
+        return 'border-zinc-200/50';
       case 3:
-        return "border-zinc-300/50";
+        return 'border-zinc-300/50';
       case 4:
-        return "border-zinc-400/50";
+        return 'border-zinc-400/50';
       case 5:
-        return "border-zinc-500/50";
+        return 'border-zinc-500/50';
       case 6:
-        return "border-zinc-600/50";
+        return 'border-zinc-600/50';
       case 7:
-        return "border-zinc-700/50";
+        return 'border-zinc-700/50';
     }
   };
 
@@ -208,7 +197,7 @@ const Comment: React.FC<CommentProps> = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant={hasUpvoted ? "default" : "ghost"}
+                    variant={hasUpvoted ? 'default' : 'ghost'}
                     size="sm"
                     onClick={handleVote}
                     className=" text-xs opacity-70 hover:opacity-100 hover:cursor-pointer"
@@ -218,7 +207,7 @@ const Comment: React.FC<CommentProps> = ({
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{hasUpvoted ? "Remove upvote" : "Upvote comment"}</p>
+                  <p>{hasUpvoted ? 'Remove upvote' : 'Upvote comment'}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -254,19 +243,19 @@ const Comment: React.FC<CommentProps> = ({
   return (
     <div
       className={cn(
-        "flex flex-col",
-        currentLevel > 0 && "ml-2 mt-2 pl-2 border-l-2",
-        borderColor(),
+        'flex flex-col',
+        currentLevel > 0 && 'ml-2 mt-2 pl-2 border-l-2',
+        borderColor()
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
         className={cn(
-          "p-3 rounded-md transition-colors flex flex-col gap-2",
-          currentLevel === 0 ? "bg-background" : "bg-muted mb-2",
-          isHovered && "bg-muted/80",
-          !isRootComment && level === 0 && "mt-6",
+          'p-3 rounded-md transition-colors flex flex-col gap-2',
+          currentLevel === 0 ? 'bg-background' : 'bg-muted mb-2',
+          isHovered && 'bg-muted/80',
+          !isRootComment && level === 0 && 'mt-6'
         )}
       >
         {/* Comment header with user info */}
@@ -280,18 +269,16 @@ const Comment: React.FC<CommentProps> = ({
                   src={comment.userImageUrl}
                   className="object-cover border border-muted-foreground"
                 />
-                <AvatarFallback>
-                  {comment.userName?.charAt(0) || "U"}
-                </AvatarFallback>
+                <AvatarFallback>{comment.userName?.charAt(0) || 'U'}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col  text-primary font-semibold text-xs">
                 <p className="text-xs font-medium">
-                  {comment.userId === userId ? "You" : comment.userName}
+                  {comment.userId === userId ? 'You' : comment.userName}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {formatDate({
                     date: new Date(comment.createdAt),
-                    withTime: true,
+                    withTime: true
                   })}
                 </p>
               </div>
@@ -318,19 +305,13 @@ const Comment: React.FC<CommentProps> = ({
                 successText="Saved"
                 errorText="Error"
               />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setEditingComment(false)}
-              >
+              <Button variant="ghost" size="sm" onClick={() => setEditingComment(false)}>
                 Cancel
               </Button>
             </div>
           </div>
         ) : (
-          <p className="text-sm whitespace-pre-wrap break-words">
-            {comment.content}
-          </p>
+          <p className="text-sm whitespace-pre-wrap break-words">{comment.content}</p>
         )}
         {/* Reply button */}
         {isRootComment && commentControls()}

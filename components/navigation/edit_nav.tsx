@@ -1,24 +1,15 @@
-"use client";
+'use client';
 
-import { Settings } from "lucide-react";
-import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import {
-  ButtonLoadingState,
-  LoadingButton,
-} from "@/components/ui/loading-button";
-import { useStatementContext } from "@/contexts/statementContext";
-import { formatDate } from "@/lib/helpers/helpersDate";
+import { Settings } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
+import { useStatementContext } from '@/contexts/statementContext';
+import { formatDate } from '@/lib/helpers/helpersDate';
 
-import { Button } from "../ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
+import { Button } from '../ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 export default function EditNav() {
   const {
     versionOptions,
@@ -28,56 +19,53 @@ export default function EditNav() {
     togglePublish,
     isUpdating,
     nextVersionNumber,
-    changeVersion,
+    changeVersion
   } = useStatementContext();
 
-  const [saveButtonState, setSaveButtonState] =
-    useState<ButtonLoadingState>("default");
-  const [updateButtonState, setUpdateButtonState] =
-    useState<ButtonLoadingState>("default");
-  const [publishButtonState, setPublishButtonState] =
-    useState<ButtonLoadingState>("default");
+  const [saveButtonState, setSaveButtonState] = useState<ButtonLoadingState>('default');
+  const [updateButtonState, setUpdateButtonState] = useState<ButtonLoadingState>('default');
+  const [publishButtonState, setPublishButtonState] = useState<ButtonLoadingState>('default');
 
   const router = useRouter();
 
   useEffect(() => {
     if (!isUpdating) {
-      setUpdateButtonState("default");
+      setUpdateButtonState('default');
     } else {
-      setUpdateButtonState("loading");
+      setUpdateButtonState('loading');
     }
   }, [isUpdating]);
 
   const handleUpdate = async () => {
     try {
-      setUpdateButtonState("loading");
+      setUpdateButtonState('loading');
       await updateStatementDraft(statement);
-      setUpdateButtonState("success");
+      setUpdateButtonState('success');
     } catch (error) {
       console.error(error);
-      setUpdateButtonState("error");
+      setUpdateButtonState('error');
     }
   };
 
   const handleSaveDraft = async () => {
     try {
-      setSaveButtonState("loading");
+      setSaveButtonState('loading');
       await saveStatementDraft();
-      setSaveButtonState("success");
+      setSaveButtonState('success');
     } catch (error) {
       console.error(error);
-      setSaveButtonState("error");
+      setSaveButtonState('error');
     }
   };
 
   const handlePublish = async () => {
     try {
-      setPublishButtonState("loading");
+      setPublishButtonState('loading');
       await togglePublish();
-      setPublishButtonState("success");
+      setPublishButtonState('success');
     } catch (error) {
       console.error(error);
-      setPublishButtonState("error");
+      setPublishButtonState('error');
     }
   };
 
@@ -106,7 +94,7 @@ export default function EditNav() {
               <SelectContent>
                 {versionOptions.map((v) => (
                   <SelectItem key={v.versionNumber} value={v.versionNumber}>
-                    v{v.versionNumber} -{" "}
+                    v{v.versionNumber} -{' '}
                     <span className="text-sm text-zinc-500">
                       {formatDate({ date: v.createdAt })}
                     </span>
@@ -149,12 +137,10 @@ export default function EditNav() {
                       ? `Hide v${statement.versionNumber}`
                       : `Publish v${statement.versionNumber}`
                   }
-                  loadingText={
-                    statement.publishedAt ? "Hiding..." : "Publishing..."
-                  }
+                  loadingText={statement.publishedAt ? 'Hiding...' : 'Publishing...'}
                   setButtonState={setPublishButtonState}
                   reset
-                  successText={statement.publishedAt ? "Hidden" : "Published"}
+                  successText={statement.publishedAt ? 'Hidden' : 'Published'}
                   errorText="Failed to publish"
                 />
               </>

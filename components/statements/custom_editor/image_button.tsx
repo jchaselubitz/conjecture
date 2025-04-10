@@ -1,20 +1,16 @@
-import { ImageIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useStatementContext } from "@/contexts/statementContext";
-import { openImagePopover } from "@/lib/helpers/helpersStatements";
-import { cn } from "@/lib/utils";
+import { ImageIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useStatementContext } from '@/contexts/statementContext';
+import { openImagePopover } from '@/lib/helpers/helpersStatements';
+import { cn } from '@/lib/utils';
 
 interface ImageButtonProps {
   statementId: string;
 }
 
 export function ImageButton({ statementId }: ImageButtonProps) {
-  const {
-    setInitialImageData,
-    setSelectedNodePosition,
-    setImagePopoverOpen,
-    editor,
-  } = useStatementContext();
+  const { setInitialImageData, setSelectedNodePosition, setImagePopoverOpen, editor } =
+    useStatementContext();
 
   if (!editor) return;
   const handleClick = () => {
@@ -28,18 +24,18 @@ export function ImageButton({ statementId }: ImageButtonProps) {
       x: pos.left,
       y: pos.top,
       width: 1,
-      height: 1,
+      height: 1
     };
 
     openImagePopover({
-      src: "",
-      alt: "",
+      src: '',
+      alt: '',
       id: undefined,
       position,
       setInitialImageData,
       setSelectedNodePosition,
       setImagePopoverOpen,
-      statementId,
+      statementId
     });
   };
 
@@ -48,7 +44,7 @@ export function ImageButton({ statementId }: ImageButtonProps) {
       variant="ghost"
       size="sm"
       onClick={handleClick}
-      className={cn(editor.isActive("blockImage") && "bg-muted")}
+      className={cn(editor.isActive('blockImage') && 'bg-muted')}
     >
       <ImageIcon className="h-4 w-4" />
     </Button>

@@ -1,8 +1,8 @@
-import { Metadata } from "next";
-import AppNav from "@/components/navigation/app_nav";
-import { StatementListContainer } from "@/containers/StatementListContainer";
-import { getDrafts } from "@/lib/actions/statementActions";
-import { getUserProfile } from "@/lib/actions/userActions";
+import { Metadata } from 'next';
+import AppNav from '@/components/navigation/app_nav';
+import { StatementListContainer } from '@/containers/StatementListContainer';
+import { getDrafts } from '@/lib/actions/statementActions';
+import { getUserProfile } from '@/lib/actions/userActions';
 
 type UserPageProps = {
   params: Promise<{
@@ -11,7 +11,7 @@ type UserPageProps = {
 };
 
 export const metadata: Metadata = {
-  title: "User Profile",
+  title: 'User Profile'
 };
 
 export default async function UserPage({ params }: UserPageProps) {

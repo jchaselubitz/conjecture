@@ -1,46 +1,42 @@
-import { Editor } from "@tiptap/react";
-import { NewStatementCitation } from "kysely-codegen";
-import { Asterisk } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { Tooltip } from "@/components/ui/tooltip";
-import { TooltipContent } from "@/components/ui/tooltip";
-import { TooltipTrigger } from "@/components/ui/tooltip";
-import { useStatementContext } from "@/contexts/statementContext";
-import { openCitationPopover } from "@/lib/helpers/helpersStatements";
-import { cn } from "@/lib/utils";
+import { Editor } from '@tiptap/react';
+import { NewStatementCitation } from 'kysely-codegen';
+import { Asterisk } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { Tooltip } from '@/components/ui/tooltip';
+import { TooltipContent } from '@/components/ui/tooltip';
+import { TooltipTrigger } from '@/components/ui/tooltip';
+import { useStatementContext } from '@/contexts/statementContext';
+import { openCitationPopover } from '@/lib/helpers/helpersStatements';
+import { cn } from '@/lib/utils';
 interface CitationButtonProps {
   editor: Editor;
   statementId: string;
 }
 
 export function CitationButton({ editor, statementId }: CitationButtonProps) {
-  const {
-    setSelectedNodePosition,
-    setCitationPopoverOpen,
-    setCitationData,
-    citationPopoverOpen,
-  } = useStatementContext();
+  const { setSelectedNodePosition, setCitationPopoverOpen, setCitationData, citationPopoverOpen } =
+    useStatementContext();
   const handleClick = () => {
     const view = editor.view;
     const { from } = view.state.selection;
     const pos = view.coordsAtPos(from);
     const citationData: NewStatementCitation = {
       statementId,
-      title: "",
-      url: "",
+      title: '',
+      url: '',
       date: undefined,
       year: undefined,
       month: undefined,
       day: undefined,
-      authorNames: "",
+      authorNames: '',
       issue: undefined,
       pageEnd: undefined,
       pageStart: undefined,
       publisher: undefined,
       titlePublication: undefined,
       volume: undefined,
-      id: "",
+      id: ''
     };
 
     if (!citationPopoverOpen) {
@@ -50,11 +46,11 @@ export function CitationButton({ editor, statementId }: CitationButtonProps) {
           x: pos.left,
           y: pos.top,
           width: 1,
-          height: 1,
+          height: 1
         },
         setSelectedNodePosition,
         setCitationPopoverOpen,
-        setCitationData,
+        setCitationData
       });
     } else {
       setCitationPopoverOpen(false);
@@ -70,7 +66,7 @@ export function CitationButton({ editor, statementId }: CitationButtonProps) {
             variant="ghost"
             size="sm"
             onClick={handleClick}
-            className={cn(editor.isActive("citation") && "bg-muted")}
+            className={cn(editor.isActive('citation') && 'bg-muted')}
           >
             <Asterisk className="h-4 w-4" />
           </Button>

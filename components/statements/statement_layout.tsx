@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
 import AnnotationPanel from '@/components/statements/annotation_panel';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import { useStatementContext } from '@/contexts/statementContext';
 import { useUserContext } from '@/contexts/userContext';
 
 import AppNav from '../navigation/app_nav';
@@ -13,7 +14,6 @@ import EditNav from '../navigation/edit_nav';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '../ui/drawer';
 import { CommentIndicatorButton } from './comments_menu';
 import StatementDetails from './statement_details';
-import { useStatementContext } from '@/contexts/statementContext';
 interface StatementDetailsProps {
   statement: DraftWithAnnotations;
   authorCommentsEnabled: boolean;
@@ -27,7 +27,7 @@ export default function StatementLayout({
   authorCommentsEnabled,
   readerCommentsEnabled,
   editModeEnabled,
-  parentStatement,
+  parentStatement
 }: StatementDetailsProps) {
   const { userId } = useUserContext();
   const { visualViewport, setVisualViewport } = useStatementContext();
@@ -58,7 +58,7 @@ export default function StatementLayout({
     window.visualViewport.addEventListener('resize', handleResize);
     handleResize(); // Initial measurement
     return () => window.visualViewport?.removeEventListener('resize', handleResize);
-  }, []);
+  }, [setVisualViewport]);
 
   const drawerStyle = visualViewport
     ? { height: `${visualViewport * 0.7}px` }
@@ -115,7 +115,7 @@ export default function StatementLayout({
   };
 
   const mobileLayout = (
-    <div className="h-full">
+    <div className="">
       <StatementDetails
         statement={statement}
         parentStatement={parentStatement}

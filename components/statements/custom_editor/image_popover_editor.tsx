@@ -1,28 +1,24 @@
-"use client";
+'use client';
 
-import { ImageIcon, Trash2 } from "lucide-react";
-import { nanoid } from "nanoid";
-import { usePathname } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import type { ButtonLoadingState } from "@/components/ui/loading-button";
-import { LoadingButton } from "@/components/ui/loading-button";
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-} from "@/components/ui/popover";
-import { useStatementContext } from "@/contexts/statementContext";
-import { useUserContext } from "@/contexts/userContext";
+import { ImageIcon, Trash2 } from 'lucide-react';
+import { nanoid } from 'nanoid';
+import { usePathname } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import type { ButtonLoadingState } from '@/components/ui/loading-button';
+import { LoadingButton } from '@/components/ui/loading-button';
+import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
+import { useStatementContext } from '@/contexts/statementContext';
+import { useUserContext } from '@/contexts/userContext';
 import {
   deleteStatementImage,
   updateDraft,
-  upsertStatementImage,
-} from "@/lib/actions/statementActions";
-import { deleteStoredStatementImage } from "@/lib/actions/storageActions";
+  upsertStatementImage
+} from '@/lib/actions/statementActions';
+import { deleteStoredStatementImage } from '@/lib/actions/storageActions';
 
-import { saveImage } from "./custom_extensions/helpers/helpersImageExtension";
+import { saveImage } from './custom_extensions/helpers/helpersImageExtension';
 
 interface ImagePopoverEditorProps {
   children: React.ReactNode;
@@ -33,7 +29,7 @@ interface ImagePopoverEditorProps {
 export function ImagePopoverEditor({
   statementId,
   statementCreatorId,
-  children,
+  children
 }: ImagePopoverEditorProps) {
   const pathname = usePathname();
   const {
@@ -42,36 +38,33 @@ export function ImagePopoverEditor({
     initialImageData,
     setInitialImageData,
     updateStatementDraft,
-    editor,
+    editor
   } = useStatementContext();
   const { userId } = useUserContext();
   const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>(
-    initialImageData.src || "",
-  );
+  const [previewUrl, setPreviewUrl] = useState<string>(initialImageData.src || '');
   const [alt, setAlt] = useState(initialImageData.alt);
   const [error, setError] = useState<string | null>(null);
-  const [saveButtonState, setSaveButtonState] =
-    useState<ButtonLoadingState>("default");
+  const [saveButtonState, setSaveButtonState] = useState<ButtonLoadingState>('default');
 
   const handleClosePopover = () => {
     setImagePopoverOpen(false);
-    setPreviewUrl("");
+    setPreviewUrl('');
     setFile(null);
-    setAlt("");
+    setAlt('');
     setError(null);
     setInitialImageData({
-      src: "",
-      alt: "",
-      id: "",
-      statementId,
+      src: '',
+      alt: '',
+      id: '',
+      statementId
     });
   };
 
   useEffect(() => {
     // Cleanup preview URL when component unmounts
     return () => {
-      if (previewUrl && previewUrl.startsWith("blob:")) {
+      if (previewUrl && previewUrl.startsWith('blob:')) {
         URL.revokeObjectURL(previewUrl);
       }
     };
@@ -81,8 +74,8 @@ export function ImagePopoverEditor({
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
 
-    if (!selectedFile.type.startsWith("image/")) {
-      setError("Please select a valid image file");
+    if (!selectedFile.type.startsWith('image/')) {
+      setError('Please select a valid image file');
       return;
     }
 
@@ -98,7 +91,7 @@ export function ImagePopoverEditor({
 
   const handleSave = async () => {
     if (!previewUrl && !file && !initialImageData.id) {
-      setError("Please select an image");
+      setError('Please select an image');
       return;
     }
 
@@ -110,38 +103,38 @@ export function ImagePopoverEditor({
       };
 
       try {
-        setSaveButtonState("loading");
+        setSaveButtonState('loading');
         if (file) {
           await saveImage({
             editor,
             userId,
             statementId,
             imageData: {
-              alt: alt || file?.name || "",
+              alt: alt || file?.name || '',
               src: previewUrl,
-              id: filename,
+              id: filename
             },
-            file,
+            file
           });
         }
         if (initialImageData.id) {
           await upsertStatementImage({
-            alt: alt || file?.name || "",
+            alt: alt || file?.name || '',
             src: initialImageData.src,
             id: initialImageData.id,
             statementId,
             revalidationPath: {
               path: pathname,
-              type: "layout",
-            },
+              type: 'layout'
+            }
           });
           updateDraft();
         }
-        setSaveButtonState("success");
+        setSaveButtonState('success');
         handleClosePopover();
       } catch (error) {
-        setSaveButtonState("error");
-        console.error("Failed to save image:", error);
+        setSaveButtonState('error');
+        console.error('Failed to save image:', error);
       }
     }
   };
@@ -151,21 +144,13 @@ export function ImagePopoverEditor({
 
     try {
       // Remove from editor
-      editor
-        ?.chain()
-        .focus()
-        .deleteBlockImage({ imageId: initialImageData.id })
-        .run();
+      editor?.chain().focus().deleteBlockImage({ imageId: initialImageData.id }).run();
 
-      await deleteStatementImage(
-        initialImageData.id,
-        statementId,
-        statementCreatorId,
-      );
+      await deleteStatementImage(initialImageData.id, statementId, statementCreatorId);
       //update html right away
       handleClosePopover();
     } catch (error) {
-      console.error("Failed to delete image:", error);
+      console.error('Failed to delete image:', error);
       // You might want to show an error toast here
     }
   };
@@ -179,11 +164,7 @@ export function ImagePopoverEditor({
             {error ? (
               <div className="text-red-500 text-sm">{error}</div>
             ) : previewUrl ? (
-              <img
-                src={previewUrl}
-                alt={alt}
-                className="max-w-full max-h-[200px] object-contain"
-              />
+              <img src={previewUrl} alt={alt} className="max-w-full max-h-[200px] object-contain" />
             ) : (
               <div className="text-muted-foreground flex flex-col items-center gap-2">
                 <ImageIcon className="h-8 w-8" />
@@ -209,22 +190,13 @@ export function ImagePopoverEditor({
 
           {/* Actions */}
           <div className="flex justify-between mt-2">
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleDelete}
-              className="px-2 py-1"
-            >
+            <Button variant="destructive" size="sm" onClick={handleDelete} className="px-2 py-1">
               <Trash2 className="h-4 w-4 mr-1" />
               Delete
             </Button>
 
             <div className="flex gap-2 ml-auto">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setImagePopoverOpen(false)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setImagePopoverOpen(false)}>
                 Cancel
               </Button>
               <LoadingButton

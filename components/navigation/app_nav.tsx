@@ -1,19 +1,13 @@
-"use client";
-import { Menu } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
-import { useUserContext } from "@/contexts/userContext";
+'use client';
+import { Menu } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { useUserContext } from '@/contexts/userContext';
 
-import CreatePostButton from "../special_buttons/create_post_button";
-import { Button } from "../ui/button";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "../ui/drawer";
-import UserButton from "./user_button";
+import CreatePostButton from '../special_buttons/create_post_button';
+import { Button } from '../ui/button';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '../ui/drawer';
+import UserButton from './user_button';
 
 export default function AppNav() {
   const [open, setOpen] = useState(false);
@@ -35,20 +29,12 @@ export default function AppNav() {
                 <DrawerTitle>Menu</DrawerTitle>
               </DrawerHeader>
               <div className="flex flex-col gap-4 p-4">
-                <Link
-                  href="/feed"
-                  className="text-lg"
-                  onClick={() => setOpen(false)}
-                >
+                <Link href="/feed" className="text-lg" onClick={() => setOpen(false)}>
                   Feed
                 </Link>
                 {userId && (
                   <>
-                    <Link
-                      href="/statements"
-                      className="text-lg"
-                      onClick={() => setOpen(false)}
-                    >
+                    <Link href="/statements" className="text-lg" onClick={() => setOpen(false)}>
                       My Conjectures
                     </Link>
 

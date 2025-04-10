@@ -1,19 +1,16 @@
-import { Editor } from "@tiptap/react";
-import { Link2, Quote } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Editor } from '@tiptap/react';
+import { Check, Quote } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useCopyToClipboard } from '@/lib/hooks/useCopyToClipboard';
+import { cn } from '@/lib/utils';
 
 interface QuoteLinkButtonProps {
   editor: Editor;
   statementId: string;
 }
 
-export const QuoteLinkButton = ({
-  editor,
-  statementId,
-}: QuoteLinkButtonProps) => {
-  const handleCopyQuoteLink = () => {
+export const QuoteLinkButton = ({ editor, statementId }: QuoteLinkButtonProps) => {
+  const generateQuoteLink = () => {
     const { from, to } = editor.state.selection;
     if (from === to) return;
 
@@ -22,32 +19,21 @@ export const QuoteLinkButton = ({
 
     // Get the base URL without any parameters
     const url = new URL(window.location.href);
-    url.search = ""; // Clear all existing parameters
+    url.search = ''; // Clear all existing parameters
 
     // Add both location and content parameters
-    url.searchParams.set("statementId", statementId);
-    url.searchParams.set("location", `${from}-${to}`);
-    url.searchParams.set("content", selectedText);
+    url.searchParams.set('statementId', statementId);
+    url.searchParams.set('location', `${from}-${to}`);
+    url.searchParams.set('content', selectedText);
 
-    // Copy to clipboard
-    navigator.clipboard
-      .writeText(url.toString())
-      .then(() => {
-        toast.success("Link copied to clipboard");
-      })
-      .catch(() => {
-        toast.error("Failed to copy link");
-      });
+    return url.toString();
   };
 
+  const { copy, copied } = useCopyToClipboard(generateQuoteLink() ?? '');
+
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={handleCopyQuoteLink}
-      className={cn("gap-2")}
-    >
-      <Quote className="h-4 w-4" />
+    <Button variant="ghost" size="sm" onClick={copy} className={cn('gap-2')}>
+      {copied ? <Check className="h-4 w-4" /> : <Quote className="h-4 w-4" />}
       <span className="hidden sm:inline">Quote Link</span>
     </Button>
   );

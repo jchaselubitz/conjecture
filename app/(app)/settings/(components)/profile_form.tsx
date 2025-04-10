@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import * as z from "zod";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import * as z from 'zod';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -14,32 +14,29 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { LoadingButton } from "@/components/ui/loading-button";
-import { useUserContext } from "@/contexts/userContext";
-import {
-  deleteProfileImage,
-  uploadProfileImage,
-} from "@/lib/actions/storageActions";
+  FormMessage
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { LoadingButton } from '@/components/ui/loading-button';
+import { useUserContext } from '@/contexts/userContext';
+import { deleteProfileImage, uploadProfileImage } from '@/lib/actions/storageActions';
 import {
   checkUsername,
   updateEmail,
   updateProfile,
-  updateUsername,
-} from "@/lib/actions/userActions";
-import { handleImageCompression } from "@/lib/helpers/helpersImages";
+  updateUsername
+} from '@/lib/actions/userActions';
+import { handleImageCompression } from '@/lib/helpers/helpersImages';
 const profileFormSchema = z.object({
   name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
+    message: 'Name must be at least 2 characters.'
   }),
   email: z.string().email({
-    message: "Please enter a valid email address.",
+    message: 'Please enter a valid email address.'
   }),
   username: z.string().min(3, {
-    message: "Username must be at least 3 characters.",
-  }),
+    message: 'Username must be at least 3 characters.'
+  })
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -54,19 +51,15 @@ export default function ProfileForm() {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      name: name || "",
-      email: email || "",
-      username: username || "",
-    },
+      name: name || '',
+      email: email || '',
+      username: username || ''
+    }
   });
 
-  const handleImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     setImageLoading(true);
-    const files = event.target.files?.length
-      ? Array.from(event.target.files)
-      : null;
+    const files = event.target.files?.length ? Array.from(event.target.files) : null;
     if (files && files.length > 0) {
       files.map(async (file) => {
         try {
@@ -74,24 +67,24 @@ export default function ProfileForm() {
           if (!compressedFile) return;
           // const imageUrl = await fileToImageUrl(compressedFile);
           const fileFormData = new FormData();
-          fileFormData.append("image", compressedFile);
+          fileFormData.append('image', compressedFile);
           if (!userId) {
-            alert("Please set your profile name first.");
+            alert('Please set your profile name first.');
             return;
           }
           const newImageUrl = await uploadProfileImage({
             file: fileFormData,
             profileId: userId,
             fileName: compressedFile.name,
-            oldImageUrl: imageUrl ?? null,
+            oldImageUrl: imageUrl ?? null
           });
-          await updateProfile({ name: name ?? "", imageUrl: newImageUrl });
-          toast("Success", {
-            description: "Profile picture updated successfully!",
+          await updateProfile({ name: name ?? '', imageUrl: newImageUrl });
+          toast('Success', {
+            description: 'Profile picture updated successfully!'
           });
         } catch (error) {
-          toast("Error", {
-            description: "Failed to upload image. Please try again.",
+          toast('Error', {
+            description: 'Failed to upload image. Please try again.'
           });
         } finally {
           setIsUploading(false);
@@ -111,8 +104,8 @@ export default function ProfileForm() {
     if (!imageUrl || !userId) return;
     await deleteProfileImage({ profileId: userId, url: imageUrl });
     await updateProfile({
-      name: name ?? "",
-      imageUrl: null,
+      name: name ?? '',
+      imageUrl: null
     });
   };
 
@@ -120,14 +113,14 @@ export default function ProfileForm() {
     try {
       if (data.username !== username) {
         const c = confirm(
-          "Changing your username will change your public URL and break existing links to your posts. Are you sure you want to continue?",
+          'Changing your username will change your public URL and break existing links to your posts. Are you sure you want to continue?'
         );
         if (!c) return;
 
         const usernameAvailable = await checkUsername(data.username);
         if (!usernameAvailable) {
-          toast("Error", {
-            description: "Username is already taken. Please try another.",
+          toast('Error', {
+            description: 'Username is already taken. Please try another.'
           });
           return;
         }
@@ -136,22 +129,22 @@ export default function ProfileForm() {
 
       if (data.email !== email) {
         await updateEmail(data.email);
-        toast("Email Update", {
-          description: "Email update request sent. Please check your inbox.",
+        toast('Email Update', {
+          description: 'Email update request sent. Please check your inbox.'
         });
       }
 
       await updateProfile({
         name: data.name,
-        imageUrl: imageUrl,
+        imageUrl: imageUrl
       });
 
-      toast("Success", {
-        description: "Profile updated successfully!",
+      toast('Success', {
+        description: 'Profile updated successfully!'
       });
     } catch (error) {
-      toast("Error", {
-        description: "Failed to update profile. Please try again.",
+      toast('Error', {
+        description: 'Failed to update profile. Please try again.'
       });
     }
   }
@@ -162,7 +155,7 @@ export default function ProfileForm() {
         <div className="flex flex-col items-center space-y-4">
           <Avatar className="h-24 w-24">
             <AvatarImage src={imageUrl} className="object-cover" />
-            <AvatarFallback>{name?.charAt(0) || "U"}</AvatarFallback>
+            <AvatarFallback>{name?.charAt(0) || 'U'}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col items-center space-y-2">
             <Input
@@ -175,7 +168,7 @@ export default function ProfileForm() {
               disabled={isUploading}
             />
             <Button variant="outline" onClick={handlePhotoButtonClick}>
-              {isUploading ? "Uploading..." : "Change Avatar"}
+              {isUploading ? 'Uploading...' : 'Change Avatar'}
             </Button>
           </div>
         </div>
@@ -191,9 +184,7 @@ export default function ProfileForm() {
                   <FormControl>
                     <Input placeholder="Your name" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    This is your public display name.
-                  </FormDescription>
+                  <FormDescription>This is your public display name.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -225,9 +216,7 @@ export default function ProfileForm() {
                   <FormControl>
                     <Input placeholder="Your username" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    This defines your public URL.
-                  </FormDescription>
+                  <FormDescription>This defines your public URL.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -235,7 +224,7 @@ export default function ProfileForm() {
 
             <LoadingButton
               type="submit"
-              buttonState={form.formState.isSubmitting ? "loading" : "default"}
+              buttonState={form.formState.isSubmitting ? 'loading' : 'default'}
               text="Save changes"
               loadingText="Saving..."
             />

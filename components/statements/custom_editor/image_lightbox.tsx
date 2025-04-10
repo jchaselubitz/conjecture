@@ -1,14 +1,9 @@
-"use client";
+'use client';
 
-import { XIcon } from "lucide-react";
-import { Dispatch, SetStateAction } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { UpsertImageDataType } from "@/lib/actions/statementActions";
+import { XIcon } from 'lucide-react';
+import { Dispatch, SetStateAction } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { UpsertImageDataType } from '@/lib/actions/statementActions';
 
 interface ImageLightboxProps {
   src: string;
@@ -23,10 +18,10 @@ export function ImageLightbox({
   src,
   alt,
   setInitialImageData,
-  setImageLightboxOpen,
+  setImageLightboxOpen
 }: ImageLightboxProps) {
   const handleClose = () => {
-    setInitialImageData({ src: "", alt: "", id: "", statementId: "" });
+    setInitialImageData({ src: '', alt: '', id: '', statementId: '' });
     setImageLightboxOpen(false);
   };
 
@@ -45,11 +40,7 @@ export function ImageLightbox({
         <div className="relative flex items-center justify-center">
           {src && (
             <div className="relative max-w-[95vw] max-h-[95vh]">
-              <img
-                src={src}
-                alt={alt}
-                className="object-contain max-w-[95vw] max-h-[95vh]"
-              />
+              <img src={src} alt={alt} className="object-contain max-w-[95vw] max-h-[95vh]" />
             </div>
           )}
         </div>

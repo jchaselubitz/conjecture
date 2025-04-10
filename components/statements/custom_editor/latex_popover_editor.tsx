@@ -1,41 +1,26 @@
-"use client";
+'use client';
 
-import "katex/dist/katex.min.css";
-import katex from "katex";
-import { Trash2 } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-} from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
-import { useStatementContext } from "@/contexts/statementContext";
+import 'katex/dist/katex.min.css';
+import katex from 'katex';
+import { Trash2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
+import { useStatementContext } from '@/contexts/statementContext';
 
-import {
-  deleteLatex,
-  saveLatex,
-} from "./custom_extensions/helpers/helpersLatexExtension";
+import { deleteLatex, saveLatex } from './custom_extensions/helpers/helpersLatexExtension';
 
 interface LatexPopoverEditorProps {
   children: React.ReactNode;
 }
 
 export function LatexPopoverEditor({ children }: LatexPopoverEditorProps) {
-  const {
-    latexPopoverOpen,
-    setLatexPopoverOpen,
-    editor,
-    selectedLatexId,
-    currentLatex,
-    isBlock,
-  } = useStatementContext();
+  const { latexPopoverOpen, setLatexPopoverOpen, editor, selectedLatexId, currentLatex, isBlock } =
+    useStatementContext();
 
-  const [latex, setLatex] = useState(
-    currentLatex || "\\sum_{i=1}^{n}i = \\frac{n(n+1)}{2}",
-  );
-  const [renderedLatex, setRenderedLatex] = useState<string>("");
+  const [latex, setLatex] = useState(currentLatex || '\\sum_{i=1}^{n}i = \\frac{n(n+1)}{2}');
+  const [renderedLatex, setRenderedLatex] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
   // Reset latex state when popover opens with new initialLatex
@@ -50,18 +35,18 @@ export function LatexPopoverEditor({ children }: LatexPopoverEditorProps) {
     try {
       const rendered = katex.renderToString(latex, {
         throwOnError: false,
-        displayMode: isBlock,
+        displayMode: isBlock
       });
       setRenderedLatex(rendered);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error rendering LaTeX");
-      setRenderedLatex("");
+      setError(err instanceof Error ? err.message : 'Error rendering LaTeX');
+      setRenderedLatex('');
     }
   }, [latex, isBlock]);
 
   const handleSave = () => {
-    if (latex.trim() === "" || !editor) {
+    if (latex.trim() === '' || !editor) {
       return;
     }
 
@@ -70,7 +55,7 @@ export function LatexPopoverEditor({ children }: LatexPopoverEditorProps) {
       editor,
       selectedLatexId,
       isBlock,
-      setLatexPopoverOpen,
+      setLatexPopoverOpen
     });
   };
 
@@ -91,7 +76,7 @@ export function LatexPopoverEditor({ children }: LatexPopoverEditorProps) {
               <div className="text-red-500 text-sm">{error}</div>
             ) : (
               <div
-                className={isBlock ? "w-full text-center" : ""}
+                className={isBlock ? 'w-full text-center' : ''}
                 dangerouslySetInnerHTML={{ __html: renderedLatex }}
               />
             )}
@@ -104,21 +89,12 @@ export function LatexPopoverEditor({ children }: LatexPopoverEditorProps) {
             autoFocus
           />
           <div className="flex justify-between mt-2">
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleDelete}
-              className="px-2 py-1"
-            >
+            <Button variant="destructive" size="sm" onClick={handleDelete} className="px-2 py-1">
               <Trash2 className="h-4 w-4 mr-1" />
               Delete
             </Button>
             <div className="flex gap-2 ml-auto">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setLatexPopoverOpen(false)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setLatexPopoverOpen(false)}>
                 Cancel
               </Button>
               <Button size="sm" onClick={handleSave}>

@@ -1,14 +1,14 @@
-"use client";
+'use client';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { useUserContext } from "@/contexts/userContext";
+  DialogTitle
+} from '@/components/ui/dialog';
+import { useUserContext } from '@/contexts/userContext';
 
-import ProfileForm from "./profile_form";
+import ProfileForm from './profile_form';
 export default function ProfileSettingsDialog() {
   const { settingsDialog, setSettingsDialog } = useUserContext();
   return (
@@ -16,9 +16,7 @@ export default function ProfileSettingsDialog() {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Profile Settings</DialogTitle>
-          <DialogDescription>
-            Manage your profile settings here.
-          </DialogDescription>
+          <DialogDescription>Manage your profile settings here.</DialogDescription>
         </DialogHeader>
         <ProfileForm />
       </DialogContent>

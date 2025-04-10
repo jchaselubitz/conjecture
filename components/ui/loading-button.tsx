@@ -1,15 +1,10 @@
-import { type VariantProps } from "class-variance-authority";
-import { Check, Loader2Icon } from "lucide-react";
-import * as React from "react";
+import { type VariantProps } from 'class-variance-authority';
+import { Check, Loader2Icon } from 'lucide-react';
+import * as React from 'react';
 
-import { Button, buttonVariants } from "./button";
+import { Button, buttonVariants } from './button';
 
-export type ButtonLoadingState =
-  | "default"
-  | "disabled"
-  | "loading"
-  | "success"
-  | "error";
+export type ButtonLoadingState = 'default' | 'disabled' | 'loading' | 'success' | 'error';
 export interface LoadingButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
@@ -34,26 +29,26 @@ const LoadingButton = React.forwardRef<HTMLButtonElement, LoadingButtonProps>(
       loadingText,
       successText,
       errorText,
-      buttonState = "default",
+      buttonState = 'default',
       reset = false,
       setButtonState,
       ...props
     },
-    ref,
+    ref
   ) => {
     if (reset && !setButtonState) {
-      throw new Error("setButtonState must be provided when reset is true");
+      throw new Error('setButtonState must be provided when reset is true');
     }
 
     const isString = (value: any): value is string => {
-      return typeof value === "string";
+      return typeof value === 'string';
     };
 
     React.useEffect(() => {
-      if (reset && setButtonState && buttonState === "success") {
+      if (reset && setButtonState && buttonState === 'success') {
         const timeout = setTimeout(() => {
-          if (buttonState === "success") {
-            setButtonState("default");
+          if (buttonState === 'success') {
+            setButtonState('default');
           }
         }, 2000);
         return () => clearTimeout(timeout);
@@ -62,7 +57,7 @@ const LoadingButton = React.forwardRef<HTMLButtonElement, LoadingButtonProps>(
 
     return (
       <Button
-        disabled={buttonState === "loading" || buttonState === "disabled"}
+        disabled={buttonState === 'loading' || buttonState === 'disabled'}
         variant={variant}
         size={size}
         className={className}
@@ -70,29 +65,27 @@ const LoadingButton = React.forwardRef<HTMLButtonElement, LoadingButtonProps>(
         asChild={asChild}
         {...props}
       >
-        {buttonState === "loading" ? (
+        {buttonState === 'loading' ? (
           <span className="flex gap-2 items-center">
             {(isString(loadingText) || !loadingText) && (
               <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
             )}
             {loadingText}
           </span>
-        ) : buttonState === "success" ? (
+        ) : buttonState === 'success' ? (
           <span className="flex gap-2 justify-between items-center">
             {successText}
-            {(isString(successText) || !successText) && (
-              <Check className="ml-2 h-4 w-4" />
-            )}
+            {(isString(successText) || !successText) && <Check className="ml-2 h-4 w-4" />}
           </span>
-        ) : buttonState === "error" ? (
+        ) : buttonState === 'error' ? (
           <span className="flex gap-2 items-center">{errorText}</span>
         ) : (
           text
-        )}{" "}
+        )}{' '}
       </Button>
     );
-  },
+  }
 );
-LoadingButton.displayName = "LoadingButton";
+LoadingButton.displayName = 'LoadingButton';
 
 export { LoadingButton };

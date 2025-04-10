@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { LogOut, Settings } from "lucide-react";
-import { Loader2 } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { LogOut, Settings } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { ReactNode, useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,21 +10,17 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useUserContext } from "@/contexts/userContext";
-import { signOut } from "@/lib/actions/userActions";
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import { useUserContext } from '@/contexts/userContext';
+import { signOut } from '@/lib/actions/userActions';
 interface UserMenuProps {
   isMenuOpen: boolean;
   setIsMenuOpen: (isMenuOpen: boolean) => void;
   children: ReactNode;
 }
 
-export default function UserMenu({
-  isMenuOpen,
-  setIsMenuOpen,
-  children,
-}: UserMenuProps) {
+export default function UserMenu({ isMenuOpen, setIsMenuOpen, children }: UserMenuProps) {
   const { name, setSettingsDialog } = useUserContext();
 
   const [isSigningOut, setIsSigningOut] = useState(false);

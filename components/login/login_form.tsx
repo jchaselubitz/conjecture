@@ -1,46 +1,37 @@
-"use client";
+'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Form } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  ButtonLoadingState,
-  LoadingButton,
-} from "@/components/ui/loading-button";
-import { checkUsername, signIn, signUp } from "@/lib/actions/userActions";
-import { cn } from "@/lib/utils";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
+import { checkUsername, signIn, signUp } from '@/lib/actions/userActions';
+import { cn } from '@/lib/utils';
 
-import { FormField } from "../ui/form";
+import { FormField } from '../ui/form';
 export function LoginForm({
   className,
   isSignUp,
   message,
   ...props
-}: React.ComponentPropsWithoutRef<"div"> & {
+}: React.ComponentPropsWithoutRef<'div'> & {
   isSignUp?: boolean;
   token?: string;
   inviteEmail?: string;
   message?: string;
 }) {
-  const [buttonState, setButtonState] = useState<ButtonLoadingState>("default");
+  const [buttonState, setButtonState] = useState<ButtonLoadingState>('default');
   const zObject = {
     email: z.string().email(),
-    password: z.string().min(8),
+    password: z.string().min(8)
   } as { [key: string]: any };
 
   if (isSignUp) {
-    zObject["username"] = z.string().min(1);
+    zObject['username'] = z.string().min(1);
   }
 
   const loginSchema = z.object(zObject);
@@ -48,22 +39,22 @@ export function LoginForm({
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
-      password: "",
-      ...(isSignUp && { username: "" }),
-    },
+      email: '',
+      password: '',
+      ...(isSignUp && { username: '' })
+    }
   });
 
   const onSubmit = async (data: z.infer<typeof loginSchema>) => {
-    setButtonState("loading");
+    setButtonState('loading');
     try {
       if (isSignUp) {
         const usernameAvailable = await checkUsername(data.username);
         if (!usernameAvailable) {
-          form.setError("username", {
-            message: "Username is already taken",
+          form.setError('username', {
+            message: 'Username is already taken'
           });
-          setButtonState("default");
+          setButtonState('default');
           return;
         }
 
@@ -71,33 +62,30 @@ export function LoginForm({
           email: data.email,
           password: data.password,
           username: data.username,
-          token: null,
+          token: null
         });
       } else {
         await signIn({
           email: data.email,
-          password: data.password,
+          password: data.password
         });
       }
-      setButtonState("success");
+      setButtonState('success');
     } catch (error) {
       console.error(error);
-      setButtonState("error");
+      setButtonState('error');
     } finally {
-      setButtonState("default");
+      setButtonState('default');
     }
   };
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">
-            {isSignUp ? "Sign Up" : "Login"}
-          </CardTitle>
+          <CardTitle className="text-2xl">{isSignUp ? 'Sign Up' : 'Login'}</CardTitle>
           <CardDescription>
-            Enter your email below to {isSignUp ? "sign up" : "login"} to your
-            account
+            Enter your email below to {isSignUp ? 'sign up' : 'login'} to your account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -121,11 +109,7 @@ export function LoginForm({
                 render={({ field }) => (
                   <div className="grid gap-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input
-                      {...field}
-                      placeholder="m@example.com"
-                      type="email"
-                    />
+                    <Input {...field} placeholder="m@example.com" type="email" />
                   </div>
                 )}
               />
@@ -145,10 +129,10 @@ export function LoginForm({
                 onClick={form.handleSubmit(onSubmit)}
                 buttonState={buttonState}
                 setButtonState={setButtonState}
-                text={isSignUp ? "Sign Up" : "Login"}
-                loadingText={isSignUp ? "Signing up..." : "Logging in..."}
-                successText={isSignUp ? "Signed up!" : "Logged in!"}
-                errorText={isSignUp ? "Sign up failed" : "Login failed"}
+                text={isSignUp ? 'Sign Up' : 'Login'}
+                loadingText={isSignUp ? 'Signing up...' : 'Logging in...'}
+                successText={isSignUp ? 'Signed up!' : 'Logged in!'}
+                errorText={isSignUp ? 'Sign up failed' : 'Login failed'}
               />
 
               {/* <Button variant="outline" className="w-full">
@@ -156,14 +140,9 @@ export function LoginForm({
               </Button> */}
 
               <div className="mt-4 text-center text-sm">
-                {isSignUp
-                  ? "Already have an account?"
-                  : `Don't have an account?`}{" "}
-                <a
-                  href={isSignUp ? "/login" : "/sign-up"}
-                  className="underline underline-offset-4"
-                >
-                  {isSignUp ? "Login" : "Sign up"}
+                {isSignUp ? 'Already have an account?' : `Don't have an account?`}{' '}
+                <a href={isSignUp ? '/login' : '/sign-up'} className="underline underline-offset-4">
+                  {isSignUp ? 'Login' : 'Sign up'}
                 </a>
               </div>
             </form>

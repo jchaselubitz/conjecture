@@ -1,11 +1,11 @@
-"use client";
-import { BaseStatementCitation } from "kysely-codegen";
-import { CheckIcon, CopyIcon } from "lucide-react";
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { formatDateForCitation } from "@/lib/helpers/helpersDate";
-import { useCopyToClipboard } from "@/lib/hooks/useCopyToClipboard";
-import { cn } from "@/lib/utils";
+'use client';
+import { BaseStatementCitation } from 'kysely-codegen';
+import { CheckIcon, CopyIcon } from 'lucide-react';
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { formatDateForCitation } from '@/lib/helpers/helpersDate';
+import { useCopyToClipboard } from '@/lib/hooks/useCopyToClipboard';
+import { cn } from '@/lib/utils';
 
 interface FootnoteProps {
   order: number;
@@ -14,18 +14,13 @@ interface FootnoteProps {
   className?: string;
 }
 
-export function Footnote({
-  order,
-  citation,
-  className,
-  anchorId,
-}: FootnoteProps) {
+export function Footnote({ order, citation, className, anchorId }: FootnoteProps) {
   // Generate MLA style citation text
   const generateMLACitation = () => {
     const parts = [];
     // Author names
     if (citation.authorNames) {
-      parts.push(citation.authorNames + ".");
+      parts.push(citation.authorNames + '.');
     }
 
     // Title (in quotes if it's an article, italicized if it's a book/publication)
@@ -38,7 +33,7 @@ export function Footnote({
 
       if (citation.url) {
         parts.push(
-          `<a href="${citation.url}" target="_blank" class="text-primary hover:underline">${title}</a>`,
+          `<a href="${citation.url}" target="_blank" class="text-primary hover:underline">${title}</a>`
         );
       } else {
         parts.push(title);
@@ -65,8 +60,8 @@ export function Footnote({
         formatDateForCitation({
           year: citation.year,
           month: citation.month,
-          day: citation.day,
-        }),
+          day: citation.day
+        })
       );
     }
     // Pages
@@ -76,15 +71,13 @@ export function Footnote({
       parts.push(`p. ${citation.pageStart}.`);
     }
 
-    return parts.join(" ");
+    return parts.join(' ');
   };
 
-  const { copy, copied } = useCopyToClipboard(
-    generateMLACitation().replace(/<[^>]+>/g, ""),
-  );
+  const { copy, copied } = useCopyToClipboard(generateMLACitation().replace(/<[^>]+>/g, ''));
 
   return (
-    <div className={cn("flex gap-3 mt-4", className)}>
+    <div className={cn('flex gap-3 mt-4', className)}>
       <a href={`#${anchorId}`} className="citation-number shrink-0 mt-1">
         {order}
       </a>
@@ -92,7 +85,7 @@ export function Footnote({
         <div className="flex items-center justify-between">
           <div
             dangerouslySetInnerHTML={{
-              __html: generateMLACitation() as unknown as TrustedHTML,
+              __html: generateMLACitation() as unknown as TrustedHTML
             }}
           />
           <Button variant="ghost" size="sm" onClick={copy} className="h-8 px-2">

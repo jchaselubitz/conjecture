@@ -1,10 +1,10 @@
-import { StatementProvider } from "@/contexts/statementContext";
-import { getUser } from "@/lib/actions/baseActions";
-import { getDraftsByStatementId } from "@/lib/actions/statementActions";
+import { StatementProvider } from '@/contexts/statementContext';
+import { getUser } from '@/lib/actions/baseActions';
+import { getDraftsByStatementId } from '@/lib/actions/statementActions';
 
 export default async function CreateLayout({
   children,
-  params,
+  params
 }: {
   children: React.ReactNode;
   params: Promise<{ statementId: string }>;

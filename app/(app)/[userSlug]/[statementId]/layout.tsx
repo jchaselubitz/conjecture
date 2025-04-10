@@ -1,11 +1,11 @@
-import { StatementProvider } from "@/contexts/statementContext";
-import { useUserContext } from "@/contexts/userContext";
-import { authenticatedUser, getUser } from "@/lib/actions/baseActions";
-import { getDraftsByStatementId } from "@/lib/actions/statementActions";
+import { StatementProvider } from '@/contexts/statementContext';
+import { useUserContext } from '@/contexts/userContext';
+import { authenticatedUser, getUser } from '@/lib/actions/baseActions';
+import { getDraftsByStatementId } from '@/lib/actions/statementActions';
 
 export default async function UserStatementLayout({
   children,
-  params,
+  params
 }: {
   children: React.ReactNode;
   params: Promise<{ statementId: string }>;

@@ -1,30 +1,27 @@
-import { Editor } from "@tiptap/react";
-import { MessageCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Editor } from '@tiptap/react';
+import { MessageCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface AnnotationButtonProps {
   editor: Editor;
   onAnnotate: () => void;
 }
 
-export const AnnotationButton = ({
-  editor,
-  onAnnotate,
-}: AnnotationButtonProps) => {
+export const AnnotationButton = ({ editor, onAnnotate }: AnnotationButtonProps) => {
   // Only enable if there's a text selection
-  const isEnabled = !editor.state.selection.empty;
-
+  const isSelection = !editor.state.selection.empty;
+  if (!isSelection) return null;
   return (
     <Button
       variant="ghost"
       size="sm"
       onClick={onAnnotate}
-      disabled={!isEnabled}
+      disabled={!isSelection}
       title="Create annotation"
-      className={cn(!isEnabled && "opacity-50")}
+      className={cn(!isSelection && 'opacity-50')}
     >
-      <MessageCircle className="h-4 w-4" />
+      <MessageCircle className="h-4 w-4" /> Comment
     </Button>
   );
 };

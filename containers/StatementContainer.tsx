@@ -1,28 +1,22 @@
-import { DraftWithAnnotations } from "kysely-codegen";
-import { cookies } from "next/headers";
-import StatementLayout from "@/components/statements/statement_layout";
-import { getPublishedStatement } from "@/lib/actions/statementActions";
+import { DraftWithAnnotations } from 'kysely-codegen';
+import { cookies } from 'next/headers';
+import StatementLayout from '@/components/statements/statement_layout';
+import { getPublishedStatement } from '@/lib/actions/statementActions';
 export async function StatementContainer({
   drafts,
-  edit,
+  edit
 }: {
   drafts: DraftWithAnnotations[];
   edit: boolean;
 }) {
   const cookieStore = await cookies();
-  const authorCommentCookie = cookieStore.get("show_author_comments");
-  const readerCommentCookie = cookieStore.get("show_reader_comments");
+  const authorCommentCookie = cookieStore.get('show_author_comments');
+  const readerCommentCookie = cookieStore.get('show_reader_comments');
 
-  const authorCommentsEnabled = authorCommentCookie
-    ? authorCommentCookie?.value === "true"
-    : true;
-  const readerCommentsEnabled = readerCommentCookie
-    ? readerCommentCookie?.value === "true"
-    : true;
+  const authorCommentsEnabled = authorCommentCookie ? authorCommentCookie?.value === 'true' : true;
+  const readerCommentsEnabled = readerCommentCookie ? readerCommentCookie?.value === 'true' : true;
 
-  const statement =
-    drafts.find((draft) => draft.publishedAt !== null) ??
-    drafts[drafts.length - 1];
+  const statement = drafts.find((draft) => draft.publishedAt !== null) ?? drafts[drafts.length - 1];
 
   const parentStatement = statement.parentStatementId
     ? await getPublishedStatement(statement.parentStatementId)

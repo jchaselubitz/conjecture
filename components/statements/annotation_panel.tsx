@@ -1,18 +1,14 @@
-"use client";
+'use client';
 
-import * as Sentry from "@sentry/nextjs";
-import {
-  AnnotationWithComments,
-  BaseAnnotation,
-  NewAnnotation,
-} from "kysely-codegen";
-import { X } from "lucide-react";
-import { useStatementContext } from "@/contexts/statementContext";
-import { deleteAnnotation } from "@/lib/actions/annotationActions";
+import * as Sentry from '@sentry/nextjs';
+import { AnnotationWithComments, BaseAnnotation, NewAnnotation } from 'kysely-codegen';
+import { X } from 'lucide-react';
+import { useStatementContext } from '@/contexts/statementContext';
+import { deleteAnnotation } from '@/lib/actions/annotationActions';
 
-import { Accordion } from "../ui/accordion";
-import { Button } from "../ui/button";
-import AnnotationDetail from "./annotation_detail";
+import { Accordion } from '../ui/accordion';
+import { Button } from '../ui/button';
+import AnnotationDetail from './annotation_detail';
 interface AnnotationPanelProps {
   annotations: AnnotationWithComments[];
   handleCloseAnnotationPanel: () => void;
@@ -32,32 +28,30 @@ export default function AnnotationPanel({
   selectedAnnotationId,
   setSelectedAnnotationId,
   showAuthorComments,
-  showReaderComments,
+  showReaderComments
 }: AnnotationPanelProps) {
   const { setAnnotations, editor } = useStatementContext();
 
   const handleDeleteAnnotation = async (annotation: BaseAnnotation) => {
     const annotationId = annotation.id;
     if (!annotationId) return;
-    setAnnotations(
-      annotations.filter(
-        (a) => a.id !== annotationId,
-      ) as unknown as NewAnnotation[],
-    );
+    setAnnotations(annotations.filter((a) => a.id !== annotationId) as unknown as NewAnnotation[]);
 
     try {
       await deleteAnnotation({
         annotationId: annotation.id,
         statementCreatorId,
         annotationCreatorId: annotation.userId,
-        statementId: annotation.draftId,
+        statementId: annotation.draftId
       });
       if (editor) {
         editor.commands.deleteAnnotationHighlight(annotationId);
+      } else {
+        throw new Error('Editor not found');
       }
       setSelectedAnnotationId(undefined);
     } catch (error) {
-      console.error("Error deleting annotation:", error);
+      console.error('Error deleting annotation:', error);
       Sentry.captureException(error);
     }
   };

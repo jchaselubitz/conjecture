@@ -1,16 +1,16 @@
-import { StatementContainer } from "@/containers/StatementContainer";
-import { getDraftsByStatementId } from "@/lib/actions/statementActions";
-import { createClient } from "@/supabase/server";
+import { StatementContainer } from '@/containers/StatementContainer';
+import { getDraftsByStatementId } from '@/lib/actions/statementActions';
+import { createClient } from '@/supabase/server';
 export default async function CreatePage({
   params,
-  searchParams,
+  searchParams
 }: {
   params: Promise<{ statementId: string }>;
   searchParams: Promise<{ edit: string }>;
 }) {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   const userId = user?.id;
@@ -18,7 +18,7 @@ export default async function CreatePage({
   const { edit } = await searchParams;
   const drafts = await getDraftsByStatementId(statementId);
   const isCreator = drafts[0].creatorId === userId;
-  const editMode = edit === "true" && isCreator;
+  const editMode = edit === 'true' && isCreator;
 
   return <StatementContainer edit={editMode} drafts={drafts} />;
 }

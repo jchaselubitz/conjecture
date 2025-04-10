@@ -1,16 +1,11 @@
-import { BaseStatementVote } from "kysely-codegen";
-import { ArrowUp } from "lucide-react";
-import { startTransition, useOptimistic } from "react";
-import { useUserContext } from "@/contexts/userContext";
-import { toggleStatementUpvote } from "@/lib/actions/statementActions";
+import { BaseStatementVote } from 'kysely-codegen';
+import { ArrowUp } from 'lucide-react';
+import { startTransition, useOptimistic } from 'react';
+import { useUserContext } from '@/contexts/userContext';
+import { toggleStatementUpvote } from '@/lib/actions/statementActions';
 
-import { Button } from "../ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
+import { Button } from '../ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 
 interface VoteButtonProps {
   statementId: string;
@@ -18,19 +13,15 @@ interface VoteButtonProps {
   className?: string;
 }
 
-export default function VoteButton({
-  statementId,
-  upvotes,
-  className,
-}: VoteButtonProps) {
+export default function VoteButton({ statementId, upvotes, className }: VoteButtonProps) {
   const { userId } = useUserContext();
 
-  const [optVotes, setOptVotes] = useOptimistic<
-    BaseStatementVote[],
-    BaseStatementVote[]
-  >(upvotes, (current, updated) => {
-    return updated;
-  });
+  const [optVotes, setOptVotes] = useOptimistic<BaseStatementVote[], BaseStatementVote[]>(
+    upvotes,
+    (current, updated) => {
+      return updated;
+    }
+  );
 
   const voteCount = optVotes?.length || 0;
   const hasUpvoted = optVotes?.some((vote) => vote.userId === userId) || false;
@@ -46,8 +37,8 @@ export default function VoteButton({
               id: crypto.randomUUID(),
               userId,
               statementId,
-              createdAt: new Date(),
-            },
+              createdAt: new Date()
+            }
           ];
       startTransition(() => {
         setOptVotes(newVotes);
@@ -55,10 +46,10 @@ export default function VoteButton({
 
       await toggleStatementUpvote({
         statementId,
-        isUpvoted: hasUpvoted,
+        isUpvoted: hasUpvoted
       });
     } catch (error) {
-      console.error("Error upvoting comment:", error);
+      console.error('Error upvoting comment:', error);
     }
   };
 
@@ -67,7 +58,7 @@ export default function VoteButton({
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant={hasUpvoted ? "default" : "outline"}
+            variant={hasUpvoted ? 'default' : 'outline'}
             size="sm"
             onClick={handleVote}
             disabled={!userId}
@@ -78,7 +69,7 @@ export default function VoteButton({
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>{hasUpvoted ? "Remove upvote" : "Upvote comment"}</p>
+          <p>{hasUpvoted ? 'Remove upvote' : 'Upvote comment'}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

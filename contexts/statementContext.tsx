@@ -6,7 +6,7 @@ import {
   DraftWithAnnotations,
   NewAnnotation,
   NewDraft,
-  NewStatementCitation,
+  NewStatementCitation
 } from 'kysely-codegen';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -19,14 +19,14 @@ import {
   useEffect,
   useMemo,
   useRef,
-  useState,
+  useState
 } from 'react';
 import { useDebounce } from 'use-debounce';
 import {
   createDraft,
   publishDraft,
   updateDraft,
-  UpsertImageDataType,
+  UpsertImageDataType
 } from '@/lib/actions/statementActions';
 import { generateStatementId } from '@/lib/helpers/helpersStatements';
 interface PositionParams {
@@ -76,6 +76,8 @@ interface StatementContextType {
   setSelectedNodePosition: (position: PositionParams | null) => void;
   visualViewport: number | null;
   setVisualViewport: (viewport: number | null) => void;
+  editor: Editor | null;
+  setEditor: (editor: Editor | null) => void;
 }
 
 const StatementContext = createContext<StatementContextType | undefined>(undefined);
@@ -83,7 +85,7 @@ const StatementContext = createContext<StatementContextType | undefined>(undefin
 export function StatementProvider({
   children,
   drafts,
-  userId,
+  userId
 }: {
   children: ReactNode;
   drafts: DraftWithAnnotations[];
@@ -99,7 +101,7 @@ export function StatementProvider({
   );
 
   const [visualViewport, setVisualViewport] = useState<number | null>(null);
-
+  const [editor, setEditor] = useState<Editor | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isBlock, setIsBlock] = useState(true);
@@ -110,7 +112,7 @@ export function StatementProvider({
     src: '',
     alt: '',
     statementId: statement.statementId,
-    id: '',
+    id: ''
   });
   const [citationData, setCitationData] = useState<NewStatementCitation>({
     statementId: statement.statementId,
@@ -126,14 +128,14 @@ export function StatementProvider({
     publisher: '',
     titlePublication: '',
     volume: '',
-    id: '',
+    id: ''
   });
 
   const [popoverState, setPopoverState] = useState({
     latex: false,
     image: false,
     citation: false,
-    imageLightbox: false,
+    imageLightbox: false
   });
 
   const setLatexPopoverOpen = (open: boolean) =>
@@ -157,7 +159,7 @@ export function StatementProvider({
         return {
           v: draft.versionNumber,
           versionNumber: draft.versionNumber.toString(),
-          createdAt: draft.createdAt,
+          createdAt: draft.createdAt
         };
       })
       .sort((a, b) => a.v - b.v);
@@ -183,7 +185,7 @@ export function StatementProvider({
         statementId: statementId || undefined,
         versionNumber: drafts?.length + 1,
         annotations,
-        subtitle: statement?.subtitle || undefined,
+        subtitle: statement?.subtitle || undefined
       });
     } catch (err) {
       setError('Error saving draft');
@@ -200,7 +202,7 @@ export function StatementProvider({
       statementId,
       id,
       publish: publishedAt ? false : true,
-      creatorId: statement.creatorId,
+      creatorId: statement.creatorId
     });
   };
 
@@ -227,7 +229,7 @@ export function StatementProvider({
         publishedAt: statement.publishedAt ?? undefined,
         statementId: statement.statementId,
         versionNumber: statement.versionNumber,
-        creatorId: statement.creatorId,
+        creatorId: statement.creatorId
       });
       setIsUpdating(false);
     },
@@ -244,7 +246,7 @@ export function StatementProvider({
       title: debouncedTitle ?? statement.title ?? undefined,
       subtitle: debouncedSubtitle ?? statement.subtitle ?? undefined,
       content: debouncedContent,
-      statementId: prepStatementId,
+      statementId: prepStatementId
     } as NewDraft;
     if (
       statement &&
@@ -265,7 +267,7 @@ export function StatementProvider({
     statement,
     prepStatementId,
     updateStatementDraft,
-    userId,
+    userId
   ]);
 
   return (
@@ -307,6 +309,8 @@ export function StatementProvider({
         setSelectedNodePosition,
         visualViewport,
         setVisualViewport,
+        editor,
+        setEditor
       }}
     >
       {children}

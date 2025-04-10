@@ -1,18 +1,18 @@
-import { MessageCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { MessageCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-import { Button } from "../ui/button";
-import { Label } from "../ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Switch } from "../ui/switch";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { TooltipProvider } from "../ui/tooltip";
+import { Button } from '../ui/button';
+import { Label } from '../ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { Switch } from '../ui/switch';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { TooltipProvider } from '../ui/tooltip';
 
 export const CommentIndicatorButton = ({
   showAuthorComments,
   showReaderComments,
   onShowAuthorCommentsChange,
-  onShowReaderCommentsChange,
+  onShowReaderCommentsChange
 }: {
   showAuthorComments: boolean;
   showReaderComments: boolean;
@@ -25,24 +25,20 @@ export const CommentIndicatorButton = ({
         <Tooltip>
           <TooltipTrigger asChild>
             <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center min-w-24 gap-3"
-              >
+              <Button variant="outline" size="sm" className="flex items-center min-w-24 gap-3">
                 <MessageCircle className="h-4 w-4" />
                 <span className="hidden md:block">Comments</span>
                 <span className="flex items-center gap-2">
                   <span
                     className={cn(
-                      " h-2 w-2 rounded-full border border-orange-500",
-                      showAuthorComments ? "bg-orange-500" : "bg-transparent",
+                      ' h-2 w-2 rounded-full border border-orange-500',
+                      showAuthorComments ? 'bg-orange-500' : 'bg-transparent'
                     )}
                   />
                   <span
                     className={cn(
-                      " h-2 w-2 rounded-full border border-blue-500",
-                      showReaderComments ? "bg-blue-500" : "bg-transparent",
+                      ' h-2 w-2 rounded-full border border-blue-500',
+                      showReaderComments ? 'bg-blue-500' : 'bg-transparent'
                     )}
                   />
                 </span>
@@ -63,10 +59,7 @@ export const CommentIndicatorButton = ({
               onCheckedChange={onShowAuthorCommentsChange}
               className="data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
             />
-            <Label
-              htmlFor="author-comments"
-              className="flex items-center gap-2"
-            >
+            <Label htmlFor="author-comments" className="flex items-center gap-2">
               Author comments
               <div className="h-2 w-2 rounded-full bg-orange-500" />
             </Label>
@@ -78,10 +71,7 @@ export const CommentIndicatorButton = ({
               onCheckedChange={onShowReaderCommentsChange}
               className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
             />
-            <Label
-              htmlFor="reader-comments"
-              className="flex items-center gap-2"
-            >
+            <Label htmlFor="reader-comments" className="flex items-center gap-2">
               Reader comments
               <div className="h-2 w-2 rounded-full bg-blue-500" />
             </Label>

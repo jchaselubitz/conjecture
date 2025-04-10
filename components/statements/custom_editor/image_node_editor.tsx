@@ -1,6 +1,6 @@
-import { useStatementContext } from "@/contexts/statementContext";
+import { useStatementContext } from '@/contexts/statementContext';
 
-import { ImagePopoverEditor } from "./image_popover_editor";
+import { ImagePopoverEditor } from './image_popover_editor';
 export type NewImageData = {
   file?: File | undefined;
   src?: string;
@@ -13,10 +13,7 @@ interface ImageNodeEditorProps {
   statementCreatorId: string;
 }
 
-export function ImageNodeEditor({
-  statementId,
-  statementCreatorId,
-}: ImageNodeEditorProps) {
+export function ImageNodeEditor({ statementId, statementCreatorId }: ImageNodeEditorProps) {
   const { selectedNodePosition, imagePopoverOpen } = useStatementContext();
 
   if (!selectedNodePosition || !imagePopoverOpen) return null;
@@ -27,16 +24,13 @@ export function ImageNodeEditor({
       style={{
         top: `${selectedNodePosition.y}px`,
         left: `${selectedNodePosition.x}px`,
-        width: "1px",
-        height: "1px",
-        pointerEvents: "none",
-        zIndex: 50,
+        width: '1px',
+        height: '1px',
+        pointerEvents: 'none',
+        zIndex: 50
       }}
     >
-      <ImagePopoverEditor
-        statementId={statementId}
-        statementCreatorId={statementCreatorId}
-      >
+      <ImagePopoverEditor statementId={statementId} statementCreatorId={statementCreatorId}>
         <div />
       </ImagePopoverEditor>
     </div>

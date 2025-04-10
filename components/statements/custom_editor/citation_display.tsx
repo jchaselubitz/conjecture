@@ -1,26 +1,14 @@
-import { BaseDraft, BaseStatementCitation } from "kysely-codegen";
-import {
-  BookIcon,
-  CalendarIcon,
-  FileTextIcon,
-  LinkIcon,
-  UsersIcon,
-} from "lucide-react";
-import Image from "next/image";
-import { useEffect, useState } from "react";
-import { useAsyncFn } from "react-use";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { useStatementContext } from "@/contexts/statementContext";
-import { getPublishedStatement } from "@/lib/actions/statementActions";
-import { formatDateForCitation } from "@/lib/helpers/helpersDate";
-import { cn } from "@/lib/utils";
+import { BaseDraft, BaseStatementCitation } from 'kysely-codegen';
+import { BookIcon, CalendarIcon, FileTextIcon, LinkIcon, UsersIcon } from 'lucide-react';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { useAsyncFn } from 'react-use';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useStatementContext } from '@/contexts/statementContext';
+import { getPublishedStatement } from '@/lib/actions/statementActions';
+import { formatDateForCitation } from '@/lib/helpers/helpersDate';
+import { cn } from '@/lib/utils';
 export function CitationDisplay() {
   const { citationData } = useStatementContext();
   const citation = citationData as BaseStatementCitation;
@@ -39,14 +27,14 @@ export function CitationDisplay() {
     const parts = [];
     if (citation.volume) parts.push(`Vol. ${citation.volume}`);
     if (citation.issue) parts.push(`No. ${citation.issue}`);
-    return parts.length > 0 ? parts.join(", ") : null;
+    return parts.length > 0 ? parts.join(', ') : null;
   };
 
   const [state, fetch] = useAsyncFn(async () => {
     if (citation.url) {
       const url = new URL(citation.url);
       if (url.origin === window.location.origin) {
-        const statementId = url.searchParams.get("statementId");
+        const statementId = url.searchParams.get('statementId');
         if (!statementId) return;
         try {
           const statement = await getPublishedStatement(statementId);
@@ -68,15 +56,15 @@ export function CitationDisplay() {
   return (
     <Card
       className={cn(
-        "w-full border-none overflow-hidden shadow-none pt-0",
-        !conjecture?.headerImg && "pt-4",
+        'w-full border-none overflow-hidden shadow-none pt-0',
+        !conjecture?.headerImg && 'pt-4'
       )}
     >
       {conjecture?.headerImg && (
         <AspectRatio ratio={16 / 6} className="bg-muted rounded-md ">
           <Image
             src={conjecture.headerImg}
-            alt={conjecture.title || "Statement header image"}
+            alt={conjecture.title || 'Statement header image'}
             fill
             className="object-cover"
             priority={false}
@@ -86,9 +74,7 @@ export function CitationDisplay() {
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-bold">{citation.title}</CardTitle>
         {citation.titlePublication && (
-          <CardDescription className="text-sm italic">
-            {citation.titlePublication}
-          </CardDescription>
+          <CardDescription className="text-sm italic">{citation.titlePublication}</CardDescription>
         )}
       </CardHeader>
       <CardContent className="space-y-4 pb-2">
@@ -106,7 +92,7 @@ export function CitationDisplay() {
               {formatDateForCitation({
                 year: citation.year,
                 month: citation.month,
-                day: citation.day,
+                day: citation.day
               })}
             </span>
           </div>

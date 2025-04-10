@@ -1,7 +1,3 @@
-export default function FeedLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function FeedLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

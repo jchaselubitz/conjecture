@@ -1,24 +1,17 @@
-import {
-  Heading1,
-  Heading2,
-  Heading3,
-  List,
-  ListOrdered,
-  Quote,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useStatementContext } from "@/contexts/statementContext";
-import { cn } from "@/lib/utils";
+import { Editor } from '@tiptap/react';
+import { Heading1, Heading2, Heading3, List, ListOrdered, Quote } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
-import { ImageButton } from "./image_button";
-import { LatexButton } from "./latex_button";
+import { ImageButton } from './image_button';
+import { LatexButton } from './latex_button';
 
 interface BlockTypeChooserProps {
   statementId: string;
+  editor: Editor | null;
 }
 
-export function BlockTypeChooser({ statementId }: BlockTypeChooserProps) {
-  const { editor } = useStatementContext();
+export function BlockTypeChooser({ statementId, editor }: BlockTypeChooserProps) {
   if (!editor) return null;
   return (
     <div className="flex items-center gap-1 rounded-lg border bg-background p-1 shadow-sm">
@@ -26,7 +19,7 @@ export function BlockTypeChooser({ statementId }: BlockTypeChooserProps) {
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        className={cn(editor.isActive("heading", { level: 1 }) && "bg-muted")}
+        className={cn(editor.isActive('heading', { level: 1 }) && 'bg-muted')}
       >
         <Heading1 className="h-4 w-4" />
       </Button>
@@ -34,7 +27,7 @@ export function BlockTypeChooser({ statementId }: BlockTypeChooserProps) {
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        className={cn(editor.isActive("heading", { level: 2 }) && "bg-muted")}
+        className={cn(editor.isActive('heading', { level: 2 }) && 'bg-muted')}
       >
         <Heading2 className="h-4 w-4" />
       </Button>
@@ -42,14 +35,14 @@ export function BlockTypeChooser({ statementId }: BlockTypeChooserProps) {
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        className={cn(editor.isActive("heading", { level: 3 }) && "bg-muted")}
+        className={cn(editor.isActive('heading', { level: 3 }) && 'bg-muted')}
       >
         <Heading3 className="h-4 w-4" />
       </Button>
       <Button
         variant="ghost"
         onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={cn(editor.isActive("bulletList") && "bg-muted")}
+        className={cn(editor.isActive('bulletList') && 'bg-muted')}
       >
         <List className="h-4 w-4" />
       </Button>
@@ -58,9 +51,9 @@ export function BlockTypeChooser({ statementId }: BlockTypeChooserProps) {
         size="sm"
         onClick={() => {
           editor.chain().focus().toggleOrderedList().run();
-          console.log("orderedList");
+          console.log('orderedList');
         }}
-        className={cn(editor.isActive("orderedList") && "bg-muted")}
+        className={cn(editor.isActive('orderedList') && 'bg-muted')}
       >
         <ListOrdered className="h-4 w-4" />
       </Button>
@@ -68,7 +61,7 @@ export function BlockTypeChooser({ statementId }: BlockTypeChooserProps) {
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        className={cn(editor.isActive("blockquote") && "bg-muted")}
+        className={cn(editor.isActive('blockquote') && 'bg-muted')}
       >
         <Quote className="h-4 w-4" />
       </Button>

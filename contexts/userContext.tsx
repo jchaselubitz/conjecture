@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { BaseProfile } from "kysely-codegen";
-import { createContext, ReactNode, useContext, useState } from "react";
+import { BaseProfile } from 'kysely-codegen';
+import { createContext, ReactNode, useContext, useState } from 'react';
 
 // Define the context type
 interface UserContextType {
@@ -21,7 +21,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({
   children,
   userProfile,
-  userEmail,
+  userEmail
 }: {
   children: ReactNode;
   userProfile?: BaseProfile | null;
@@ -33,13 +33,11 @@ export function UserProvider({
     imageUrl: userProfile?.imageUrl || undefined,
     name: userProfile?.name || undefined,
     email: userEmail || undefined,
-    username: userProfile?.username || undefined,
+    username: userProfile?.username || undefined
   };
 
   return (
-    <UserContext.Provider
-      value={{ ...value, settingsDialog, setSettingsDialog }}
-    >
+    <UserContext.Provider value={{ ...value, settingsDialog, setSettingsDialog }}>
       {children}
     </UserContext.Provider>
   );
@@ -49,7 +47,7 @@ export function UserProvider({
 export function useUserContext() {
   const context = useContext(UserContext);
   if (context === undefined) {
-    throw new Error("useUserContext must be used within a UserProvider");
+    throw new Error('useUserContext must be used within a UserProvider');
   }
   return context;
 }
