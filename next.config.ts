@@ -2,7 +2,6 @@ import { withSentryConfig } from "@sentry/nextjs";
 // Import the necessary modules
 import { NextConfig } from "next";
 import withPWA from "next-pwa";
-import { env } from "process";
 /** @type {NextConfig} */
 
 const pwaConfig = withPWA({

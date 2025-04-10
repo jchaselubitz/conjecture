@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import * as Sentry from "@sentry/nextjs";
-import { Editor } from "@tiptap/react";
+import * as Sentry from '@sentry/nextjs';
+import { Editor } from '@tiptap/react';
 import {
   DraftWithAnnotations,
   NewAnnotation,
   NewDraft,
   NewStatementCitation,
-} from "kysely-codegen";
-import { useRouter, useSearchParams } from "next/navigation";
+} from 'kysely-codegen';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   createContext,
   Dispatch,
@@ -20,15 +20,15 @@ import {
   useMemo,
   useRef,
   useState,
-} from "react";
-import { useDebounce } from "use-debounce";
+} from 'react';
+import { useDebounce } from 'use-debounce';
 import {
   createDraft,
   publishDraft,
   updateDraft,
   UpsertImageDataType,
-} from "@/lib/actions/statementActions";
-import { generateStatementId } from "@/lib/helpers/helpersStatements";
+} from '@/lib/actions/statementActions';
+import { generateStatementId } from '@/lib/helpers/helpersStatements';
 interface PositionParams {
   x: number;
   y: number;
@@ -41,8 +41,6 @@ interface StatementContextType {
     versionNumber: string;
     createdAt: Date;
   }[];
-  editor: Editor | null;
-  setEditor: (editor: Editor | null) => void;
   statement: DraftWithAnnotations;
   setStatement: Dispatch<SetStateAction<DraftWithAnnotations>>;
   annotations: NewAnnotation[];
@@ -76,11 +74,11 @@ interface StatementContextType {
   setSelectedLatexId: (id: string | null) => void;
   selectedNodePosition: PositionParams | null;
   setSelectedNodePosition: (position: PositionParams | null) => void;
+  visualViewport: number | null;
+  setVisualViewport: (viewport: number | null) => void;
 }
 
-const StatementContext = createContext<StatementContextType | undefined>(
-  undefined,
-);
+const StatementContext = createContext<StatementContextType | undefined>(undefined);
 
 export function StatementProvider({
   children,
@@ -93,44 +91,42 @@ export function StatementProvider({
 }) {
   const router = useRouter();
   const params = useSearchParams();
-  const versionString = params.get("version");
+  const versionString = params.get('version');
   const version = versionString ? parseInt(versionString, 10) : undefined;
 
   const [statement, setStatement] = useState<DraftWithAnnotations>(
-    drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0],
+    drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0]
   );
+
+  const [visualViewport, setVisualViewport] = useState<number | null>(null);
 
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [editor, setEditor] = useState<Editor | null>(null);
   const [isBlock, setIsBlock] = useState(true);
   const [selectedLatexId, setSelectedLatexId] = useState<string | null>(null);
-  const [selectedNodePosition, setSelectedNodePosition] =
-    useState<PositionParams | null>(null);
-  const [currentLatex, setCurrentLatex] = useState("");
-  const [initialImageData, setInitialImageData] = useState<UpsertImageDataType>(
-    {
-      src: "",
-      alt: "",
-      statementId: statement.statementId,
-      id: "",
-    },
-  );
+  const [selectedNodePosition, setSelectedNodePosition] = useState<PositionParams | null>(null);
+  const [currentLatex, setCurrentLatex] = useState('');
+  const [initialImageData, setInitialImageData] = useState<UpsertImageDataType>({
+    src: '',
+    alt: '',
+    statementId: statement.statementId,
+    id: '',
+  });
   const [citationData, setCitationData] = useState<NewStatementCitation>({
     statementId: statement.statementId,
-    title: "",
-    url: "",
+    title: '',
+    url: '',
     year: null,
     month: null,
     day: null,
-    authorNames: "",
+    authorNames: '',
     issue: null,
     pageEnd: null,
     pageStart: null,
-    publisher: "",
-    titlePublication: "",
-    volume: "",
-    id: "",
+    publisher: '',
+    titlePublication: '',
+    volume: '',
+    id: '',
   });
 
   const [popoverState, setPopoverState] = useState({
@@ -149,14 +145,10 @@ export function StatementProvider({
   const setImageLightboxOpen = (open: boolean) =>
     setPopoverState((prev) => ({ ...prev, imageLightbox: open }));
 
-  const [annotations, setAnnotations] = useState<NewAnnotation[]>(
-    statement.annotations,
-  );
+  const [annotations, setAnnotations] = useState<NewAnnotation[]>(statement.annotations);
 
   useEffect(() => {
-    setStatement(
-      drafts?.find((draft) => draft.versionNumber === version) || drafts[0],
-    );
+    setStatement(drafts?.find((draft) => draft.versionNumber === version) || drafts[0]);
   }, [version, drafts, setStatement]);
 
   const versionOptions = useMemo(() => {
@@ -180,7 +172,7 @@ export function StatementProvider({
   const saveStatementDraft = async () => {
     const { title, content, headerImg, statementId } = statement || {};
     if (!title || !content) {
-      setError("Missing required fields");
+      setError('Missing required fields');
       return;
     }
     try {
@@ -194,7 +186,7 @@ export function StatementProvider({
         subtitle: statement?.subtitle || undefined,
       });
     } catch (err) {
-      setError("Error saving draft");
+      setError('Error saving draft');
       Sentry.captureException(err);
     }
   };
@@ -212,17 +204,11 @@ export function StatementProvider({
     });
   };
 
-  const [debouncedContent, setDebouncedContent] = useDebounce(
-    statement?.content ?? undefined,
-    500,
-  );
-  const [debouncedTitle, setDebouncedTitle] = useDebounce(
-    statement?.title ?? undefined,
-    500,
-  );
+  const [debouncedContent, setDebouncedContent] = useDebounce(statement?.content ?? undefined, 500);
+  const [debouncedTitle, setDebouncedTitle] = useDebounce(statement?.title ?? undefined, 500);
   const [debouncedSubtitle, setDebouncedSubtitle] = useDebounce(
     statement?.subtitle ?? undefined,
-    500,
+    500
   );
 
   const updateStatementDraft = useCallback(
@@ -245,7 +231,7 @@ export function StatementProvider({
       });
       setIsUpdating(false);
     },
-    [statement, setDebouncedContent, setDebouncedTitle, setDebouncedSubtitle],
+    [statement, setDebouncedContent, setDebouncedTitle, setDebouncedSubtitle]
   );
 
   let prevStatementUpdateRef = useRef(statement);
@@ -270,8 +256,7 @@ export function StatementProvider({
         return;
       }
       updateStatementDraft(newStatementUpdate);
-      prevStatementUpdateRef.current =
-        newStatementUpdate as DraftWithAnnotations;
+      prevStatementUpdateRef.current = newStatementUpdate as DraftWithAnnotations;
     }
   }, [
     debouncedContent,
@@ -287,8 +272,6 @@ export function StatementProvider({
     <StatementContext.Provider
       value={{
         versionOptions,
-        editor,
-        setEditor,
         statement,
         setStatement,
         annotations,
@@ -322,6 +305,8 @@ export function StatementProvider({
         setSelectedLatexId,
         selectedNodePosition,
         setSelectedNodePosition,
+        visualViewport,
+        setVisualViewport,
       }}
     >
       {children}
@@ -332,9 +317,7 @@ export function StatementProvider({
 export function useStatementContext() {
   const context = useContext(StatementContext);
   if (context === undefined) {
-    throw new Error(
-      "useStatementContext must be used within a StatementProvider",
-    );
+    throw new Error('useStatementContext must be used within a StatementProvider');
   }
   return context;
 }

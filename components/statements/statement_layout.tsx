@@ -1,22 +1,19 @@
-"use client";
+'use client';
 
-import "./prose.css";
-import { BaseDraft, DraftWithAnnotations } from "kysely-codegen";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useWindowSize } from "react-use";
-import AnnotationPanel from "@/components/statements/annotation_panel";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
-import { useUserContext } from "@/contexts/userContext";
+import './prose.css';
+import { BaseDraft, DraftWithAnnotations } from 'kysely-codegen';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useWindowSize } from 'react-use';
+import AnnotationPanel from '@/components/statements/annotation_panel';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import { useUserContext } from '@/contexts/userContext';
 
-import AppNav from "../navigation/app_nav";
-import EditNav from "../navigation/edit_nav";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "../ui/drawer";
-import { CommentIndicatorButton } from "./comments_menu";
-import StatementDetails from "./statement_details";
+import AppNav from '../navigation/app_nav';
+import EditNav from '../navigation/edit_nav';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '../ui/drawer';
+import { CommentIndicatorButton } from './comments_menu';
+import StatementDetails from './statement_details';
+import { useStatementContext } from '@/contexts/statementContext';
 interface StatementDetailsProps {
   statement: DraftWithAnnotations;
   authorCommentsEnabled: boolean;
@@ -33,6 +30,7 @@ export default function StatementLayout({
   parentStatement,
 }: StatementDetailsProps) {
   const { userId } = useUserContext();
+  const { visualViewport, setVisualViewport } = useStatementContext();
   const [editMode, setEditMode] = useState(editModeEnabled);
 
   useEffect(() => {
@@ -49,37 +47,27 @@ export default function StatementLayout({
 
   const { annotations } = statement;
 
-  const panelGroupRef =
-    useRef<React.ElementRef<typeof ResizablePanelGroup>>(null);
-
-  const [visualViewport, setVisualViewport] = useState<number | null>(null);
+  const panelGroupRef = useRef<React.ElementRef<typeof ResizablePanelGroup>>(null);
 
   // Add effect to handle viewport changes
   useEffect(() => {
-    if (typeof window === "undefined" || !window.visualViewport) return;
+    if (typeof window === 'undefined' || !window.visualViewport) return;
     const handleResize = () => {
       setVisualViewport(window.visualViewport?.height ?? null);
     };
-    window.visualViewport.addEventListener("resize", handleResize);
+    window.visualViewport.addEventListener('resize', handleResize);
     handleResize(); // Initial measurement
-    return () =>
-      window.visualViewport?.removeEventListener("resize", handleResize);
+    return () => window.visualViewport?.removeEventListener('resize', handleResize);
   }, []);
 
   const drawerStyle = visualViewport
     ? { height: `${visualViewport * 0.7}px` }
-    : { height: "70dvh" };
+    : { height: '70dvh' };
 
-  const [showAuthorComments, setShowAuthorComments] = useState(
-    authorCommentsEnabled,
-  );
-  const [showReaderComments, setShowReaderComments] = useState(
-    readerCommentsEnabled,
-  );
+  const [showAuthorComments, setShowAuthorComments] = useState(authorCommentsEnabled);
+  const [showReaderComments, setShowReaderComments] = useState(readerCommentsEnabled);
 
-  const [selectedAnnotationId, setSelectedAnnotationId] = useState<
-    string | undefined
-  >(undefined);
+  const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (selectedAnnotationId) {
@@ -88,7 +76,7 @@ export default function StatementLayout({
   }, [selectedAnnotationId]);
 
   useEffect(() => {
-    const savedSizeString = localStorage.getItem("annotationPanelSize");
+    const savedSizeString = localStorage.getItem('annotationPanelSize');
     const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
     panelGroupRef.current?.setLayout(savedSize ?? [100, 0]);
   }, [setSelectedAnnotationId]);
@@ -96,7 +84,7 @@ export default function StatementLayout({
   const handleCloseAnnotationPanel = () => {
     setSelectedAnnotationId(undefined);
     panelGroupRef.current?.setLayout([100, 0]);
-    localStorage.removeItem("annotationPanelSize");
+    localStorage.removeItem('annotationPanelSize');
   };
 
   const handleCloseAnnotationDrawer = () => {
@@ -106,7 +94,7 @@ export default function StatementLayout({
 
   const onLayout = (layout: number[]) => {
     if (layout[0] < 85) {
-      localStorage.setItem("annotationPanelSize", JSON.stringify(layout));
+      localStorage.setItem('annotationPanelSize', JSON.stringify(layout));
     }
   };
 
@@ -140,10 +128,7 @@ export default function StatementLayout({
         selectedAnnotationId={selectedAnnotationId}
         panelGroupRef={panelGroupRef}
       />
-      <Drawer
-        open={showAnnotationDrawer}
-        onOpenChange={handleCloseAnnotationDrawer}
-      >
+      <Drawer open={showAnnotationDrawer} onOpenChange={handleCloseAnnotationDrawer}>
         <DrawerContent style={drawerStyle}>
           <DrawerHeader>
             <DrawerTitle className="sr-only">Comments</DrawerTitle>
@@ -177,13 +162,9 @@ export default function StatementLayout({
   );
 
   const desktopLayout = (
-    <ResizablePanelGroup
-      direction="horizontal"
-      ref={panelGroupRef}
-      onLayout={onLayout}
-    >
+    <ResizablePanelGroup direction="horizontal" ref={panelGroupRef} onLayout={onLayout}>
       <ResizablePanel id="editor" defaultSize={100} minSize={60}>
-        <div className="flex flex-col overflow-y-auto h-full">
+        <div className=" flex flex-col overflow-y-auto h-full">
           <StatementDetails
             statement={statement}
             parentStatement={parentStatement}

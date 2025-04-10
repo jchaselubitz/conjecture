@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -13,31 +13,28 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  ButtonLoadingState,
-  LoadingButton,
-} from "@/components/ui/loading-button";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { useStatementContext } from "@/contexts/statementContext";
-import { useUserContext } from "@/contexts/userContext";
-import { deleteCitation } from "@/lib/actions/citationActions";
-import { MonthsArray } from "@/lib/lists";
+} from '@/components/ui/select';
+import { useStatementContext } from '@/contexts/statementContext';
+import { useUserContext } from '@/contexts/userContext';
+import { deleteCitation } from '@/lib/actions/citationActions';
+import { MonthsArray } from '@/lib/lists';
 
 import {
   citationDateCreator,
   upsertCitation,
-} from "./custom_extensions/helpers/helpersCitationExtension";
-
+} from './custom_extensions/helpers/helpersCitationExtension';
+import { Editor } from '@tiptap/react';
 const citationFormSchema = z.object({
-  title: z.string().min(1, { message: "Title is required" }),
+  title: z.string().min(1, { message: 'Title is required' }),
   authorNames: z.string().min(1).optional(),
   url: z.string().optional(),
   date: z.date().optional(),
@@ -59,6 +56,7 @@ interface CitationFormProps {
   creatorId: string;
   onOpenChange: (open: boolean) => void;
   onClose: () => void;
+  editor: Editor;
 }
 
 export function CitationForm({
@@ -66,34 +64,33 @@ export function CitationForm({
   creatorId,
   onOpenChange,
   onClose,
+  editor,
 }: CitationFormProps) {
   const { userId } = useUserContext();
-  const { citationData, setCitationData, editor, updateStatementDraft } =
-    useStatementContext();
+  const { citationData, setCitationData, updateStatementDraft } = useStatementContext();
   const pathname = usePathname();
-  const [saveButtonState, setSaveButtonState] =
-    useState<ButtonLoadingState>("default");
+  const [saveButtonState, setSaveButtonState] = useState<ButtonLoadingState>('default');
   const [error, setError] = useState<string | null>(null);
 
   const defaultValues: CitationFormValues = {
-    title: citationData.title || "",
-    authorNames: citationData.authorNames || "",
-    url: citationData.url || "",
-    year: citationData.year ? citationData.year.toString() : "",
-    month: citationData.month ? citationData.month.toString() : "none",
-    day: citationData.day ? citationData.day.toString() : "none",
-    issue: citationData.issue ? citationData.issue.toString() : "",
-    volume: citationData.volume || "",
-    pageStart: citationData.pageStart ? citationData.pageStart.toString() : "",
-    pageEnd: citationData.pageEnd ? citationData.pageEnd.toString() : "",
-    publisher: citationData.publisher || "",
-    titlePublication: citationData.titlePublication || "",
+    title: citationData.title || '',
+    authorNames: citationData.authorNames || '',
+    url: citationData.url || '',
+    year: citationData.year ? citationData.year.toString() : '',
+    month: citationData.month ? citationData.month.toString() : 'none',
+    day: citationData.day ? citationData.day.toString() : 'none',
+    issue: citationData.issue ? citationData.issue.toString() : '',
+    volume: citationData.volume || '',
+    pageStart: citationData.pageStart ? citationData.pageStart.toString() : '',
+    pageEnd: citationData.pageEnd ? citationData.pageEnd.toString() : '',
+    publisher: citationData.publisher || '',
+    titlePublication: citationData.titlePublication || '',
   };
 
   const form = useForm<CitationFormValues>({
     resolver: zodResolver(citationFormSchema),
     defaultValues,
-    mode: "onChange",
+    mode: 'onChange',
   });
 
   const onSubmit = async (data: CitationFormValues) => {
@@ -115,9 +112,8 @@ export function CitationForm({
 
       const dateValue = citationDateCreator({
         year: data.year ? parseInt(data.year, 10) : null,
-        month:
-          data.month && data.month !== "none" ? parseInt(data.month, 10) : null,
-        day: data.day && data.day !== "none" ? parseInt(data.day, 10) : null,
+        month: data.month && data.month !== 'none' ? parseInt(data.month, 10) : null,
+        day: data.day && data.day !== 'none' ? parseInt(data.day, 10) : null,
       });
 
       const newCitationData = {
@@ -127,8 +123,8 @@ export function CitationForm({
         url: url || null,
         date: dateValue,
         year: year ? parseInt(year, 10) : null,
-        month: month && month !== "none" ? parseInt(month, 10) : null,
-        day: day && day !== "none" ? parseInt(day, 10) : null,
+        month: month && month !== 'none' ? parseInt(month, 10) : null,
+        day: day && day !== 'none' ? parseInt(day, 10) : null,
         issue: issue ? parseInt(issue, 10) : null,
         pageEnd: pageEnd ? parseInt(pageEnd, 10) : null,
         pageStart: pageStart ? parseInt(pageStart, 10) : null,
@@ -136,7 +132,7 @@ export function CitationForm({
         titlePublication: titlePublication || null,
         volume: volume || null,
       };
-      setSaveButtonState("loading");
+      setSaveButtonState('loading');
       const updateDraft = async () => {
         await updateStatementDraft({ content: editor.getHTML() });
       };
@@ -155,11 +151,11 @@ export function CitationForm({
       onOpenChange(false);
       setCitationData({
         statementId,
-        title: "",
-        authorNames: "",
-        id: "",
+        title: '',
+        authorNames: '',
+        id: '',
       });
-      setSaveButtonState("default");
+      setSaveButtonState('default');
     }
   };
 
@@ -170,8 +166,8 @@ export function CitationForm({
         editor.commands.deleteCitation({ citationId: citationData.id });
         onOpenChange(false);
       } catch (error) {
-        console.error("Failed to delete citation:", error);
-        setError("Failed to delete citation");
+        console.error('Failed to delete citation:', error);
+        setError('Failed to delete citation');
       }
     }
   };
@@ -258,10 +254,7 @@ export function CitationForm({
                         <SelectItem value="none">None</SelectItem>
 
                         {MonthsArray.map((month) => (
-                          <SelectItem
-                            key={month.value}
-                            value={month.value.toString()}
-                          >
+                          <SelectItem key={month.value} value={month.value.toString()}>
                             {month.label}
                           </SelectItem>
                         ))}
@@ -401,12 +394,7 @@ export function CitationForm({
               Delete
             </Button>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                type="button"
-                onClick={onClose}
-              >
+              <Button variant="outline" size="sm" type="button" onClick={onClose}>
                 Cancel
               </Button>
               <LoadingButton

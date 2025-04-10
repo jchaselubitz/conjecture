@@ -1,18 +1,21 @@
-"use client";
+'use client';
 
-import { useStatementContext } from "@/contexts/statementContext";
+import { useStatementContext } from '@/contexts/statementContext';
 
-import { CitationPopover } from "./citation_popover";
+import { CitationPopover } from './citation_popover';
+import { Editor } from '@tiptap/react';
 interface CitationNodeEditorProps {
   statementId: string;
   creatorId: string;
   editMode: boolean;
+  editor: Editor;
 }
 
 export function CitationNodeEditor({
   statementId,
   creatorId,
   editMode,
+  editor,
 }: CitationNodeEditorProps) {
   const { selectedNodePosition } = useStatementContext();
 
@@ -24,9 +27,9 @@ export function CitationNodeEditor({
       style={{
         top: `${selectedNodePosition.y}px`,
         left: `${selectedNodePosition.x}px`,
-        width: "1px",
-        height: "1px",
-        pointerEvents: "none",
+        width: '1px',
+        height: '1px',
+        pointerEvents: 'none',
         zIndex: 50,
       }}
     >
@@ -34,6 +37,7 @@ export function CitationNodeEditor({
         statementId={statementId}
         creatorId={creatorId}
         editMode={editMode}
+        editor={editor}
       >
         <div />
       </CitationPopover>
