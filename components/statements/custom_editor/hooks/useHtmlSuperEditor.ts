@@ -14,7 +14,7 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { useWindowSize } from "react-use";
-import { useStatementContext } from "@/contexts/statementContext";
+import { useStatementContext } from "@/contexts/StatementContext";
 import { deleteCitation } from "@/lib/actions/citationActions";
 import { deleteStatementImage } from "@/lib/actions/statementActions";
 import {
@@ -485,31 +485,31 @@ export const useHtmlSuperEditor = ({
  }, [searchParams, setSelectedAnnotationId, isMobile, editor]);
 
  // Sets the annotation-id in the url when the editor is focused
- // useEffect(() => {
- //  if (!editor) return;
- //  const params = new URLSearchParams(window.location.search);
- //  if (selectedAnnotationId) {
- //   // params.set("annotation-id", selectedAnnotationId);
- //   setTimeout(() => {
- //    const annotationElement = document.querySelector(
- //     `[data-annotation-id="${selectedAnnotationId}"]`,
- //    );
- //    if (annotationElement) {
- //     annotationElement.scrollIntoView({
- //      behavior: "smooth",
- //      block: isMobile ? "start" : "center", // Use existing isMobile logic
- //     });
- //    }
- //   }, 100); // Delay allows DOM updates
- //  } else {
- //   params.delete("annotation-id");
- //  }
- //  const newUrl = `${window.location.pathname}?${params.toString()}`;
- //  // Use replaceState to avoid adding to history
- //  if (newUrl !== `${window.location.pathname}${window.location.search}`) {
- //   router.replace(newUrl, { scroll: false });
- //  }
- // }, [editor, selectedAnnotationId, router, isMobile]); // Added isMobile dependency
+ useEffect(() => {
+  if (!editor) return;
+  const params = new URLSearchParams(window.location.search);
+  if (selectedAnnotationId) {
+   params.set("annotation-id", selectedAnnotationId);
+   setTimeout(() => {
+    const annotationElement = document.querySelector(
+     `[data-annotation-id="${selectedAnnotationId}"]`,
+    );
+    if (annotationElement) {
+     annotationElement.scrollIntoView({
+      behavior: "smooth",
+      block: isMobile ? "start" : "center", // Use existing isMobile logic
+     });
+    }
+   }, 100); // Delay allows DOM updates
+  } else {
+   params.delete("annotation-id");
+  }
+  const newUrl = `${window.location.pathname}?${params.toString()}`;
+  // Use replaceState to avoid adding to history
+  if (newUrl !== `${window.location.pathname}${window.location.search}`) {
+   router.replace(newUrl, { scroll: false });
+  }
+ }, [editor, selectedAnnotationId, router, isMobile]); // Added isMobile dependency
 
  // Effect to apply/update annotation marks
  useEffect(() => {

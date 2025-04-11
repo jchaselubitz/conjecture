@@ -5,12 +5,12 @@ import { useEffect, useState } from 'react';
 import { useAsyncFn } from 'react-use';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useStatementContext } from '@/contexts/statementContext';
+import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { getPublishedStatement } from '@/lib/actions/statementActions';
 import { formatDateForCitation } from '@/lib/helpers/helpersDate';
 import { cn } from '@/lib/utils';
 export function CitationDisplay() {
-  const { citationData } = useStatementContext();
+  const { citationData } = useStatementToolsContext();
   const citation = citationData as BaseStatementCitation;
   const [conjecture, setConjecture] = useState<BaseDraft | null>(null);
 

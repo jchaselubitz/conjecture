@@ -3,7 +3,7 @@
 import { Editor } from '@tiptap/react';
 import React from 'react';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
-import { useStatementContext } from '@/contexts/statementContext';
+import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 
 import { CitationDisplay } from './citation_display';
 import { CitationForm } from './citation_form';
@@ -22,7 +22,8 @@ export function CitationPopover({
   editMode,
   editor
 }: CitationPopoverProps) {
-  const { citationPopoverOpen, setCitationData, setCitationPopoverOpen } = useStatementContext();
+  const { citationPopoverOpen, setCitationData, setCitationPopoverOpen } =
+    useStatementToolsContext();
 
   const onClose = () => {
     setCitationPopoverOpen(false);

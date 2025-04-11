@@ -1,4 +1,4 @@
-import { useStatementContext } from '@/contexts/statementContext';
+import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 
 import { ImagePopoverEditor } from './image_popover_editor';
 export type NewImageData = {
@@ -14,7 +14,7 @@ interface ImageNodeEditorProps {
 }
 
 export function ImageNodeEditor({ statementId, statementCreatorId }: ImageNodeEditorProps) {
-  const { selectedNodePosition, imagePopoverOpen } = useStatementContext();
+  const { selectedNodePosition, imagePopoverOpen } = useStatementToolsContext();
 
   if (!selectedNodePosition || !imagePopoverOpen) return null;
 

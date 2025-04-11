@@ -9,16 +9,12 @@ import { Input } from '@/components/ui/input';
 import type { ButtonLoadingState } from '@/components/ui/loading-button';
 import { LoadingButton } from '@/components/ui/loading-button';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
-import { useStatementContext } from '@/contexts/statementContext';
+import { useStatementContext } from '@/contexts/StatementContext';
 import { useUserContext } from '@/contexts/userContext';
-import {
-  deleteStatementImage,
-  updateDraft,
-  upsertStatementImage
-} from '@/lib/actions/statementActions';
-import { deleteStoredStatementImage } from '@/lib/actions/storageActions';
+import { deleteStatementImage, upsertStatementImage } from '@/lib/actions/statementActions';
 
 import { saveImage } from './custom_extensions/helpers/helpersImageExtension';
+import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 
 interface ImagePopoverEditorProps {
   children: React.ReactNode;
@@ -32,14 +28,9 @@ export function ImagePopoverEditor({
   children
 }: ImagePopoverEditorProps) {
   const pathname = usePathname();
-  const {
-    imagePopoverOpen,
-    setImagePopoverOpen,
-    initialImageData,
-    setInitialImageData,
-    updateStatementDraft,
-    editor
-  } = useStatementContext();
+  const { imagePopoverOpen, setImagePopoverOpen, initialImageData, setInitialImageData } =
+    useStatementToolsContext();
+  const { editor, updateStatementDraft } = useStatementContext();
   const { userId } = useUserContext();
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>(initialImageData.src || '');

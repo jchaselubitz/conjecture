@@ -1,16 +1,17 @@
 import { ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useStatementContext } from '@/contexts/statementContext';
+import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { openImagePopover } from '@/lib/helpers/helpersStatements';
 import { cn } from '@/lib/utils';
-
+import { useStatementContext } from '@/contexts/StatementContext';
 interface ImageButtonProps {
   statementId: string;
 }
 
 export function ImageButton({ statementId }: ImageButtonProps) {
-  const { setInitialImageData, setSelectedNodePosition, setImagePopoverOpen, editor } =
-    useStatementContext();
+  const { setInitialImageData, setSelectedNodePosition, setImagePopoverOpen } =
+    useStatementToolsContext();
+  const { editor } = useStatementContext();
 
   if (!editor) return;
   const handleClick = () => {

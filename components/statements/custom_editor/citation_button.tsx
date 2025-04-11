@@ -6,7 +6,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Tooltip } from '@/components/ui/tooltip';
 import { TooltipContent } from '@/components/ui/tooltip';
 import { TooltipTrigger } from '@/components/ui/tooltip';
-import { useStatementContext } from '@/contexts/statementContext';
+import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { openCitationPopover } from '@/lib/helpers/helpersStatements';
 import { cn } from '@/lib/utils';
 interface CitationButtonProps {
@@ -17,7 +17,7 @@ interface CitationButtonProps {
 
 export function CitationButton({ editor, statementId, className }: CitationButtonProps) {
   const { setSelectedNodePosition, setCitationPopoverOpen, setCitationData, citationPopoverOpen } =
-    useStatementContext();
+    useStatementToolsContext();
   const handleClick = () => {
     const view = editor.view;
     const { from } = view.state.selection;

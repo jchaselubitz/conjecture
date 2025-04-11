@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useWindowSize } from 'react-use';
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
-import { useStatementContext } from '@/contexts/statementContext';
+import { useStatementContext } from '@/contexts/StatementContext';
 import { formatDate } from '@/lib/helpers/helpersDate';
 
 import { Button } from '../ui/button';

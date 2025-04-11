@@ -7,7 +7,8 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
-import { useStatementContext } from '@/contexts/statementContext';
+import { useStatementContext } from '@/contexts/StatementContext';
+import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 
 import { deleteLatex, saveLatex } from './custom_extensions/helpers/helpersLatexExtension';
 
@@ -16,8 +17,10 @@ interface LatexPopoverEditorProps {
 }
 
 export function LatexPopoverEditor({ children }: LatexPopoverEditorProps) {
-  const { latexPopoverOpen, setLatexPopoverOpen, editor, selectedLatexId, currentLatex, isBlock } =
-    useStatementContext();
+  const { latexPopoverOpen, setLatexPopoverOpen, selectedLatexId, currentLatex, isBlock } =
+    useStatementToolsContext();
+
+  const { editor } = useStatementContext();
 
   const [latex, setLatex] = useState(currentLatex || '\\sum_{i=1}^{n}i = \\frac{n(n+1)}{2}');
   const [renderedLatex, setRenderedLatex] = useState<string>('');

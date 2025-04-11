@@ -1,20 +1,18 @@
 'use client';
 
 import './prose.css';
-import { BaseDraft, DraftWithAnnotations } from 'kysely-codegen';
+import { AnnotationWithComments, BaseDraft, DraftWithAnnotations } from 'kysely-codegen';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
 import AnnotationPanel from '@/components/statements/annotation/annotation_panel';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
-import { useStatementContext } from '@/contexts/statementContext';
 import { useUserContext } from '@/contexts/userContext';
 
 import AppNav from '../navigation/app_nav';
 import EditNav from '../navigation/edit_nav';
-import { Drawer, DrawerContent, DrawerTitle } from '../ui/drawer';
-import CommentInput from './annotation/comment_input';
+import AnnotationDrawer from './annotation/annotation_drawer';
 import StatementDetails from './statement_details';
 interface StatementDetailsProps {
   statement: DraftWithAnnotations;
@@ -32,7 +30,7 @@ export default function StatementLayout({
   parentStatement
 }: StatementDetailsProps) {
   const { userId } = useUserContext();
-  const { visualViewport, setVisualViewport } = useStatementContext();
+
   const {
     selectedAnnotationId,
     setSelectedAnnotationId,
@@ -58,19 +56,6 @@ export default function StatementLayout({
   const panelGroupRef = useRef<React.ElementRef<typeof ResizablePanelGroup>>(null);
 
   // Add effect to handle viewport changes
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.visualViewport) return;
-    const handleResize = () => {
-      setVisualViewport(window.visualViewport?.height ?? null);
-    };
-    window.visualViewport.addEventListener('resize', handleResize);
-    handleResize(); // Initial measurement
-    return () => window.visualViewport?.removeEventListener('resize', handleResize);
-  }, [setVisualViewport]);
-
-  const drawerStyle = visualViewport
-    ? { height: `${visualViewport * 0.7}px` }
-    : { height: '70dvh' };
 
   const [showAuthorComments, setShowAuthorComments] = useState(authorCommentsEnabled);
   const [showReaderComments, setShowReaderComments] = useState(readerCommentsEnabled);
@@ -127,6 +112,29 @@ export default function StatementLayout({
     document.cookie = `show_reader_comments=${checked.toString()}`;
   };
 
+  const filteredAnnotations = annotations.filter((annotation) => {
+    if (showAuthorComments && showReaderComments) {
+      return true;
+    } else if (showAuthorComments) {
+      return annotation.userId === statement.creatorId;
+    } else if (showReaderComments) {
+      return annotation.userId !== statement.creatorId;
+    }
+  }) as AnnotationWithComments[];
+
+  const handleAnnotationSelection = (annotationId: string) => {
+    setSelectedAnnotationId(annotationId);
+    setReplyToComment(null);
+    const params = new URLSearchParams(window.location.search);
+    //create fresh params
+    params.set('annotation-id', annotationId);
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    // Use replaceState to avoid adding to history
+    if (newUrl !== `${window.location.pathname}${window.location.search}`) {
+      router.replace(newUrl, { scroll: false });
+    }
+  };
+
   const mobileLayout = (
     <div className="">
       <StatementDetails
@@ -139,34 +147,19 @@ export default function StatementLayout({
         onShowReaderCommentsChange={onShowReaderCommentsChange}
         panelGroupRef={panelGroupRef}
       />
-      <Drawer open={showAnnotationDrawer} onOpenChange={handleCloseAnnotationDrawer}>
-        <DrawerContent style={drawerStyle} className="p-0 ">
-          <DrawerTitle className="sr-only">Comments</DrawerTitle>
-          {annotations && (
-            <div className="relative h-full overflow-y-auto w-full">
-              <AnnotationPanel
-                statementId={statement.statementId}
-                statementCreatorId={statement.creatorId}
-                handleCloseAnnotationPanel={handleCloseAnnotationDrawer}
-                showAuthorComments={showAuthorComments}
-                showReaderComments={showReaderComments}
-              />
-            </div>
-          )}
-          <div className="sticky bottom-0 w-full mx-auto px-2 justify-center ">
-            {selectedAnnotation && (
-              <CommentInput
-                annotation={selectedAnnotation}
-                replyToComment={replyToComment}
-                onCancelReply={cancelReply}
-                setComments={setComments}
-                setReplyToComment={setReplyToComment}
-                cancelReply={cancelReply}
-              />
-            )}
-          </div>
-        </DrawerContent>
-      </Drawer>
+      <AnnotationDrawer
+        showAnnotationDrawer={showAnnotationDrawer}
+        handleCloseAnnotationDrawer={handleCloseAnnotationDrawer}
+        filteredAnnotations={filteredAnnotations}
+        handleAnnotationSelection={handleAnnotationSelection}
+        annotations={annotations}
+        statement={statement}
+        selectedAnnotation={selectedAnnotation}
+        replyToComment={replyToComment}
+        cancelReply={cancelReply}
+        setComments={setComments}
+        setReplyToComment={setReplyToComment}
+      />
     </div>
   );
 
@@ -187,16 +180,15 @@ export default function StatementLayout({
         </div>
       </ResizablePanel>
       <ResizableHandle />
-
       <ResizablePanel id="annotation-panel" defaultSize={0}>
-        <div className="overflow-y-auto h-full">
+        <div className="overflow-y-auto h-full  ">
           {annotations && (
             <AnnotationPanel
               statementId={statement.statementId}
               statementCreatorId={statement.creatorId}
               handleCloseAnnotationPanel={handleCloseAnnotationPanel}
-              showAuthorComments={showAuthorComments}
-              showReaderComments={showReaderComments}
+              filteredAnnotations={filteredAnnotations}
+              handleAnnotationSelection={handleAnnotationSelection}
             />
           )}
         </div>

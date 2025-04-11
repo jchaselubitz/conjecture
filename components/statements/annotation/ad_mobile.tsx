@@ -1,58 +1,47 @@
 //can scroll through annotations on x axis, and scroll through comments on y axis
 //clicking response button opens drawer fullscreen comment field on bottom of screen
 
-import { useEffect, useRef } from 'react';
+import { AnnotationWithComments, BaseCommentWithUser } from 'kysely-codegen';
+import { Dispatch, SetStateAction, useRef } from 'react';
 import Comment from '@/components/statements/comment';
 import { CommentWithReplies } from '@/components/statements/comment';
 import { AvatarFallback } from '@/components/ui/avatar';
 import { AvatarImage } from '@/components/ui/avatar';
 import { Avatar } from '@/components/ui/avatar';
+import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { formatDate } from '@/lib/helpers/helpersDate';
-
-import { AnnotationDetailDeviceProps } from './helpersAnnotations';
-
-interface AnnotationDetailMobileProps extends AnnotationDetailDeviceProps {
+interface AnnotationDetailMobileProps {
+  annotation: AnnotationWithComments;
+  statementCreatorId: string;
+  statementId: string;
   handleAnnotationSelection: (annotationId: string) => void;
+  setReplyToComment: Dispatch<SetStateAction<BaseCommentWithUser | null>>;
+  nestedComments: CommentWithReplies[];
 }
 
 export default function AnnotationDetailMobile({
   annotation,
   statementCreatorId,
   statementId,
-  handleReplyClick,
-  handleCommentDeleted,
   handleAnnotationSelection,
   nestedComments
 }: AnnotationDetailMobileProps) {
-  // Use IntersectionObserver to detect when annotation is in view
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { setReplyToComment, handleCommentDeleted } = useStatementAnnotationContext();
 
-  useEffect(() => {
-    const currentRef = containerRef.current; // Capture the current value
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            console.log('Setting in ad_mobile', annotation.id);
-            handleAnnotationSelection(annotation.id);
-          }
+  const commentInputRef = useRef<HTMLTextAreaElement>(null);
+  const handleReplyClick = (comment: BaseCommentWithUser) => {
+    setReplyToComment(comment);
+    // Focus the textarea and scroll to it
+    setTimeout(() => {
+      if (commentInputRef.current) {
+        commentInputRef.current.focus();
+        commentInputRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
         });
-      },
-      {
-        threshold: 0.5 // Trigger when 50% of the element is visible
       }
-    );
-
-    if (currentRef) {
-      observer.observe(currentRef);
-    }
-
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
-      }
-    };
-  }, [annotation.id, handleAnnotationSelection]);
+    }, 100);
+  };
 
   const annotationHeader = (
     <>
@@ -107,8 +96,8 @@ export default function AnnotationDetailMobile({
   );
 
   return (
-    <div className="flex flex-col gap-3 min-w-screen px-2 snap-center h-full">
-      <div ref={containerRef} className="h-full flex flex-col overflow-y-auto">
+    <div className="flex flex-col gap-3 px-2 h-full">
+      <div className="h-full flex flex-col overflow-y-auto">
         {annotationHeader}
         {annotationContent}
       </div>

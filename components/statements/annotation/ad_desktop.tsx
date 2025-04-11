@@ -1,19 +1,21 @@
-import { BaseCommentWithUser } from 'kysely-codegen';
+import { AnnotationWithComments, BaseCommentWithUser } from 'kysely-codegen';
 import { useEffect, useRef } from 'react';
 import { AccordionContent, AccordionTrigger } from '@/components/ui/accordion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
+import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { formatDate } from '@/lib/helpers/helpersDate';
 import { cn } from '@/lib/utils';
 
 import { CommentWithReplies } from '../comment';
 import Comment from '../comment';
 import CommentInput from './comment_input';
-import { AnnotationDetailDeviceProps } from './helpersAnnotations';
-
-interface AnnotationDetailDesktopProps extends AnnotationDetailDeviceProps {
+interface AnnotationDetailDesktopProps {
   selected: boolean;
-  replyToComment: BaseCommentWithUser | null;
+  annotation: AnnotationWithComments;
+  statementId: string;
+  statementCreatorId: string;
+  nestedComments: CommentWithReplies[];
 }
 
 export default function AnnotationDetailDesktop({
@@ -21,14 +23,26 @@ export default function AnnotationDetailDesktop({
   selected,
   statementId,
   statementCreatorId,
-  nestedComments,
-  handleReplyClick,
-  handleCommentDeleted,
-  replyToComment,
-  cancelReply,
-  setComments,
-  setReplyToComment
+  nestedComments
 }: AnnotationDetailDesktopProps) {
+  const { replyToComment, setReplyToComment, setComments, cancelReply, handleCommentDeleted } =
+    useStatementAnnotationContext();
+  const commentInputRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleReplyClick = (comment: BaseCommentWithUser) => {
+    setReplyToComment(comment);
+    // Focus the textarea and scroll to it
+    setTimeout(() => {
+      if (commentInputRef.current) {
+        commentInputRef.current.focus();
+        commentInputRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }
+    }, 100);
+  };
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

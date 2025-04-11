@@ -12,7 +12,7 @@ import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-butto
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
-import { useStatementContext } from '@/contexts/statementContext';
+import { useStatementContext } from '@/contexts/StatementContext';
 import { useUserContext } from '@/contexts/userContext';
 import { deleteAnnotation } from '@/lib/actions/annotationActions';
 import { createComment } from '@/lib/actions/commentActions';
@@ -161,7 +161,7 @@ export default function CommentInput({
               </Button>
             </div>
           )}
-          <div>{annotation.id}</div>
+
           <Textarea
             ref={commentInputRef}
             placeholder={replyToComment ? 'Write your reply...' : 'Share your thoughts...'}

@@ -68,6 +68,16 @@ export function StatementProvider({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return;
+    const handleResize = () => {
+      setVisualViewport(window.visualViewport?.height ?? null);
+    };
+    window.visualViewport.addEventListener('resize', handleResize);
+    handleResize(); // Initial measurement
+    return () => window.visualViewport?.removeEventListener('resize', handleResize);
+  }, [setVisualViewport]);
+
+  useEffect(() => {
     setStatement(drafts?.find((draft) => draft.versionNumber === version) || drafts[0]);
   }, [version, drafts, setStatement]);
 

@@ -4,7 +4,7 @@ import { NewStatementCitation } from 'kysely-codegen';
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from 'react';
 import { UpsertImageDataType } from '@/lib/actions/statementActions';
 
-import { useStatementContext } from './statementContext';
+import { useStatementContext } from './StatementContext';
 
 interface PositionParams {
   x: number;
