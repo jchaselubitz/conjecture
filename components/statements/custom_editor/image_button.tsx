@@ -1,9 +1,9 @@
 import { ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { openImagePopover } from '@/lib/helpers/helpersStatements';
 import { cn } from '@/lib/utils';
-import { useStatementContext } from '@/contexts/StatementBaseContext';
 interface ImageButtonProps {
   statementId: string;
 }

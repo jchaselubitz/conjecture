@@ -62,45 +62,54 @@ export default function AnnotationDrawer({
     };
   }, [emblaApi, onSelect]);
 
-  const drawerStyle = visualViewport
-    ? { height: `${visualViewport * 0.7}px` }
-    : { height: '70dvh' };
+  // const drawerStyle = () => {
+  //   if (visualViewport) {
+  //     return { height: `${visualViewport}px` };
+  //   } else {
+  //     return { height: '70dvh' };
+  //   }
+  // };
 
   return (
     <Drawer open={showAnnotationDrawer} onOpenChange={handleCloseAnnotationDrawer}>
-      <DrawerContent style={drawerStyle} className="p-0">
+      <DrawerContent style={{ height: '60dvh' }} className="pt-2 " handle={false}>
         <DrawerTitle className="sr-only">Comments</DrawerTitle>
-        {annotations && (
+        <div className="h-full overflow-y-auto w-full">
           <div className="relative h-full overflow-y-auto w-full">
             <div className="overflow-hidden" ref={emblaRef}>
-              <div className="flex">
-                {filteredAnnotations.map((annotation) => (
-                  <div key={annotation.id} className="flex-[0_0_100%]">
-                    <AnnotationDetailMobile
-                      annotation={annotation}
-                      statementCreatorId={statement.creatorId}
-                      statementId={statement.statementId}
-                      handleAnnotationSelection={handleAnnotationSelection}
-                      nestedComments={nestComments(annotation.comments)}
-                      setReplyToComment={setReplyToComment}
-                    />
-                  </div>
-                ))}
-              </div>
+              {annotations && (
+                <div className="flex">
+                  {filteredAnnotations.map((annotation) => (
+                    <div key={annotation.id} className="flex-[0_0_100%]">
+                      <AnnotationDetailMobile
+                        annotation={annotation}
+                        statementCreatorId={statement.creatorId}
+                        statementId={statement.statementId}
+                        handleAnnotationSelection={handleAnnotationSelection}
+                        nestedComments={nestComments(annotation.comments)}
+                        setReplyToComment={setReplyToComment}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-        )}
-        <div className="sticky bottom-0 w-full mx-auto px-2 justify-center">
-          {selectedAnnotation && (
-            <CommentInput
-              annotation={selectedAnnotation}
-              replyToComment={replyToComment}
-              onCancelReply={cancelReply}
-              setComments={setComments}
-              setReplyToComment={setReplyToComment}
-              cancelReply={cancelReply}
-            />
-          )}
+
+          <div className="sticky bottom-0 w-full justify-center bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 ">
+            <div className="w-full px-2 pt-2">
+              {selectedAnnotation && (
+                <CommentInput
+                  annotation={selectedAnnotation}
+                  replyToComment={replyToComment}
+                  onCancelReply={cancelReply}
+                  setComments={setComments}
+                  setReplyToComment={setReplyToComment}
+                  cancelReply={cancelReply}
+                />
+              )}
+            </div>
+          </div>
         </div>
       </DrawerContent>
     </Drawer>

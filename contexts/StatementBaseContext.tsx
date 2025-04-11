@@ -70,10 +70,14 @@ export function StatementProvider({
   useEffect(() => {
     if (typeof window === 'undefined' || !window.visualViewport) return;
     const handleResize = () => {
-      setVisualViewport(window.visualViewport?.height ?? null);
+      setTimeout(() => {
+        setVisualViewport(window.visualViewport?.height ?? null);
+      }, 1000);
     };
     window.visualViewport.addEventListener('resize', handleResize);
+
     handleResize(); // Initial measurement
+
     return () => window.visualViewport?.removeEventListener('resize', handleResize);
   }, [setVisualViewport]);
 

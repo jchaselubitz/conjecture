@@ -138,7 +138,7 @@ export default function CommentInput({
   };
 
   return (
-    <div id="comment-input" className="w-full bg-white">
+    <div id="comment-input" className="w-full  rounded-t-md pb-2">
       {userId ? (
         <div id="comment-input" className=" ">
           {replyToComment && (
@@ -168,7 +168,7 @@ export default function CommentInput({
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             onKeyDown={!isMobile ? handleKeyDown : undefined}
-            className="min-h-[80px] focus-visible:ring-0"
+            className="min-h-[80px] focus-visible:ring-0 bg-background"
           />
 
           <div className="flex flex-row justify-between mt-2 gap-2">
@@ -208,6 +208,7 @@ export default function CommentInput({
                   <TooltipTrigger asChild>
                     <Button
                       variant="outline"
+                      size="sm"
                       onClick={() => {
                         setCommentText('');
                         onCancelReply();
@@ -227,6 +228,7 @@ export default function CommentInput({
                     <LoadingButton
                       buttonState={submittingButtonState}
                       onClick={handleSubmitComment}
+                      size="sm"
                       text={replyToComment ? 'Reply' : 'Comment'}
                       loadingText="Submitting..."
                       successText="Submitted"

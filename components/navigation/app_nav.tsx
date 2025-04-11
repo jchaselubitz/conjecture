@@ -14,7 +14,7 @@ export default function AppNav() {
   const { userId } = useUserContext();
 
   return (
-    <header className="border-b px-4">
+    <header className="border-b px-4 z-60 bg-background">
       <div className="flex h-16 items-center justify-between w-full">
         <div className="flex items-center gap-3">
           <Drawer open={open} direction="left" onOpenChange={setOpen}>

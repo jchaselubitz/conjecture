@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
+import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { useUserContext } from '@/contexts/userContext';
 import { deleteCitation } from '@/lib/actions/citationActions';
@@ -33,7 +34,6 @@ import {
   citationDateCreator,
   upsertCitation
 } from './custom_extensions/helpers/helpersCitationExtension';
-import { useStatementContext } from '@/contexts/StatementBaseContext';
 const citationFormSchema = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
   authorNames: z.string().optional(),

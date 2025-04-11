@@ -8,10 +8,12 @@ import { useWindowSize } from 'react-use';
 import AnnotationPanel from '@/components/statements/annotation/annotation_panel';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
+import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
 
 import AppNav from '../navigation/app_nav';
 import EditNav from '../navigation/edit_nav';
+import ReadNav from '../navigation/read_nav';
 import AnnotationDrawer from './annotation/annotation_drawer';
 import StatementDetails from './statement_details';
 interface StatementDetailsProps {
@@ -41,15 +43,28 @@ export default function StatementLayout({
     setComments,
     setSelectedAnnotation
   } = useStatementAnnotationContext();
-  const [editMode, setEditMode] = useState(editModeEnabled);
+
   const router = useRouter();
+  const isMobile = useWindowSize().width < 768;
+
+  const { editor } = useStatementContext();
+  const [annotationMode, setAnnotationMode] = useState<boolean>(!isMobile);
+  const [editMode, setEditMode] = useState(editModeEnabled);
+
   useEffect(() => {
     setEditMode(editModeEnabled);
   }, [editModeEnabled]);
 
+  useEffect(() => {
+    if (!!editMode || !!annotationMode) {
+      if (!isMobile) {
+        editor?.setEditable(true);
+      }
+    }
+  }, [editMode, annotationMode, editor, isMobile]);
+
   const [showAnnotationDrawer, setShowAnnotationDrawer] = useState(false);
   const isCreator = statement.creatorId === userId;
-  const isMobile = useWindowSize().width < 768;
 
   const { annotations } = statement;
 
@@ -79,9 +94,7 @@ export default function StatementLayout({
     setSelectedAnnotation(null);
     panelGroupRef.current?.setLayout([100, 0]);
     const newUrl = `${window.location.pathname}`;
-
     router.replace(newUrl, { scroll: false });
-
     localStorage.removeItem('annotationPanelSize');
   };
 
@@ -198,7 +211,14 @@ export default function StatementLayout({
 
   return (
     <div className="flex flex-col h-full w-full">
-      {editMode ? <EditNav /> : <AppNav />}
+      {editMode ? (
+        <EditNav />
+      ) : (
+        <>
+          <AppNav />
+          <ReadNav annotationMode={annotationMode} setAnnotationMode={setAnnotationMode} />
+        </>
+      )}
 
       {isMobile ? mobileLayout : desktopLayout}
     </div>
