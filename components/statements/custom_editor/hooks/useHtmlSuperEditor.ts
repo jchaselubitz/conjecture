@@ -14,7 +14,7 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { useWindowSize } from "react-use";
-import { useStatementContext } from "@/contexts/StatementContext";
+import { useStatementContext } from "@/contexts/StatementBaseContext";
 import { deleteCitation } from "@/lib/actions/citationActions";
 import { deleteStatementImage } from "@/lib/actions/statementActions";
 import {

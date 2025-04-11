@@ -1,4 +1,4 @@
-import { useStatementContext } from '@/contexts/StatementContext';
+import { useStatementContext } from '@/contexts/StatementBaseContext';
 
 import { LatexPopoverEditor } from './latex_popover_editor';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';

@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useStatementContext } from '@/contexts/StatementContext';
+import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
 import { deleteStatement } from '@/lib/actions/statementActions';
 import { cn } from '@/lib/utils';

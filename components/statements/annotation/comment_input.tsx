@@ -12,7 +12,7 @@ import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-butto
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
-import { useStatementContext } from '@/contexts/StatementContext';
+import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
 import { deleteAnnotation } from '@/lib/actions/annotationActions';
 import { createComment } from '@/lib/actions/commentActions';

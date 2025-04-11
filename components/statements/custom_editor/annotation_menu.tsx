@@ -2,7 +2,7 @@ import { BubbleMenu, Editor } from '@tiptap/react';
 import { Check, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
-import { useStatementContext } from '@/contexts/StatementContext';
+import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
 import { createStatementAnnotation } from '@/lib/helpers/helpersStatements';
 import { useCopyToClipboard } from '@/lib/hooks/useCopyToClipboard';

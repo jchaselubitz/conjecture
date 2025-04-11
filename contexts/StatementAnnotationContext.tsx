@@ -11,7 +11,7 @@ import {
   useState
 } from 'react';
 
-import { useStatementContext } from './StatementContext';
+import { useStatementContext } from './StatementBaseContext';
 
 interface StatementAnnotationContextType {
   annotations: NewAnnotation[];

@@ -2,7 +2,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import { AnnotationWithComments, BaseCommentWithUser } from 'kysely-codegen';
 import { Dispatch, SetStateAction, useCallback, useEffect } from 'react';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
-import { useStatementContext } from '@/contexts/StatementContext';
+import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { nestComments } from '@/lib/helpers/helpersGeneral';
 
 import AnnotationDetailMobile from './ad_mobile';

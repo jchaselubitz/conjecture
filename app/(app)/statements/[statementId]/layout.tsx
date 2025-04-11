@@ -1,5 +1,5 @@
 import { StatementAnnotationProvider } from '@/contexts/StatementAnnotationContext';
-import { StatementProvider } from '@/contexts/StatementContext';
+import { StatementProvider } from '@/contexts/StatementBaseContext';
 import { StatementToolsProvider } from '@/contexts/StatementToolsContext';
 import { getUser } from '@/lib/actions/baseActions';
 import { getDraftsByStatementId } from '@/lib/actions/statementActions';

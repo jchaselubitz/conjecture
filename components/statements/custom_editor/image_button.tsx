@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { openImagePopover } from '@/lib/helpers/helpersStatements';
 import { cn } from '@/lib/utils';
-import { useStatementContext } from '@/contexts/StatementContext';
+import { useStatementContext } from '@/contexts/StatementBaseContext';
 interface ImageButtonProps {
   statementId: string;
 }

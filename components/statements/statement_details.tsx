@@ -9,7 +9,7 @@ import { ImperativePanelGroupHandle } from 'react-resizable-panels';
 import TextareaAutosize from 'react-textarea-autosize';
 import { toast } from 'sonner';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
-import { useStatementContext } from '@/contexts/StatementContext';
+import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { useUserContext } from '@/contexts/userContext';
 import { updateStatementHeaderImageUrl } from '@/lib/actions/statementActions';

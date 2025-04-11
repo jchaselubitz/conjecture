@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import type { ButtonLoadingState } from '@/components/ui/loading-button';
 import { LoadingButton } from '@/components/ui/loading-button';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
-import { useStatementContext } from '@/contexts/StatementContext';
+import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
 import { deleteStatementImage, upsertStatementImage } from '@/lib/actions/statementActions';
 
