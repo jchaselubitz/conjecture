@@ -2,16 +2,19 @@
 
 import './prose.css';
 import { BaseDraft, DraftWithAnnotations } from 'kysely-codegen';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
-import AnnotationPanel from '@/components/statements/annotation_panel';
+import AnnotationPanel from '@/components/statements/annotation/annotation_panel';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { useStatementContext } from '@/contexts/statementContext';
 import { useUserContext } from '@/contexts/userContext';
 
 import AppNav from '../navigation/app_nav';
 import EditNav from '../navigation/edit_nav';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '../ui/drawer';
+import { Drawer, DrawerContent, DrawerTitle } from '../ui/drawer';
+import CommentInput from './annotation/comment_input';
 import StatementDetails from './statement_details';
 interface StatementDetailsProps {
   statement: DraftWithAnnotations;
@@ -30,8 +33,18 @@ export default function StatementLayout({
 }: StatementDetailsProps) {
   const { userId } = useUserContext();
   const { visualViewport, setVisualViewport } = useStatementContext();
+  const {
+    selectedAnnotationId,
+    setSelectedAnnotationId,
+    selectedAnnotation,
+    replyToComment,
+    cancelReply,
+    setReplyToComment,
+    setComments,
+    setSelectedAnnotation
+  } = useStatementAnnotationContext();
   const [editMode, setEditMode] = useState(editModeEnabled);
-
+  const router = useRouter();
   useEffect(() => {
     setEditMode(editModeEnabled);
   }, [editModeEnabled]);
@@ -62,8 +75,6 @@ export default function StatementLayout({
   const [showAuthorComments, setShowAuthorComments] = useState(authorCommentsEnabled);
   const [showReaderComments, setShowReaderComments] = useState(readerCommentsEnabled);
 
-  const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | undefined>(undefined);
-
   useEffect(() => {
     if (selectedAnnotationId) {
       setShowAnnotationDrawer(true);
@@ -74,11 +85,18 @@ export default function StatementLayout({
     const savedSizeString = localStorage.getItem('annotationPanelSize');
     const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
     panelGroupRef.current?.setLayout(savedSize ?? [100, 0]);
-  }, [setSelectedAnnotationId]);
+  }, []);
 
   const handleCloseAnnotationPanel = () => {
     setSelectedAnnotationId(undefined);
+    setReplyToComment(null);
+    setComments([]);
+    setSelectedAnnotation(null);
     panelGroupRef.current?.setLayout([100, 0]);
+    const newUrl = `${window.location.pathname}`;
+
+    router.replace(newUrl, { scroll: false });
+
     localStorage.removeItem('annotationPanelSize');
   };
 
@@ -119,28 +137,34 @@ export default function StatementLayout({
         showReaderComments={showReaderComments}
         onShowAuthorCommentsChange={onShowAuthorCommentsChange}
         onShowReaderCommentsChange={onShowReaderCommentsChange}
-        setSelectedAnnotationId={setSelectedAnnotationId}
-        selectedAnnotationId={selectedAnnotationId}
         panelGroupRef={panelGroupRef}
       />
       <Drawer open={showAnnotationDrawer} onOpenChange={handleCloseAnnotationDrawer}>
-        <DrawerContent style={drawerStyle} className="p-0 w-full">
+        <DrawerContent style={drawerStyle} className="p-0 ">
           <DrawerTitle className="sr-only">Comments</DrawerTitle>
-
           {annotations && (
-            <div className="h-full overflow-y-auto w-full">
+            <div className="relative h-full overflow-y-auto w-full">
               <AnnotationPanel
-                annotations={annotations}
                 statementId={statement.statementId}
                 statementCreatorId={statement.creatorId}
-                handleCloseAnnotationPanel={handleCloseAnnotationPanel}
-                selectedAnnotationId={selectedAnnotationId}
-                setSelectedAnnotationId={setSelectedAnnotationId}
+                handleCloseAnnotationPanel={handleCloseAnnotationDrawer}
                 showAuthorComments={showAuthorComments}
                 showReaderComments={showReaderComments}
               />
             </div>
           )}
+          <div className="sticky bottom-0 w-full mx-auto px-2 justify-center ">
+            {selectedAnnotation && (
+              <CommentInput
+                annotation={selectedAnnotation}
+                replyToComment={replyToComment}
+                onCancelReply={cancelReply}
+                setComments={setComments}
+                setReplyToComment={setReplyToComment}
+                cancelReply={cancelReply}
+              />
+            )}
+          </div>
         </DrawerContent>
       </Drawer>
     </div>
@@ -158,8 +182,6 @@ export default function StatementLayout({
             showReaderComments={showReaderComments}
             onShowAuthorCommentsChange={onShowAuthorCommentsChange}
             onShowReaderCommentsChange={onShowReaderCommentsChange}
-            setSelectedAnnotationId={setSelectedAnnotationId}
-            selectedAnnotationId={selectedAnnotationId}
             panelGroupRef={panelGroupRef}
           />
         </div>
@@ -170,12 +192,9 @@ export default function StatementLayout({
         <div className="overflow-y-auto h-full">
           {annotations && (
             <AnnotationPanel
-              annotations={annotations}
               statementId={statement.statementId}
               statementCreatorId={statement.creatorId}
               handleCloseAnnotationPanel={handleCloseAnnotationPanel}
-              selectedAnnotationId={selectedAnnotationId}
-              setSelectedAnnotationId={setSelectedAnnotationId}
               showAuthorComments={showAuthorComments}
               showReaderComments={showReaderComments}
             />

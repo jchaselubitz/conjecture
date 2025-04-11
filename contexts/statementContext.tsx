@@ -2,12 +2,7 @@
 
 import * as Sentry from '@sentry/nextjs';
 import { Editor } from '@tiptap/react';
-import {
-  DraftWithAnnotations,
-  NewAnnotation,
-  NewDraft,
-  NewStatementCitation
-} from 'kysely-codegen';
+import { DraftWithAnnotations, NewDraft } from 'kysely-codegen';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   createContext,
@@ -22,19 +17,9 @@ import {
   useState
 } from 'react';
 import { useDebounce } from 'use-debounce';
-import {
-  createDraft,
-  publishDraft,
-  updateDraft,
-  UpsertImageDataType
-} from '@/lib/actions/statementActions';
+import { createDraft, publishDraft, updateDraft } from '@/lib/actions/statementActions';
 import { generateStatementId } from '@/lib/helpers/helpersStatements';
-interface PositionParams {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
+
 interface StatementContextType {
   versionOptions: {
     v: number;
@@ -43,8 +28,6 @@ interface StatementContextType {
   }[];
   statement: DraftWithAnnotations;
   setStatement: Dispatch<SetStateAction<DraftWithAnnotations>>;
-  annotations: NewAnnotation[];
-  setAnnotations: (annotations: NewAnnotation[]) => void;
   debouncedContent: string | undefined;
   setDebouncedContent: (content: string) => void;
   saveStatementDraft: () => Promise<void>;
@@ -54,26 +37,6 @@ interface StatementContextType {
   togglePublish: () => Promise<void>;
   isUpdating: boolean;
   error: string | null;
-  latexPopoverOpen: boolean;
-  setLatexPopoverOpen: (open: boolean) => void;
-  imagePopoverOpen: boolean;
-  setImagePopoverOpen: (open: boolean) => void;
-  citationPopoverOpen: boolean;
-  setCitationPopoverOpen: (open: boolean) => void;
-  imageLightboxOpen: boolean;
-  setImageLightboxOpen: (open: boolean) => void;
-  initialImageData: UpsertImageDataType;
-  setInitialImageData: Dispatch<SetStateAction<UpsertImageDataType>>;
-  citationData: NewStatementCitation;
-  setCitationData: Dispatch<SetStateAction<NewStatementCitation>>;
-  currentLatex: string;
-  setCurrentLatex: (latex: string) => void;
-  isBlock: boolean;
-  setIsBlock: (block: boolean) => void;
-  selectedLatexId: string | null;
-  setSelectedLatexId: (id: string | null) => void;
-  selectedNodePosition: PositionParams | null;
-  setSelectedNodePosition: (position: PositionParams | null) => void;
   visualViewport: number | null;
   setVisualViewport: (viewport: number | null) => void;
   editor: Editor | null;
@@ -99,55 +62,10 @@ export function StatementProvider({
   const [statement, setStatement] = useState<DraftWithAnnotations>(
     drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0]
   );
-
   const [visualViewport, setVisualViewport] = useState<number | null>(null);
   const [editor, setEditor] = useState<Editor | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isBlock, setIsBlock] = useState(true);
-  const [selectedLatexId, setSelectedLatexId] = useState<string | null>(null);
-  const [selectedNodePosition, setSelectedNodePosition] = useState<PositionParams | null>(null);
-  const [currentLatex, setCurrentLatex] = useState('');
-  const [initialImageData, setInitialImageData] = useState<UpsertImageDataType>({
-    src: '',
-    alt: '',
-    statementId: statement.statementId,
-    id: ''
-  });
-  const [citationData, setCitationData] = useState<NewStatementCitation>({
-    statementId: statement.statementId,
-    title: '',
-    url: '',
-    year: null,
-    month: null,
-    day: null,
-    authorNames: '',
-    issue: null,
-    pageEnd: null,
-    pageStart: null,
-    publisher: '',
-    titlePublication: '',
-    volume: '',
-    id: ''
-  });
-
-  const [popoverState, setPopoverState] = useState({
-    latex: false,
-    image: false,
-    citation: false,
-    imageLightbox: false
-  });
-
-  const setLatexPopoverOpen = (open: boolean) =>
-    setPopoverState((prev) => ({ ...prev, latex: open }));
-  const setImagePopoverOpen = (open: boolean) =>
-    setPopoverState((prev) => ({ ...prev, image: open }));
-  const setCitationPopoverOpen = (open: boolean) =>
-    setPopoverState((prev) => ({ ...prev, citation: open }));
-  const setImageLightboxOpen = (open: boolean) =>
-    setPopoverState((prev) => ({ ...prev, imageLightbox: open }));
-
-  const [annotations, setAnnotations] = useState<NewAnnotation[]>(statement.annotations);
 
   useEffect(() => {
     setStatement(drafts?.find((draft) => draft.versionNumber === version) || drafts[0]);
@@ -184,7 +102,7 @@ export function StatementProvider({
         headerImg: headerImg || undefined,
         statementId: statementId || undefined,
         versionNumber: drafts?.length + 1,
-        annotations,
+        annotations: statement.annotations,
         subtitle: statement?.subtitle || undefined
       });
     } catch (err) {
@@ -276,8 +194,6 @@ export function StatementProvider({
         versionOptions,
         statement,
         setStatement,
-        annotations,
-        setAnnotations,
         saveStatementDraft,
         nextVersionNumber,
         changeVersion,
@@ -287,26 +203,6 @@ export function StatementProvider({
         error,
         togglePublish,
         isUpdating,
-        latexPopoverOpen: popoverState.latex,
-        setLatexPopoverOpen,
-        imagePopoverOpen: popoverState.image,
-        setImagePopoverOpen,
-        citationPopoverOpen: popoverState.citation,
-        setCitationPopoverOpen,
-        imageLightboxOpen: popoverState.imageLightbox,
-        setImageLightboxOpen,
-        currentLatex,
-        setCurrentLatex,
-        initialImageData,
-        setInitialImageData,
-        citationData,
-        setCitationData,
-        isBlock,
-        setIsBlock,
-        selectedLatexId,
-        setSelectedLatexId,
-        selectedNodePosition,
-        setSelectedNodePosition,
         visualViewport,
         setVisualViewport,
         editor,

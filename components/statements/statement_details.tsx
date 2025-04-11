@@ -8,12 +8,13 @@ import { useState } from 'react';
 import { ImperativePanelGroupHandle } from 'react-resizable-panels';
 import TextareaAutosize from 'react-textarea-autosize';
 import { toast } from 'sonner';
+import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { useStatementContext } from '@/contexts/statementContext';
+import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { useUserContext } from '@/contexts/userContext';
 import { updateStatementHeaderImageUrl } from '@/lib/actions/statementActions';
 import { headerImageChange } from '@/lib/helpers/helpersStatements';
 import { generateStatementId } from '@/lib/helpers/helpersStatements';
-import { cn } from '@/lib/utils';
 
 import { AspectRatio } from '../ui/aspect-ratio';
 import { Button } from '../ui/button';
@@ -33,33 +34,26 @@ export interface StatementDetailsProps {
   showReaderComments: boolean;
   onShowAuthorCommentsChange: (checked: boolean) => void;
   onShowReaderCommentsChange: (checked: boolean) => void;
-  setSelectedAnnotationId: (annotationId: string | undefined) => void;
-  selectedAnnotationId: string | undefined;
   panelGroupRef: RefObject<ImperativePanelGroupHandle | null>;
   parentStatement: BaseDraft | null;
 }
 
 export default function StatementDetails({
+  statement,
   editMode,
   showAuthorComments,
   showReaderComments,
   onShowAuthorCommentsChange,
   onShowReaderCommentsChange,
-  setSelectedAnnotationId,
-  selectedAnnotationId,
   panelGroupRef,
   parentStatement
 }: StatementDetailsProps) {
   const { userId } = useUserContext();
-  const {
-    statement,
-    setStatement,
-    initialImageData,
-    setInitialImageData,
-    setImageLightboxOpen,
-    editor,
-    visualViewport
-  } = useStatementContext();
+  const { setStatement, editor, visualViewport } = useStatementContext();
+  const { selectedAnnotationId, setSelectedAnnotationId } = useStatementAnnotationContext();
+  const { initialImageData, setInitialImageData, setImageLightboxOpen } =
+    useStatementToolsContext();
+
   const router = useRouter();
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -84,22 +78,20 @@ export default function StatementDetails({
     setSelectedAnnotationId(undefined);
     const url = new URL(window.location.href);
     if (!editMode) {
-      router.push(`${url.pathname}?edit=true`);
+      url.searchParams.set('edit', 'true');
     } else {
       url.searchParams.delete('edit');
-      router.push(`${url.pathname}`);
     }
+    window.history.pushState({}, '', url.toString());
   };
 
   const handleAnnotationClick = async (annotationId: string) => {
     setSelectedAnnotationId(annotationId);
     const savedSizeString = localStorage.getItem('annotationPanelSize');
     const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
-    panelGroupRef.current?.setLayout(savedSize ?? [67, 33]);
-    const url = new URL(window.location.href);
-    url.searchParams.delete('annotation-id');
-    url.searchParams.set('annotation-id', annotationId);
-    router.push(url.pathname + url.search);
+    if (panelGroupRef.current) {
+      panelGroupRef.current.setLayout(savedSize ?? [70, 30]);
+    }
   };
 
   const handlePhotoButtonClick = () => {

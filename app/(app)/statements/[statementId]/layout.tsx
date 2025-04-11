@@ -1,8 +1,10 @@
+import { StatementAnnotationProvider } from '@/contexts/StatementAnnotationContext';
 import { StatementProvider } from '@/contexts/statementContext';
+import { StatementToolsProvider } from '@/contexts/StatementToolsContext';
 import { getUser } from '@/lib/actions/baseActions';
 import { getDraftsByStatementId } from '@/lib/actions/statementActions';
 
-export default async function CreateLayout({
+export default async function StatementLayout({
   children,
   params
 }: {
@@ -16,7 +18,9 @@ export default async function CreateLayout({
 
   return (
     <StatementProvider drafts={drafts} userId={userId}>
-      {children}
+      <StatementToolsProvider>
+        <StatementAnnotationProvider>{children}</StatementAnnotationProvider>
+      </StatementToolsProvider>
     </StatementProvider>
   );
 }

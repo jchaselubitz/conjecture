@@ -1,16 +1,14 @@
 import 'katex/dist/katex.min.css';
 import { EditorContent, FloatingMenu } from '@tiptap/react';
 import { AnnotationWithComments, DraftWithAnnotations } from 'kysely-codegen';
-import React, { useEffect, useRef } from 'react';
-import { useStatementContext } from '@/contexts/statementContext';
+import React from 'react';
+import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { cn } from '@/lib/utils';
 
 import { AnnotationMenu } from './annotation_menu';
 import { BlockTypeChooser } from './block_type_chooser';
 import { CitationNodeEditor } from './citation_node_editor';
-import { EditorMenu } from './editor_menu';
 import { useHtmlSuperEditor } from './hooks/useHtmlSuperEditor';
-
 interface HTMLSuperEditorProps {
   statement: DraftWithAnnotations;
   existingAnnotations: AnnotationWithComments[];
@@ -44,7 +42,7 @@ const HTMLSuperEditor = ({
   showReaderComments,
   setFootnoteIds
 }: HTMLSuperEditorProps) => {
-  const { latexPopoverOpen, imagePopoverOpen } = useStatementContext();
+  const { latexPopoverOpen, imagePopoverOpen } = useStatementToolsContext();
 
   const draftId = statement.id;
   const statementId = statement.statementId;
@@ -101,7 +99,6 @@ const HTMLSuperEditor = ({
         showAuthorComments={showAuthorComments}
         showReaderComments={showReaderComments}
         canAnnotate={annotatable}
-        setSelectedAnnotationId={setSelectedAnnotationId}
         statementId={statementId}
         editor={editor}
       />

@@ -36,7 +36,8 @@ import { InlineLatex } from "../custom_extensions/inline_latex";
 import { handleCitationPaste } from "../custom_extensions/quote_paste_handler";
 import { QuotePasteHandler } from "../custom_extensions/quote_paste_handler";
 import { Node as ProsemirrorNode, Slice } from "@tiptap/pm/model";
-
+import { useStatementAnnotationContext } from "@/contexts/StatementAnnotationContext";
+import { useStatementToolsContext } from "@/contexts/StatementToolsContext";
 interface UseHtmlSuperEditorProps {
  statement: DraftWithAnnotations;
  existingAnnotations: AnnotationWithComments[];
@@ -70,22 +71,23 @@ export const useHtmlSuperEditor = ({
  setFootnoteIds,
 }: UseHtmlSuperEditorProps): Editor | null => {
  const {
+  setDebouncedContent,
+  debouncedContent,
+  setEditor,
+ } = useStatementContext();
+ const { annotations, setAnnotations } = useStatementAnnotationContext();
+ const {
   setSelectedNodePosition,
   setCurrentLatex,
   setInitialImageData,
   setCitationData,
   setIsBlock,
-  annotations,
-  setAnnotations,
-  setDebouncedContent,
   setSelectedLatexId,
   setCitationPopoverOpen,
   setImagePopoverOpen,
   setImageLightboxOpen,
   setLatexPopoverOpen,
-  debouncedContent,
-  setEditor,
- } = useStatementContext();
+ } = useStatementToolsContext();
  const router = useRouter();
  const pathname = usePathname();
  const searchParams = useSearchParams();
@@ -482,32 +484,32 @@ export const useHtmlSuperEditor = ({
   }
  }, [searchParams, setSelectedAnnotationId, isMobile, editor]);
 
- //Sets the annotation-id in the url when the editor is focused
- useEffect(() => {
-  if (!editor) return;
-  const params = new URLSearchParams(window.location.search);
-  if (selectedAnnotationId) {
-   params.set("annotation-id", selectedAnnotationId);
-   setTimeout(() => {
-    const annotationElement = document.querySelector(
-     `[data-annotation-id="${selectedAnnotationId}"]`,
-    );
-    if (annotationElement) {
-     annotationElement.scrollIntoView({
-      behavior: "smooth",
-      block: isMobile ? "start" : "center", // Use existing isMobile logic
-     });
-    }
-   }, 100); // Delay allows DOM updates
-  } else {
-   params.delete("annotation-id");
-  }
-  const newUrl = `${window.location.pathname}?${params.toString()}`;
-  // Use replaceState to avoid adding to history
-  if (newUrl !== `${window.location.pathname}${window.location.search}`) {
-   router.replace(newUrl, { scroll: false });
-  }
- }, [editor, selectedAnnotationId, router, isMobile]); // Added isMobile dependency
+ // Sets the annotation-id in the url when the editor is focused
+ // useEffect(() => {
+ //  if (!editor) return;
+ //  const params = new URLSearchParams(window.location.search);
+ //  if (selectedAnnotationId) {
+ //   // params.set("annotation-id", selectedAnnotationId);
+ //   setTimeout(() => {
+ //    const annotationElement = document.querySelector(
+ //     `[data-annotation-id="${selectedAnnotationId}"]`,
+ //    );
+ //    if (annotationElement) {
+ //     annotationElement.scrollIntoView({
+ //      behavior: "smooth",
+ //      block: isMobile ? "start" : "center", // Use existing isMobile logic
+ //     });
+ //    }
+ //   }, 100); // Delay allows DOM updates
+ //  } else {
+ //   params.delete("annotation-id");
+ //  }
+ //  const newUrl = `${window.location.pathname}?${params.toString()}`;
+ //  // Use replaceState to avoid adding to history
+ //  if (newUrl !== `${window.location.pathname}${window.location.search}`) {
+ //   router.replace(newUrl, { scroll: false });
+ //  }
+ // }, [editor, selectedAnnotationId, router, isMobile]); // Added isMobile dependency
 
  // Effect to apply/update annotation marks
  useEffect(() => {

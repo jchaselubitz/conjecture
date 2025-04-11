@@ -1,6 +1,7 @@
 import { BubbleMenu, Editor } from '@tiptap/react';
 import { Check, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { useStatementContext } from '@/contexts/statementContext';
 import { useUserContext } from '@/contexts/userContext';
 import { createStatementAnnotation } from '@/lib/helpers/helpersStatements';
@@ -14,7 +15,6 @@ interface AnnotationMenuProps {
   statementCreatorId: string;
   showAuthorComments: boolean;
   showReaderComments: boolean;
-  setSelectedAnnotationId: (id: string) => void;
   canAnnotate?: boolean;
   editMode: boolean;
   statementId: string;
@@ -28,12 +28,11 @@ export const AnnotationMenu = ({
   showReaderComments,
   editMode,
   statementId,
-  setSelectedAnnotationId,
   canAnnotate = false,
   editor
 }: AnnotationMenuProps) => {
   const { userId } = useUserContext();
-  const { annotations, setAnnotations } = useStatementContext();
+  const { annotations, setAnnotations, setSelectedAnnotationId } = useStatementAnnotationContext();
   const { copy, copied } = useCopyToClipboard(editor?.state.selection.toString() ?? '');
 
   if (!editor) return null;
