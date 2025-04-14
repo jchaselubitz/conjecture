@@ -45,7 +45,7 @@ export function EditorMenu({ editor, statementId }: EditorMenuProps) {
   const activeButtonClassName = 'bg-muted md:bg-zinc-500';
 
   return (
-    <div className="md:bg-zinc-600/85 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-lg border md:border-zinc-500 shadow-xl flex items-center mx-auto w-full">
+    <div className="md:bg-zinc-600/85 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-lg   md:border-zinc-500 shadow-xl flex items-center mx-auto w-full px-1">
       <div className="flex items-center justify-center border-r md:border-zinc-500 h-full">
         <ViewModeButton
           className={cn('flex items-center justify-center ', buttonClassName)}
@@ -55,7 +55,7 @@ export function EditorMenu({ editor, statementId }: EditorMenuProps) {
         />
       </div>
 
-      <div className="flex gap-2 p-2 overflow-x-auto border-r">
+      <div className="flex gap-2 p-2 overflow-x-auto ">
         <Button
           variant="ghost"
           size="sm"

@@ -53,7 +53,7 @@ export default function StatementLayout({
 
   useEffect(() => {
     setEditMode(editModeEnabled);
-  }, [editModeEnabled]);
+  }, [editModeEnabled, setEditMode]);
 
   useEffect(() => {
     if (!!editMode || !!annotationMode) {

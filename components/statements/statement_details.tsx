@@ -79,10 +79,11 @@ export default function StatementDetails({
     const url = new URL(window.location.href);
     if (!editMode) {
       url.searchParams.set('edit', 'true');
+      router.push(url.toString());
     } else {
       url.searchParams.delete('edit');
+      router.push(url.toString());
     }
-    window.history.pushState({}, '', url.toString());
   };
 
   const handleAnnotationClick = async (annotationId: string) => {
