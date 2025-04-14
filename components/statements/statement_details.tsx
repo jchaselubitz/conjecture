@@ -27,6 +27,7 @@ import { ImageNodeEditor } from './custom_editor/image_node_editor';
 import { LatexNodeEditor } from './custom_editor/latex_node_editor';
 import { FootnoteList } from './footnote/footnote_list';
 import StatementOptions from './statement_options';
+import { useFixedStyleWithIOsKeyboard } from 'react-ios-keyboard-viewport';
 export interface StatementDetailsProps {
   statement: DraftWithAnnotations;
   editMode: boolean;
@@ -154,6 +155,8 @@ export default function StatementDetails({
   }, [editMode]);
 
   if (!statement) return null;
+
+  const { fixedTop, fixedCenter, fixedBottom } = useFixedStyleWithIOsKeyboard();
 
   return (
     <div className="flex flex-col md:mt-12 md:mx-auto w-full md:max-w-3xl  ">
@@ -305,13 +308,8 @@ export default function StatementDetails({
         )}
         {editMode && editor && (
           <div
-            className="fixed flex z-50 md:bottom-10 left-0 right-0 mx-auto md:left-auto md:right-auto md:mx-auto md:ml-20 px-2 justify-center "
-            style={{
-              height: 'fit-content',
-              ...(visualViewport && {
-                bottom: `${Math.max(2, window.innerHeight - visualViewport + 10)}px`
-              })
-            }}
+            className="md:fixed flex z-50 md:bottom-10 left-0 right-0 mx-auto md:left-auto md:right-auto md:mx-auto md:ml-20 px-2 justify-center "
+            style={fixedBottom}
           >
             <EditorMenu statementId={statementId} editor={editor} />
           </div>

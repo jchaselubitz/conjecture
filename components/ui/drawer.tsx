@@ -68,6 +68,37 @@ function DrawerContent({
   );
 }
 
+function CommentDrawerContent({
+  className,
+  children,
+  handle = true,
+  ...props
+}: React.ComponentProps<typeof DrawerPrimitive.Content> & {
+  handle?: boolean;
+}) {
+  return (
+    <DrawerPortal data-slot="drawer-portal">
+      <DrawerOverlay />
+      <DrawerPrimitive.Content
+        data-slot="comment-drawer-content"
+        className={cn(
+          'group/drawer-content bg-background fixed z-50 flex h-auto flex-col',
+
+          'data-[vaul-drawer-direction=bottom]:inset-x-0 data-[vaul-drawer-direction=bottom]:bottom-0 data-[vaul-drawer-direction=bottom]:mt-24 data-[vaul-drawer-direction=bottom]:max-h-[80vh] data-[vaul-drawer-direction=bottom]:rounded-t-lg data-[vaul-drawer-direction=bottom]:border-t',
+
+          className
+        )}
+        {...props}
+      >
+        {handle && (
+          <div className="bg-muted mx-auto mt-4 hidden h-2 w-[100px] shrink-0 rounded-full group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
+        )}
+        {children}
+      </DrawerPrimitive.Content>
+    </DrawerPortal>
+  );
+}
+
 function DrawerHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
@@ -118,6 +149,7 @@ export {
   DrawerTrigger,
   DrawerClose,
   DrawerContent,
+  CommentDrawerContent,
   DrawerHeader,
   DrawerFooter,
   DrawerTitle,

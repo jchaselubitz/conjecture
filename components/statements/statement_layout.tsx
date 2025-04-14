@@ -99,6 +99,10 @@ export default function StatementLayout({
   };
 
   const handleCloseAnnotationDrawer = () => {
+    if (!!editMode || !!annotationMode) {
+      editor?.setEditable(true);
+    }
+
     setShowAnnotationDrawer(false);
     handleCloseAnnotationPanel();
   };

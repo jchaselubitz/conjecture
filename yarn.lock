@@ -9582,6 +9582,7 @@ __metadata:
     react-dnd-html5-backend: "npm:^16.0.1"
     react-dom: "npm:^19.0.0"
     react-hook-form: "npm:^7.54.2"
+    react-ios-keyboard-viewport: "npm:^0.0.1"
     react-markdown: "npm:^10.1.0"
     react-resizable-panels: "npm:^2.1.7"
     react-textarea-autosize: "npm:^8.5.8"
@@ -17536,6 +17537,16 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17 || ^18 || ^19
   checksum: 10c0/6eebead2900e3d369a989e7a20429f390dc75b3897142aa3107f1f6dabb9ae64fed201ea98cdcd8676e40466c97748aeb0c0d83264f5bd3a84dbc0b8e4863415
+  languageName: node
+  linkType: hard
+
+"react-ios-keyboard-viewport@npm:^0.0.1":
+  version: 0.0.1
+  resolution: "react-ios-keyboard-viewport@npm:0.0.1"
+  peerDependencies:
+    react: ">=17.0.0"
+    react-dom: ">=17.0.0"
+  checksum: 10c0/4a0ce2d0542b8655c4f1884be834c3d14985c2bdaf3472e45bc9bae8e1f5057190df4a6e95cdcd60af96ec8492f1d172d442a244f9b5509ed04e62cab1f5cf7e
   languageName: node
   linkType: hard
 
