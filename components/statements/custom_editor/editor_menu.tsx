@@ -41,11 +41,10 @@ export function EditorMenu({ editor, statementId }: EditorMenuProps) {
   };
 
   const buttonClassName = 'md:text-zinc-50 hover:text-zinc-600';
-
   const activeButtonClassName = 'bg-muted md:bg-zinc-500';
 
   return (
-    <div className="md:bg-zinc-600/85 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-lg   md:border-zinc-500 shadow-xl flex items-center mx-auto w-full px-1">
+    <div className="md:bg-zinc-600/85 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-lg   md:border-zinc-500 border md:border-0 shadow-xl flex items-center w-full mx-auto px-1 mb-2">
       <div className="flex items-center justify-center border-r md:border-zinc-500 h-full">
         <ViewModeButton
           className={cn('flex items-center justify-center ', buttonClassName)}

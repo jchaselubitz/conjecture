@@ -156,10 +156,17 @@ export default function StatementDetails({
 
   if (!statement) return null;
 
-  const { fixedTop, fixedCenter, fixedBottom } = useFixedStyleWithIOsKeyboard();
+  const { fixedBottom } = useFixedStyleWithIOsKeyboard();
+
+  const displayStyle = {
+    ...fixedBottom,
+    height: 'fit-content',
+    marginBottom: '10px',
+    maxWidth: '95%'
+  };
 
   return (
-    <div className="flex flex-col md:mt-12 md:mx-auto w-full md:max-w-3xl  ">
+    <div className="flex flex-col md:mt-12 md:mx-auto w-full max-w-screen md:max-w-3xl  ">
       {headerImg ? (
         <div className="relative group md:px-4">
           <AspectRatio ratio={16 / 9} className="bg-muted rounded-md">
@@ -308,8 +315,8 @@ export default function StatementDetails({
         )}
         {editMode && editor && (
           <div
-            className="md:fixed flex z-50 md:bottom-10 left-0 right-0 mx-auto md:left-auto md:right-auto md:mx-auto md:ml-20 px-2 justify-center "
-            style={fixedBottom}
+            className="md:fixed flex z-50 md:bottom-10 left-0 right-0 mx-auto md:left-auto md:right-auto md:mx-auto md:ml-20 px-2 justify-center max-w-full "
+            style={displayStyle}
           >
             <EditorMenu statementId={statementId} editor={editor} />
           </div>

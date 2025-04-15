@@ -1,12 +1,11 @@
 'use client';
 
-import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useWindowSize } from 'react-use';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 
 import AnnotationModeButton from '../annotation_mode_button';
-import { Button } from '../ui/button';
+import { cn } from '@/lib/utils';
 
 export default function ReadNav({
   annotationMode,
@@ -27,11 +26,9 @@ export default function ReadNav({
     if (annotationMode) {
       setAnnotationMode(false);
       editor?.setEditable(false);
-      router.push(`/statements/${statement?.statementId}`);
     } else {
       setAnnotationMode(true);
       editor?.setEditable(true);
-      router.push(`/statements/${statement?.statementId}?annotation-mode=true`);
     }
   };
 
@@ -41,9 +38,8 @@ export default function ReadNav({
         <AnnotationModeButton
           annotationMode={annotationMode}
           handleAnnotationModeToggle={handleAnnotationModeToggle}
-          iconOnly={isMobile}
-          variant="default"
-          className="rounded-full h-10 w-10"
+          variant={annotationMode ? 'default' : 'outline'}
+          className={cn('rounded-full shadow-md', annotationMode && 'h-10 w-10')}
         />
       )}
     </div>
