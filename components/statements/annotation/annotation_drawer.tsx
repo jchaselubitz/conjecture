@@ -68,6 +68,12 @@ export default function AnnotationDrawer({
     };
   }, [emblaApi, onSelect]);
 
+  useEffect(() => {
+    if (selectedAnnotation) {
+      emblaApi?.scrollTo(filteredAnnotations.indexOf(selectedAnnotation));
+    }
+  }, [selectedAnnotation, emblaApi]);
+
   const onCancelReply = () => {
     cancelReply();
     setShowCommentInput(false);
