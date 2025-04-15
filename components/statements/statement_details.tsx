@@ -167,7 +167,6 @@ export default function StatementDetails({
 
   return (
     <div className="flex flex-col md:mt-12 md:mx-auto w-full max-w-screen md:max-w-3xl  ">
-      <div>{editor?.isEditable ? 'true' : 'false'}</div>
       {headerImg ? (
         <div className="relative group md:px-4">
           <AspectRatio ratio={16 / 9} className="bg-muted rounded-md">
