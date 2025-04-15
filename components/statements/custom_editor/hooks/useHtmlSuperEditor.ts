@@ -179,7 +179,7 @@ export const useHtmlSuperEditor = ({
     ],
     immediatelyRender: false,
     content: htmlContent,
-    editable: !!userId,
+    editable: false,
     onCreate: ({ editor }) => {
       // Use type assertion carefully, ensure the helpers actually return compatible types
       // If getMarks returns { node: any }[], we cannot safely cast to MarkInfo[].
