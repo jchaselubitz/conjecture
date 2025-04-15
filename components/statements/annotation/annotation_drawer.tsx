@@ -69,8 +69,8 @@ export default function AnnotationDrawer({
   }, [emblaApi, onSelect]);
 
   useEffect(() => {
-    if (selectedAnnotation) {
-      emblaApi?.scrollTo(filteredAnnotations.indexOf(selectedAnnotation));
+    if (selectedAnnotation && emblaApi) {
+      emblaApi?.scrollTo(filteredAnnotations.indexOf(selectedAnnotation), true);
     }
   }, [selectedAnnotation, emblaApi]);
 
