@@ -41,7 +41,7 @@ export default function AnnotationPanel({
       >
         <div className="flex md:flex-col gap-2 mx-auto max-w-11/12 ">
           {filteredAnnotations.map((annotation) => (
-            <AccordionItem key={annotation.id} value={annotation.id}>
+            <AccordionItem key={annotation.id} value={annotation.id} className="border-none">
               <AnnotationDetailDesktop
                 key={annotation.id}
                 annotation={annotation as AnnotationWithComments}

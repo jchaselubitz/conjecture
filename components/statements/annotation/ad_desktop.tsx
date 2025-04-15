@@ -92,7 +92,7 @@ export default function AnnotationDetailDesktop({
 
       <AccordionContent className="flex flex-col px-4 pb-4 gap-3">
         {nestedComments.length > 0 && (
-          <div className="border-b pb-1 border-muted">
+          <div className=" border-none pb-1 ">
             {nestedComments.map((comment) => (
               <Comment
                 key={comment.id}
@@ -114,7 +114,6 @@ export default function AnnotationDetailDesktop({
           onCancelReply={cancelReply}
           setComments={setComments}
           setReplyToComment={setReplyToComment}
-          cancelReply={cancelReply}
         />
       </AccordionContent>
     </Card>

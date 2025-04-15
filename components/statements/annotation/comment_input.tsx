@@ -27,7 +27,7 @@ interface CommentInputProps {
   onCancelReply: () => void;
   setComments: React.Dispatch<React.SetStateAction<BaseCommentWithUser[]>>;
   setReplyToComment: React.Dispatch<React.SetStateAction<BaseCommentWithUser | null>>;
-  cancelReply: () => void;
+  showCommentInput?: boolean;
 }
 
 export default function CommentInput({
@@ -36,7 +36,8 @@ export default function CommentInput({
   onCancelReply,
   setComments,
   setReplyToComment,
-  cancelReply
+
+  showCommentInput
 }: CommentInputProps) {
   const { name, imageUrl, userId } = useUserContext();
   const { statement, editor } = useStatementContext();
@@ -104,7 +105,7 @@ export default function CommentInput({
     // Cancel reply on Escape
     if (e.key === 'Escape' && replyToComment) {
       e.preventDefault();
-      cancelReply();
+      onCancelReply();
     }
   };
 
@@ -164,6 +165,7 @@ export default function CommentInput({
 
           <Textarea
             ref={commentInputRef}
+            autoFocus={showCommentInput}
             placeholder={replyToComment ? 'Write your reply...' : 'Share your thoughts...'}
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
