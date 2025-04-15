@@ -55,6 +55,7 @@ export default function AnnotationDrawer({
     const selectedIndex = emblaApi.selectedScrollSnap();
     const selectedAnnotation = filteredAnnotations[selectedIndex];
     if (selectedAnnotation) {
+      setShowCommentInput(false);
       handleAnnotationSelection(selectedAnnotation.id);
     }
   }, [emblaApi, filteredAnnotations, handleAnnotationSelection]);
