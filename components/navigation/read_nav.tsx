@@ -36,28 +36,16 @@ export default function ReadNav({
   };
 
   return (
-    <header className=" ">
-      <div className="fixed z-50 top-0 left-0 right-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex h-14 items-center justify-between px-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push(`/statements/${statement?.statementId}`)}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="flex items-center gap-3">
-            {editor && (
-              <AnnotationModeButton
-                annotationMode={annotationMode}
-                handleAnnotationModeToggle={handleAnnotationModeToggle}
-                iconOnly={isMobile}
-                variant={annotationMode ? 'outline' : 'default'}
-              />
-            )}
-          </div>
-        </div>
-      </div>
-    </header>
+    <div className="fixed z-50 bottom-2 right-4">
+      {editor && (
+        <AnnotationModeButton
+          annotationMode={annotationMode}
+          handleAnnotationModeToggle={handleAnnotationModeToggle}
+          iconOnly={isMobile}
+          variant="default"
+          className="rounded-full h-10 w-10"
+        />
+      )}
+    </div>
   );
 }
