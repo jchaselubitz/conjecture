@@ -33,8 +33,8 @@ const StatementAnnotationContext = createContext<StatementAnnotationContextType 
 );
 
 export function StatementAnnotationProvider({ children }: { children: ReactNode }) {
-  const { statement } = useStatementContext();
-  const [annotations, setAnnotations] = useState<NewAnnotation[]>(statement.annotations);
+  const { updatedStatement } = useStatementContext();
+  const [annotations, setAnnotations] = useState<NewAnnotation[]>(updatedStatement.annotations);
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | undefined>(undefined);
   const [selectedAnnotation, setSelectedAnnotation] = useState<AnnotationWithComments | null>(null);
   const [comments, setComments] = useState<BaseCommentWithUser[]>(

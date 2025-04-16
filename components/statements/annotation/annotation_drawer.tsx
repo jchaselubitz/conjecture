@@ -1,11 +1,12 @@
 import useEmblaCarousel from 'embla-carousel-react';
 import { AnnotationWithComments, BaseCommentWithUser } from 'kysely-codegen';
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { nestComments } from '@/lib/helpers/helpersGeneral';
+
 import AnnotationDetailMobile from './ad_mobile';
 import CommentInput from './comment_input';
-import { Button } from '@/components/ui/button';
 
 interface AnnotationDrawerProps {
   showAnnotationDrawer: boolean;
@@ -72,7 +73,7 @@ export default function AnnotationDrawer({
     if (selectedAnnotation && emblaApi) {
       emblaApi?.scrollTo(filteredAnnotations.indexOf(selectedAnnotation), true);
     }
-  }, [selectedAnnotation, emblaApi]);
+  }, [selectedAnnotation, emblaApi, filteredAnnotations]);
 
   const onCancelReply = () => {
     cancelReply();

@@ -38,7 +38,7 @@ interface StatementToolsContextType {
 const StatementToolsContext = createContext<StatementToolsContextType | undefined>(undefined);
 
 export function StatementToolsProvider({ children }: { children: ReactNode }) {
-  const { statement } = useStatementContext();
+  const { updatedStatement } = useStatementContext();
   const [isBlock, setIsBlock] = useState(true);
   const [selectedLatexId, setSelectedLatexId] = useState<string | null>(null);
   const [selectedNodePosition, setSelectedNodePosition] = useState<PositionParams | null>(null);
@@ -46,11 +46,11 @@ export function StatementToolsProvider({ children }: { children: ReactNode }) {
   const [initialImageData, setInitialImageData] = useState<UpsertImageDataType>({
     src: '',
     alt: '',
-    statementId: statement.statementId,
+    statementId: updatedStatement.statementId,
     id: ''
   });
   const [citationData, setCitationData] = useState<NewStatementCitation>({
-    statementId: statement.statementId,
+    statementId: updatedStatement.statementId,
     title: '',
     url: '',
     year: null,

@@ -25,7 +25,6 @@ interface StatementDetailsProps {
 }
 
 export default function StatementLayout({
-  statement,
   authorCommentsEnabled,
   readerCommentsEnabled,
   editModeEnabled,
@@ -47,7 +46,7 @@ export default function StatementLayout({
   const router = useRouter();
   const isMobile = useWindowSize().width < 768;
 
-  const { editor } = useStatementContext();
+  const { editor, updatedStatement } = useStatementContext();
   const [annotationMode, setAnnotationMode] = useState<boolean>(!isMobile);
   const [editMode, setEditMode] = useState(editModeEnabled);
 
@@ -64,9 +63,9 @@ export default function StatementLayout({
   }, [editMode, annotationMode, editor, isMobile]);
 
   const [showAnnotationDrawer, setShowAnnotationDrawer] = useState(false);
-  const isCreator = statement.creatorId === userId;
+  const isCreator = updatedStatement.creatorId === userId;
 
-  const { annotations } = statement;
+  const { annotations } = updatedStatement;
 
   const panelGroupRef = useRef<React.ElementRef<typeof ResizablePanelGroup>>(null);
 
@@ -133,9 +132,9 @@ export default function StatementLayout({
     if (showAuthorComments && showReaderComments) {
       return true;
     } else if (showAuthorComments) {
-      return annotation.userId === statement.creatorId;
+      return annotation.userId === updatedStatement.creatorId;
     } else if (showReaderComments) {
-      return annotation.userId !== statement.creatorId;
+      return annotation.userId !== updatedStatement.creatorId;
     }
   }) as AnnotationWithComments[];
 
@@ -155,7 +154,6 @@ export default function StatementLayout({
   const mobileLayout = (
     <div className="">
       <StatementDetails
-        statement={statement}
         parentStatement={parentStatement}
         editMode={editMode && isCreator}
         showAuthorComments={showAuthorComments}
@@ -170,7 +168,7 @@ export default function StatementLayout({
         filteredAnnotations={filteredAnnotations}
         handleAnnotationSelection={handleAnnotationSelection}
         annotations={annotations}
-        statement={statement}
+        statement={updatedStatement}
         selectedAnnotation={selectedAnnotation}
         replyToComment={replyToComment}
         cancelReply={cancelReply}
@@ -185,7 +183,6 @@ export default function StatementLayout({
       <ResizablePanel id="editor" defaultSize={100} minSize={60}>
         <div className=" flex flex-col overflow-y-auto h-full">
           <StatementDetails
-            statement={statement}
             parentStatement={parentStatement}
             editMode={editMode && isCreator}
             showAuthorComments={showAuthorComments}
@@ -201,8 +198,8 @@ export default function StatementLayout({
         <div className="overflow-y-auto h-full  ">
           {annotations && (
             <AnnotationPanel
-              statementId={statement.statementId}
-              statementCreatorId={statement.creatorId}
+              statementId={updatedStatement.statementId}
+              statementCreatorId={updatedStatement.creatorId}
               handleCloseAnnotationPanel={handleCloseAnnotationPanel}
               filteredAnnotations={filteredAnnotations}
               handleAnnotationSelection={handleAnnotationSelection}

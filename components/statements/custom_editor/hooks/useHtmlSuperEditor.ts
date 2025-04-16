@@ -71,9 +71,9 @@ export const useHtmlSuperEditor = ({
   setFootnoteIds,
 }: UseHtmlSuperEditorProps): Editor | null => {
   const {
-    setDebouncedContent,
-    debouncedContent,
     setEditor,
+    setUpdatedStatement,
+    updatedStatement,
   } = useStatementContext();
   const { annotations, setAnnotations } = useStatementAnnotationContext();
   const {
@@ -92,11 +92,11 @@ export const useHtmlSuperEditor = ({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isMobile = useWindowSize().width < 768;
-  const htmlContent = debouncedContent ?? statement.content;
-  const draftId = statement.id;
-  const statementId = statement.statementId;
-  const statementCreatorId = statement.creatorId;
-  const citations = statement.citations;
+  const htmlContent = updatedStatement.content;
+  const draftId = updatedStatement.id;
+  const statementId = updatedStatement.statementId;
+  const statementCreatorId = updatedStatement.creatorId;
+  const citations = updatedStatement.citations;
 
   useEffect(() => {
     setAnnotations(existingAnnotations);
@@ -237,8 +237,11 @@ export const useHtmlSuperEditor = ({
           nodeInfo.node.attrs.citationId
         );
         setFootnoteIds(citationIds);
-        const currentHTML = editor.getHTML();
-        setDebouncedContent(currentHTML);
+
+        setUpdatedStatement({
+          ...updatedStatement,
+          content: editor.getHTML(),
+        });
       }
     },
     onSelectionUpdate: ({ editor }) => {

@@ -62,7 +62,6 @@ export const AnnotationMenu = ({
         {!editMode && canAnnotate && (
           <div>
             <QuoteLinkButton editor={editor} statementId={statementId} />
-           
           </div>
         )}
 

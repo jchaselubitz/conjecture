@@ -22,7 +22,7 @@ import ViewModeButton from '../view_mode_button';
 export default function EditNav() {
   const {
     versionOptions,
-    statement,
+    updatedStatement,
     saveStatementDraft,
     updateStatementDraft,
     togglePublish,
@@ -49,7 +49,7 @@ export default function EditNav() {
   const handleUpdate = async () => {
     try {
       setUpdateButtonState('loading');
-      await updateStatementDraft(statement);
+      await updateStatementDraft(updatedStatement);
       setUpdateButtonState('success');
     } catch (error) {
       console.error(error);
@@ -80,20 +80,20 @@ export default function EditNav() {
   };
 
   const versionMenu = () => {
-    if (!statement) return null;
+    if (!updatedStatement) return null;
     // if (isMobile) {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm">
-            {`v${statement.versionNumber}`} <ChevronDown className="h-4 w-4" />
+            {`v${updatedStatement.versionNumber}`} <ChevronDown className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuGroup>
             <DropdownMenuItem>
               <Select
-                value={statement?.versionNumber.toString()}
+                value={updatedStatement?.versionNumber.toString()}
                 onValueChange={(value) => changeVersion(parseInt(value, 10))}
               >
                 <SelectTrigger className="w-full">
@@ -138,12 +138,12 @@ export default function EditNav() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push(`/statements/${statement?.statementId}`)}
+            onClick={() => router.push(`/statements/${updatedStatement?.statementId}`)}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-3">
-            {statement && (
+            {updatedStatement && (
               <>
                 {versionMenu()}
                 <LoadingButton
@@ -161,15 +161,21 @@ export default function EditNav() {
                 <LoadingButton
                   onClick={handlePublish}
                   buttonState={publishButtonState}
-                  text={statement.publishedAt ? `Hide` : `Publish v${statement.versionNumber}`}
-                  loadingText={statement.publishedAt ? 'Hiding...' : 'Publishing...'}
+                  text={
+                    updatedStatement.publishedAt
+                      ? `Hide`
+                      : `Publish v${updatedStatement.versionNumber}`
+                  }
+                  loadingText={updatedStatement.publishedAt ? 'Hiding...' : 'Publishing...'}
                   setButtonState={setPublishButtonState}
                   reset
-                  successText={statement.publishedAt ? 'Hidden' : 'Published'}
+                  successText={updatedStatement.publishedAt ? 'Hidden' : 'Published'}
                   errorText="Failed to publish"
                 />
                 <ViewModeButton
-                  handleEditModeToggle={() => router.push(`/statements/${statement?.statementId}`)}
+                  handleEditModeToggle={() =>
+                    router.push(`/statements/${updatedStatement?.statementId}`)
+                  }
                   iconOnly={isMobile}
                   variant="default"
                 />

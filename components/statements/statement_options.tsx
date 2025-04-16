@@ -115,12 +115,12 @@ export default function StatementOptions({
 }
 
 const ShareButton = () => {
-  const { statement } = useStatementContext();
+  const { updatedStatement } = useStatementContext();
   const [copied, setCopied] = useState(false);
 
   const shareUrl =
     typeof window !== 'undefined'
-      ? `${window.location.origin}/statements/${statement.statementId}`
+      ? `${window.location.origin}/statements/${updatedStatement.statementId}`
       : '';
 
   const handleCopyLink = async () => {
@@ -134,7 +134,7 @@ const ShareButton = () => {
   };
 
   const handleEmailShare = () => {
-    const subject = encodeURIComponent(statement.title || 'Check out this statement');
+    const subject = encodeURIComponent(updatedStatement.title || 'Check out this statement');
     const body = encodeURIComponent(
       `I thought you might be interested in this statement:\n\n${shareUrl}`
     );
@@ -142,7 +142,7 @@ const ShareButton = () => {
   };
 
   const handleSocialShare = (platform: 'facebook' | 'linkedin' | 'twitter') => {
-    const text = encodeURIComponent(statement.title || 'Check out this statement');
+    const text = encodeURIComponent(updatedStatement.title || 'Check out this statement');
     const url = encodeURIComponent(shareUrl);
 
     const shareUrls = {

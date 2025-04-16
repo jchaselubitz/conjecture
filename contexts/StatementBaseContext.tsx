@@ -6,9 +6,7 @@ import { DraftWithAnnotations, NewDraft } from 'kysely-codegen';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   createContext,
-  Dispatch,
   ReactNode,
-  SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -18,7 +16,6 @@ import {
 } from 'react';
 import { useDebounce } from 'use-debounce';
 import { createDraft, publishDraft, updateDraft } from '@/lib/actions/statementActions';
-import { generateStatementId } from '@/lib/helpers/helpersStatements';
 
 interface StatementContextType {
   versionOptions: {
@@ -26,10 +23,8 @@ interface StatementContextType {
     versionNumber: string;
     createdAt: Date;
   }[];
-  statement: DraftWithAnnotations;
-  setStatement: Dispatch<SetStateAction<DraftWithAnnotations>>;
-  debouncedContent: string | undefined;
-  setDebouncedContent: (content: string) => void;
+  updatedStatement: DraftWithAnnotations;
+  setUpdatedStatement: (statement: DraftWithAnnotations) => void;
   saveStatementDraft: () => Promise<void>;
   nextVersionNumber: number;
   changeVersion: (version: number) => void;
@@ -37,8 +32,6 @@ interface StatementContextType {
   togglePublish: () => Promise<void>;
   isUpdating: boolean;
   error: string | null;
-  visualViewport: number | null;
-  setVisualViewport: (viewport: number | null) => void;
   editor: Editor | null;
   setEditor: (editor: Editor | null) => void;
 }
@@ -59,32 +52,23 @@ export function StatementProvider({
   const versionString = params.get('version');
   const version = versionString ? parseInt(versionString, 10) : undefined;
 
-  const [statement, setStatement] = useState<DraftWithAnnotations>(
+  const statementRef = useRef<DraftWithAnnotations>(
     drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0]
   );
-  const [visualViewport, setVisualViewport] = useState<number | null>(null);
+
+  const statement = statementRef.current;
+
+  useEffect(() => {
+    statementRef.current = drafts?.find((draft) => draft.versionNumber === version) || drafts[0];
+  }, [version, drafts]);
+
+  const [updatedStatement, setUpdatedStatement] = useState<DraftWithAnnotations>({
+    ...statementRef.current
+  });
+
   const [editor, setEditor] = useState<Editor | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.visualViewport) return;
-    const handleResize = () => {
-      setTimeout(() => {
-        setVisualViewport(window.visualViewport?.height ?? null);
-      }, 1000);
-    };
-    window.visualViewport.addEventListener('resize', handleResize);
-
-    handleResize(); // Initial measurement
-
-    return () => window.visualViewport?.removeEventListener('resize', handleResize);
-  }, [setVisualViewport]);
-
-  useEffect(() => {
-    setStatement(drafts?.find((draft) => draft.versionNumber === version) || drafts[0]);
-  }, [version, drafts, setStatement]);
 
   const versionOptions = useMemo(() => {
     return drafts
@@ -105,7 +89,8 @@ export function StatementProvider({
   };
 
   const saveStatementDraft = async () => {
-    const { title, content, headerImg, statementId } = statement || {};
+    const { title, content, headerImg, statementId, annotations, subtitle } =
+      updatedStatement || {};
     if (!title || !content) {
       setError('Missing required fields');
       return;
@@ -117,8 +102,8 @@ export function StatementProvider({
         headerImg: headerImg || undefined,
         statementId: statementId || undefined,
         versionNumber: drafts?.length + 1,
-        annotations: statement.annotations,
-        subtitle: statement?.subtitle || undefined
+        annotations: annotations || undefined,
+        subtitle: subtitle || undefined
       });
     } catch (err) {
       setError('Error saving draft');
@@ -128,98 +113,94 @@ export function StatementProvider({
 
   // Toggle the publish status of the statement
   const togglePublish = async () => {
-    if (!statement) return;
-    const existingStatement = statement as DraftWithAnnotations;
-    const { statementId, id, publishedAt } = existingStatement;
+    if (!updatedStatement) return;
+    const { statementId, id, publishedAt, creatorId } = updatedStatement;
     await publishDraft({
       statementId,
       id,
       publish: publishedAt ? false : true,
-      creatorId: statement.creatorId
+      creatorId
     });
   };
 
-  const [debouncedContent, setDebouncedContent] = useDebounce(statement?.content ?? undefined, 500);
-  const [debouncedTitle, setDebouncedTitle] = useDebounce(statement?.title ?? undefined, 500);
-  const [debouncedSubtitle, setDebouncedSubtitle] = useDebounce(
-    statement?.subtitle ?? undefined,
+  const [debouncedStatement, setDebouncedStatement] = useDebounce<DraftWithAnnotations | undefined>(
+    statement,
     500
   );
 
-  const updateStatementDraft = useCallback(
-    async (statementUpdate: Partial<NewDraft>) => {
-      const { title, subtitle, content, headerImg } = statementUpdate;
-      setIsUpdating(true);
-      setStatement(statement as DraftWithAnnotations);
-      setDebouncedContent(content ?? statement.content ?? undefined);
-      setDebouncedTitle(title ?? statement.title ?? undefined);
-      setDebouncedSubtitle(subtitle ?? statement.subtitle ?? undefined);
-      await updateDraft({
-        title: title ?? statement.title ?? undefined,
-        subtitle: subtitle ?? statement.subtitle ?? undefined,
-        content: content ?? statement.content ?? undefined,
-        headerImg: headerImg ?? statement.headerImg ?? undefined,
-        publishedAt: statement.publishedAt ?? undefined,
-        statementId: statement.statementId,
-        versionNumber: statement.versionNumber,
-        creatorId: statement.creatorId
-      });
-      setIsUpdating(false);
-    },
-    [statement, setDebouncedContent, setDebouncedTitle, setDebouncedSubtitle]
-  );
-
-  let prevStatementUpdateRef = useRef(statement);
-  const statementId = statement.statementId;
-  const prepStatementId = statementId ? statementId : generateStatementId();
-
   useEffect(() => {
-    const newStatementUpdate = {
-      ...statement,
-      title: debouncedTitle ?? statement.title ?? undefined,
-      subtitle: debouncedSubtitle ?? statement.subtitle ?? undefined,
-      content: debouncedContent,
-      statementId: prepStatementId
-    } as NewDraft;
-    if (
-      statement &&
-      (debouncedContent !== prevStatementUpdateRef.current?.content ||
-        debouncedTitle !== prevStatementUpdateRef.current?.title ||
-        debouncedSubtitle !== prevStatementUpdateRef.current?.subtitle)
-    ) {
-      if (!userId) {
-        return;
-      }
-      updateStatementDraft(newStatementUpdate);
-      prevStatementUpdateRef.current = newStatementUpdate as DraftWithAnnotations;
+    const isFresh =
+      debouncedStatement?.content !== updatedStatement?.content ||
+      debouncedStatement?.title !== updatedStatement?.title ||
+      debouncedStatement?.subtitle !== updatedStatement?.subtitle;
+    if (isFresh) {
+      setDebouncedStatement(updatedStatement as DraftWithAnnotations);
     }
   }, [
-    debouncedContent,
-    debouncedTitle,
-    debouncedSubtitle,
-    statement,
-    prepStatementId,
-    updateStatementDraft,
-    userId
+    updatedStatement,
+    debouncedStatement?.content,
+    debouncedStatement?.title,
+    debouncedStatement?.subtitle,
+    setDebouncedStatement
   ]);
+
+  const updateStatementDraft = useCallback(async () => {
+    const {
+      title,
+      subtitle,
+      content,
+      headerImg,
+      publishedAt,
+      statementId,
+      versionNumber,
+      creatorId
+    } = updatedStatement;
+    setIsUpdating(true);
+    await updateDraft({
+      title: title ?? undefined,
+      subtitle: subtitle ?? undefined,
+      content: content ?? undefined,
+      headerImg: headerImg ?? undefined,
+      publishedAt: publishedAt ?? undefined,
+      statementId: statementId ?? undefined,
+      versionNumber: versionNumber ?? undefined,
+      creatorId: creatorId ?? undefined
+    });
+    setIsUpdating(false);
+  }, [updatedStatement]);
+
+  useEffect(() => {
+    const isFresh =
+      debouncedStatement?.content !== statementRef.current?.content ||
+      debouncedStatement?.title !== statementRef.current?.title ||
+      debouncedStatement?.subtitle !== statementRef.current?.subtitle;
+
+    const update = async () => {
+      if (isFresh) {
+        if (!userId) {
+          return;
+        }
+
+        await updateStatementDraft();
+        statementRef.current = updatedStatement as DraftWithAnnotations;
+      }
+    };
+    update();
+  }, [statement, debouncedStatement, updatedStatement, updateStatementDraft, userId]);
 
   return (
     <StatementContext.Provider
       value={{
         versionOptions,
-        statement,
-        setStatement,
+        updatedStatement,
+        setUpdatedStatement,
         saveStatementDraft,
         nextVersionNumber,
         changeVersion,
         updateStatementDraft,
-        debouncedContent,
-        setDebouncedContent,
         error,
         togglePublish,
         isUpdating,
-        visualViewport,
-        setVisualViewport,
         editor,
         setEditor
       }}

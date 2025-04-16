@@ -340,7 +340,7 @@ export async function createDraft({
         .returning(["statementId", "id"])
         .executeTakeFirstOrThrow();
 
-      if (annotations) {
+      if (annotations && annotations.length > 0) {
         const annotationsWithDraftId = annotations.map((annotation) => ({
           ...annotation,
           draftId,

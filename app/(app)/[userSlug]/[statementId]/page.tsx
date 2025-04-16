@@ -13,11 +13,12 @@ export default async function CreatePage({
     data: { user }
   } = await supabase.auth.getUser();
 
-  const userId = user?.id;
+  const userId = user?.id?.toString();
   const { statementId } = await params;
   const { edit } = await searchParams;
   const drafts = await getDraftsByStatementId(statementId);
-  const isCreator = drafts[0].creatorId === userId;
+  const creator = drafts[0]?.creatorId.toString();
+  const isCreator = creator === userId;
   const editMode = edit === 'true' && isCreator;
 
   return <StatementContainer edit={editMode} drafts={drafts} />;

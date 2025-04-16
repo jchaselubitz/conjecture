@@ -1,11 +1,10 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useWindowSize } from 'react-use';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
+import { cn } from '@/lib/utils';
 
 import AnnotationModeButton from '../annotation_mode_button';
-import { cn } from '@/lib/utils';
 
 export default function ReadNav({
   annotationMode,
@@ -14,8 +13,7 @@ export default function ReadNav({
   annotationMode: boolean;
   setAnnotationMode: (annotationMode: boolean) => void;
 }) {
-  const { editor, statement } = useStatementContext();
-  const router = useRouter();
+  const { editor } = useStatementContext();
   const isMobile = useWindowSize().width < 768;
 
   if (!isMobile) {

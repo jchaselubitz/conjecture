@@ -40,12 +40,12 @@ export default function CommentInput({
   showCommentInput
 }: CommentInputProps) {
   const { name, imageUrl, userId } = useUserContext();
-  const { statement, editor } = useStatementContext();
+  const { updatedStatement, editor } = useStatementContext();
   const { setAnnotations, setSelectedAnnotationId } = useStatementAnnotationContext();
 
   const isMobile = useWindowSize().width < 768;
-  const statementId = statement?.id;
-  const isCreator = userId === statement.creatorId;
+  const statementId = updatedStatement?.id;
+  const isCreator = userId === updatedStatement?.creatorId;
 
   const [commentText, setCommentText] = useState('');
   const [submittingButtonState, setSubmittingButtonState] = useState<ButtonLoadingState>('default');
@@ -121,7 +121,7 @@ export default function CommentInput({
     try {
       await deleteAnnotation({
         annotationId: annotation.id,
-        statementCreatorId: statement.creatorId,
+        statementCreatorId: updatedStatement?.creatorId,
         annotationCreatorId: annotation.userId,
         statementId: annotation.draftId
       });

@@ -68,7 +68,7 @@ export function CitationForm({
   editor
 }: CitationFormProps) {
   const { userId } = useUserContext();
-  const { updateStatementDraft } = useStatementContext();
+  const { updateStatementDraft, updatedStatement } = useStatementContext();
   const { citationData, setCitationData } = useStatementToolsContext();
   const pathname = usePathname();
   const [saveButtonState, setSaveButtonState] = useState<ButtonLoadingState>('default');
@@ -136,7 +136,7 @@ export function CitationForm({
       };
       setSaveButtonState('loading');
       const updateDraft = async () => {
-        await updateStatementDraft({ content: editor.getHTML() });
+        await updateStatementDraft({ ...updatedStatement, content: editor.getHTML() });
       };
       await upsertCitation({
         citationData: newCitationData,
