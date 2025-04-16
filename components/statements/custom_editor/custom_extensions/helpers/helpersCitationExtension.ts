@@ -57,11 +57,11 @@ export const upsertCitation = async ({
 
  if (day && !month) {
   setError("Month is required if day is provided");
-  return;
+  throw new Error("Month is required if day is provided");
  }
  if (month && !year) {
   setError("Year is required if month is provided");
-  return;
+  throw new Error("Year is required if month is provided");
  }
 
  try {

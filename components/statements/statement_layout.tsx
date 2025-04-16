@@ -44,7 +44,7 @@ export default function StatementLayout({
   } = useStatementAnnotationContext();
 
   const router = useRouter();
-  const isMobile = useWindowSize().width < 768;
+  const isMobile = useWindowSize().width < 600;
 
   const { editor, updatedStatement } = useStatementContext();
   const [annotationMode, setAnnotationMode] = useState<boolean>(!isMobile);

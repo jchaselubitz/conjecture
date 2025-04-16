@@ -135,29 +135,33 @@ export function CitationForm({
         volume: volume || null
       };
       setSaveButtonState('loading');
-      const updateDraft = async () => {
-        await updateStatementDraft({ ...updatedStatement, content: editor.getHTML() });
-      };
-      await upsertCitation({
-        citationData: newCitationData,
-        setError,
-        creatorId,
-        statementId,
-        pathname,
-        position: editor.state.selection.$from.pos + 1,
-        view: editor.view
-      });
-      // setTimeout(() => {
-      await updateDraft();
-      // }, 0);
-      onOpenChange(false);
-      setCitationData({
-        statementId,
-        title: '',
-        authorNames: '',
-        id: ''
-      });
-      setSaveButtonState('default');
+      try {
+        const updateDraft = async () => {
+          await updateStatementDraft({ ...updatedStatement, content: editor.getHTML() });
+        };
+        await upsertCitation({
+          citationData: newCitationData,
+          setError,
+          creatorId,
+          statementId,
+          pathname,
+          position: editor.state.selection.$from.pos + 1,
+          view: editor.view
+        });
+
+        await updateDraft();
+
+        onOpenChange(false);
+        setCitationData({
+          statementId,
+          title: '',
+          authorNames: '',
+          id: ''
+        });
+        setSaveButtonState('default');
+      } catch (error) {
+        console.error('Failed to update draft:', error);
+      }
     }
   };
 

@@ -91,7 +91,7 @@ export const useHtmlSuperEditor = ({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const isMobile = useWindowSize().width < 768;
+  const isMobile = useWindowSize().width < 600;
   const htmlContent = updatedStatement.content;
   const draftId = updatedStatement.id;
   const statementId = updatedStatement.statementId;
@@ -654,8 +654,12 @@ export const useHtmlSuperEditor = ({
 
           // Use Tiptap's scrollIntoView command
           editor.commands.setTextSelection({ from: validStart, to: validEnd });
-          editor.commands.scrollIntoView();
-
+          const domNode = editor.view.domAtPos(validStart).node;
+          if (domNode instanceof Element) {
+            domNode.scrollIntoView({ behavior: "smooth", block: "center" });
+          } else {
+            console.log("Could not find DOM node at position:", validStart);
+          }
           // Highlight logic (optional, using decorations)
           // ... could add temporary decoration here ...
 

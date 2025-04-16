@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, Settings } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -36,7 +36,7 @@ export default function EditNav() {
   const [publishButtonState, setPublishButtonState] = useState<ButtonLoadingState>('default');
 
   const router = useRouter();
-  const isMobile = useWindowSize().width < 768;
+  const isMobile = useWindowSize().width < 600;
 
   useEffect(() => {
     if (!isUpdating) {
@@ -81,7 +81,6 @@ export default function EditNav() {
 
   const versionMenu = () => {
     if (!updatedStatement) return null;
-    // if (isMobile) {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

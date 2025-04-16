@@ -16,6 +16,7 @@ import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
 import { deleteAnnotation } from '@/lib/actions/annotationActions';
 import { createComment } from '@/lib/actions/commentActions';
+import { usePathname } from 'next/navigation';
 interface Comment {
   content: string;
   id: string;
@@ -43,18 +44,19 @@ export default function CommentInput({
   const { updatedStatement, editor } = useStatementContext();
   const { setAnnotations, setSelectedAnnotationId } = useStatementAnnotationContext();
 
-  const isMobile = useWindowSize().width < 768;
-  const statementId = updatedStatement?.id;
+  const isMobile = useWindowSize().width < 600;
   const isCreator = userId === updatedStatement?.creatorId;
 
   const [commentText, setCommentText] = useState('');
   const [submittingButtonState, setSubmittingButtonState] = useState<ButtonLoadingState>('default');
   const [deletingButtonState, setDeletingButtonState] = useState<ButtonLoadingState>('default');
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
+  const pathname = usePathname();
+  const pathnameWithoutParams = pathname.split('/').slice(0, 3).join('/');
+  const revalidationPath = { path: pathnameWithoutParams };
 
   const handleSubmitComment = async () => {
     if (!commentText.trim() || !userId) return;
-
     setSubmittingButtonState('loading');
     try {
       const newComment = {
@@ -64,7 +66,6 @@ export default function CommentInput({
         id: crypto.randomUUID(),
         parentId: replyToComment?.id || null
       };
-
       setComments((prevComments) => [
         ...prevComments,
         {
@@ -78,8 +79,8 @@ export default function CommentInput({
 
       await createComment({
         comment: newComment,
-        statementId,
-        parentId: replyToComment?.id
+        parentId: replyToComment?.id,
+        revalidationPath: revalidationPath
       });
 
       setCommentText('');
@@ -89,7 +90,6 @@ export default function CommentInput({
       console.error('Error creating comment:', error);
       setSubmittingButtonState('error');
       // Revert optimistic update on error
-      setComments(annotation.comments);
     } finally {
       setSubmittingButtonState('default');
     }

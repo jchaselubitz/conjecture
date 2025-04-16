@@ -28,7 +28,7 @@ export function CitationPopover({
   const { citationPopoverOpen, setCitationData, setCitationPopoverOpen } =
     useStatementToolsContext();
 
-  const isMobile = useWindowSize().width < 768;
+  const isMobile = useWindowSize().width < 600;
 
   const onClose = () => {
     setCitationPopoverOpen(false);

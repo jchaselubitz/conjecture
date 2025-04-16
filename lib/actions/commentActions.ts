@@ -3,30 +3,35 @@
 import { createClient } from "@/supabase/server";
 import db from "../database";
 import { revalidatePath } from "next/cache";
-import { NewCommentVote } from "kysely-codegen";
+import { NewCommentVote, RevalidationPath } from "kysely-codegen";
 
-export async function createComment({ comment, statementId, parentId }: {
+export async function createComment({ comment, parentId, revalidationPath }: {
  comment: {
   userId: string;
   annotationId: string;
   content: string;
   id: string;
  };
- statementId: string;
  parentId?: string;
+ revalidationPath: RevalidationPath;
 }) {
- await db.insertInto("comment")
-  .values({
-   userId: comment.userId,
-   annotationId: comment.annotationId,
-   content: comment.content,
-   id: comment.id,
-   parentId: parentId,
-  })
-  .returning("id")
-  .executeTakeFirst();
+ try {
+  await db.insertInto("comment")
+   .values({
+    userId: comment.userId,
+    annotationId: comment.annotationId,
+    content: comment.content,
+    id: comment.id,
+    parentId: parentId,
+   })
+   .returning("id")
+   .executeTakeFirst();
 
- revalidatePath(`/statements/${statementId}`, "page");
+  revalidatePath(revalidationPath.path, "page");
+ } catch (error) {
+  console.error("Error creating comment:", error);
+  throw new Error("Failed to create comment");
+ }
 }
 
 export async function editComment({

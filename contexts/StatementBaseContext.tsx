@@ -52,19 +52,21 @@ export function StatementProvider({
   const versionString = params.get('version');
   const version = versionString ? parseInt(versionString, 10) : undefined;
 
-  const statementRef = useRef<DraftWithAnnotations>(
+  const [statement, setStatement] = useState<DraftWithAnnotations>(
     drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0]
   );
 
-  const statement = statementRef.current;
-
   useEffect(() => {
-    statementRef.current = drafts?.find((draft) => draft.versionNumber === version) || drafts[0];
+    setStatement(drafts?.find((draft) => draft.versionNumber === version) || drafts[0]);
   }, [version, drafts]);
 
   const [updatedStatement, setUpdatedStatement] = useState<DraftWithAnnotations>({
-    ...statementRef.current
+    ...statement
   });
+
+  useEffect(() => {
+    setUpdatedStatement(statement);
+  }, [statement]);
 
   const [editor, setEditor] = useState<Editor | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -171,9 +173,9 @@ export function StatementProvider({
 
   useEffect(() => {
     const isFresh =
-      debouncedStatement?.content !== statementRef.current?.content ||
-      debouncedStatement?.title !== statementRef.current?.title ||
-      debouncedStatement?.subtitle !== statementRef.current?.subtitle;
+      debouncedStatement?.content !== statement?.content ||
+      debouncedStatement?.title !== statement?.title ||
+      debouncedStatement?.subtitle !== statement?.subtitle;
 
     const update = async () => {
       if (isFresh) {
@@ -182,7 +184,7 @@ export function StatementProvider({
         }
 
         await updateStatementDraft();
-        statementRef.current = updatedStatement as DraftWithAnnotations;
+        setStatement(updatedStatement as DraftWithAnnotations);
       }
     };
     update();

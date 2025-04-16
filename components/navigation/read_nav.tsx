@@ -14,7 +14,7 @@ export default function ReadNav({
   setAnnotationMode: (annotationMode: boolean) => void;
 }) {
   const { editor } = useStatementContext();
-  const isMobile = useWindowSize().width < 768;
+  const isMobile = useWindowSize().width < 600;
 
   if (!isMobile) {
     return null;
