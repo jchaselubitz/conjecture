@@ -1,4 +1,4 @@
-import { BaseDraft, BaseStatementCitation, DraftWithAnnotations } from 'kysely-codegen';
+import { BaseDraft, BaseStatementCitation } from 'kysely-codegen';
 import { ChevronLeft, Upload } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -28,6 +28,8 @@ import { ImageNodeEditor } from './custom_editor/image_node_editor';
 import { LatexNodeEditor } from './custom_editor/latex_node_editor';
 import { FootnoteList } from './footnote/footnote_list';
 import StatementOptions from './statement_options';
+import ReadNav from '../navigation/read_nav';
+
 export interface StatementDetailsProps {
   editMode: boolean;
   showAuthorComments: boolean;
@@ -36,6 +38,8 @@ export interface StatementDetailsProps {
   onShowReaderCommentsChange: (checked: boolean) => void;
   panelGroupRef: RefObject<ImperativePanelGroupHandle | null>;
   parentStatement: BaseDraft | null;
+  annotationMode: boolean;
+  setAnnotationMode: (annotationMode: boolean) => void;
 }
 
 export default function StatementDetails({
@@ -45,7 +49,9 @@ export default function StatementDetails({
   onShowAuthorCommentsChange,
   onShowReaderCommentsChange,
   panelGroupRef,
-  parentStatement
+  parentStatement,
+  annotationMode,
+  setAnnotationMode
 }: StatementDetailsProps) {
   const { userId } = useUserContext();
   const { editor, setUpdatedStatement, updatedStatement } = useStatementContext();
@@ -165,7 +171,6 @@ export default function StatementDetails({
 
   return (
     <div className="flex flex-col md:mt-12 md:mx-auto w-full max-w-screen md:max-w-3xl  ">
-      {/* <div>{updatedStatement.content}</div> */}
       {headerImg ? (
         <div className="relative group md:px-4">
           <AspectRatio ratio={16 / 9} className="bg-muted rounded-md">
@@ -318,16 +323,19 @@ export default function StatementDetails({
             />
           </>
         )}
-        {editMode && editor && (
+        {editor && (
           <div
             className="md:fixed flex z-50 md:bottom-10 left-0 right-0 mx-auto md:left-auto md:right-auto md:mx-auto md:ml-20 px-2 justify-center max-w-full "
             style={displayStyle}
           >
-            <EditorMenu statementId={statementId} editor={editor} />
+            <EditorMenu statementId={statementId} editor={editor} editMode={editMode} />
           </div>
         )}
-        <FootnoteList citations={orderedFootnotes} />
 
+        <FootnoteList citations={orderedFootnotes} />
+        {!editMode && (
+          <ReadNav annotationMode={annotationMode} setAnnotationMode={setAnnotationMode} />
+        )}
         <div className="h-14" />
       </div>
     </div>

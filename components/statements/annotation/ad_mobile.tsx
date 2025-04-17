@@ -43,34 +43,38 @@ export default function AnnotationDetailMobile({
     }, 100);
   };
 
-  const annotationHeader = (
-    <>
-      <div className="flex flex-col gap-3 w-full">
-        {annotation.text && (
-          <div className="bg-muted p-3 rounded-md">
-            <p className="text-sm italic line-clamp-2">{`"${annotation.text}"`}</p>
-          </div>
-        )}
+  const earliestComment = nestedComments.sort(
+    (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+  )[0];
 
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center space-x-2">
-            <Avatar className="border ">
-              <AvatarImage src={annotation.userImageUrl} className="object-cover" />
-              <AvatarFallback>{annotation.userName?.charAt(0) || 'U'}</AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-medium">{annotation.userName || 'User'}</p>
-              <p className="text-xs text-muted-foreground">
-                {formatDate({
-                  date: new Date(annotation.createdAt),
-                  withTime: true
-                })}
-              </p>
-            </div>
+  const rootComment = earliestComment;
+
+  const annotationHeader = (
+    <div className="flex flex-col gap-3 w-full">
+      {annotation.text && (
+        <div className="bg-muted p-3 rounded-md">
+          <p className="text-sm italic line-clamp-2">{`"${annotation.text}"`}</p>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center space-x-2">
+          <Avatar className="border ">
+            <AvatarImage src={annotation.userImageUrl} className="object-cover" />
+            <AvatarFallback>{annotation.userName?.charAt(0) || 'U'}</AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="text-sm font-medium">{annotation.userName || 'User'}</p>
+            <p className="text-xs text-muted-foreground">
+              {formatDate({
+                date: new Date(annotation.createdAt),
+                withTime: true
+              })}
+            </p>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 
   const annotationContent = (
@@ -87,7 +91,7 @@ export default function AnnotationDetailMobile({
               annotationId={annotation.id}
               onReplyClick={handleReplyClick}
               onCommentDeleted={handleCommentDeleted}
-              isRootComment={nestedComments[0]?.id === comment.id}
+              isRootComment={rootComment?.id === comment.id}
             />
           ))}
         </div>

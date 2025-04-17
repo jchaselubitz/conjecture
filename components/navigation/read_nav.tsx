@@ -5,6 +5,11 @@ import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { cn } from '@/lib/utils';
 
 import AnnotationModeButton from '../annotation_mode_button';
+import { Button } from '../ui/button';
+import Link from 'next/link';
+import { Pencil } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { useUserContext } from '@/contexts/userContext';
 
 export default function ReadNav({
   annotationMode,
@@ -13,10 +18,14 @@ export default function ReadNav({
   annotationMode: boolean;
   setAnnotationMode: (annotationMode: boolean) => void;
 }) {
-  const { editor } = useStatementContext();
+  const { editor, updatedStatement } = useStatementContext();
+  const { userId } = useUserContext();
   const isMobile = useWindowSize().width < 600;
+  const pathname = usePathname();
 
-  if (!isMobile) {
+  const isCreator = userId === updatedStatement.creatorId;
+
+  if (!editor) {
     return null;
   }
 
@@ -31,14 +40,21 @@ export default function ReadNav({
   };
 
   return (
-    <div className="fixed z-50 bottom-2 right-4">
-      {editor && (
-        <AnnotationModeButton
-          annotationMode={annotationMode}
-          handleAnnotationModeToggle={handleAnnotationModeToggle}
-          variant={annotationMode ? 'default' : 'outline'}
-          className={cn('rounded-full shadow-md', annotationMode && 'h-10 w-10')}
-        />
+    <div className="sticky z-50 bottom-2 w-full flex gap-1 justify-end">
+      <AnnotationModeButton
+        annotationMode={annotationMode}
+        handleAnnotationModeToggle={handleAnnotationModeToggle}
+        variant={annotationMode ? 'default' : 'outline'}
+        className={cn('rounded-full shadow-md')}
+      />
+
+      {isCreator && (
+        <Button variant={'outline'} className="rounded-full shadow-md">
+          <Link href={`${pathname}?edit=true`}>
+            <span className="sr-only">Edit</span>
+            <Pencil className="h-4 w-4" />
+          </Link>
+        </Button>
       )}
     </div>
   );

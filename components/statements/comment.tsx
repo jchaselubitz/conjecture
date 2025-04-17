@@ -259,7 +259,6 @@ const Comment: React.FC<CommentProps> = ({
         )}
       >
         {/* Comment header with user info */}
-
         <div className="flex items-center justify-between mb-2">
           {!isRootComment && (
             <div className="flex items-center space-x-2">

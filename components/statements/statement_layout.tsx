@@ -46,9 +46,9 @@ export default function StatementLayout({
   const router = useRouter();
   const isMobile = useWindowSize().width < 600;
 
+  const [editMode, setEditMode] = useState(editModeEnabled);
   const { editor, updatedStatement } = useStatementContext();
   const [annotationMode, setAnnotationMode] = useState<boolean>(!isMobile);
-  const [editMode, setEditMode] = useState(editModeEnabled);
 
   useEffect(() => {
     setEditMode(editModeEnabled);
@@ -56,9 +56,7 @@ export default function StatementLayout({
 
   useEffect(() => {
     if (!!editMode || !!annotationMode) {
-      if (!isMobile) {
-        editor?.setEditable(true);
-      }
+      editor?.setEditable(true);
     }
   }, [editMode, annotationMode, editor, isMobile]);
 
@@ -161,6 +159,8 @@ export default function StatementLayout({
         onShowAuthorCommentsChange={onShowAuthorCommentsChange}
         onShowReaderCommentsChange={onShowReaderCommentsChange}
         panelGroupRef={panelGroupRef}
+        annotationMode={annotationMode}
+        setAnnotationMode={setAnnotationMode}
       />
       <AnnotationDrawer
         showAnnotationDrawer={showAnnotationDrawer}
@@ -190,6 +190,8 @@ export default function StatementLayout({
             onShowAuthorCommentsChange={onShowAuthorCommentsChange}
             onShowReaderCommentsChange={onShowReaderCommentsChange}
             panelGroupRef={panelGroupRef}
+            annotationMode={annotationMode}
+            setAnnotationMode={setAnnotationMode}
           />
         </div>
       </ResizablePanel>
@@ -212,14 +214,7 @@ export default function StatementLayout({
 
   return (
     <div className="flex flex-col h-full w-full">
-      {editMode ? (
-        <EditNav />
-      ) : (
-        <>
-          <AppNav />
-          <ReadNav annotationMode={annotationMode} setAnnotationMode={setAnnotationMode} />
-        </>
-      )}
+      {editMode ? <EditNav /> : <AppNav />}
 
       {isMobile ? mobileLayout : desktopLayout}
     </div>
