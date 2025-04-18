@@ -1,7 +1,7 @@
 'use client';
 
 import * as Sentry from '@sentry/nextjs';
-import { BaseCommentVote, BaseCommentWithUser } from 'kysely-codegen';
+import { BaseCommentWithUser } from 'kysely-codegen';
 import { ArrowUp, Edit2, RefreshCw, Reply, Trash2 } from 'lucide-react';
 import { startTransition, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ interface CommentControlsProps {
   isRootComment: boolean;
   isHovered: boolean;
   editingComment: boolean;
+  statementId: string;
   votes:
     | {
         userId: string;
@@ -43,6 +44,7 @@ export default function CommentControls({
   isHovered,
   editingComment,
   votes,
+  statementId,
   onReplyClick,
   onEditClick,
   setVotes,
@@ -80,7 +82,8 @@ export default function CommentControls({
 
       await toggleCommentUpvote({
         commentId: comment.id,
-        isUpvoted: hasUpvoted
+        isUpvoted: hasUpvoted,
+        statementId
       });
     } catch (error) {
       console.error('Error upvoting comment:', error);
@@ -96,7 +99,8 @@ export default function CommentControls({
       await deleteComment({
         id: comment.id,
         commenterId: comment.userId,
-        statementCreatorId
+        statementCreatorId,
+        statementId
       });
 
       onCommentDeleted(comment.id);

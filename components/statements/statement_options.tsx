@@ -120,7 +120,7 @@ const ShareButton = () => {
 
   const shareUrl =
     typeof window !== 'undefined'
-      ? `${window.location.origin}/statements/${updatedStatement.statementId}`
+      ? `${window.location.origin}/[userSlug]/${updatedStatement.statementId}`
       : '';
 
   const handleCopyLink = async () => {

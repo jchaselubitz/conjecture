@@ -1,6 +1,6 @@
-import type { NextRequest } from "next/server";
+import type { NextRequest } from 'next/server';
 
-import { updateSession } from "./supabase/middleware";
+import { updateSession } from './supabase/middleware';
 
 export async function middleware(request: NextRequest) {
   return updateSession(request);
@@ -36,6 +36,6 @@ export const config = {
      * 3. /static (inside /public)
      * 4. all root files inside /public (e.g. /favicon.ico)
      */
-    "/((?!api|_next|static|[\\w-]+\\.\\w+).*)",
-  ],
+    '/((?!api|_next|static|[\\w-]+\\.\\w+).*)'
+  ]
 };

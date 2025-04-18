@@ -10,6 +10,7 @@ interface UserContextType {
   name: string | undefined;
   email: string | undefined;
   username: string | undefined;
+  userSlug: string | undefined;
   settingsDialog: boolean;
   setSettingsDialog: (settingsDialog: boolean) => void;
 }
@@ -21,11 +22,13 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({
   children,
   userProfile,
-  userEmail
+  userEmail,
+  userSlug
 }: {
   children: ReactNode;
   userProfile?: BaseProfile | null;
   userEmail?: string | null;
+  userSlug?: string | null;
 }) {
   const [settingsDialog, setSettingsDialog] = useState(false);
   const value = {
@@ -33,7 +36,8 @@ export function UserProvider({
     imageUrl: userProfile?.imageUrl || undefined,
     name: userProfile?.name || undefined,
     email: userEmail || undefined,
-    username: userProfile?.username || undefined
+    username: userProfile?.username || undefined,
+    userSlug: userSlug || undefined
   };
 
   return (

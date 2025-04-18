@@ -137,7 +137,7 @@ export default function EditNav() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push(`/statements/${updatedStatement?.statementId}`)}
+            onClick={() => router.push(`/[userSlug]/${updatedStatement?.statementId}`)}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -173,7 +173,7 @@ export default function EditNav() {
                 />
                 <ViewModeButton
                   handleEditModeToggle={() =>
-                    router.push(`/statements/${updatedStatement?.statementId}`)
+                    router.push(`/[userSlug]/${updatedStatement?.statementId}`)
                   }
                   iconOnly={isMobile}
                   variant="default"

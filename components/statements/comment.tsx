@@ -59,7 +59,8 @@ const Comment: React.FC<CommentProps> = ({
     try {
       await editComment({
         id: comment.id,
-        content: commentContent
+        content: commentContent,
+        statementId
       });
     } catch (error) {
       console.error('Error editing comment:', error);
@@ -143,6 +144,7 @@ const Comment: React.FC<CommentProps> = ({
                 onCommentDeleted={onCommentDeleted}
                 votes={optVotes}
                 setVotes={setOptVotes}
+                statementId={statementId}
               />
             </>
           )}
@@ -189,6 +191,7 @@ const Comment: React.FC<CommentProps> = ({
           statementCreatorId={statementCreatorId}
           votes={optVotes}
           setVotes={setOptVotes}
+          statementId={statementId}
         />
       )}
       {/* Nested replies */}

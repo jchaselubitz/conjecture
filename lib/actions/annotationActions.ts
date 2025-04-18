@@ -31,7 +31,7 @@ export async function createAnnotation(
   const { id: annotationId } = await db.insertInto("annotation").values({
     ...annotation,
   }).returning("id").executeTakeFirstOrThrow();
-  revalidatePath(`/statements/${statementId}`, "page");
+  revalidatePath(`/[userSlug]/${statementId}`, "page");
   return annotationId;
 }
 
@@ -67,7 +67,7 @@ export async function updateAnnotation(
     "=",
     annotation.id,
   ).execute();
-  revalidatePath(`/statements/${statementId}`, "page");
+  revalidatePath(`/[userSlug]/${statementId}`, "page");
 }
 
 export async function deleteAnnotation({
@@ -99,5 +99,5 @@ export async function deleteAnnotation({
     throw new Error("Unauthorized");
   }
 
-  revalidatePath(`/statements/${statementId}`, "page");
+  revalidatePath(`/[userSlug]/${statementId}`, "page");
 }

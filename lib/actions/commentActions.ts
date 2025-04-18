@@ -37,9 +37,11 @@ export async function createComment({ comment, parentId, revalidationPath }: {
 export async function editComment({
  id,
  content,
+ statementId,
 }: {
  id: string;
  content: string;
+ statementId: string;
 }) {
  const supabase = await createClient();
  const {
@@ -53,17 +55,19 @@ export async function editComment({
  await db.updateTable("comment").set({
   content,
  }).where("id", "=", id).where("userId", "=", user.id).execute();
- revalidatePath(`/statements/[statementId]`, "page");
+ revalidatePath(`/[userSlug]/${statementId}`, "page");
 }
 
 export async function deleteComment({
  id,
  commenterId,
  statementCreatorId,
+ statementId,
 }: {
  id: string;
  commenterId: string;
  statementCreatorId: string;
+ statementId: string;
 }) {
  const supabase = await createClient();
  const {
@@ -77,14 +81,18 @@ export async function deleteComment({
    .where("id", "=", id)
    .execute();
 
-  revalidatePath(`/statements/[statementId]`, "page");
+  revalidatePath(`/[userSlug]/${statementId}`, "page");
  } else {
   throw new Error("Unauthorized");
  }
 }
 
 export async function toggleCommentUpvote(
- { commentId, isUpvoted }: { commentId: string; isUpvoted: boolean },
+ { commentId, isUpvoted, statementId }: {
+  commentId: string;
+  isUpvoted: boolean;
+  statementId: string;
+ },
 ) {
  const supabase = await createClient();
  const {
@@ -114,5 +122,5 @@ export async function toggleCommentUpvote(
   console.error("Error toggling upvote:", error);
  }
 
- revalidatePath(`/statements/[statementId]`, "page");
+ revalidatePath(`/[userSlug]/${statementId}`, "page");
 }

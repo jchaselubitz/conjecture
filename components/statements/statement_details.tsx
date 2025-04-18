@@ -215,7 +215,7 @@ export default function StatementDetails({
         />
         <div className="flex flex-col gap-1 mt-6 md:mt-10 md:mb-5 ">
           {updatedStatement.parentStatementId && (
-            <Link href={`/statements/${updatedStatement.parentStatementId}`}>
+            <Link href={`/[userSlug]/${updatedStatement.parentStatementId}`}>
               <p className="bg-yellow-50 text-lg text-yellow-900 px-2 py-1 rounded-md flex items-center gap-2 w-fit hover:bg-yellow-100 transition-colors">
                 <ChevronLeft className="w-4 h-4" />
                 Response to: {parentStatement?.title}

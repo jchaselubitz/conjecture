@@ -108,33 +108,6 @@ export async function getDrafts({
   return arrayOfStatements;
 }
 
-// export async function getDraftById(
-//   id: string,
-// ): Promise<DraftWithUser | null | undefined> {
-//   const draft = await db
-//     .selectFrom("draft")
-//     .innerJoin("profile", "draft.creatorId", "profile.id")
-//     .select([
-//       "draft.id",
-//       "draft.title",
-//       "draft.subtitle",
-//       "draft.content",
-//       "draft.headerImg",
-//       "draft.publishedAt",
-//       "draft.versionNumber",
-//       "draft.statementId",
-//       "draft.creatorId",
-//       "draft.createdAt",
-//       "draft.updatedAt",
-//       "profile.name as creatorName",
-//       "profile.imageUrl as creatorImageUrl",
-//       "profile.username as creatorSlug",
-//     ])
-//     .where("id", "=", id)
-//     .executeTakeFirst();
-//   return draft;
-// }
-
 export async function getPublishedStatement(
   statementId: string,
 ): Promise<
@@ -362,7 +335,7 @@ export async function createDraft({
 
   if (returnedStatementId) {
     redirect(
-      `/statements/${returnedStatementId}?version=${versionNumber}&edit=true`,
+      `/[userSlug]/${returnedStatementId}?version=${versionNumber}&edit=true`,
     );
   } else {
     return { error: "Failed to create draft" };
@@ -454,7 +427,7 @@ export async function updateStatementHeaderImageUrl({
     statementId,
   ).execute();
   revalidatePath(
-    revalidationPath?.path ?? `/statements/${statementId}`,
+    revalidationPath?.path ?? `/[userSlug]/${statementId}`,
     "layout",
   );
 }
@@ -462,7 +435,7 @@ export async function updateStatementHeaderImageUrl({
 export async function deleteDraft(id: string, creatorId: string) {
   await authenticatedUser(creatorId);
   await db.deleteFrom("draft").where("id", "=", id).execute();
-  revalidatePath(`/statements`, "layout");
+  revalidatePath(`/[userSlug]`, "layout");
 }
 
 export async function deleteStatement(
@@ -480,7 +453,7 @@ export async function deleteStatement(
   await db.deleteFrom("draft").where("statementId", "=", statementId)
     .execute();
 
-  revalidatePath(revalidationPath?.path ?? `/statements`, "layout");
+  revalidatePath(revalidationPath?.path ?? `/[userSlug]`, "layout");
 }
 
 export type UpsertImageDataType = {
@@ -524,7 +497,7 @@ export async function upsertStatementImage({
   )
     .execute();
   revalidatePath(
-    revalidationPath?.path ?? `/statements/[statementId]`,
+    revalidationPath?.path ?? `/[userSlug]/${statementId}`,
     "layout",
   );
 }
@@ -553,7 +526,7 @@ export async function deleteStatementImage(
     user.id,
   ).execute();
   // revalidatePath(
-  //   revalidationPath?.path ?? `/statements/[statementId]`,
+  //   revalidationPath?.path ?? `/[userSlug]/[statementId]`,
   //   "layout",
   // );
 }
@@ -580,7 +553,7 @@ export async function toggleStatementUpvote({
   }
 
   revalidatePath(
-    revalidationPath?.path ?? `/statements/[statementId]`,
+    revalidationPath?.path ?? `/[userSlug]/${statementId}`,
     "layout",
   );
 }

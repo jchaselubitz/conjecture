@@ -3,6 +3,7 @@ import AppNav from '@/components/navigation/app_nav';
 import { StatementListContainer } from '@/containers/StatementListContainer';
 import { getDrafts } from '@/lib/actions/statementActions';
 import { getUserProfile } from '@/lib/actions/userActions';
+import { createClient } from '@/supabase/server';
 
 type UserPageProps = {
   params: Promise<{
@@ -17,14 +18,21 @@ export const metadata: Metadata = {
 export default async function UserPage({ params }: UserPageProps) {
   const { userSlug } = await params;
 
+  const supabase = await createClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  const userIsCreator = user?.user_metadata.username === userSlug;
   const profile = await getUserProfile(userSlug);
 
   if (!profile) {
     return <div>User not found</div>;
   }
-  const statements = await getDrafts({ creatorId: profile.id });
 
-  const { name, username, imageUrl } = profile;
+  const { name, id } = profile;
+
+  const statements = await getDrafts({ creatorId: id, publishedOnly: !userIsCreator });
 
   return (
     <div>
