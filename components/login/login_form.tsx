@@ -1,8 +1,8 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import { FieldErrors, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
@@ -44,6 +44,13 @@ export function LoginForm({
       ...(isSignUp && { username: '' })
     }
   });
+
+  const [errors, setErrors] = useState<FieldErrors<{ [x: string]: any }> | null>(null);
+  useEffect(() => {
+    if (form.formState.errors) {
+      setErrors(form.formState.errors);
+    }
+  }, [form.formState.errors]);
 
   const onSubmit = async (data: z.infer<typeof loginSchema>) => {
     setButtonState('loading');
@@ -99,6 +106,9 @@ export function LoginForm({
                     <div className="grid gap-2">
                       <Label htmlFor="username">Username</Label>
                       <Input id="username" {...field} placeholder="Bobby" />
+                      {errors?.username && (
+                        <div className="text-red-500">{errors.username.message as string}</div>
+                      )}
                     </div>
                   )}
                 />
@@ -110,6 +120,9 @@ export function LoginForm({
                   <div className="grid gap-2">
                     <Label htmlFor="email">Email</Label>
                     <Input {...field} placeholder="m@example.com" type="email" />
+                    {errors?.email && (
+                      <div className="text-red-500">{errors.email.message as string}</div>
+                    )}
                   </div>
                 )}
               />
@@ -120,9 +133,14 @@ export function LoginForm({
                   <div className="grid gap-2">
                     <Label htmlFor="password">Password</Label>
                     <Input {...field} placeholder="********" type="password" />
+                    {errors?.password && (
+                      <div className="text-red-500">{errors.password.message as string}</div>
+                    )}
                   </div>
                 )}
               />
+              {/* error message */}
+
               <LoadingButton
                 type="submit"
                 className="w-full"

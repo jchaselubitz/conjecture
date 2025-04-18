@@ -1,13 +1,13 @@
-import { withSentryConfig } from '@sentry/nextjs';
+import { withSentryConfig } from "@sentry/nextjs";
 // Import the necessary modules
-import { NextConfig } from 'next';
-import withPWA from 'next-pwa';
+import { NextConfig } from "next";
+import withPWA from "next-pwa";
 /** @type {NextConfig} */
 
 const pwaConfig = withPWA({
-  dest: 'public',
+  dest: "public",
   register: true,
-  disable: process.env.NEXT_PUBLIC_CONTEXT === 'development'
+  disable: process.env.NEXT_PUBLIC_CONTEXT === "development",
   // skipWaiting: false,
   // cacheOnFrontEndNav: true,
 });
@@ -17,36 +17,36 @@ const config: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'bewgymyresxixvkkqbzl.supabase.co',
-        pathname: '/storage/v1/object/public/**'
-      }
+        protocol: "https",
+        hostname: "bewgymyresxixvkkqbzl.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
     ],
     domains: [
-      'conject.io',
-      'app.conject.io',
-      '127.0.0.1',
-      'localhost',
-      process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'bewgymyresxixvkkqbzl.supabase.co'
-    ]
+      "conject.io",
+      "127.0.0.1",
+      "localhost",
+      process.env.NEXT_PUBLIC_SUPABASE_URL ??
+        "bewgymyresxixvkkqbzl.supabase.co",
+    ],
   },
   async headers() {
     return [
       {
-        source: '/:path*',
+        source: "/:path*",
         headers: [
           {
-            key: 'X-DNS-Prefetch-Control',
-            value: 'on'
+            key: "X-DNS-Prefetch-Control",
+            value: "on",
           },
           {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains'
-          }
-        ]
-      }
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains",
+          },
+        ],
+      },
     ];
-  }
+  },
   // reactStrictMode: false,
   // logging: {
   //   fetches: {
@@ -59,8 +59,8 @@ export default withSentryConfig(config, {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
-  org: 'cooperativ-labs',
-  project: 'conject',
+  org: "cooperativ-labs",
+  project: "conject",
 
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,
@@ -73,14 +73,14 @@ export default withSentryConfig(config, {
 
   // Automatically annotate React components to show their full name in breadcrumbs and session replay
   reactComponentAnnotation: {
-    enabled: true
+    enabled: true,
   },
 
   // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
   // This can increase your server load as well as your hosting bill.
   // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
   // side errors will fail.
-  tunnelRoute: '/monitoring',
+  tunnelRoute: "/monitoring",
 
   // Automatically tree-shake Sentry logger statements to reduce bundle size
   disableLogger: true,
@@ -89,5 +89,5 @@ export default withSentryConfig(config, {
   // See the following for more information:
   // https://docs.sentry.io/product/crons/
   // https://vercel.com/docs/cron-jobs
-  automaticVercelMonitors: true
+  automaticVercelMonitors: true,
 });

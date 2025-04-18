@@ -4,7 +4,7 @@ publish = ".next"
 [context.production.environment]
 NEXT_PUBLIC_SUPABASE_URL = 'https://bewgymyresxixvkkqbzl.supabase.co'
 NEXT_PUBLIC_SUPABASE_PROJECT_ID = "bewgymyresxixvkkqbzl"
-NEXT_PUBLIC_SITE_URL = 'https://app.conject.io'
+NEXT_PUBLIC_SITE_URL = 'https://conject.io'
 NEXT_PUBLIC_CONTEXT = "prod"
 NEXT_PUBLIC_LANGFUSE_HOST="https://cloud.langfuse.com"
 
@@ -19,7 +19,7 @@ publish = ".next"
 [context.branch-deploy.environment]
 NEXT_PUBLIC_SUPABASE_URL = 'https://bewgymyresxixvkkqbzl.supabase.co'
 NEXT_PUBLIC_SUPABASE_PROJECT_ID = "bewgymyresxixvkkqbzl"
-NEXT_PUBLIC_SITE_URL = 'https://app.conject.io'
+NEXT_PUBLIC_SITE_URL = 'https://conject.io'
 NEXT_PUBLIC_CONTEXT = "branch-deploy"
 NEXT_PUBLIC_LANGFUSE_HOST="https://cloud.langfuse.com"
 
@@ -29,7 +29,7 @@ publish = ".next"
 [context.development.environment]
 NEXT_PUBLIC_SUPABASE_URL = 'https://bewgymyresxixvkkqbzl.supabase.co'
 NEXT_PUBLIC_SUPABASE_PROJECT_ID = "bewgymyresxixvkkqbzl"
-NEXT_PUBLIC_SITE_URL = 'https://app.conject.io'
+NEXT_PUBLIC_SITE_URL = 'https://conject.io'
 NEXT_PUBLIC_CONTEXT = "development"
 NEXT_PUBLIC_LANGFUSE_HOST="https://cloud.langfuse.com"
 
@@ -42,30 +42,30 @@ context = "dev"
 
 [[redirects]]
   from = "https://conject.io/posts/*"
-  to = "https://app.conject.io/posts/:splat"
+  to = "https://conject.io/posts/:splat"
   status = 301
   force = true
 
 [[redirects]]
   from = "https://conject.io/explore/*"
-  to = "https://app.conject.io/explore/:splat"
+  to = "https://conject.io/explore/:splat"
   status = 301
   force = true
 
 [[redirects]]
   from = "https://conject.io/join/*"
-  to = "https://app.conject.io/join/:splat"
+  to = "https://conject.io/join/:splat"
   status = 301
   force = true
 
 [[redirects]]
   from = "https://conject.io/feed"
-  to = "https://app.conject.io/feed"
+  to = "https://conject.io/feed"
   status = 301
   force = true
 
 [[redirects]]
   from = "https://conject.io/statements/*"
-  to = "https://app.conject.io/statements/:splat"
+  to = "https://conject.io/statements/:splat"
   status = 301
   force = true

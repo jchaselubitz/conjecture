@@ -65,7 +65,7 @@ export function StatementProvider({
   });
 
   useEffect(() => {
-    setUpdatedStatement(statement);
+    // setUpdatedStatement(statement);
   }, [statement]);
 
   const [editor, setEditor] = useState<Editor | null>(null);
@@ -131,20 +131,8 @@ export function StatementProvider({
   );
 
   useEffect(() => {
-    const isFresh =
-      debouncedStatement?.content !== updatedStatement?.content ||
-      debouncedStatement?.title !== updatedStatement?.title ||
-      debouncedStatement?.subtitle !== updatedStatement?.subtitle;
-    if (isFresh) {
-      setDebouncedStatement(updatedStatement as DraftWithAnnotations);
-    }
-  }, [
-    updatedStatement,
-    debouncedStatement?.content,
-    debouncedStatement?.title,
-    debouncedStatement?.subtitle,
-    setDebouncedStatement
-  ]);
+    setDebouncedStatement(updatedStatement as DraftWithAnnotations);
+  }, [updatedStatement, setDebouncedStatement]);
 
   const updateStatementDraft = useCallback(async () => {
     const {

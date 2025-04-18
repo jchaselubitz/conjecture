@@ -6,7 +6,7 @@ export async function updateSession(request: NextRequest) {
   request,
  });
 
- const supabase = createServerClient(
+ createServerClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   {

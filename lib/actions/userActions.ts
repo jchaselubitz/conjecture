@@ -112,9 +112,9 @@ export const signIn = async (
     return redirect("/login?message=Could not authenticate user");
   }
 
-  const redirectUrl = process.env.NEXT_PUBLIC_CONTEXT !== "development"
-    ? `${origin}/feed`
-    : `http://localhost:3000/feed`;
+  const redirectUrl = process.env.NEXT_PUBLIC_CONTEXT === "development"
+    ? `http://localhost:3000/feed`
+    : `${origin}/feed`;
 
   if (data) {
     return redirect(
