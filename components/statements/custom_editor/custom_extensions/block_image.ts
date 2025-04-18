@@ -19,6 +19,7 @@ declare module "@tiptap/core" {
         imageId: string;
         src: string;
         alt?: string;
+        caption?: string;
         width?: number;
         height?: number;
       }) => ReturnType;
@@ -28,6 +29,7 @@ declare module "@tiptap/core" {
         alt?: string;
         width?: number;
         height?: number;
+        caption?: string;
       }) => ReturnType;
       deleteBlockImage: (options: { imageId: string }) => ReturnType;
     };
@@ -242,6 +244,9 @@ export const BlockImage = Node.create<BlockImageOptions>({
                   imageData: {
                     id: imageId,
                     alt: file.name,
+                    caption: "",
+                    src: "",
+                    statementId: "",
                   },
                 })
                   .then((newImage) => {
@@ -253,6 +258,7 @@ export const BlockImage = Node.create<BlockImageOptions>({
                           src: newImage.imageUrl,
                           alt: file.name,
                           imageId: newImage.imageId,
+                          caption: "",
                         })
                         .run();
                     }

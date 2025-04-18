@@ -21,7 +21,7 @@ export function ImageLightbox({
   setImageLightboxOpen
 }: ImageLightboxProps) {
   const handleClose = () => {
-    setInitialImageData({ src: '', alt: '', id: '', statementId: '' });
+    setInitialImageData({ src: '', alt: '', id: '', statementId: '', caption: '' });
     setImageLightboxOpen(false);
   };
 

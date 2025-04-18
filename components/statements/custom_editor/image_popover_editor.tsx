@@ -35,6 +35,7 @@ export function ImagePopoverEditor({
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>(initialImageData.src || '');
   const [alt, setAlt] = useState(initialImageData.alt);
+  const [caption, setCaption] = useState(initialImageData.caption);
   const [error, setError] = useState<string | null>(null);
   const [saveButtonState, setSaveButtonState] = useState<ButtonLoadingState>('default');
 
@@ -48,6 +49,7 @@ export function ImagePopoverEditor({
       src: '',
       alt: '',
       id: '',
+      caption: '',
       statementId
     });
   };
@@ -103,7 +105,9 @@ export function ImagePopoverEditor({
             imageData: {
               alt: alt || file?.name || '',
               src: previewUrl,
-              id: filename
+              id: filename,
+              caption: initialImageData.caption,
+              statementId
             },
             file
           });
@@ -113,6 +117,7 @@ export function ImagePopoverEditor({
             alt: alt || file?.name || '',
             src: initialImageData.src,
             id: initialImageData.id,
+            caption: initialImageData.caption,
             statementId,
             revalidationPath: {
               path: pathname,
@@ -155,7 +160,11 @@ export function ImagePopoverEditor({
             {error ? (
               <div className="text-red-500 text-sm">{error}</div>
             ) : previewUrl ? (
-              <img src={previewUrl} alt={alt} className="max-w-full max-h-[200px] object-contain" />
+              <img
+                src={previewUrl}
+                alt={alt || undefined}
+                className="max-w-full max-h-[200px] object-contain"
+              />
             ) : (
               <div className="text-muted-foreground flex flex-col items-center gap-2">
                 <ImageIcon className="h-8 w-8" />
@@ -175,8 +184,15 @@ export function ImagePopoverEditor({
           {/* Alt Text Input */}
           <Input
             placeholder="Alt text (for accessibility)"
-            value={alt}
+            value={alt || undefined}
             onChange={(e) => setAlt(e.target.value)}
+          />
+
+          {/* Caption Input */}
+          <Input
+            placeholder="Caption"
+            value={caption || undefined}
+            onChange={(e) => setCaption(e.target.value)}
           />
 
           {/* Actions */}

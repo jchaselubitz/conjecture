@@ -178,7 +178,7 @@ export async function getDraftsByStatementId(
       jsonArrayFrom(
         eb
           .selectFrom("statementImage")
-          .select(["id", "src", "alt"])
+          .select(["id", "src", "alt", "caption"])
           .whereRef("statementImage.statementId", "=", "draft.statementId"),
       ).as("images"),
       jsonArrayFrom(
@@ -458,9 +458,10 @@ export async function deleteStatement(
 
 export type UpsertImageDataType = {
   src: string;
-  alt?: string;
+  alt?: string | undefined | null;
   statementId: string;
   id: string;
+  caption?: string | undefined | null;
 };
 
 export async function upsertStatementImage({
@@ -468,12 +469,14 @@ export async function upsertStatementImage({
   src,
   statementId,
   id,
+  caption,
   revalidationPath,
 }: {
-  alt: string;
-  src: string;
-  statementId: string;
-  id: string;
+  alt: UpsertImageDataType["alt"];
+  src: UpsertImageDataType["src"];
+  statementId: UpsertImageDataType["statementId"];
+  id: UpsertImageDataType["id"];
+  caption?: UpsertImageDataType["caption"];
   revalidationPath?: RevalidationPath;
 }) {
   const user = await authenticatedUser();
@@ -482,12 +485,14 @@ export async function upsertStatementImage({
     src,
     alt,
     statementId,
+    caption,
     creatorId: user.id,
   }).onConflict((oc) =>
     oc.column("id").doUpdateSet({
       src,
       alt,
       statementId,
+      caption,
       id,
     }).where("statementImage.id", "=", id).where(
       "statementImage.creatorId",

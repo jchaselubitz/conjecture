@@ -6,7 +6,9 @@ import { DraftWithAnnotations, NewDraft } from 'kysely-codegen';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   createContext,
+  Dispatch,
   ReactNode,
+  SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -23,7 +25,7 @@ interface StatementContextType {
     createdAt: Date;
   }[];
   updatedStatement: DraftWithAnnotations;
-  setUpdatedStatement: (statement: DraftWithAnnotations) => void;
+  setUpdatedStatement: Dispatch<SetStateAction<DraftWithAnnotations>>;
   saveStatementDraft: () => Promise<void>;
   nextVersionNumber: number;
   changeVersion: (version: number) => void;
@@ -64,13 +66,9 @@ export function StatementProvider({
   });
 
   const [debouncedStatement, setDebouncedStatement] = useDebounce<DraftWithAnnotations | undefined>(
-    statement,
+    updatedStatement,
     500
   );
-
-  useEffect(() => {
-    setUpdatedStatement(statement);
-  }, [statement]);
 
   const [editor, setEditor] = useState<Editor | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);

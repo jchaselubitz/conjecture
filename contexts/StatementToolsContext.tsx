@@ -47,7 +47,8 @@ export function StatementToolsProvider({ children }: { children: ReactNode }) {
     src: '',
     alt: '',
     statementId: updatedStatement.statementId,
-    id: ''
+    id: '',
+    caption: ''
   });
   const [citationData, setCitationData] = useState<NewStatementCitation>({
     statementId: updatedStatement.statementId,

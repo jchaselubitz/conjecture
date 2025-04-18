@@ -2,7 +2,10 @@ import { handleImageCompression } from "@/lib/helpers/helpersImages";
 import { Editor } from "@tiptap/react";
 import { toast } from "sonner";
 import { uploadStatementImage } from "@/lib/actions/storageActions";
-import { upsertStatementImage } from "@/lib/actions/statementActions";
+import {
+  UpsertImageDataType,
+  upsertStatementImage,
+} from "@/lib/actions/statementActions";
 
 export const handleImageChange = async ({
   file,
@@ -13,7 +16,7 @@ export const handleImageChange = async ({
   file: File;
   userId: string;
   statementId: string;
-  imageData: { id: string; src?: string; alt: string };
+  imageData: UpsertImageDataType;
 }): Promise<{ imageId: string; imageUrl: string } | undefined> => {
   if (file) {
     try {
@@ -38,6 +41,7 @@ export const handleImageChange = async ({
         src: imageUrl,
         statementId,
         alt: imageData.alt,
+        caption: imageData.caption,
       });
       return { imageId: imageData.id, imageUrl };
     } catch (error) {
@@ -58,7 +62,7 @@ export const saveImage = async ({
   editor: Editor;
   userId: string;
   statementId: string;
-  imageData: { alt: string; src: string; id: string };
+  imageData: UpsertImageDataType;
   file: File;
 }) => {
   const newImage = await handleImageChange({
@@ -91,7 +95,8 @@ export const saveImage = async ({
       .updateBlockImage({
         imageId: imageData.id,
         src: newImage.imageUrl,
-        alt: imageData.alt,
+        alt: imageData.alt ?? undefined,
+        caption: imageData.caption ?? undefined,
       })
       .run();
   } else {
@@ -102,7 +107,8 @@ export const saveImage = async ({
       .insertBlockImage({
         imageId: newImage.imageId,
         src: newImage.imageUrl,
-        alt: imageData.alt,
+        alt: imageData.alt ?? undefined,
+        caption: imageData.caption ?? undefined,
       })
       .run();
   }

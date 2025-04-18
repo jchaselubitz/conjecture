@@ -98,6 +98,8 @@ export const useHtmlSuperEditor = ({
   const statementCreatorId = updatedStatement.creatorId;
   const citations = updatedStatement.citations;
 
+  // console.log(htmlContent);
+
   useEffect(() => {
     setAnnotations(existingAnnotations);
   }, [existingAnnotations, setAnnotations]);
@@ -238,10 +240,14 @@ export const useHtmlSuperEditor = ({
         );
         setFootnoteIds(citationIds);
 
-        setUpdatedStatement({
+        const newContent = editor.getHTML();
+
+        const newStatement = {
           ...updatedStatement,
-          content: editor.getHTML(),
-        });
+          content: newContent,
+        };
+
+        setUpdatedStatement(newStatement);
       }
     },
     onSelectionUpdate: ({ editor }) => {
