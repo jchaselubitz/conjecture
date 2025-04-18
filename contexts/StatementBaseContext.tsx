@@ -11,10 +11,9 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState
 } from 'react';
-import { useDebounce, useDebouncedCallback } from 'use-debounce';
+import { useDebounce } from 'use-debounce';
 import { createDraft, publishDraft, updateDraft } from '@/lib/actions/statementActions';
 
 interface StatementContextType {
@@ -135,6 +134,7 @@ export function StatementProvider({
   }, [updatedStatement, setDebouncedStatement]);
 
   const updateStatementDraft = useCallback(async () => {
+    if (!debouncedStatement) return;
     const {
       title,
       subtitle,
@@ -144,8 +144,9 @@ export function StatementProvider({
       statementId,
       versionNumber,
       creatorId
-    } = updatedStatement;
+    } = debouncedStatement;
     setIsUpdating(true);
+
     await updateDraft({
       title: title ?? undefined,
       subtitle: subtitle ?? undefined,
@@ -157,17 +158,16 @@ export function StatementProvider({
       creatorId: creatorId ?? undefined
     });
     setIsUpdating(false);
-  }, [updatedStatement]);
+  }, [debouncedStatement]);
 
   useEffect(() => {
     const update = async () => {
       if (!userId) return;
-
       await updateStatementDraft();
       setStatement(debouncedStatement as DraftWithAnnotations);
     };
     update();
-  }, [debouncedStatement, userId]);
+  }, [debouncedStatement, updateStatementDraft, userId]);
 
   return (
     <StatementContext.Provider
