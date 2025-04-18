@@ -14,7 +14,7 @@ import {
   useRef,
   useState
 } from 'react';
-import { useDebounce } from 'use-debounce';
+import { useDebounce, useDebouncedCallback } from 'use-debounce';
 import { createDraft, publishDraft, updateDraft } from '@/lib/actions/statementActions';
 
 interface StatementContextType {
@@ -71,8 +71,6 @@ export function StatementProvider({
 
   useEffect(() => {
     setUpdatedStatement(statement);
-    // set the new debounce as well to prevent too many re-renders
-    setDebouncedStatement(statement);
   }, [statement]);
 
   const [editor, setEditor] = useState<Editor | null>(null);
@@ -162,23 +160,14 @@ export function StatementProvider({
   }, [updatedStatement]);
 
   useEffect(() => {
-    const isFresh =
-      debouncedStatement?.content !== statement?.content ||
-      debouncedStatement?.title !== statement?.title ||
-      debouncedStatement?.subtitle !== statement?.subtitle;
-
     const update = async () => {
-      if (isFresh) {
-        if (!userId) {
-          return;
-        }
+      if (!userId) return;
 
-        await updateStatementDraft();
-        setStatement(updatedStatement as DraftWithAnnotations);
-      }
+      await updateStatementDraft();
+      setStatement(debouncedStatement as DraftWithAnnotations);
     };
     update();
-  }, [statement, debouncedStatement, updatedStatement, updateStatementDraft, userId]);
+  }, [debouncedStatement, userId]);
 
   return (
     <StatementContext.Provider
