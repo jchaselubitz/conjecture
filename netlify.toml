@@ -40,32 +40,32 @@ targetPort = 3000
 context = "dev"
 
 
-[[redirects]]
-  from = "https://conject.io/posts/*"
-  to = "https://conject.io/posts/:splat"
-  status = 301
-  force = true
+# [[redirects]]
+#   from = "https://conject.io/posts/*"
+#   to = "https://conject.io/posts/:splat"
+#   status = 301
+#   force = true
 
-[[redirects]]
-  from = "https://conject.io/explore/*"
-  to = "https://conject.io/explore/:splat"
-  status = 301
-  force = true
+# [[redirects]]
+#   from = "https://conject.io/explore/*"
+#   to = "https://conject.io/explore/:splat"
+#   status = 301
+#   force = true
 
-[[redirects]]
-  from = "https://conject.io/join/*"
-  to = "https://conject.io/join/:splat"
-  status = 301
-  force = true
+# [[redirects]]
+#   from = "https://conject.io/join/*"
+#   to = "https://conject.io/join/:splat"
+#   status = 301
+#   force = true
 
-[[redirects]]
-  from = "https://conject.io/feed"
-  to = "https://conject.io/feed"
-  status = 301
-  force = true
+# [[redirects]]
+#   from = "https://conject.io/feed"
+#   to = "https://conject.io/feed"
+#   status = 301
+#   force = true
 
-[[redirects]]
-  from = "https://conject.io/statements/*"
-  to = "https://conject.io/statements/:splat"
-  status = 301
-  force = true
+# [[redirects]]
+#   from = "https://conject.io/statements/*"
+#   to = "https://conject.io/statements/:splat"
+#   status = 301
+#   force = true
