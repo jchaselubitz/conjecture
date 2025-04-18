@@ -62,6 +62,7 @@ const Comment: React.FC<CommentProps> = ({
         content: commentContent,
         statementId
       });
+      setEditingComment(false);
     } catch (error) {
       console.error('Error editing comment:', error);
       setEditingButtonState('error');
@@ -125,10 +126,12 @@ const Comment: React.FC<CommentProps> = ({
                   />
                   <AvatarFallback>{comment.userName?.charAt(0) || 'U'}</AvatarFallback>
                 </Avatar>
-                <div className="flex font-semibold text-xs text-muted-foreground items-center">
-                  <p className="">{comment.userId === userId ? 'You' : comment.userName}</p>
+                <div className="flex flex-wrap font-semibold text-xs text-muted-foreground items-center">
+                  <p>{comment.userId === userId ? 'You' : comment.userName}</p>
                   <DotIcon className="w-4 text-muted-foreground" />
-                  <p className="text-muted-foreground">{timeAgo(new Date(comment.createdAt))}</p>
+                  <p className="text-muted-foreground whitespace-nowrap">
+                    {timeAgo(new Date(comment.createdAt))}
+                  </p>
                 </div>
               </div>
 

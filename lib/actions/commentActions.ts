@@ -4,6 +4,7 @@ import { createClient } from "@/supabase/server";
 import db from "../database";
 import { revalidatePath } from "next/cache";
 import { NewCommentVote, RevalidationPath } from "kysely-codegen";
+import { authenticatedUser } from "./baseActions";
 
 export async function createComment({ comment, parentId, revalidationPath }: {
  comment: {
@@ -43,14 +44,7 @@ export async function editComment({
  content: string;
  statementId: string;
 }) {
- const supabase = await createClient();
- const {
-  data: { user },
- } = await supabase.auth.getUser();
-
- if (!user) {
-  throw new Error("No user found");
- }
+ const user = await authenticatedUser();
 
  await db.updateTable("comment").set({
   content,

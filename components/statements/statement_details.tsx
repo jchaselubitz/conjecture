@@ -53,7 +53,7 @@ export default function StatementDetails({
   annotationMode,
   setAnnotationMode
 }: StatementDetailsProps) {
-  const { userId } = useUserContext();
+  const { userId, userSlug } = useUserContext();
   const { editor, setUpdatedStatement, updatedStatement } = useStatementContext();
   const { selectedAnnotationId, setSelectedAnnotationId } = useStatementAnnotationContext();
   const { initialImageData, setInitialImageData, setImageLightboxOpen } =
@@ -328,7 +328,12 @@ export default function StatementDetails({
             className="md:fixed flex z-50 md:bottom-10 left-0 right-0 mx-auto md:left-auto md:right-auto md:mx-auto md:ml-20 px-2 justify-center max-w-full "
             style={displayStyle}
           >
-            <EditorMenu statementId={statementId} editor={editor} editMode={editMode} />
+            <EditorMenu
+              statementId={statementId}
+              editor={editor}
+              editMode={editMode}
+              userSlug={userSlug ?? ''}
+            />
           </div>
         )}
 

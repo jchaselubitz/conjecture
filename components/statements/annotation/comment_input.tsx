@@ -89,7 +89,6 @@ export default function CommentInput({
   };
 
   const handleCancel = () => {
-    console.log('handleCancelReply');
     setShowCommentInput?.(false);
     onCancelReply();
   };

@@ -64,8 +64,15 @@ export function StatementProvider({
     ...statement
   });
 
+  const [debouncedStatement, setDebouncedStatement] = useDebounce<DraftWithAnnotations | undefined>(
+    statement,
+    500
+  );
+
   useEffect(() => {
-    // setUpdatedStatement(statement);
+    setUpdatedStatement(statement);
+    // set the new debounce as well to prevent too many re-renders
+    setDebouncedStatement(statement);
   }, [statement]);
 
   const [editor, setEditor] = useState<Editor | null>(null);
@@ -124,11 +131,6 @@ export function StatementProvider({
       creatorId
     });
   };
-
-  const [debouncedStatement, setDebouncedStatement] = useDebounce<DraftWithAnnotations | undefined>(
-    statement,
-    500
-  );
 
   useEffect(() => {
     setDebouncedStatement(updatedStatement as DraftWithAnnotations);

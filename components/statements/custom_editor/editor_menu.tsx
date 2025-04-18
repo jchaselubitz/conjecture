@@ -26,9 +26,10 @@ interface EditorMenuProps {
   editor: Editor;
   statementId: string;
   editMode: boolean;
+  userSlug: string;
 }
 
-export function EditorMenu({ editor, statementId, editMode }: EditorMenuProps) {
+export function EditorMenu({ editor, statementId, editMode, userSlug }: EditorMenuProps) {
   const router = useRouter();
 
   const setLink = () => {
@@ -52,7 +53,7 @@ export function EditorMenu({ editor, statementId, editMode }: EditorMenuProps) {
         <div className="flex items-center justify-center border-r md:border-zinc-500 h-full">
           <ViewModeButton
             className={cn('flex items-center justify-center ', buttonClassName)}
-            handleEditModeToggle={() => router.push(`/[userSlug]/${statementId}`)}
+            handleEditModeToggle={() => router.push(`/${userSlug}/${statementId}`)}
             iconOnly={true}
             variant="ghost"
           />
