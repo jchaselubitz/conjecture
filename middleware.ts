@@ -1,9 +1,9 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
 
 import { updateSession } from "./supabase/middleware";
 
 export async function middleware(request: NextRequest) {
+  return updateSession(request);
   // const url = request.nextUrl;
   // const hostname = request.headers.get("host") || "";
   // // const isAppSubdomain = hostname.startsWith("app.");
@@ -25,8 +25,6 @@ export async function middleware(request: NextRequest) {
   //     `${protocol}://app.${hostname}${url.pathname}`,
   //   );
   // }
-
-  return NextResponse.next();
 }
 
 export const config = {
