@@ -9,18 +9,19 @@ import {
   LinkIcon,
   List,
   ListOrdered,
-  Quote,
-  Pencil
+  Pencil,
+  Quote
 } from 'lucide-react';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useWindowSize } from 'react-use';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import ViewModeButton from '@/components/view_mode_button';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
+
 import { CitationButton } from './citation_button';
 import { LatexButton } from './latex_button';
-import { useWindowSize } from 'react-use';
 interface EditorMenuProps {
   editor: Editor;
   statementId: string;

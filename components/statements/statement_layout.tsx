@@ -13,7 +13,6 @@ import { useUserContext } from '@/contexts/userContext';
 
 import AppNav from '../navigation/app_nav';
 import EditNav from '../navigation/edit_nav';
-import ReadNav from '../navigation/read_nav';
 import AnnotationDrawer from './annotation/annotation_drawer';
 import StatementDetails from './statement_details';
 interface StatementDetailsProps {

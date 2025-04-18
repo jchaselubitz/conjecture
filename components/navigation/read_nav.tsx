@@ -1,15 +1,15 @@
 'use client';
 
+import { Pencil } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useWindowSize } from 'react-use';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
+import { useUserContext } from '@/contexts/userContext';
 import { cn } from '@/lib/utils';
 
 import AnnotationModeButton from '../annotation_mode_button';
 import { Button } from '../ui/button';
-import Link from 'next/link';
-import { Pencil } from 'lucide-react';
-import { usePathname } from 'next/navigation';
-import { useUserContext } from '@/contexts/userContext';
 
 export default function ReadNav({
   annotationMode,

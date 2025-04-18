@@ -1,19 +1,18 @@
 'use client';
 
-import * as Sentry from '@sentry/nextjs';
 import { BaseCommentVote, BaseCommentWithUser } from 'kysely-codegen';
-import { ArrowUp, Edit2, RefreshCw, Reply, Trash2 } from 'lucide-react';
-import React, { startTransition, useOptimistic, useState } from 'react';
+import { DotIcon } from 'lucide-react';
+import React, { useOptimistic, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useUserContext } from '@/contexts/userContext';
-import { deleteComment, editComment, toggleCommentUpvote } from '@/lib/actions/commentActions';
-import { formatDate } from '@/lib/helpers/helpersDate';
+import { editComment } from '@/lib/actions/commentActions';
+import { timeAgo } from '@/lib/helpers/helpersDate';
 import { cn } from '@/lib/utils';
 
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { ButtonLoadingState, LoadingButton } from '../ui/loading-button';
 import { Textarea } from '../ui/textarea';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import CommentControls from './comment_controls';
 export type CommentWithReplies = BaseCommentWithUser & {
   children: BaseCommentWithUser[];
 };
@@ -41,7 +40,7 @@ const Comment: React.FC<CommentProps> = ({
   isRootComment = false
 }) => {
   const { userId } = useUserContext();
-  const [deletingButtonState, setDeletingButtonState] = useState<ButtonLoadingState>('default');
+
   const [editingComment, setEditingComment] = useState(false);
   const [commentContent, setCommentContent] = useState(comment.content);
   const [editingButtonState, setEditingButtonState] = useState<ButtonLoadingState>('default');
@@ -53,9 +52,6 @@ const Comment: React.FC<CommentProps> = ({
       return updated;
     }
   );
-
-  const voteCount = optVotes?.length || 0;
-  const hasUpvoted = optVotes?.some((vote) => vote.userId === userId) || false;
 
   const handleEditComment = async () => {
     if (!userId) return;
@@ -73,60 +69,6 @@ const Comment: React.FC<CommentProps> = ({
     }
   };
 
-  const handleVote = async () => {
-    if (!userId) return;
-    try {
-      const newVotes = hasUpvoted
-        ? optVotes?.filter((vote) => vote.userId !== userId)
-        : [
-            ...(optVotes || []),
-            {
-              id: crypto.randomUUID(),
-              userId,
-              commentId: comment.id,
-              createdAt: new Date()
-            }
-          ];
-      startTransition(() => {
-        if (newVotes) {
-          setOptVotes(newVotes);
-        }
-      });
-
-      await toggleCommentUpvote({
-        commentId: comment.id,
-        isUpvoted: hasUpvoted
-      });
-    } catch (error) {
-      console.error('Error upvoting comment:', error);
-    } finally {
-    }
-  };
-
-  const handleDeleteComment = async () => {
-    if (!userId) return;
-
-    setDeletingButtonState('loading');
-    try {
-      await deleteComment({
-        id: comment.id,
-        commenterId: comment.userId,
-        statementCreatorId
-      });
-
-      onCommentDeleted(comment.id);
-    } catch (error) {
-      console.error('Error deleting comment:', error);
-      Sentry.captureException(error);
-      setDeletingButtonState('error');
-    } finally {
-      setDeletingButtonState('default');
-    }
-  };
-
-  const isModerator = userId === statementCreatorId;
-  const isCreator = userId === comment.userId;
-  const isCreatorOrModerator = isCreator || isModerator;
   const maxLevel = 7; // Maximum nesting level
   const currentLevel = Math.min(level, maxLevel);
 
@@ -151,95 +93,6 @@ const Comment: React.FC<CommentProps> = ({
     }
   };
 
-  const commentControls = () => {
-    return (
-      <div className="flex items-center gap-1">
-        {!editingComment && userId && (
-          <>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onReplyClick(comment)}
-                    className=" text-xs opacity-70 hover:opacity-100 hover:cursor-pointer"
-                  >
-                    <Reply className="w-3 h-3" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Reply to comment</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            {isCreator && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setEditingComment(true)}
-                      className=" text-xs opacity-70 hover:opacity-100 hover:cursor-pointer"
-                    >
-                      <Edit2 className="w-3 h-3" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Edit comment</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={hasUpvoted ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={handleVote}
-                    className=" text-xs opacity-70 hover:opacity-100 hover:cursor-pointer"
-                  >
-                    <ArrowUp className="w-3 h-3 " />
-                    {isHovered && voteCount > 0 && voteCount}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{hasUpvoted ? 'Remove upvote' : 'Upvote comment'}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </>
-        )}
-
-        {isCreatorOrModerator && !isRootComment && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <LoadingButton
-                  buttonState={deletingButtonState}
-                  onClick={handleDeleteComment}
-                  text={<Trash2 className="w-3 h-3" />}
-                  variant="ghost"
-                  size="sm"
-                  loadingText={<RefreshCw className="w-3 h-3 animate-spin" />}
-                  successText="Deleted"
-                  errorText="Error"
-                  className="opacity-70 hover:opacity-100"
-                />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Delete comment</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        )}
-      </div>
-    );
-  };
-
   return (
     <div
       className={cn(
@@ -252,40 +105,49 @@ const Comment: React.FC<CommentProps> = ({
     >
       <div
         className={cn(
-          'p-3 rounded-md transition-colors flex flex-col gap-2',
-          currentLevel === 0 ? 'bg-background' : 'bg-muted mb-2',
+          'p-3 rounded-md transition-colors flex flex-col ',
+          currentLevel === 0 ? 'bg-background' : 'bg-muted',
           isHovered && 'bg-muted/80',
-          !isRootComment && level === 0 && 'mt-6'
+          !isRootComment && 'gap-3',
+          !isRootComment && level === 0 && 'mt-4'
         )}
       >
         {/* Comment header with user info */}
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center w-full justify-between">
           {!isRootComment && (
-            <div className="flex items-center space-x-2">
-              {/* <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs"> */}
-              <Avatar>
-                <AvatarImage
-                  src={comment.userImageUrl}
-                  className="object-cover border border-muted-foreground"
-                />
-                <AvatarFallback>{comment.userName?.charAt(0) || 'U'}</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col  text-primary font-semibold text-xs">
-                <p className="text-xs font-medium">
-                  {comment.userId === userId ? 'You' : comment.userName}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {formatDate({
-                    date: new Date(comment.createdAt),
-                    withTime: true
-                  })}
-                </p>
+            <>
+              <div className="flex items-center space-x-2">
+                <Avatar>
+                  <AvatarImage
+                    src={comment.userImageUrl}
+                    className="object-cover border border-muted-foreground"
+                  />
+                  <AvatarFallback>{comment.userName?.charAt(0) || 'U'}</AvatarFallback>
+                </Avatar>
+                <div className="flex font-semibold text-xs text-muted-foreground items-center">
+                  <p className="">{comment.userId === userId ? 'You' : comment.userName}</p>
+                  <DotIcon className="w-4 text-muted-foreground" />
+                  <p className="text-muted-foreground">{timeAgo(new Date(comment.createdAt))}</p>
+                </div>
               </div>
-            </div>
-          )}
 
-          {!isRootComment && commentControls()}
+              <CommentControls
+                userId={userId}
+                statementCreatorId={statementCreatorId}
+                comment={comment}
+                isRootComment={isRootComment}
+                isHovered={isHovered}
+                editingComment={editingComment}
+                onReplyClick={onReplyClick}
+                onEditClick={() => setEditingComment(true)}
+                onCommentDeleted={onCommentDeleted}
+                votes={optVotes}
+                setVotes={setOptVotes}
+              />
+            </>
+          )}
         </div>
+
         {editingComment ? (
           <div className="flex flex-col gap-2 mt-4">
             <Textarea
@@ -313,12 +175,25 @@ const Comment: React.FC<CommentProps> = ({
           <p className="text-sm whitespace-pre-wrap break-words">{comment.content}</p>
         )}
         {/* Reply button */}
-        {isRootComment && commentControls()}
       </div>
-
+      {isRootComment && (
+        <CommentControls
+          userId={userId}
+          comment={comment}
+          isRootComment={isRootComment}
+          isHovered={isHovered}
+          editingComment={editingComment}
+          onReplyClick={onReplyClick}
+          onEditClick={() => setEditingComment(true)}
+          onCommentDeleted={onCommentDeleted}
+          statementCreatorId={statementCreatorId}
+          votes={optVotes}
+          setVotes={setOptVotes}
+        />
+      )}
       {/* Nested replies */}
       {replies.length > 0 && (
-        <div className="mt-1">
+        <div className="">
           {replies.map((reply) => (
             <Comment
               key={reply.id}

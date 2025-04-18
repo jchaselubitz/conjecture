@@ -39,6 +39,7 @@ export default function AnnotationDrawer({
   setReplyToComment
 }: AnnotationDrawerProps) {
   const [showCommentInput, setShowCommentInput] = useState(false);
+  const [emblaRan, setEmblaRan] = useState(false);
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: 'center',
     containScroll: false,
@@ -64,16 +65,18 @@ export default function AnnotationDrawer({
   useEffect(() => {
     if (!emblaApi) return;
     emblaApi.on('select', onSelect);
+    setEmblaRan(true);
     return () => {
       emblaApi.off('select', onSelect);
+      setEmblaRan(false);
     };
-  }, [emblaApi, onSelect]);
+  }, [emblaApi, onSelect, setEmblaRan]);
 
   useEffect(() => {
-    if (selectedAnnotation && emblaApi) {
+    if (selectedAnnotation && emblaApi && !emblaRan) {
       emblaApi?.scrollTo(filteredAnnotations.indexOf(selectedAnnotation), true);
     }
-  }, [selectedAnnotation, emblaApi, filteredAnnotations]);
+  }, [selectedAnnotation, emblaApi, filteredAnnotations, emblaRan]);
 
   const onCancelReply = () => {
     cancelReply();
@@ -91,7 +94,7 @@ export default function AnnotationDrawer({
       repositionInputs={false}
       onOpenChange={onHandleCloseAnnotationDrawer}
     >
-      <DrawerContent className="pt-2 h-[60dvh]" handle={false}>
+      <DrawerContent className="pt-2 h-[60dvh] focus:outline-none" handle={false}>
         <DrawerTitle className="sr-only">Comments</DrawerTitle>
 
         <div className="overflow-y-auto w-full ">
@@ -104,7 +107,6 @@ export default function AnnotationDrawer({
                       annotation={annotation}
                       statementCreatorId={statement.creatorId}
                       statementId={statement.statementId}
-                      handleAnnotationSelection={handleAnnotationSelection}
                       nestedComments={nestComments(annotation.comments)}
                       setReplyToComment={setReplyToComment}
                     />
@@ -115,12 +117,13 @@ export default function AnnotationDrawer({
           </div>
         </div>
 
-        <div className="sticky bottom-0 z-60 w-full justify-center bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 h-fit">
+        <div className="sticky bottom-0 z-60 justify-center bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 h-fit">
           {showCommentInput ? (
             <div className="w-full px-2 pt-2">
               {selectedAnnotation && (
                 <CommentInput
                   showCommentInput={showCommentInput}
+                  setShowCommentInput={setShowCommentInput}
                   annotation={selectedAnnotation}
                   replyToComment={replyToComment}
                   onCancelReply={cancelReply}

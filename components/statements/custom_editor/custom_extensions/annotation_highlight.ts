@@ -80,8 +80,15 @@ export const AnnotationHighlight = Mark.create<AnnotationHighlightOptions>({
           if (!attributes.userId) {
             return {};
           }
+          let colors = generateColorFromString(attributes.userId);
 
-          const colors = generateColorFromString(attributes.userId);
+          if (attributes.isAuthor) {
+            colors = {
+              backgroundColor: `hsla(230, 30%, 75%, 0.4)`,
+              hoverBackgroundColor: `hsla(230, 30%, 55%, 0.45)`,
+              borderColor: `hsl(230, 30%, 55%)`,
+            };
+          }
 
           return {
             "data-user-id": attributes.userId,

@@ -1,22 +1,17 @@
 'use client';
 
-import * as Sentry from '@sentry/nextjs';
 import { AnnotationWithComments, BaseCommentWithUser } from 'kysely-codegen';
-import { NewAnnotation } from 'kysely-codegen';
-import { RefreshCw, Trash2, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
 import { Button } from '@/components/ui/button';
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
-import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
-import { deleteAnnotation } from '@/lib/actions/annotationActions';
 import { createComment } from '@/lib/actions/commentActions';
-import { usePathname } from 'next/navigation';
 interface Comment {
   content: string;
   id: string;
@@ -29,6 +24,7 @@ interface CommentInputProps {
   setComments: React.Dispatch<React.SetStateAction<BaseCommentWithUser[]>>;
   setReplyToComment: React.Dispatch<React.SetStateAction<BaseCommentWithUser | null>>;
   showCommentInput?: boolean;
+  setShowCommentInput?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function CommentInput({
@@ -37,19 +33,16 @@ export default function CommentInput({
   onCancelReply,
   setComments,
   setReplyToComment,
-
+  setShowCommentInput,
   showCommentInput
 }: CommentInputProps) {
   const { name, imageUrl, userId } = useUserContext();
-  const { updatedStatement, editor } = useStatementContext();
-  const { setAnnotations, setSelectedAnnotationId } = useStatementAnnotationContext();
 
   const isMobile = useWindowSize().width < 600;
-  const isCreator = userId === updatedStatement?.creatorId;
 
   const [commentText, setCommentText] = useState('');
   const [submittingButtonState, setSubmittingButtonState] = useState<ButtonLoadingState>('default');
-  const [deletingButtonState, setDeletingButtonState] = useState<ButtonLoadingState>('default');
+
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
   const pathname = usePathname();
   const pathnameWithoutParams = pathname.split('/').slice(0, 3).join('/');
@@ -95,6 +88,12 @@ export default function CommentInput({
     }
   };
 
+  const handleCancel = () => {
+    console.log('handleCancelReply');
+    setShowCommentInput?.(false);
+    onCancelReply();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Submit on Enter
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -105,36 +104,7 @@ export default function CommentInput({
     // Cancel reply on Escape
     if (e.key === 'Escape' && replyToComment) {
       e.preventDefault();
-      onCancelReply();
-    }
-  };
-
-  const handleDeleteAnnotation = async () => {
-    setDeletingButtonState('loading');
-    const annotationId = annotation.id;
-    if (!annotationId) return;
-
-    setAnnotations((prevAnnotations: NewAnnotation[]) =>
-      prevAnnotations.filter((a) => a.id !== annotationId)
-    );
-
-    try {
-      await deleteAnnotation({
-        annotationId: annotation.id,
-        statementCreatorId: updatedStatement?.creatorId,
-        annotationCreatorId: annotation.userId,
-        statementId: annotation.draftId
-      });
-      if (editor) {
-        editor.commands.deleteAnnotationHighlight(annotationId);
-        setDeletingButtonState('success');
-      } else {
-        throw new Error('Editor not found');
-      }
-      setSelectedAnnotationId(undefined);
-    } catch (error) {
-      console.error('Error deleting annotation:', error);
-      Sentry.captureException(error);
+      handleCancel();
     }
   };
 
@@ -174,30 +144,6 @@ export default function CommentInput({
           />
 
           <div className="flex flex-row justify-between mt-2 gap-2">
-            {isCreator && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <LoadingButton
-                      buttonState={deletingButtonState}
-                      onClick={(e) => {
-                        e.stopPropagation(); // Prevent accordion from toggling
-                        handleDeleteAnnotation();
-                      }}
-                      text={<Trash2 className="w-4 h-4" color="red" />}
-                      variant="ghost"
-                      size="sm"
-                      loadingText={<RefreshCw className="w-4 h-4 animate-spin" />}
-                      successText="Deleted"
-                      errorText="Error deleting annotation"
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Delete annotation</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
             {!isMobile && (
               <div className="text-xs text-muted-foreground self-center">
                 Press <kbd className="px-1 py-0.5 bg-muted rounded">⇧</kbd>+
@@ -213,7 +159,7 @@ export default function CommentInput({
                       size="sm"
                       onClick={() => {
                         setCommentText('');
-                        onCancelReply();
+                        handleCancel();
                       }}
                     >
                       {commentText ? 'Clear' : 'Cancel'}

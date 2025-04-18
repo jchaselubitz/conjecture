@@ -42,3 +42,31 @@ export const formatDateForCitation = ({
  }
  return `${year}`;
 };
+
+export const timeAgo = (date: Date) => {
+ const now = new Date();
+ const diffTime = Math.abs(now.getTime() - date.getTime());
+ if (diffTime < 1000 * 60 * 60 * 24) {
+  const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
+  if (diffHours === 0) {
+   const diffMinutes = Math.ceil(diffTime / (1000 * 60));
+   if (diffMinutes === 0) {
+    return "now";
+   } else if (diffMinutes === 1) {
+    return "1 minute ago";
+   } else {
+    return `${diffMinutes} minutes ago`;
+   }
+  } else if (diffHours === 1) {
+   return "1 hour ago";
+  } else {
+   return `${diffHours} hours ago`;
+  }
+ }
+ const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+ if (diffDays === 1) {
+  return "1 day ago";
+ } else {
+  return `${diffDays} days ago`;
+ }
+};

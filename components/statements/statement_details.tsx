@@ -17,6 +17,7 @@ import { updateStatementHeaderImageUrl } from '@/lib/actions/statementActions';
 import { headerImageChange } from '@/lib/helpers/helpersStatements';
 import { generateStatementId } from '@/lib/helpers/helpersStatements';
 
+import ReadNav from '../navigation/read_nav';
 import { AspectRatio } from '../ui/aspect-ratio';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -28,7 +29,6 @@ import { ImageNodeEditor } from './custom_editor/image_node_editor';
 import { LatexNodeEditor } from './custom_editor/latex_node_editor';
 import { FootnoteList } from './footnote/footnote_list';
 import StatementOptions from './statement_options';
-import ReadNav from '../navigation/read_nav';
 
 export interface StatementDetailsProps {
   editMode: boolean;

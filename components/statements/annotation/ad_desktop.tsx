@@ -1,15 +1,16 @@
 import { AnnotationWithComments, BaseCommentWithUser } from 'kysely-codegen';
 import { useEffect, useRef } from 'react';
 import { AccordionContent, AccordionTrigger } from '@/components/ui/accordion';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
-import { formatDate } from '@/lib/helpers/helpersDate';
+import { useUserContext } from '@/contexts/userContext';
 import { cn } from '@/lib/utils';
 
+import AnnotationHeader from '../annotation_header';
 import { CommentWithReplies } from '../comment';
 import Comment from '../comment';
 import CommentInput from './comment_input';
+
 interface AnnotationDetailDesktopProps {
   selected: boolean;
   annotation: AnnotationWithComments;
@@ -27,6 +28,10 @@ export default function AnnotationDetailDesktop({
 }: AnnotationDetailDesktopProps) {
   const { replyToComment, setReplyToComment, setComments, cancelReply, handleCommentDeleted } =
     useStatementAnnotationContext();
+
+  const { userId } = useUserContext();
+  const isCreator = userId === statementCreatorId;
+
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
 
   const handleReplyClick = (comment: BaseCommentWithUser) => {
@@ -54,6 +59,10 @@ export default function AnnotationDetailDesktop({
     }
   }, [selected]);
 
+  const earliestComment = nestedComments.sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  )[0];
+
   return (
     <Card
       ref={containerRef}
@@ -63,31 +72,7 @@ export default function AnnotationDetailDesktop({
       )}
     >
       <AccordionTrigger className={cn('w-full p-4 hover:no-underline')}>
-        <div className="flex flex-col gap-3 w-full">
-          {annotation.text && (
-            <div className="bg-muted p-3 rounded-md">
-              <p className="text-sm italic line-clamp-2">{`"${annotation.text}"`}</p>
-            </div>
-          )}
-
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center space-x-2">
-              <Avatar className="border ">
-                <AvatarImage src={annotation.userImageUrl} className="object-cover" />
-                <AvatarFallback>{annotation.userName?.charAt(0) || 'U'}</AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="text-sm font-medium">{annotation.userName || 'User'}</p>
-                <p className="text-xs text-muted-foreground">
-                  {formatDate({
-                    date: new Date(annotation.createdAt),
-                    withTime: true
-                  })}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <AnnotationHeader annotation={annotation} isCreator={isCreator} />
       </AccordionTrigger>
 
       <AccordionContent className="flex flex-col px-4 pb-4 gap-3">
@@ -103,7 +88,7 @@ export default function AnnotationDetailDesktop({
                 annotationId={annotation.id}
                 onReplyClick={handleReplyClick}
                 onCommentDeleted={handleCommentDeleted}
-                isRootComment={nestedComments[0]?.id === comment.id}
+                isRootComment={earliestComment.id === comment.id}
               />
             ))}
           </div>

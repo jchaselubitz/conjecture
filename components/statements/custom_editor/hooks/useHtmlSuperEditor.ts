@@ -455,12 +455,12 @@ export const useHtmlSuperEditor = ({
           // Annotation click handling
 
           if (annotationElement && onAnnotationClick) {
-            editor?.setEditable(false);
             const id = annotationElement.getAttribute("data-annotation-id");
             event.preventDefault();
             event.stopPropagation();
             if (id) {
               onAnnotationClick(id);
+
               return true;
             }
           }
@@ -520,15 +520,11 @@ export const useHtmlSuperEditor = ({
       router.replace(newUrl, { scroll: false });
     }
   }, [editor, selectedAnnotationId, router, isMobile]); // Added isMobile dependency
-
   // Effect to apply/update annotation marks
   useEffect(() => {
-    if (!editor?.isEditable && !editor?.isFocused) return; // Apply only if editable or focused
-    if (!editor) return;
+    if (!editor) return; // Apply only if editable or focused
 
     const applyAnnotations = () => {
-      if (!editor) return;
-
       // Check if annotations actually changed to prevent unnecessary updates
       const currentMarksInfo = getMarks(editor, [
         "annotationHighlight",
@@ -583,7 +579,7 @@ export const useHtmlSuperEditor = ({
         const from = Math.min(annotation.start, maxPos);
         const to = Math.min(annotation.end, maxPos);
         if (from >= to) return; // Ignore invalid ranges
-
+        const selected = annotation.id === selectedAnnotationId;
         editor
           .chain()
           .setTextSelection({ from, to })
@@ -595,7 +591,7 @@ export const useHtmlSuperEditor = ({
               ? annotation.createdAt.toISOString()
               : String(annotation.createdAt),
             tag: annotation.tag || null,
-            selected: annotation.id === selectedAnnotationId, // Set selected state directly
+            selected,
           })
           .run();
       });
