@@ -343,20 +343,20 @@ export async function createDraft({
 }
 
 export async function updateDraft({
+  id,
   title,
   subtitle,
   content,
   headerImg,
-  publishedAt,
   versionNumber,
   statementId,
   creatorId,
 }: {
+  id: string;
   title?: string;
   subtitle?: string;
   content?: string;
   headerImg?: string;
-  publishedAt?: Date;
   versionNumber: number;
   statementId: string;
   creatorId: string;
@@ -369,9 +369,8 @@ export async function updateDraft({
       subtitle,
       content,
       headerImg,
-      publishedAt,
-      versionNumber,
     })
+    .where("id", "=", id)
     .where("statementId", "=", `${statementId}`)
     .where("versionNumber", "=", versionNumber)
     .where("creatorId", "=", user.id)

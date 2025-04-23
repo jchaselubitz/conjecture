@@ -175,7 +175,6 @@ export const AnnotationHighlight = Mark.create<AnnotationHighlightOptions>({
             mark.type.name === this.name &&
             mark.attrs.annotationId === annotationId
           );
-
           if (marks.length > 0) {
             tr.removeMark(
               pos,

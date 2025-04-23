@@ -36,7 +36,7 @@ export default function AnnotationHeader({ annotation, isCreator }: AnnotationHe
         });
 
         editor.commands.deleteAnnotationHighlight(annotationId);
-        setAnnotations((prevAnnotations: NewAnnotation[]) =>
+        setAnnotations((prevAnnotations: AnnotationWithComments[]) =>
           prevAnnotations.filter((a) => a.id !== annotationId)
         );
 

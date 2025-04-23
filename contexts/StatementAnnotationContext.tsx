@@ -10,18 +10,20 @@ import {
   useEffect,
   useState
 } from 'react';
+import { CommentWithReplies } from '@/components/statements/comment';
+import { nestComments } from '@/lib/helpers/helpersGeneral';
 
 import { useStatementContext } from './StatementBaseContext';
 
 interface StatementAnnotationContextType {
-  annotations: NewAnnotation[];
-  setAnnotations: Dispatch<SetStateAction<NewAnnotation[]>>;
+  annotations: AnnotationWithComments[];
+  setAnnotations: Dispatch<SetStateAction<AnnotationWithComments[]>>;
   selectedAnnotationId: string | undefined;
   setSelectedAnnotationId: Dispatch<SetStateAction<string | undefined>>;
   selectedAnnotation: AnnotationWithComments | null;
   setSelectedAnnotation: Dispatch<SetStateAction<AnnotationWithComments | null>>;
-  comments: BaseCommentWithUser[];
-  setComments: Dispatch<SetStateAction<BaseCommentWithUser[]>>;
+  comments: CommentWithReplies[];
+  setComments: Dispatch<SetStateAction<CommentWithReplies[]>>;
   replyToComment: BaseCommentWithUser | null;
   setReplyToComment: Dispatch<SetStateAction<BaseCommentWithUser | null>>;
   cancelReply: () => void;
@@ -34,13 +36,21 @@ const StatementAnnotationContext = createContext<StatementAnnotationContextType 
 
 export function StatementAnnotationProvider({ children }: { children: ReactNode }) {
   const { updatedStatement } = useStatementContext();
-  const [annotations, setAnnotations] = useState<NewAnnotation[]>(updatedStatement.annotations);
+  const [annotations, setAnnotations] = useState<AnnotationWithComments[]>(
+    updatedStatement.annotations
+  );
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | undefined>(undefined);
   const [selectedAnnotation, setSelectedAnnotation] = useState<AnnotationWithComments | null>(null);
-  const [comments, setComments] = useState<BaseCommentWithUser[]>(
-    selectedAnnotation?.comments || []
+
+  const [comments, setComments] = useState<CommentWithReplies[]>(
+    nestComments(selectedAnnotation?.comments || [])
   );
+
   const [replyToComment, setReplyToComment] = useState<BaseCommentWithUser | null>(null);
+
+  useEffect(() => {
+    setComments(nestComments(selectedAnnotation?.comments || []));
+  }, [selectedAnnotation]);
 
   useEffect(() => {
     setSelectedAnnotation(

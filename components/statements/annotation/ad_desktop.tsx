@@ -26,8 +26,14 @@ export default function AnnotationDetailDesktop({
   statementCreatorId,
   nestedComments
 }: AnnotationDetailDesktopProps) {
-  const { replyToComment, setReplyToComment, setComments, cancelReply, handleCommentDeleted } =
-    useStatementAnnotationContext();
+  const {
+    replyToComment,
+    setReplyToComment,
+    setComments,
+    cancelReply,
+    handleCommentDeleted,
+    comments
+  } = useStatementAnnotationContext();
 
   const { userId } = useUserContext();
   const isCreator = userId === statementCreatorId;
@@ -76,9 +82,9 @@ export default function AnnotationDetailDesktop({
       </AccordionTrigger>
 
       <AccordionContent className="flex flex-col px-4 pb-4 gap-3">
-        {nestedComments.length > 0 && (
+        {comments.length > 0 && (
           <div className=" border-none pb-1 ">
-            {nestedComments.map((comment) => (
+            {comments.map((comment) => (
               <Comment
                 key={comment.id}
                 comment={comment}

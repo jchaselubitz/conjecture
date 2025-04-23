@@ -12,7 +12,7 @@ import {
 } from "kysely-codegen";
 import { UpsertImageDataType } from "../actions/statementActions";
 import { createAnnotation } from "../actions/annotationActions";
-
+import { AnnotationWithComments } from "kysely-codegen";
 export type PositionParams = {
   x: number;
   y: number;
@@ -62,9 +62,9 @@ export const ensureAnnotationMarks = async ({
   marks,
 }: {
   editor: Editor;
-  annotations: NewAnnotation[];
+  annotations: AnnotationWithComments[];
   draftId: string;
-  setAnnotations: (annotations: NewAnnotation[]) => void;
+  setAnnotations: Dispatch<SetStateAction<AnnotationWithComments[]>>;
   marks: { node: any }[];
 }) => {
   marks.forEach(async ({ node }) => {
@@ -78,7 +78,7 @@ export const ensureAnnotationMarks = async ({
       );
 
       if (!existingAnnotation) {
-        const newAnnotation: NewAnnotation = {
+        const newAnnotation: AnnotationWithComments = {
           id: annotationId,
           text: node.text || "",
           userId: annotationMark.attrs.userId,
@@ -89,10 +89,13 @@ export const ensureAnnotationMarks = async ({
           updatedAt: new Date(),
           start: editor.state.selection.from,
           end: editor.state.selection.to,
+          comments: [],
+          userName: "",
+          userImageUrl: "",
         };
         setAnnotations([
           ...annotations,
-          newAnnotation as unknown as NewAnnotation,
+          newAnnotation,
         ]);
         await createAnnotation({
           annotation: {
@@ -351,12 +354,12 @@ export type CreateAnnotationProps = {
   userId: string | undefined;
   editor: Editor | null;
   draftId: string;
-  annotations: NewAnnotation[];
+  annotations: AnnotationWithComments[];
   statementCreatorId: string;
   showAuthorComments: boolean;
   showReaderComments: boolean;
   setSelectedAnnotationId: (id: string) => void | undefined;
-  setAnnotations: (annotations: NewAnnotation[]) => void | undefined;
+  setAnnotations: Dispatch<SetStateAction<AnnotationWithComments[]>>;
 };
 
 export const createStatementAnnotation = async (
@@ -390,7 +393,7 @@ export const createStatementAnnotation = async (
   try {
     // Create a new annotation
     const annotationId = nanoid();
-    const newAnnotation: NewAnnotation = {
+    const newAnnotation: AnnotationWithComments = {
       id: annotationId,
       text: editor.state.doc.textBetween(from, to),
       userId,
@@ -401,8 +404,11 @@ export const createStatementAnnotation = async (
       isPublic: true,
       createdAt: new Date(),
       updatedAt: new Date(),
+      comments: [],
+      userName: "",
+      userImageUrl: "",
     };
-    setAnnotations([...annotations, newAnnotation as unknown as NewAnnotation]);
+    setAnnotations([...annotations, newAnnotation]);
     await createAnnotation({
       annotation: {
         id: newAnnotation.id,

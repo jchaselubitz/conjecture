@@ -12,7 +12,7 @@ import {
   NewStatementCitation,
 } from "kysely-codegen";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { startTransition, useEffect } from "react";
 import { useWindowSize } from "react-use";
 import { useStatementContext } from "@/contexts/StatementBaseContext";
 import { deleteCitation } from "@/lib/actions/citationActions";
@@ -246,8 +246,9 @@ export const useHtmlSuperEditor = ({
           ...updatedStatement,
           content: newContent,
         };
-
-        setUpdatedStatement(newStatement);
+        startTransition(() => {
+          setUpdatedStatement(newStatement);
+        });
       }
     },
     onSelectionUpdate: ({ editor }) => {

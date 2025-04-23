@@ -39,6 +39,7 @@ export default function StatementLayout({
     cancelReply,
     setReplyToComment,
     setComments,
+    annotations,
     setSelectedAnnotation
   } = useStatementAnnotationContext();
 
@@ -61,8 +62,6 @@ export default function StatementLayout({
 
   const [showAnnotationDrawer, setShowAnnotationDrawer] = useState(false);
   const isCreator = updatedStatement.creatorId === userId;
-
-  const { annotations } = updatedStatement;
 
   const panelGroupRef = useRef<React.ElementRef<typeof ResizablePanelGroup>>(null);
 

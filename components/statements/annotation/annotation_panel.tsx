@@ -23,7 +23,7 @@ export default function AnnotationPanel({
   statementId,
   statementCreatorId
 }: AnnotationPanelProps) {
-  const { selectedAnnotationId } = useStatementAnnotationContext();
+  const { selectedAnnotationId, comments } = useStatementAnnotationContext();
 
   return (
     <div className="flex flex-col mt-4 gap-6 mx-auto overflow-auto w-full">
@@ -48,7 +48,7 @@ export default function AnnotationPanel({
                 statementId={statementId}
                 selected={selectedAnnotationId === annotation.id}
                 statementCreatorId={statementCreatorId}
-                nestedComments={nestComments(annotation.comments)}
+                nestedComments={comments}
               />
             </AccordionItem>
           ))}

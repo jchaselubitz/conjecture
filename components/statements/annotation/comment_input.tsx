@@ -12,6 +12,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUserContext } from '@/contexts/userContext';
 import { createComment } from '@/lib/actions/commentActions';
+import { nestComments } from '@/lib/helpers/helpersGeneral';
+
+import { CommentWithReplies } from '../comment';
 interface Comment {
   content: string;
   id: string;
@@ -21,7 +24,7 @@ interface CommentInputProps {
   annotation: AnnotationWithComments;
   replyToComment: Comment | null;
   onCancelReply: () => void;
-  setComments: React.Dispatch<React.SetStateAction<BaseCommentWithUser[]>>;
+  setComments: React.Dispatch<React.SetStateAction<CommentWithReplies[]>>;
   setReplyToComment: React.Dispatch<React.SetStateAction<BaseCommentWithUser | null>>;
   showCommentInput?: boolean;
   setShowCommentInput?: React.Dispatch<React.SetStateAction<boolean>>;
@@ -59,15 +62,19 @@ export default function CommentInput({
         id: crypto.randomUUID(),
         parentId: replyToComment?.id || null
       };
+
       setComments((prevComments) => [
-        ...prevComments,
-        {
-          ...newComment,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          userImageUrl: imageUrl || '',
-          userName: name || ''
-        }
+        ...nestComments([
+          ...prevComments,
+          {
+            ...newComment,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            userImageUrl: imageUrl || '',
+            userName: name || '',
+            children: []
+          }
+        ])
       ]);
 
       await createComment({
@@ -82,7 +89,7 @@ export default function CommentInput({
     } catch (error) {
       console.error('Error creating comment:', error);
       setSubmittingButtonState('error');
-      // Revert optimistic update on error
+      setComments(nestComments(annotation.comments));
     } finally {
       setSubmittingButtonState('default');
     }

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { nestComments } from '@/lib/helpers/helpersGeneral';
 
+import { CommentWithReplies } from '../comment';
 import AnnotationDetailMobile from './ad_mobile';
 import CommentInput from './comment_input';
 
@@ -21,7 +22,7 @@ interface AnnotationDrawerProps {
   selectedAnnotation: AnnotationWithComments | null;
   replyToComment: BaseCommentWithUser | null;
   cancelReply: () => void;
-  setComments: Dispatch<SetStateAction<BaseCommentWithUser[]>>;
+  setComments: Dispatch<SetStateAction<CommentWithReplies[]>>;
   setReplyToComment: Dispatch<SetStateAction<BaseCommentWithUser | null>>;
 }
 
