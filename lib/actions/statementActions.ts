@@ -503,7 +503,7 @@ export async function upsertStatementImage({
     .execute();
   revalidatePath(
     revalidationPath?.path ?? `/[userSlug]/${statementId}`,
-    "layout",
+    revalidationPath?.type ?? "layout",
   );
 }
 

@@ -29,9 +29,10 @@ export function ImageButton({ statementId }: ImageButtonProps) {
     };
 
     openImagePopover({
-      src: '',
-      alt: '',
+      // src: '',
+      // alt: '',
       id: undefined,
+      caption: '',
       position,
       setInitialImageData,
       setSelectedNodePosition,

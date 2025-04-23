@@ -113,3 +113,53 @@ export const saveImage = async ({
       .run();
   }
 };
+
+export const updateImage = async ({
+  editor,
+  userId,
+  pathname,
+  statementId,
+  imageData,
+}: {
+  editor: Editor;
+  userId: string;
+  pathname: string;
+  statementId: string;
+  imageData: UpsertImageDataType;
+}) => {
+  // Check if an image with this ID already exists in the document
+
+  editor.state.doc.descendants((node) => {
+    if (
+      node.type.name === "blockImage" &&
+      node.attrs.imageId === imageData.id
+    ) {
+      return false; // Stop traversing
+    }
+    return true;
+  });
+
+  await upsertStatementImage({
+    alt: imageData.alt || imageData.id || "",
+    src: imageData.src,
+    id: imageData.id,
+    caption: imageData.caption,
+    statementId,
+    revalidationPath: {
+      path: "/",
+      type: "page",
+    },
+  });
+
+  // Update existing image
+  editor
+    ?.chain()
+    .focus()
+    .updateBlockImage({
+      imageId: imageData.id,
+      src: imageData.src,
+      alt: imageData.alt ?? undefined,
+      caption: imageData.caption ?? undefined,
+    })
+    .run();
+};

@@ -14,7 +14,7 @@ import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { useUserContext } from '@/contexts/userContext';
 import { deleteStatementImage, upsertStatementImage } from '@/lib/actions/statementActions';
 
-import { saveImage } from './custom_extensions/helpers/helpersImageExtension';
+import { saveImage, updateImage } from './custom_extensions/helpers/helpersImageExtension';
 
 interface ImagePopoverEditorProps {
   children: React.ReactNode;
@@ -106,26 +106,28 @@ export function ImagePopoverEditor({
               alt: alt || file?.name || '',
               src: previewUrl,
               id: filename,
-              caption: initialImageData.caption,
+              caption: caption || initialImageData.caption,
               statementId
             },
             file
           });
         }
         if (initialImageData.id) {
-          await upsertStatementImage({
-            alt: alt || file?.name || '',
-            src: initialImageData.src,
-            id: initialImageData.id,
-            caption: initialImageData.caption,
+          await updateImage({
+            editor,
+            userId,
+            pathname,
             statementId,
-            revalidationPath: {
-              path: pathname,
-              type: 'layout'
+            imageData: {
+              alt: alt || file?.name || '',
+              src: initialImageData.src,
+              id: initialImageData.id,
+              caption: caption || initialImageData.caption,
+              statementId
             }
           });
-          updateDraft();
         }
+        updateDraft();
         setSaveButtonState('success');
         handleClosePopover();
       } catch (error) {

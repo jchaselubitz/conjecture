@@ -282,6 +282,7 @@ export type ImagePopoverProps = {
   src?: string;
   alt?: string;
   id?: string;
+  caption?: string;
   position?: { x: number; y: number; width: number; height: number } | null;
   statementImages?: BaseStatementImage[];
   setInitialImageData: Dispatch<SetStateAction<UpsertImageDataType>>;
@@ -293,7 +294,10 @@ export type ImagePopoverProps = {
 };
 
 export const openImagePopover = ({
+  src = "",
+  alt = "",
   id = "",
+  caption = "",
   position = null,
   statementImages = [],
   setInitialImageData,
@@ -304,8 +308,9 @@ export const openImagePopover = ({
   const existingImage = statementImages.find((image) => image.id === id);
   if (existingImage) {
     setInitialImageData({
-      src: existingImage.src ?? "",
-      alt: existingImage.alt ?? "",
+      src: existingImage.src ?? src ?? "",
+      alt: existingImage.alt ?? alt ?? "",
+      caption: existingImage.caption ?? caption ?? "",
       statementId,
       id,
     });

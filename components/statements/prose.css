@@ -232,12 +232,19 @@
   display: block;
   max-width: 100%;
   height: auto;
-  margin: 1rem auto;
-  margin-bottom: 4rem;
-  margin-top: 4rem;
+  /* margin: 1rem auto; */
+  
+  margin-top: 2rem;
   cursor: pointer;
   border-radius: 4px;
   transition: all 0.2s ease;
+}
+
+.ProseMirror img[data-type="block-image"] .caption {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 3rem;
+  text-align: center;
 }
 
 .ProseMirror img[data-type="block-image"]:hover {

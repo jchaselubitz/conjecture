@@ -72,6 +72,11 @@ export const BlockImage = Node.create<BlockImageOptions>({
           alt: attributes.alt,
         }),
       },
+      caption: {
+        default: "",
+        parseHTML: () => null,
+        renderHTML: () => ({}),
+      },
       imageId: {
         default: null,
         parseHTML: (element) => element.getAttribute("data-image-id"),
@@ -79,22 +84,48 @@ export const BlockImage = Node.create<BlockImageOptions>({
           "data-image-id": attributes.imageId || nanoid(),
         }),
       },
+      width: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("width"),
+        renderHTML: (
+          attributes,
+        ) => (attributes.width ? { width: attributes.width } : {}),
+      },
+      height: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("height"),
+        renderHTML: (
+          attributes,
+        ) => (attributes.height ? { height: attributes.height } : {}),
+      },
     };
   },
 
   parseHTML() {
     return [
       {
-        tag: 'img[data-type="block-image"]',
-        getAttrs: (node) => {
-          if (typeof node === "string") return {};
-          const element = node as HTMLElement;
+        tag: 'div[data-block-image-container="true"]',
+        getAttrs: (domNode) => {
+          const element = domNode as HTMLElement;
+          const img = element.querySelector('img[data-type="block-image"]');
+          const captionDiv = element.querySelector(
+            // ".caption",
+            ".text-xs.text-center.text-muted-foreground",
+          );
+
+          if (!img) {
+            return false;
+          }
+
+          const caption = captionDiv ? captionDiv.textContent || "" : "";
+
           return {
-            src: element.getAttribute("src"),
-            alt: element.getAttribute("alt"),
-            width: element.getAttribute("width"),
-            height: element.getAttribute("height"),
-            imageId: element.getAttribute("data-image-id"),
+            src: img.getAttribute("src"),
+            alt: img.getAttribute("alt"),
+            imageId: img.getAttribute("data-image-id"),
+            width: img.getAttribute("width"),
+            height: img.getAttribute("height"),
+            caption: caption,
           };
         },
       },
@@ -102,19 +133,44 @@ export const BlockImage = Node.create<BlockImageOptions>({
   },
 
   renderHTML({ HTMLAttributes, node }) {
-    return [
-      "img",
-      mergeAttributes(
-        this.options.HTMLAttributes,
-        HTMLAttributes,
-        {
-          "data-type": "block-image",
-          "data-image-id": node.attrs.imageId,
-        },
-        node.attrs.width ? { width: node.attrs.width } : {},
-        node.attrs.height ? { height: node.attrs.height } : {},
-      ),
+    const containerAttrs = {
+      class: "flex flex-col items-center gap-1",
+      "data-block-image-container": "true",
+    };
+
+    const imgAttrs = mergeAttributes(
+      this.options.HTMLAttributes,
+      HTMLAttributes,
+      {
+        "data-type": "block-image",
+        "data-image-id": node.attrs.imageId,
+        src: node.attrs.src,
+        alt: node.attrs.alt,
+      },
+      node.attrs.width ? { width: node.attrs.width } : {},
+      node.attrs.height ? { height: node.attrs.height } : {},
+    );
+
+    delete imgAttrs.caption;
+
+    const elements: [string, any, ...any[]] = [
+      "div",
+      containerAttrs,
+      ["img", imgAttrs],
     ];
+
+    if (node.attrs.caption) {
+      elements.push([
+        "div",
+        {
+          class: "mb-8 text-xs text-center text-muted-foreground",
+          // class: "caption",
+        },
+        node.attrs.caption,
+      ]);
+    }
+
+    return elements;
   },
 
   addCommands() {
@@ -280,7 +336,6 @@ export const BlockImage = Node.create<BlockImageOptions>({
         key: new PluginKey("blockImageDeletion"),
         props: {
           handleKeyDown: (view, event) => {
-            // Process only intentional deletion keypresses
             if (event.key === "Delete" || event.key === "Backspace") {
               const { selection } = view.state;
               if (selection.empty) return false;
@@ -303,7 +358,6 @@ export const BlockImage = Node.create<BlockImageOptions>({
           },
         },
         appendTransaction: (transactions, oldState, newState) => {
-          // Skip if editor is remounting or we're not in edit mode
           const view = this.editor.view;
           const isEditModeTransitioning =
             view?.dom.closest('[data-edit-transitioning="true"]') != null;

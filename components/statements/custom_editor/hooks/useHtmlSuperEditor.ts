@@ -345,6 +345,7 @@ export const useHtmlSuperEditor = ({
               openImagePopover({
                 src: imageNode.getAttribute("src") || "",
                 alt: imageNode.getAttribute("alt") || "",
+                caption: imageNode.getAttribute("caption") || "",
                 id,
                 position: {
                   x: rect.left,
