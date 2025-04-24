@@ -37,7 +37,8 @@ export function CitationButton({ editor, statementId, className }: CitationButto
       publisher: undefined,
       titlePublication: undefined,
       volume: undefined,
-      id: ''
+      id: '',
+      pageType: undefined
     };
 
     if (!citationPopoverOpen) {

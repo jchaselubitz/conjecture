@@ -16,6 +16,8 @@ interface FootnoteProps {
 
 export function Footnote({ order, citation, className, anchorId }: FootnoteProps) {
   // Generate MLA style citation text
+  const { pageType } = citation;
+  const pageTypeText = pageType === 'location' ? 'loc.' : 'pp.';
   const generateMLACitation = () => {
     const parts = [];
     // Author names
@@ -66,9 +68,9 @@ export function Footnote({ order, citation, className, anchorId }: FootnoteProps
     }
     // Pages
     if (citation.pageStart && citation.pageEnd) {
-      parts.push(`pp. ${citation.pageStart}-${citation.pageEnd}.`);
+      parts.push(`${pageTypeText} ${citation.pageStart}-${citation.pageEnd}.`);
     } else if (citation.pageStart) {
-      parts.push(`p. ${citation.pageStart}.`);
+      parts.push(`${pageTypeText} ${citation.pageStart}.`);
     }
 
     return parts.join(' ');

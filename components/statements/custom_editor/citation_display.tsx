@@ -15,10 +15,12 @@ export function CitationDisplay() {
   const [conjecture, setConjecture] = useState<BaseDraft | null>(null);
 
   const formatPageRange = () => {
+    const { pageType } = citation;
+    const pageTypeText = pageType === 'location' ? 'loc.' : 'pp.';
     if (citation.pageStart && citation.pageEnd) {
-      return `pp. ${citation.pageStart}-${citation.pageEnd}`;
+      return `${pageTypeText} ${citation.pageStart}-${citation.pageEnd}`;
     } else if (citation.pageStart) {
-      return `p. ${citation.pageStart}`;
+      return `${pageTypeText} ${citation.pageStart}`;
     }
     return null;
   };

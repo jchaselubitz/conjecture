@@ -2,7 +2,6 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Editor } from '@tiptap/react';
-import { nanoid } from 'nanoid';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -49,7 +48,8 @@ const citationFormSchema = z.object({
   pageStart: z.string().optional(),
   pageEnd: z.string().optional(),
   publisher: z.string().optional(),
-  titlePublication: z.string().optional()
+  titlePublication: z.string().optional(),
+  pageType: z.string().optional()
 });
 
 type CitationFormValues = z.infer<typeof citationFormSchema>;
@@ -88,7 +88,8 @@ export function CitationForm({
     pageStart: citationData.pageStart ? citationData.pageStart.toString() : '',
     pageEnd: citationData.pageEnd ? citationData.pageEnd.toString() : '',
     publisher: citationData.publisher || '',
-    titlePublication: citationData.titlePublication || ''
+    titlePublication: citationData.titlePublication || '',
+    pageType: citationData.pageType || ''
   };
 
   const form = useForm<CitationFormValues>({
@@ -110,7 +111,8 @@ export function CitationForm({
       pageStart: citationData.pageStart ? citationData.pageStart.toString() : '',
       pageEnd: citationData.pageEnd ? citationData.pageEnd.toString() : '',
       publisher: citationData.publisher || '',
-      titlePublication: citationData.titlePublication || ''
+      titlePublication: citationData.titlePublication || '',
+      pageType: citationData.pageType || ''
     };
     form.reset(currentDefaultValues);
   }, [citationData, form]);
@@ -143,7 +145,8 @@ export function CitationForm({
         pageStart,
         publisher,
         titlePublication,
-        volume
+        volume,
+        pageType
       } = data;
 
       const dateValue = citationDateCreator({
@@ -166,7 +169,8 @@ export function CitationForm({
         pageStart: pageStart ? parseInt(pageStart, 10) : null,
         publisher: publisher || null,
         titlePublication: titlePublication || null,
-        volume: volume || null
+        volume: volume || null,
+        pageType: pageType || null
       };
       setSaveButtonState('loading');
       try {
@@ -189,7 +193,15 @@ export function CitationForm({
           statementId,
           title: '',
           authorNames: '',
-          id: ''
+          id: '',
+          pageType: '',
+          date: null,
+          year: null,
+          month: null,
+          day: null,
+          issue: null,
+          volume: null,
+          pageStart: null
         });
       } catch (error) {
         console.error('Failed to update draft:', error);
@@ -259,20 +271,6 @@ export function CitationForm({
                 <FormLabel>Author Names</FormLabel>
                 <FormControl>
                   <Input placeholder="Author Names" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="url"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>URL</FormLabel>
-                <FormControl>
-                  <Input placeholder="URL" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -384,15 +382,35 @@ export function CitationForm({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
+            <FormField
+              control={form.control}
+              name="pageType"
+              render={({ field }) => (
+                <FormItem>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormLabel>Page type</FormLabel>
+                    <FormControl className="w-full">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="page">Page</SelectItem>
+                      <SelectItem value="location">Location</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="pageStart"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>From Page</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="From page" {...field} />
+                  <FormLabel>From</FormLabel>
+                  <FormControl className="w-full">
+                    <Input type="number" placeholder="From" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -404,38 +422,51 @@ export function CitationForm({
               name="pageEnd"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>To Page</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="To page" {...field} />
+                  <FormLabel>To</FormLabel>
+                  <FormControl className="w-full">
+                    <Input type="number" placeholder="To" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
-
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="titlePublication"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Publication Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Publication Title" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="publisher"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Publisher</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Publisher" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           <FormField
             control={form.control}
-            name="publisher"
+            name="url"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Publisher</FormLabel>
+                <FormLabel>URL</FormLabel>
                 <FormControl>
-                  <Input placeholder="Publisher" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="titlePublication"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Publication Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="Publication Title" {...field} />
+                  <Input placeholder="URL" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

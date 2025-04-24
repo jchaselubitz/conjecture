@@ -40,7 +40,7 @@ export default async function UserPage({ params }: UserPageProps) {
       <main className="flex-1 mx-auto bg-background container py-8">
         <StatementListContainer
           statements={statements}
-          title={`${name}'s Statements`}
+          title={`${name}'s Conjectures`}
           pathname={`${userSlug}`}
         />
       </main>

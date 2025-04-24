@@ -77,7 +77,8 @@ export function StatementToolsProvider({ children }: { children: ReactNode }) {
     volume: '',
     id: '',
     createdAt: new Date(),
-    date: null
+    date: null,
+    pageType: ''
   });
 
   useEffect(() => {

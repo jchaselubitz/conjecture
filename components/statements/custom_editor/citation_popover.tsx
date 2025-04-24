@@ -36,7 +36,14 @@ export function CitationPopover({
       statementId,
       title: '',
       authorNames: '',
-      id: ''
+      id: '',
+      pageType: '',
+      date: null,
+      year: null,
+      month: null,
+      day: null,
+      issue: null,
+      volume: null
     });
   };
 
