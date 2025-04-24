@@ -14,7 +14,7 @@ export default function AppNav() {
   const { userId, userSlug } = useUserContext();
 
   return (
-    <header className="border-b px-4 z-60 bg-background">
+    <header className="border-b px-4 z-40 bg-background">
       <div className="flex h-16 items-center justify-between w-full">
         <div className="flex items-center gap-3">
           <Drawer open={open} direction="left" onOpenChange={setOpen}>
@@ -73,7 +73,7 @@ export default function AppNav() {
                   Login
                 </Button>
               </Link>
-              <Link href="/signup">
+              <Link href="/sign-up">
                 <Button variant="outline" size="sm">
                   Create Account
                 </Button>

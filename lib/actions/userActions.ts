@@ -7,8 +7,13 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/supabase/server";
 
 import { redirect } from "next/navigation";
-import { BaseProfile } from "kysely-codegen";
+import {
+  BaseProfile,
+  FollowWithFollowed,
+  FollowWithFollower,
+} from "kysely-codegen";
 import * as Sentry from "@sentry/nextjs";
+import { authenticatedUser } from "./baseActions";
 
 export const getUserProfile = async (slug?: string): Promise<
   BaseProfile | null | undefined
@@ -25,7 +30,25 @@ export const getUserProfile = async (slug?: string): Promise<
 
   let profile = db
     .selectFrom("profile")
-    .selectAll();
+    .leftJoin("follow", "profile.id", "follow.followed")
+    .leftJoin("profile as follower", "follow.follower", "follower.id")
+    .select(({ fn, ref, val }) => [
+      "profile.id",
+      "profile.name",
+      "profile.username",
+      "profile.imageUrl",
+      "profile.createdAt",
+      "profile.updatedAt",
+      fn.coalesce(fn.count(ref("follower.id")), val(0)).as("followerCount"),
+    ])
+    .groupBy([
+      "profile.id",
+      "profile.name",
+      "profile.username",
+      "profile.imageUrl",
+      "profile.createdAt",
+      "profile.updatedAt",
+    ]);
 
   if (slug) {
     profile = profile.where("profile.username", "=", slug);
@@ -258,16 +281,6 @@ export const updateProfile = async ({
   }
 
   await db.transaction().execute(async (trx) => {
-    // const profile = await trx
-    //   .selectFrom("profile")
-    //   .selectAll()
-    //   .where("id", "=", userId)
-    //   .executeTakeFirst();
-    // if (!profile) {
-    //   await trx.insertInto("profile").values({ id: userId, name, username })
-    //     .execute();
-    //   return;
-    // } else {
     await trx
       .updateTable("profile")
       .set({ name, imageUrl })
@@ -280,18 +293,112 @@ export const updateProfile = async ({
 };
 
 export const updateUsername = async (username: string) => {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await authenticatedUser();
   const userId = user?.id;
   if (!userId) {
     return;
   }
-
   await db.updateTable("profile").set({ username }).where(
     "id",
     "=",
     userId,
   ).executeTakeFirst();
+};
+
+export const getFollowedUsers = async (
+  userId: string,
+): Promise<FollowWithFollowed[]> => {
+  const followedUsers = await db.selectFrom("follow").innerJoin(
+    "profile",
+    "follow.followed",
+    "profile.id",
+  ).select([
+    "profile.id as followedId",
+    "profile.name as followedName",
+    "profile.username as followedUsername",
+    "profile.imageUrl as followedImageUrl",
+    "profile.createdAt as userSince",
+    "follow.id",
+    "follow.followed",
+    "follow.follower",
+    "follow.createdAt",
+  ]).where(
+    "follower",
+    "=",
+    userId,
+  ).execute();
+
+  return followedUsers;
+};
+
+export const getFollowers = async (
+  userId: string,
+): Promise<FollowWithFollower[]> => {
+  const followers = await db.selectFrom("follow").innerJoin(
+    "profile",
+    "follow.follower",
+    "profile.id",
+  ).select([
+    "profile.id as followerId",
+    "profile.name as followerName",
+    "profile.username as followerUsername",
+    "profile.imageUrl as followerImageUrl",
+    "profile.createdAt as userSince",
+    "follow.id",
+    "follow.followed",
+    "follow.follower",
+    "follow.createdAt",
+  ]).where(
+    "followed",
+    "=",
+    userId,
+  ).execute();
+
+  return followers;
+};
+
+export const getFollow = async (
+  { followerId, followingId }: { followerId: string; followingId: string },
+): Promise<boolean> => {
+  const existingFollow = await db.selectFrom("follow").where(
+    "follower",
+    "=",
+    followerId,
+  ).where(
+    "followed",
+    "=",
+    followingId,
+  ).executeTakeFirst();
+  return !!existingFollow;
+};
+
+export const toggleFollow = async (
+  { followerId, followingId }: { followerId: string; followingId: string },
+) => {
+  const existingFollow = await db.selectFrom("follow").where(
+    "follower",
+    "=",
+    followerId,
+  ).where(
+    "followed",
+    "=",
+    followingId,
+  ).executeTakeFirst();
+  if (existingFollow) {
+    await db.deleteFrom("follow").where(
+      "follower",
+      "=",
+      followerId,
+    ).where(
+      "followed",
+      "=",
+      followingId,
+    ).execute();
+  } else {
+    await db.insertInto("follow").values({
+      follower: followerId,
+      followed: followingId,
+    }).execute();
+  }
+  revalidatePath(`/${followingId}`, "page");
 };

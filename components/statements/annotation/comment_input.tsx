@@ -204,7 +204,7 @@ export default function CommentInput({
               Login
             </Button>
           </Link>
-          <Link href="/signup">
+          <Link href="/sign-up">
             <Button variant="outline" size="sm">
               Create Account
             </Button>

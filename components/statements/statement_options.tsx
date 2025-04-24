@@ -20,6 +20,7 @@ import { deleteStatement, updateStatementUrl } from '@/lib/actions/statementActi
 import { checkValidStatementSlug } from '@/lib/helpers/helpersStatements';
 import { cn } from '@/lib/utils';
 
+import { ShareButton } from '../special_buttons/share_button';
 import { Button } from '../ui/button';
 import {
   DropdownMenu,
@@ -35,7 +36,6 @@ import ViewModeButton from '../view_mode_button';
 import { CommentIndicatorButton } from './comments_menu';
 import RebuttalButton from './rebuttal_button';
 import VoteButton from './vote_button';
-import { ShareButton } from '../special_buttons/share_button';
 interface StatementOptionsProps {
   statement: DraftWithAnnotations;
   editMode: boolean;

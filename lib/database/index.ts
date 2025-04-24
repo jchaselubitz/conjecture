@@ -12,6 +12,7 @@ import {
   CommentVote,
   DB,
   Draft,
+  Follow,
   Profile,
   StatementCitation,
   StatementImage,
@@ -36,6 +37,9 @@ declare module "kysely-codegen" {
   };
 
   export type BaseProfile = Selectable<Profile>;
+  export type ProfileWithFollowers = BaseProfile & {
+    followerCount: number | null;
+  };
   export type NewProfile = Insertable<Profile>;
   export type EditedProfile = Updateable<Profile>;
 
@@ -98,6 +102,22 @@ declare module "kysely-codegen" {
   export type BaseCommentVote = Selectable<CommentVote>;
   export type NewCommentVote = Insertable<CommentVote>;
   export type EditedCommentVote = Updateable<CommentVote>;
+
+  export type BaseFollow = Selectable<Follow>;
+  export type FollowWithFollower = BaseFollow & {
+    followerName: string | null;
+    followerImageUrl: string | null;
+    followerUsername: string | null;
+    userSince: Date;
+  };
+  export type FollowWithFollowed = BaseFollow & {
+    followedName: string | null;
+    followedImageUrl: string | null;
+    followedUsername: string | null;
+    userSince: Date;
+  };
+  export type NewFollow = Insertable<Follow>;
+  export type EditedFollow = Updateable<Follow>;
 
   export type Statement = {
     statementId: string;

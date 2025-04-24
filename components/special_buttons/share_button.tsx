@@ -1,6 +1,7 @@
+import { Check, Facebook, Link, Linkedin, Send, Share2, Twitter } from 'lucide-react';
 import { useState } from 'react';
+
 import { Button } from '../ui/button';
-import { Check, Facebook, Linkedin, Send, Share2, Twitter, Link } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,

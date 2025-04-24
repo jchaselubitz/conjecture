@@ -51,10 +51,10 @@ export default async function UserPage({ params }: UserPageProps) {
   return (
     <div>
       <AppNav />
-      <main className="flex-1 mx-auto bg-background container py-8">
+      <main className="flex-1 mx-auto bg-background container py-8 px-4 md:px-0">
         <StatementListContainer
           statements={statements}
-          title={`${name}'s Conjectures`}
+          title={`My conjectures`}
           pathname={`${userSlug}`}
         />
       </main>

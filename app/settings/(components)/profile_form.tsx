@@ -27,6 +27,7 @@ import {
   updateUsername
 } from '@/lib/actions/userActions';
 import { handleImageCompression } from '@/lib/helpers/helpersImages';
+
 const profileFormSchema = z.object({
   name: z.string().min(2, {
     message: 'Name must be at least 2 characters.'
