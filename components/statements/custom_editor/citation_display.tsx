@@ -36,10 +36,10 @@ export function CitationDisplay() {
     if (citation.url) {
       const url = new URL(citation.url);
       if (url.origin === window.location.origin) {
-        const statementId = url.searchParams.get('statementId');
-        if (!statementId) return;
+        const statementSlug = url.searchParams.get('statementSlug');
+        if (!statementSlug) return;
         try {
-          const statement = await getPublishedStatement(statementId);
+          const statement = await getPublishedStatement(statementSlug);
           if (statement) {
             setConjecture(statement);
           }

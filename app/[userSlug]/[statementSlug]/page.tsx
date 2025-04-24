@@ -1,13 +1,34 @@
 import { StatementContainer } from '@/containers/StatementContainer';
-import { getDraftsByStatementSlug } from '@/lib/actions/statementActions';
+import { getDraftsByStatementSlug, getPublishedStatement } from '@/lib/actions/statementActions';
 import { createClient } from '@/supabase/server';
-export default async function CreatePage({
-  params,
-  searchParams
-}: {
+import type { Metadata, ResolvingMetadata } from 'next';
+
+type Props = {
   params: Promise<{ statementSlug: string }>;
   searchParams: Promise<{ edit: string }>;
-}) {
+};
+
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const { statementSlug } = await params;
+  const statement = await getPublishedStatement(statementSlug);
+  const previousImages = (await parent).openGraph?.images || [];
+
+  return {
+    title: statement?.title,
+    description: statement?.subtitle,
+    referrer: 'origin-when-cross-origin',
+    creator: statement?.creatorName,
+    // keywords: statement?.keywords,
+    openGraph: {
+      images: [`${statement?.headerImg}`, ...previousImages]
+    }
+  };
+}
+
+export default async function CreatePage({ params, searchParams }: Props) {
   const supabase = await createClient();
   const {
     data: { user }

@@ -20,7 +20,7 @@ export async function StatementContainer({
   const statement = drafts.find((draft) => draft.publishedAt !== null) ?? drafts[drafts.length - 1];
 
   const parentStatement = statement.parentStatementId
-    ? await getPublishedStatement(statement.parentStatementId)
+    ? await getPublishedStatement(statement.slug ?? '')
     : null;
 
   return (

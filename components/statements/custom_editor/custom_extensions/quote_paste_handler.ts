@@ -34,7 +34,7 @@ export const QuotePasteHandler = Extension.create({
        // Check if we have both location and content parameters
        const location = url.searchParams.get("location");
        const content = url.searchParams.get("content");
-       const statementId = url.searchParams.get("statementId");
+       const statementSlug = url.searchParams.get("statementSlug");
 
        if (!location || !content) return false;
 
@@ -53,9 +53,9 @@ export const QuotePasteHandler = Extension.create({
        tr.replaceSelectionWith(italicText, false);
        view.dispatch(tr);
 
-       if (statementId) {
+       if (statementSlug) {
         this.options.handleCitationPaste({
-         statementId,
+         statementSlug,
          creatorId: this.options.creatorId,
          url: url.toString(),
          currentStatementId: this.options.currentStatementId,
@@ -77,14 +77,14 @@ export const QuotePasteHandler = Extension.create({
 });
 
 export const handleCitationPaste = async ({
- statementId,
+ statementSlug,
  creatorId,
  url,
  currentStatementId,
  position,
  view,
 }: {
- statementId: string;
+ statementSlug: string;
  creatorId: string;
  url: string;
  currentStatementId: string;
@@ -92,7 +92,7 @@ export const handleCitationPaste = async ({
  view: EditorView;
 }) => {
  const { setCitations } = useStatementToolsContext();
- const statement = await getPublishedStatement(statementId);
+ const statement = await getPublishedStatement(statementSlug);
  if (statement) {
   const {
    title,

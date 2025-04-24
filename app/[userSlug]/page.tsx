@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+import { Metadata, ResolvingMetadata } from 'next';
 import AppNav from '@/components/navigation/app_nav';
 import { StatementListContainer } from '@/containers/StatementListContainer';
 import { getDrafts } from '@/lib/actions/statementActions';
@@ -11,9 +11,23 @@ type UserPageProps = {
   }>;
 };
 
-export const metadata: Metadata = {
-  title: 'User Profile'
-};
+export async function generateMetadata(
+  { params }: UserPageProps,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const { userSlug } = await params;
+
+  const profile = await getUserProfile(userSlug);
+  const previousImages = (await parent).openGraph?.images || [];
+
+  return {
+    title: profile?.name,
+    creator: profile?.name,
+    openGraph: {
+      images: [profile?.imageUrl ?? '', ...previousImages]
+    }
+  };
+}
 
 export default async function UserPage({ params }: UserPageProps) {
   const { userSlug } = await params;

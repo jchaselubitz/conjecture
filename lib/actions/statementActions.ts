@@ -115,7 +115,7 @@ export async function getDrafts({
 }
 
 export async function getPublishedStatement(
-  statementId: string,
+  statementSlug: string,
 ): Promise<
   BaseDraft & {
     creatorName: string | null;
@@ -125,40 +125,53 @@ export async function getPublishedStatement(
     annotations: BaseAnnotation[];
   } | null
 > {
-  const statement = await db
-    .selectFrom("draft")
-    .innerJoin("profile", "draft.creatorId", "profile.id")
-    .innerJoin("statementUrl", "draft.statementId", "statementUrl.statementId")
-    .select(({ eb }) => [
-      "draft.id",
-      "draft.title",
-      "draft.subtitle",
-      "draft.content",
-      "draft.headerImg",
-      "draft.publishedAt",
-      "draft.creatorId",
-      "draft.createdAt",
-      "draft.updatedAt",
-      "draft.parentStatementId",
-      "draft.threadId",
-      "draft.statementId",
-      "draft.versionNumber",
-      "profile.name as creatorName",
-      "profile.imageUrl as creatorImageUrl",
-      "profile.username as creatorSlug",
-      "statementUrl.slug",
-      jsonArrayFrom(
-        eb
-          .selectFrom("annotation")
-          .selectAll()
-          .whereRef("annotation.draftId", "=", "draft.id"),
-      ).as("annotations"),
-    ])
-    .where("statementId", "=", statementId)
-    .where("publishedAt", "is not", null)
-    .executeTakeFirst();
+  const statement = await db.transaction().execute(async (tx) => {
+    const { statementId } = await tx.selectFrom("statementUrl").where(
+      "slug",
+      "=",
+      statementSlug,
+    ).select("statementId").executeTakeFirstOrThrow();
+    const statement = await tx
+      .selectFrom("draft")
+      .innerJoin("profile", "draft.creatorId", "profile.id")
+      .innerJoin(
+        "statementUrl",
+        "draft.statementId",
+        "statementUrl.statementId",
+      )
+      .select(({ eb }) => [
+        "draft.id",
+        "draft.title",
+        "draft.subtitle",
+        "draft.content",
+        "draft.headerImg",
+        "draft.publishedAt",
+        "draft.creatorId",
+        "draft.createdAt",
+        "draft.updatedAt",
+        "draft.parentStatementId",
+        "draft.threadId",
+        "draft.statementId",
+        "draft.versionNumber",
+        "profile.name as creatorName",
+        "profile.imageUrl as creatorImageUrl",
+        "profile.username as creatorSlug",
+        "statementUrl.slug",
+        jsonArrayFrom(
+          eb
+            .selectFrom("annotation")
+            .selectAll()
+            .whereRef("annotation.draftId", "=", "draft.id"),
+        ).as("annotations"),
+      ])
+      .where("draft.statementId", "=", statementId)
+      .where("publishedAt", "is not", null)
+      .executeTakeFirst();
 
-  return statement ?? null;
+    return statement ?? null;
+  });
+
+  return statement;
 }
 
 export async function getDraftsByStatementSlug(
