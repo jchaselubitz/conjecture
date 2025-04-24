@@ -3,7 +3,7 @@ import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { upsertCitation } from "./helpers/helpersCitationExtension";
 import { EditorView } from "@tiptap/pm/view";
-
+import { useStatementToolsContext } from "@/contexts/StatementToolsContext";
 export const QuotePasteHandler = Extension.create({
  name: "quotePasteHandler",
 
@@ -91,6 +91,7 @@ export const handleCitationPaste = async ({
  position: number;
  view: EditorView;
 }) => {
+ const { setCitations } = useStatementToolsContext();
  const statement = await getPublishedStatement(statementId);
  if (statement) {
   const {
@@ -122,6 +123,7 @@ export const handleCitationPaste = async ({
    pathname: "",
    view,
    position,
+   setCitations,
   });
  }
 };

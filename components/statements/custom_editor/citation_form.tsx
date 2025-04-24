@@ -2,14 +2,16 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Editor } from '@tiptap/react';
+import { nanoid } from 'nanoid';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -69,7 +71,7 @@ export function CitationForm({
 }: CitationFormProps) {
   const { userId } = useUserContext();
   const { updateStatementDraft, updatedStatement } = useStatementContext();
-  const { citationData, setCitationData } = useStatementToolsContext();
+  const { citationData, setCitationData, citations, setCitations } = useStatementToolsContext();
   const pathname = usePathname();
   const [saveButtonState, setSaveButtonState] = useState<ButtonLoadingState>('default');
   const [error, setError] = useState<string | null>(null);
@@ -94,6 +96,38 @@ export function CitationForm({
     defaultValues,
     mode: 'onChange'
   });
+
+  useEffect(() => {
+    const currentDefaultValues: CitationFormValues = {
+      title: citationData.title || '',
+      authorNames: citationData.authorNames || '',
+      url: citationData.url || '',
+      year: citationData.year ? citationData.year.toString() : '',
+      month: citationData.month ? citationData.month.toString() : 'none',
+      day: citationData.day ? citationData.day.toString() : 'none',
+      issue: citationData.issue ? citationData.issue.toString() : '',
+      volume: citationData.volume || '',
+      pageStart: citationData.pageStart ? citationData.pageStart.toString() : '',
+      pageEnd: citationData.pageEnd ? citationData.pageEnd.toString() : '',
+      publisher: citationData.publisher || '',
+      titlePublication: citationData.titlePublication || ''
+    };
+    form.reset(currentDefaultValues);
+  }, [citationData, form]);
+
+  const handleCitationSelect = (citationId: string) => {
+    const selectedCitation = citations.find((c) => c.id === citationId);
+
+    if (selectedCitation) {
+      const newCitationData = {
+        ...selectedCitation,
+        id: '', //This is to prevent the sample citation from being updated
+        date: selectedCitation.date ? new Date(selectedCitation.date) : null
+      };
+
+      setCitationData(newCitationData);
+    }
+  };
 
   const onSubmit = async (data: CitationFormValues) => {
     if (editor && userId && statementId) {
@@ -136,9 +170,6 @@ export function CitationForm({
       };
       setSaveButtonState('loading');
       try {
-        const updateDraft = async () => {
-          await updateStatementDraft({ ...updatedStatement, content: editor.getHTML() });
-        };
         await upsertCitation({
           citationData: newCitationData,
           setError,
@@ -146,19 +177,20 @@ export function CitationForm({
           statementId,
           pathname,
           position: editor.state.selection.$from.pos + 1,
-          view: editor.view
+          view: editor.view,
+          setCitations
         });
 
-        await updateDraft();
+        await updateStatementDraft({ ...updatedStatement, content: editor.getHTML() });
 
         onOpenChange(false);
+        setSaveButtonState('default');
         setCitationData({
           statementId,
           title: '',
           authorNames: '',
           id: ''
         });
-        setSaveButtonState('default');
       } catch (error) {
         console.error('Failed to update draft:', error);
       }
@@ -182,6 +214,29 @@ export function CitationForm({
     <div className="flex flex-col gap-4 p-4">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          {citations && citations.length > 0 && (
+            <FormItem>
+              <FormLabel>Select Existing Citation</FormLabel>
+              <Select onValueChange={handleCitationSelect} value={citationData.id || ''}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Load citation details..." />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {citations.map((citation) => (
+                    <SelectItem key={citation.id} value={citation.id}>
+                      {citation.title}
+                      {citation.authorNames && ` (${citation.authorNames})`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>Selecting a citation will pre-fill the form.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+
           <FormField
             control={form.control}
             name="title"

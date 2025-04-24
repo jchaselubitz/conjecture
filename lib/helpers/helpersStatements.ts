@@ -7,7 +7,6 @@ import { Plugin, PluginKey } from "@tiptap/pm/state";
 import {
   BaseStatementCitation,
   BaseStatementImage,
-  NewAnnotation,
   NewStatementCitation,
 } from "kysely-codegen";
 import { UpsertImageDataType } from "../actions/statementActions";

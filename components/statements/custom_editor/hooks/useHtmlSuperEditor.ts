@@ -98,8 +98,6 @@ export const useHtmlSuperEditor = ({
   const statementCreatorId = updatedStatement.creatorId;
   const citations = updatedStatement.citations;
 
-  // console.log(htmlContent);
-
   useEffect(() => {
     setAnnotations(existingAnnotations);
   }, [existingAnnotations, setAnnotations]);
@@ -241,7 +239,6 @@ export const useHtmlSuperEditor = ({
         setFootnoteIds(citationIds);
 
         const newContent = editor.getHTML();
-
         const newStatement = {
           ...updatedStatement,
           content: newContent,
@@ -385,7 +382,7 @@ export const useHtmlSuperEditor = ({
             const id = citationNode.getAttribute("data-citation-id");
             if (!id) return true;
 
-            const selectedCitation = statement.citations.find((c) =>
+            const selectedCitation = citations.find((c) =>
               c.id.toString() === id
             );
             if (!selectedCitation) return true;

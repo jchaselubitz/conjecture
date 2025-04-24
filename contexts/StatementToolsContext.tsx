@@ -1,7 +1,15 @@
 'use client';
 
-import { NewStatementCitation } from 'kysely-codegen';
-import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from 'react';
+import { BaseStatementCitation, NewStatementCitation } from 'kysely-codegen';
+import {
+  createContext,
+  Dispatch,
+  ReactNode,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useState
+} from 'react';
 import { UpsertImageDataType } from '@/lib/actions/statementActions';
 
 import { useStatementContext } from './StatementBaseContext';
@@ -33,12 +41,15 @@ interface StatementToolsContextType {
   setSelectedLatexId: (id: string | null) => void;
   selectedNodePosition: PositionParams | null;
   setSelectedNodePosition: (position: PositionParams | null) => void;
+  citations: BaseStatementCitation[];
+  setCitations: Dispatch<SetStateAction<BaseStatementCitation[]>>;
 }
 
 const StatementToolsContext = createContext<StatementToolsContextType | undefined>(undefined);
 
 export function StatementToolsProvider({ children }: { children: ReactNode }) {
   const { updatedStatement } = useStatementContext();
+  const [citations, setCitations] = useState<BaseStatementCitation[]>(updatedStatement.citations);
   const [isBlock, setIsBlock] = useState(true);
   const [selectedLatexId, setSelectedLatexId] = useState<string | null>(null);
   const [selectedNodePosition, setSelectedNodePosition] = useState<PositionParams | null>(null);
@@ -64,8 +75,14 @@ export function StatementToolsProvider({ children }: { children: ReactNode }) {
     publisher: '',
     titlePublication: '',
     volume: '',
-    id: ''
+    id: '',
+    createdAt: new Date(),
+    date: null
   });
+
+  useEffect(() => {
+    setCitations(updatedStatement.citations);
+  }, [updatedStatement.citations]);
 
   const [popoverState, setPopoverState] = useState({
     latex: false,
@@ -105,7 +122,9 @@ export function StatementToolsProvider({ children }: { children: ReactNode }) {
         selectedLatexId,
         setSelectedLatexId,
         selectedNodePosition,
-        setSelectedNodePosition
+        setSelectedNodePosition,
+        citations,
+        setCitations
       }}
     >
       {children}

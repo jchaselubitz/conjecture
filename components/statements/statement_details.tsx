@@ -56,7 +56,7 @@ export default function StatementDetails({
   const { userId, userSlug } = useUserContext();
   const { editor, setUpdatedStatement, updatedStatement } = useStatementContext();
   const { selectedAnnotationId, setSelectedAnnotationId } = useStatementAnnotationContext();
-  const { initialImageData, setInitialImageData, setImageLightboxOpen } =
+  const { initialImageData, setInitialImageData, setImageLightboxOpen, citations } =
     useStatementToolsContext();
 
   const router = useRouter();
@@ -64,7 +64,7 @@ export default function StatementDetails({
   const [isUploading, setIsUploading] = useState(false);
   const [footnoteIds, setFootnoteIds] = useState<string[]>([]);
 
-  const { statementId, title, subtitle, headerImg, annotations, citations } = updatedStatement;
+  const { statementId, title, subtitle, headerImg, annotations } = updatedStatement;
 
   const orderedFootnotes = useMemo(() => {
     const footnotes: BaseStatementCitation[] = [];

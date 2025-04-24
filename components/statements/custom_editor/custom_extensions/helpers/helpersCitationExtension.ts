@@ -1,8 +1,8 @@
 import { nanoid } from "nanoid";
 import { createCitation, updateCitation } from "@/lib/actions/citationActions";
-import { NewStatementCitation } from "kysely-codegen";
+import { BaseStatementCitation, NewStatementCitation } from "kysely-codegen";
 import { TextSelection } from "prosemirror-state";
-
+import { Dispatch, SetStateAction } from "react";
 import { EditorView } from "@tiptap/pm/view";
 
 export const citationDateCreator = ({
@@ -32,6 +32,7 @@ export const upsertCitation = async ({
  statementId,
  position,
  view,
+ setCitations,
 }: {
  citationData: NewStatementCitation;
  setError: (error: string) => void;
@@ -40,6 +41,7 @@ export const upsertCitation = async ({
  pathname: string;
  position: number;
  view: EditorView;
+ setCitations: Dispatch<SetStateAction<BaseStatementCitation[]>>;
 }) => {
  const citationId = citationData.id === "" ? nanoid() : citationData.id;
 
@@ -83,6 +85,10 @@ export const upsertCitation = async ({
      type: "page",
     },
    });
+   setCitations((prevCitations) => [
+    ...prevCitations,
+    citation as BaseStatementCitation,
+   ]);
   }
 
   //Update draft instantly instead of waiting for debounce cause otherwise the citation will not consistently be updated in the draft
