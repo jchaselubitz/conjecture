@@ -16,7 +16,8 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
-import { deleteStatement } from '@/lib/actions/statementActions';
+import { deleteStatement, updateStatementUrl } from '@/lib/actions/statementActions';
+import { checkValidStatementSlug } from '@/lib/helpers/helpersStatements';
 import { cn } from '@/lib/utils';
 
 import { Button } from '../ui/button';
@@ -27,12 +28,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '../ui/dropdown-menu';
+import { Input } from '../ui/input';
+import { ButtonLoadingState } from '../ui/loading-button';
 import { Separator } from '../ui/separator';
 import ViewModeButton from '../view_mode_button';
 import { CommentIndicatorButton } from './comments_menu';
 import RebuttalButton from './rebuttal_button';
 import VoteButton from './vote_button';
-
 interface StatementOptionsProps {
   statement: DraftWithAnnotations;
   editMode: boolean;
@@ -56,7 +58,9 @@ export default function StatementOptions({
 }: StatementOptionsProps) {
   const { userId } = useUserContext();
   const router = useRouter();
-
+  const [buttonState, setButtonState] = useState<ButtonLoadingState>('default');
+  const [slugError, setSlugError] = useState<string | null>(null);
+  const [slug, setSlug] = useState<string>(statement.slug || '');
   const handleDelete = async () => {
     try {
       await deleteStatement(statement.statementId, statement.creatorId, statement.headerImg || '');
@@ -66,8 +70,48 @@ export default function StatementOptions({
     }
   };
 
+  const handleUpdateSlug = async (slug: string) => {
+    if (!checkValidStatementSlug(slug) || slug === '') {
+      setSlugError('That URL is not valid');
+      return;
+    }
+    if (slug === statement.slug) {
+      return;
+    }
+    if (slug.length < 5) {
+      setSlugError(`The post's domain must be at least 5 characters long`);
+      return;
+    }
+    if (
+      !confirm(
+        'Are you sure you want to update the URL? This may break existing links to this post.'
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setButtonState('loading');
+      await updateStatementUrl({
+        statementId: statement.statementId,
+        slug,
+        creatorId: statement.creatorId
+      });
+      setButtonState('success');
+      setSlugError(null);
+      router.push(`/${statement.creatorSlug}/${slug}`);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('URL already exists')) {
+        setSlugError('That URL is already taken');
+      } else {
+        console.error(error);
+      }
+      setButtonState('error');
+    }
+  };
+
   return (
-    <div className={cn('space-y-2', className)}>
+    <div className={cn('gap-3 flex flex-col', className)}>
       <Separator />
       <div className="flex justify-between items-center gap-3 px-1">
         <div className="flex items-center gap-3">
@@ -109,6 +153,33 @@ export default function StatementOptions({
           )}
         </div>
       </div>
+      {editMode && (
+        <div className="flex flex-col gap-2 bg-muted p-2 rounded-md">
+          <div className="flex justify-between items-center gap-1 ">
+            <div className="text-sm text-muted-foreground">
+              {`conject.com/${statement.creatorSlug}/`}
+            </div>
+            <Input
+              className="bg-background h-8"
+              defaultValue={statement.slug || ''}
+              onChange={(e) => {
+                setSlug(e.target.value);
+              }}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-1"
+              disabled={buttonState === 'loading'}
+              onClick={() => handleUpdateSlug(slug)}
+            >
+              Update URL
+            </Button>
+          </div>
+          {slugError && <div className="text-sm text-red-500">{slugError}</div>}
+        </div>
+      )}
+
       <Separator />
     </div>
   );

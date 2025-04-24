@@ -57,6 +57,7 @@ declare module "kysely-codegen" {
 
   export type BaseDraft = Selectable<Draft> & {
     annotations: BaseAnnotation[];
+    slug: string | null | undefined;
   };
   export type DraftWithUser = BaseDraft & {
     creatorName: string | null | undefined;

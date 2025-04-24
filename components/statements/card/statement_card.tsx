@@ -17,7 +17,6 @@ import { StatusBadge } from './status_badge';
 
 interface StatementCardProps {
   statement: DraftWithUser;
-
   isPublic?: boolean;
   pathname: string;
 }
@@ -39,7 +38,7 @@ export async function StatementCard({ statement, isPublic, pathname }: Statement
 
   return (
     <Link
-      href={`/${pathname}/${statement.statementId}`}
+      href={`/${pathname}/${statement.slug}`}
       className="block transition-transform hover:scale-[1.01]"
     >
       <Card className="relative h-full overflow-hidden pt-0 ">

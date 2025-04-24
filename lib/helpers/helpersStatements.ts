@@ -446,3 +446,7 @@ export const createStatementAnnotation = async (
     // Handle error silently
   }
 };
+
+export const checkValidStatementSlug = (slug: string) => {
+  return slug.match(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+};

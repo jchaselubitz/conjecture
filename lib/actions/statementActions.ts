@@ -16,13 +16,17 @@ import {
   Statement,
 } from "kysely-codegen";
 import { redirect } from "next/navigation";
-import { generateStatementId } from "../helpers/helpersStatements";
+import {
+  checkValidStatementSlug,
+  generateStatementId,
+} from "../helpers/helpersStatements";
 import { jsonArrayFrom } from "kysely/helpers/postgres";
 import { authenticatedUser } from "./baseActions";
 import { nanoid } from "nanoid";
 import { deleteStoredStatementImage } from "./storageActions";
 import { RevalidationPath } from "kysely-codegen";
 import { createStatementImageUrl } from "../helpers/helpersStorage";
+
 export async function getDrafts({
   forCurrentUser,
   publishedOnly = true,
@@ -40,6 +44,7 @@ export async function getDrafts({
   let drafts = db
     .selectFrom("draft")
     .innerJoin("profile", "draft.creatorId", "profile.id")
+    .innerJoin("statementUrl", "draft.statementId", "statementUrl.statementId")
     .select(({ eb }) => [
       "draft.id",
       "draft.title",
@@ -57,6 +62,7 @@ export async function getDrafts({
       "profile.name as creatorName",
       "profile.imageUrl as creatorImageUrl",
       "profile.username as creatorSlug",
+      "statementUrl.slug",
       jsonArrayFrom(
         eb
           .selectFrom("annotation")
@@ -115,12 +121,14 @@ export async function getPublishedStatement(
     creatorName: string | null;
     creatorImageUrl: string | null;
     creatorSlug: string | null;
+    slug: string | null;
     annotations: BaseAnnotation[];
   } | null
 > {
   const statement = await db
     .selectFrom("draft")
     .innerJoin("profile", "draft.creatorId", "profile.id")
+    .innerJoin("statementUrl", "draft.statementId", "statementUrl.statementId")
     .select(({ eb }) => [
       "draft.id",
       "draft.title",
@@ -138,6 +146,7 @@ export async function getPublishedStatement(
       "profile.name as creatorName",
       "profile.imageUrl as creatorImageUrl",
       "profile.username as creatorSlug",
+      "statementUrl.slug",
       jsonArrayFrom(
         eb
           .selectFrom("annotation")
@@ -152,97 +161,116 @@ export async function getPublishedStatement(
   return statement ?? null;
 }
 
-export async function getDraftsByStatementId(
-  statementId: string,
+export async function getDraftsByStatementSlug(
+  statementSlug: string,
 ): Promise<DraftWithAnnotations[]> {
-  const draft = await db
-    .selectFrom("draft")
-    .innerJoin("profile", "draft.creatorId", "profile.id")
-    .select(({ eb }) => [
-      "draft.id",
-      "draft.title",
-      "draft.subtitle",
-      "draft.content",
-      "draft.headerImg",
-      "draft.publishedAt",
-      "draft.versionNumber",
-      "draft.statementId",
-      "draft.creatorId",
-      "draft.createdAt",
-      "draft.updatedAt",
-      "draft.parentStatementId",
-      "draft.threadId",
-      "profile.name as creatorName",
-      "profile.imageUrl as creatorImageUrl",
-      "profile.username as creatorSlug",
-      jsonArrayFrom(
-        eb
-          .selectFrom("statementImage")
-          .select(["id", "src", "alt", "caption"])
-          .whereRef("statementImage.statementId", "=", "draft.statementId"),
-      ).as("images"),
-      jsonArrayFrom(
-        eb
-          .selectFrom("statementCitation")
-          .selectAll()
-          .whereRef("statementCitation.statementId", "=", "draft.statementId"),
-      ).as("citations"),
-      jsonArrayFrom(
-        eb
-          .selectFrom("statementVote")
-          .selectAll()
-          .whereRef("statementVote.statementId", "=", "draft.statementId"),
-      ).as("upvotes"),
-      jsonArrayFrom(
-        eb
-          .selectFrom("annotation")
-          .innerJoin("profile", "annotation.userId", "profile.id")
-          .select(({ eb }) => [
-            "annotation.id",
-            "tag",
-            "text",
-            "start",
-            "end",
-            "annotation.userId",
-            "annotation.draftId",
-            "annotation.createdAt",
-            "annotation.updatedAt",
-            "annotation.isPublic",
-            "profile.name as userName",
-            "profile.imageUrl as userImageUrl",
-            jsonArrayFrom(
-              eb
-                .selectFrom("comment")
-                .innerJoin("profile", "comment.userId", "profile.id")
-                .select(({ eb }) => [
-                  "comment.id",
-                  "comment.content",
-                  "comment.createdAt",
-                  "comment.updatedAt",
-                  "comment.userId",
-                  "comment.annotationId",
-                  "comment.parentId",
-                  "profile.name as userName",
-                  "profile.imageUrl as userImageUrl",
-                  jsonArrayFrom(
-                    eb
-                      .selectFrom("commentVote")
-                      .selectAll()
-                      .whereRef("commentVote.commentId", "=", "comment.id"),
-                  ).as("votes"),
-                ])
-                .whereRef("annotation.id", "=", "comment.annotationId"),
-            ).as("comments"),
-          ])
-          .whereRef("draft.id", "=", "annotation.draftId")
-          .orderBy("annotation.createdAt", "desc"),
-      ).as("annotations"),
-    ])
-    .where("draft.statementId", "=", statementId)
-    .execute();
+  const draft = await db.transaction().execute(async (tx) => {
+    const { statementId } = await tx.selectFrom("statementUrl").where(
+      "slug",
+      "=",
+      statementSlug,
+    ).select("statementId").executeTakeFirstOrThrow();
+    const draft = await tx.selectFrom("draft")
+      .innerJoin("profile", "draft.creatorId", "profile.id")
+      .innerJoin(
+        "statementUrl",
+        "draft.statementId",
+        "statementUrl.statementId",
+      )
+      .select(({ eb }) => [
+        "draft.id",
+        "draft.title",
+        "draft.subtitle",
+        "draft.content",
+        "draft.headerImg",
+        "draft.publishedAt",
+        "draft.versionNumber",
+        "draft.statementId",
+        "draft.creatorId",
+        "draft.createdAt",
+        "draft.updatedAt",
+        "draft.parentStatementId",
+        "draft.threadId",
+        "profile.name as creatorName",
+        "profile.imageUrl as creatorImageUrl",
+        "profile.username as creatorSlug",
+        "statementUrl.slug",
+        jsonArrayFrom(
+          eb
+            .selectFrom("statementImage")
+            .select(["id", "src", "alt", "caption"])
+            .whereRef("statementImage.statementId", "=", "draft.statementId"),
+        ).as("images"),
+        jsonArrayFrom(
+          eb
+            .selectFrom("statementCitation")
+            .selectAll()
+            .whereRef(
+              "statementCitation.statementId",
+              "=",
+              "draft.statementId",
+            ),
+        ).as("citations"),
+        jsonArrayFrom(
+          eb
+            .selectFrom("statementVote")
+            .selectAll()
+            .whereRef("statementVote.statementId", "=", "draft.statementId"),
+        ).as("upvotes"),
+        jsonArrayFrom(
+          eb
+            .selectFrom("annotation")
+            .innerJoin("profile", "annotation.userId", "profile.id")
+            .select(({ eb }) => [
+              "annotation.id",
+              "tag",
+              "text",
+              "start",
+              "end",
+              "annotation.userId",
+              "annotation.draftId",
+              "annotation.createdAt",
+              "annotation.updatedAt",
+              "annotation.isPublic",
+              "profile.name as userName",
+              "profile.imageUrl as userImageUrl",
+              jsonArrayFrom(
+                eb
+                  .selectFrom("comment")
+                  .innerJoin("profile", "comment.userId", "profile.id")
+                  .select(({ eb }) => [
+                    "comment.id",
+                    "comment.content",
+                    "comment.createdAt",
+                    "comment.updatedAt",
+                    "comment.userId",
+                    "comment.annotationId",
+                    "comment.parentId",
+                    "profile.name as userName",
+                    "profile.imageUrl as userImageUrl",
+                    jsonArrayFrom(
+                      eb
+                        .selectFrom("commentVote")
+                        .selectAll()
+                        .whereRef("commentVote.commentId", "=", "comment.id"),
+                    ).as("votes"),
+                  ])
+                  .whereRef("annotation.id", "=", "comment.annotationId"),
+              ).as("comments"),
+            ])
+            .whereRef("draft.id", "=", "annotation.draftId")
+            .orderBy("annotation.createdAt", "desc"),
+        ).as("annotations"),
+      ])
+      .where("draft.statementId", "=", statementId)
+      .execute();
+
+    return draft;
+  });
 
   const draftWithAnnotations = draft.map((draft) => ({
     ...draft,
+    slug: draft.slug,
     images: draft.images.map((i) => ({
       ...i,
     })) as BaseStatementImage[],
@@ -268,21 +296,21 @@ export async function getDraftsByStatementId(
 }
 
 export async function createDraft({
+  statementId,
   title,
   subtitle,
   content,
   headerImg,
-  statementId,
   versionNumber,
   annotations,
   parentId,
   threadId,
 }: {
+  statementId?: string;
   title?: string;
   subtitle?: string;
   content?: string;
   headerImg?: string;
-  statementId?: string;
   versionNumber: number;
   annotations?: NewAnnotation[];
   parentId?: string | null;
@@ -291,13 +319,14 @@ export async function createDraft({
   const user = await authenticatedUser();
 
   const prepStatementId = statementId ? statementId : generateStatementId();
+  const defaultSlug = prepStatementId;
 
   const prepThreadId = threadId ? threadId : nanoid();
   const statementThreadId = parentId ? prepThreadId : null;
 
   const { statementId: returnedStatementId } = await db.transaction().execute(
     async (tx) => {
-      const { statementId: returnedStatementId, id: draftId } = await tx
+      const { statementId: returnedStatementId, id: draftId } = await db
         .insertInto("draft")
         .values({
           title,
@@ -312,6 +341,11 @@ export async function createDraft({
         })
         .returning(["statementId", "id"])
         .executeTakeFirstOrThrow();
+
+      await tx.insertInto("statementUrl").values({
+        statementId: prepStatementId,
+        slug: defaultSlug,
+      }).execute();
 
       if (annotations && annotations.length > 0) {
         const annotationsWithDraftId = annotations.map((annotation) => ({
@@ -339,6 +373,35 @@ export async function createDraft({
     );
   } else {
     return { error: "Failed to create draft" };
+  }
+}
+
+export async function updateStatementUrl({
+  statementId,
+  slug,
+  creatorId,
+}: {
+  statementId: string;
+  slug: string;
+  creatorId: string;
+}) {
+  await authenticatedUser(creatorId);
+
+  if (!checkValidStatementSlug(slug)) {
+    return { error: "Invalid slug" };
+  }
+  try {
+    await db.updateTable("statementUrl").set({
+      slug,
+    }).where("statementId", "=", statementId).execute();
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.includes("duplicate key value violates unique constraint")
+    ) {
+      return { error: "URL already exists" };
+    }
+    return { error: "Failed to update statement URL" };
   }
 }
 

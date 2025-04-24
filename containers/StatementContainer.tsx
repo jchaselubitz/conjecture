@@ -2,6 +2,7 @@ import { DraftWithAnnotations } from 'kysely-codegen';
 import { cookies } from 'next/headers';
 import StatementLayout from '@/components/statements/statement_layout';
 import { getPublishedStatement } from '@/lib/actions/statementActions';
+
 export async function StatementContainer({
   drafts,
   edit
