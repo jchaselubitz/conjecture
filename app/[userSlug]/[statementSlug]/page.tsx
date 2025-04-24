@@ -19,7 +19,6 @@ export async function generateMetadata(
   return {
     title: statement?.title,
     description: statement?.subtitle,
-    referrer: 'origin-when-cross-origin',
     creator: statement?.creatorName,
     // keywords: statement?.keywords,
     openGraph: {
