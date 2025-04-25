@@ -83,7 +83,7 @@ export default function RebuttalButton({
           Respond
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-w-xs md:max-w-md top-20 md:top-[50%] translate-y-[-10%] md:translate-y-[-50%] ">
         <DialogHeader>
           <DialogTitle>Respond to statement</DialogTitle>
           <DialogDescription>
