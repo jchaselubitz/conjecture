@@ -26,7 +26,6 @@ export async function StatementCard({ statement, isPublic, pathname }: Statement
     ? format(new Date(statement.publishedAt), 'MMM d, yyyy')
     : format(new Date(statement.updatedAt), 'MMM d, yyyy');
 
-  // Extract a preview from content (first ~100 characters)
   const previewLength = isPublic ? 200 : 100;
   const contentPreview = statement.content
     ? statement.content.replace(/<[^>]*>?/gm, '').slice(0, previewLength) +
