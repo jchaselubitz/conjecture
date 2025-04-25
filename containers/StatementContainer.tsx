@@ -2,6 +2,7 @@ import { DraftWithAnnotations } from 'kysely-codegen';
 import { cookies } from 'next/headers';
 import StatementLayout from '@/components/statements/statement_layout';
 import { getPublishedStatement } from '@/lib/actions/statementActions';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export async function StatementContainer({
   drafts,
@@ -32,6 +33,24 @@ export async function StatementContainer({
         editModeEnabled={edit ?? false}
         parentStatement={parentStatement}
       />
+    </div>
+  );
+}
+
+export async function StatementContainerLoading() {
+  return (
+    <div className="md:flex-1 bg-background md:h-screen h-full gap-8">
+      <Skeleton className="w-full h-96" />
+      <Skeleton className="w-full h-24" />
+      <div className="flex flex-col gap-2">
+        <Skeleton className="w-full h-12" />
+        <Skeleton className="w-full h-12" />
+        <Skeleton className="w-full h-12" />
+        <Skeleton className="w-full h-12" />
+        <Skeleton className="w-full h-12" />
+        <Skeleton className="w-full h-12" />
+      </div>
+      <Skeleton className="w-full h-12" />
     </div>
   );
 }

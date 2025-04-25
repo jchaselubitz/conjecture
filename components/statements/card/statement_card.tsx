@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
-
+import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from './status_badge';
 
 interface StatementCardProps {
@@ -81,4 +81,8 @@ export async function StatementCard({ statement, isPublic, pathname }: Statement
       </Card>
     </Link>
   );
+}
+
+export async function StatementCardLoading() {
+  return <Skeleton className="animate-pulse h-48 bg-gray-200 rounded-lg"></Skeleton>;
 }
