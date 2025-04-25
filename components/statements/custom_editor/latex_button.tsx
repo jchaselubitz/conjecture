@@ -1,5 +1,6 @@
 import { Editor } from '@tiptap/react';
 import { Sigma } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { openLatexPopover } from '@/lib/helpers/helpersStatements';

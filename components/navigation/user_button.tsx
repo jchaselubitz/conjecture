@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+
 import { useUserContext } from '@/contexts/userContext';
 
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
+
 import UserMenu from './user_menu';
 
 export default function UserButton() {

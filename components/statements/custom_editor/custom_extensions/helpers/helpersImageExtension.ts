@@ -1,17 +1,15 @@
-import { handleImageCompression } from "@/lib/helpers/helpersImages";
-import { Editor } from "@tiptap/react";
-import { toast } from "sonner";
-import { uploadStatementImage } from "@/lib/actions/storageActions";
-import {
-  UpsertImageDataType,
-  upsertStatementImage,
-} from "@/lib/actions/statementActions";
+import { Editor } from '@tiptap/react';
+import { toast } from 'sonner';
+
+import { UpsertImageDataType, upsertStatementImage } from '@/lib/actions/statementActions';
+import { uploadStatementImage } from '@/lib/actions/storageActions';
+import { handleImageCompression } from '@/lib/helpers/helpersImages';
 
 export const handleImageChange = async ({
   file,
   userId,
   statementId,
-  imageData,
+  imageData
 }: {
   file: File;
   userId: string;
@@ -24,29 +22,29 @@ export const handleImageChange = async ({
       if (!compressedFile) return;
 
       const fileFormData = new FormData();
-      fileFormData.append("image", compressedFile);
+      fileFormData.append('image', compressedFile);
 
       const imageUrl = await uploadStatementImage({
         file: fileFormData,
         creatorId: userId,
         statementId,
         fileName: imageData.id,
-        oldImageUrl: imageData.src,
+        oldImageUrl: imageData.src
       });
 
-      if (!imageUrl) throw new Error("Failed to upload image");
+      if (!imageUrl) throw new Error('Failed to upload image');
 
       await upsertStatementImage({
         id: imageData.id,
         src: imageUrl,
         statementId,
         alt: imageData.alt,
-        caption: imageData.caption,
+        caption: imageData.caption
       });
       return { imageId: imageData.id, imageUrl };
     } catch (error) {
-      toast("Error", {
-        description: `Failed to upload image. Please try again. ${error}`,
+      toast('Error', {
+        description: `Failed to upload image. Please try again. ${error}`
       });
     }
   }
@@ -57,7 +55,7 @@ export const saveImage = async ({
   userId,
   statementId,
   imageData,
-  file,
+  file
 }: {
   editor: Editor;
   userId: string;
@@ -69,18 +67,15 @@ export const saveImage = async ({
     file,
     userId,
     statementId,
-    imageData,
+    imageData
   });
 
-  if (!newImage) throw new Error("No image to insert");
+  if (!newImage) throw new Error('No image to insert');
 
   // Check if an image with this ID already exists in the document
   let imageExists = false;
-  editor.state.doc.descendants((node) => {
-    if (
-      node.type.name === "blockImage" &&
-      node.attrs.imageId === imageData.id
-    ) {
+  editor.state.doc.descendants(node => {
+    if (node.type.name === 'blockImage' && node.attrs.imageId === imageData.id) {
       imageExists = true;
       return false; // Stop traversing
     }
@@ -96,7 +91,7 @@ export const saveImage = async ({
         imageId: imageData.id,
         src: newImage.imageUrl,
         alt: imageData.alt ?? undefined,
-        caption: imageData.caption ?? undefined,
+        caption: imageData.caption ?? undefined
       })
       .run();
   } else {
@@ -108,7 +103,7 @@ export const saveImage = async ({
         imageId: newImage.imageId,
         src: newImage.imageUrl,
         alt: imageData.alt ?? undefined,
-        caption: imageData.caption ?? undefined,
+        caption: imageData.caption ?? undefined
       })
       .run();
   }
@@ -119,7 +114,7 @@ export const updateImage = async ({
   userId,
   pathname,
   statementId,
-  imageData,
+  imageData
 }: {
   editor: Editor;
   userId: string;
@@ -129,26 +124,23 @@ export const updateImage = async ({
 }) => {
   // Check if an image with this ID already exists in the document
 
-  editor.state.doc.descendants((node) => {
-    if (
-      node.type.name === "blockImage" &&
-      node.attrs.imageId === imageData.id
-    ) {
+  editor.state.doc.descendants(node => {
+    if (node.type.name === 'blockImage' && node.attrs.imageId === imageData.id) {
       return false; // Stop traversing
     }
     return true;
   });
 
   await upsertStatementImage({
-    alt: imageData.alt || imageData.id || "",
+    alt: imageData.alt || imageData.id || '',
     src: imageData.src,
     id: imageData.id,
     caption: imageData.caption,
     statementId,
     revalidationPath: {
-      path: "/",
-      type: "page",
-    },
+      path: '/',
+      type: 'page'
+    }
   });
 
   // Update existing image
@@ -159,7 +151,7 @@ export const updateImage = async ({
       imageId: imageData.id,
       src: imageData.src,
       alt: imageData.alt ?? undefined,
-      caption: imageData.caption ?? undefined,
+      caption: imageData.caption ?? undefined
     })
     .run();
 };

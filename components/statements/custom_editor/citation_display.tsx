@@ -3,6 +3,7 @@ import { BookIcon, CalendarIcon, FileTextIcon, LinkIcon, UsersIcon } from 'lucid
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useAsyncFn } from 'react-use';
+
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
@@ -32,7 +33,7 @@ export function CitationDisplay() {
     return parts.length > 0 ? parts.join(', ') : null;
   };
 
-  const [state, fetch] = useAsyncFn(async () => {
+  const [_, fetch] = useAsyncFn(async () => {
     if (citation.url) {
       const url = new URL(citation.url);
       if (url.origin === window.location.origin) {

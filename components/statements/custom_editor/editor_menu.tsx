@@ -9,12 +9,10 @@ import {
   LinkIcon,
   List,
   ListOrdered,
-  Pencil,
   Quote
 } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useWindowSize } from 'react-use';
+import { useRouter } from 'next/navigation';
+
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import ViewModeButton from '@/components/view_mode_button';

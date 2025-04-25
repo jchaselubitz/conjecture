@@ -1,6 +1,7 @@
 'use client';
 
 import { Editor } from '@tiptap/react';
+
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 
 import { CitationPopover } from './citation_popover';

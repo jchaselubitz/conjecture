@@ -1,18 +1,24 @@
 'use client';
 
 import './prose.css';
+
+import * as Sentry from '@sentry/nextjs';
 import { AnnotationWithComments, BaseDraft, DraftWithAnnotations } from 'kysely-codegen';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
+
 import AnnotationPanel from '@/components/statements/annotation/annotation_panel';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
+import { deleteAnnotation } from '@/lib/actions/annotationActions';
 
 import AppNav from '../navigation/app_nav';
 import EditNav from '../navigation/edit_nav';
+import { ButtonLoadingState } from '../ui/loading-button';
+
 import AnnotationDrawer from './annotation/annotation_drawer';
 import StatementDetails from './statement_details';
 interface StatementDetailsProps {
@@ -40,7 +46,8 @@ export default function StatementLayout({
     setReplyToComment,
     setComments,
     annotations,
-    setSelectedAnnotation
+    setSelectedAnnotation,
+    setAnnotations
   } = useStatementAnnotationContext();
 
   const router = useRouter();
@@ -49,6 +56,37 @@ export default function StatementLayout({
   const [editMode, setEditMode] = useState(editModeEnabled);
   const { editor, updatedStatement } = useStatementContext();
   const [annotationMode, setAnnotationMode] = useState<boolean>(!isMobile);
+  const [deletingButtonState, setDeletingButtonState] = useState<ButtonLoadingState>('default');
+
+  const handleDeleteAnnotation = async () => {
+    setDeletingButtonState('loading');
+    const annotationId = selectedAnnotationId;
+    if (!annotationId) return;
+
+    try {
+      if (editor && selectedAnnotation) {
+        await deleteAnnotation({
+          annotationId: annotationId,
+          statementCreatorId: updatedStatement?.creatorId,
+          annotationCreatorId: selectedAnnotation?.userId,
+          statementId: updatedStatement.statementId
+        });
+
+        editor.commands.deleteAnnotationHighlight(annotationId);
+        setAnnotations((prevAnnotations: AnnotationWithComments[]) =>
+          prevAnnotations.filter(a => a.id !== annotationId)
+        );
+
+        setDeletingButtonState('success');
+      } else {
+        throw new Error('Editor not found');
+      }
+      setSelectedAnnotationId(undefined);
+    } catch (error) {
+      console.error('Error deleting annotation:', error);
+      Sentry.captureException(error);
+    }
+  };
 
   useEffect(() => {
     setEditMode(editModeEnabled);
@@ -124,7 +162,7 @@ export default function StatementLayout({
     document.cookie = `show_reader_comments=${checked.toString()}`;
   };
 
-  const filteredAnnotations = annotations.filter((annotation) => {
+  const filteredAnnotations = annotations.filter(annotation => {
     if (showAuthorComments && showReaderComments) {
       return true;
     } else if (showAuthorComments) {
@@ -172,6 +210,8 @@ export default function StatementLayout({
         cancelReply={cancelReply}
         setComments={setComments}
         setReplyToComment={setReplyToComment}
+        handleDeleteAnnotation={handleDeleteAnnotation}
+        deletingButtonState={deletingButtonState}
       />
     </div>
   );
@@ -203,6 +243,8 @@ export default function StatementLayout({
               handleCloseAnnotationPanel={handleCloseAnnotationPanel}
               filteredAnnotations={filteredAnnotations}
               handleAnnotationSelection={handleAnnotationSelection}
+              handleDeleteAnnotation={handleDeleteAnnotation}
+              deletingButtonState={deletingButtonState}
             />
           )}
         </div>

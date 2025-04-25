@@ -4,6 +4,7 @@ import { Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useWindowSize } from 'react-use';
+
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
 import { cn } from '@/lib/utils';

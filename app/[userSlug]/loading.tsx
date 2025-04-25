@@ -1,10 +1,11 @@
 'use client';
 
-import AppNav from '@/components/navigation/app_nav';
-import { StatementListContainerLoading } from '@/containers/StatementListContainer';
 import { useSelectedLayoutSegment } from 'next/navigation';
 
-export default async function UserLoading() {
+import AppNav from '@/components/navigation/app_nav';
+import { StatementListContainerLoading } from '@/containers/StatementListContainer';
+
+export default function UserLoading() {
   const segment = useSelectedLayoutSegment();
   if (segment === null) {
     return (

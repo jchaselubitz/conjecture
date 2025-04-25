@@ -16,6 +16,6 @@ export const generateColorFromString = (str: string) => {
   return {
     backgroundColor: `hsla(${h}, ${s}%, ${l}%, 0.3)`,
     borderColor: `hsl(${h}, ${s}%, ${borderL}%)`,
-    hoverBackgroundColor: `hsla(${h}, ${s}%, ${hoverL}%, 0.4)`,
+    hoverBackgroundColor: `hsla(${h}, ${s}%, ${hoverL}%, 0.4)`
   };
 };

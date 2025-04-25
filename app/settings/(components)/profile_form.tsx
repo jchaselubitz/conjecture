@@ -5,6 +5,7 @@ import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -62,7 +63,7 @@ export default function ProfileForm() {
     setImageLoading(true);
     const files = event.target.files?.length ? Array.from(event.target.files) : null;
     if (files && files.length > 0) {
-      files.map(async (file) => {
+      files.map(async file => {
         try {
           const compressedFile = await handleImageCompression(file);
           if (!compressedFile) return;

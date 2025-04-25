@@ -1,20 +1,8 @@
 import { DraftWithAnnotations } from 'kysely-codegen';
-import {
-  BarChart3,
-  Check,
-  Facebook,
-  Link,
-  Linkedin,
-  MoreHorizontal,
-  PencilLine,
-  Send,
-  Share2,
-  Trash2,
-  Twitter
-} from 'lucide-react';
+import { BarChart3, MoreHorizontal, PencilLine, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useStatementContext } from '@/contexts/StatementBaseContext';
+
 import { useUserContext } from '@/contexts/userContext';
 import { deleteStatement, updateStatementUrl } from '@/lib/actions/statementActions';
 import { checkValidStatementSlug } from '@/lib/helpers/helpersStatements';
@@ -33,6 +21,7 @@ import { Input } from '../ui/input';
 import { ButtonLoadingState } from '../ui/loading-button';
 import { Separator } from '../ui/separator';
 import ViewModeButton from '../view_mode_button';
+
 import { CommentIndicatorButton } from './comments_menu';
 import RebuttalButton from './rebuttal_button';
 import VoteButton from './vote_button';
@@ -163,7 +152,7 @@ export default function StatementOptions({
             <Input
               className="bg-background h-8"
               defaultValue={statement.slug || ''}
-              onChange={(e) => {
+              onChange={e => {
                 setSlug(e.target.value);
               }}
             />

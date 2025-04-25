@@ -1,4 +1,5 @@
 import { DraftWithUser } from 'kysely-codegen';
+
 import { StatementCard } from '@/components/statements/card';
 import { StatementCardLoading } from '@/components/statements/card/statement_card';
 
@@ -33,7 +34,7 @@ export async function StatementListContainer({
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {statements.length > 0 ? (
-          statements.map((statement) => (
+          statements.map(statement => (
             <StatementCard
               key={statement.statementId}
               statement={statement.drafts[0]}
@@ -58,7 +59,7 @@ export async function StatementListContainerLoading() {
         <h1 className="text-3xl font-bold">Statements</h1>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[1, 2, 3].map((statement) => (
+        {[1, 2, 3].map(statement => (
           <StatementCardLoading key={statement} />
         ))}
       </div>

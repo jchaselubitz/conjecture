@@ -1,80 +1,88 @@
-"use server";
+'use server';
 
-import { createClient } from "@/supabase/server";
-import db from "../database";
-import { EditedAnnotation } from "kysely-codegen";
-import { revalidatePath } from "next/cache";
+import { EditedAnnotation } from 'kysely-codegen';
+import { revalidatePath } from 'next/cache';
+
+import { createClient } from '@/supabase/server';
+
+import db from '../database';
 
 export async function getAnnotationsForDraft({ draftId }: { draftId: string }) {
   const annotations = await db
-    .selectFrom("annotation")
+    .selectFrom('annotation')
     .selectAll()
-    .where("draftId", "=", draftId)
+    .where('draftId', '=', draftId)
     .execute();
   return annotations;
 }
 
-export async function createAnnotation(
-  { annotation, statementId }: {
-    annotation: {
-      id: string;
-      tag: string | undefined | null;
-      text: string;
-      start: number;
-      end: number;
-      userId: string;
-      draftId: string;
-    };
-    statementId: string;
-  },
-) {
-  const { id: annotationId } = await db.insertInto("annotation").values({
-    ...annotation,
-  }).returning("id").executeTakeFirstOrThrow();
-  revalidatePath(`/[userSlug]/${statementId}`, "page");
+export async function createAnnotation({
+  annotation,
+  statementId
+}: {
+  annotation: {
+    id: string;
+    tag: string | undefined | null;
+    text: string;
+    start: number;
+    end: number;
+    userId: string;
+    draftId: string;
+  };
+  statementId: string;
+}) {
+  const { id: annotationId } = await db
+    .insertInto('annotation')
+    .values({
+      ...annotation
+    })
+    .returning('id')
+    .executeTakeFirstOrThrow();
+  revalidatePath(`/[userSlug]/${statementId}`, 'page');
   return annotationId;
 }
 
-export async function updateAnnotation(
-  { annotation, statementId }: {
-    annotation: EditedAnnotation;
-    statementId: string;
-  },
-) {
+export async function updateAnnotation({
+  annotation,
+  statementId
+}: {
+  annotation: EditedAnnotation;
+  statementId: string;
+}) {
   const supabase = await createClient();
 
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   if (!user || user.id !== annotation.userId) {
-    return { error: "Unauthorized" };
+    return { error: 'Unauthorized' };
   }
   if (!annotation.id) {
-    return { error: "Annotation ID is required" };
+    return { error: 'Annotation ID is required' };
   }
 
   const annotationId = annotation.id;
   const { start, end, text } = annotation;
 
-  await db.updateTable("annotation").set({
-    id: annotationId,
-    start,
-    end,
-    text,
-  }).where(
-    "id",
-    "=",
-    annotation.id,
-  ).execute();
-  revalidatePath(`/[userSlug]/${statementId}`, "page");
+  await db
+    .updateTable('annotation')
+    .set({
+      id: annotationId,
+      start,
+      end,
+      text
+    })
+    .where('id', '=', annotation.id)
+    .execute();
+  revalidatePath(`/[userSlug]/${statementId}`, 'page');
 }
 
 export async function deleteAnnotation({
   annotationId,
   statementCreatorId,
   annotationCreatorId,
-  statementId,
+  statementId
 }: {
   annotationId: string;
   statementCreatorId: string;
@@ -83,21 +91,18 @@ export async function deleteAnnotation({
 }) {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error("No user found");
+    throw new Error('No user found');
   }
 
-  if (
-    user.id === annotationCreatorId || user.id === statementCreatorId
-  ) {
-    await db.deleteFrom("annotation").where("id", "=", annotationId)
-      .execute();
+  if (user.id === annotationCreatorId || user.id === statementCreatorId) {
+    await db.deleteFrom('annotation').where('id', '=', annotationId).execute();
   } else {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized');
   }
 
-  revalidatePath(`/[userSlug]/${statementId}`, "page");
+  revalidatePath(`/[userSlug]/${statementId}`, 'page');
 }

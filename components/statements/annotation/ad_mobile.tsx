@@ -1,7 +1,9 @@
 import { AnnotationWithComments, BaseCommentWithUser } from 'kysely-codegen';
 import { Dispatch, SetStateAction, useRef } from 'react';
+
 import Comment from '@/components/statements/comment';
 import { CommentWithReplies } from '@/components/statements/comment';
+import { ButtonLoadingState } from '@/components/ui/loading-button';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { useUserContext } from '@/contexts/userContext';
 
@@ -13,13 +15,17 @@ interface AnnotationDetailMobileProps {
   statementId: string;
   setReplyToComment: Dispatch<SetStateAction<BaseCommentWithUser | null>>;
   nestedComments: CommentWithReplies[];
+  handleDeleteAnnotation: () => void;
+  deletingButtonState: ButtonLoadingState;
 }
 
 export default function AnnotationDetailMobile({
   annotation,
   statementCreatorId,
   statementId,
-  nestedComments
+  nestedComments,
+  handleDeleteAnnotation,
+  deletingButtonState
 }: AnnotationDetailMobileProps) {
   const { setReplyToComment, handleCommentDeleted } = useStatementAnnotationContext();
 
@@ -48,10 +54,16 @@ export default function AnnotationDetailMobile({
   return (
     <div className="flex flex-col gap-3 px-2 h-full">
       <div className="h-full flex flex-col overflow-y-auto">
-        <AnnotationHeader annotation={annotation} isCreator={isCreator} />
+        <AnnotationHeader
+          annotation={annotation}
+          isCreator={isCreator}
+          isMobile={true}
+          handleDeleteAnnotation={handleDeleteAnnotation}
+          deletingButtonState={deletingButtonState}
+        />
         {nestedComments.length > 0 && (
           <div className="border-b pb-1 border-muted">
-            {nestedComments.map((comment) => (
+            {nestedComments.map(comment => (
               <Comment
                 key={comment.id}
                 comment={comment}

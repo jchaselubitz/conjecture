@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -118,7 +119,7 @@ export function CitationForm({
   }, [citationData, form]);
 
   const handleCitationSelect = (citationId: string) => {
-    const selectedCitation = citations.find((c) => c.id === citationId);
+    const selectedCitation = citations.find(c => c.id === citationId);
 
     if (selectedCitation) {
       const newCitationData = {
@@ -236,7 +237,7 @@ export function CitationForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {citations.map((citation) => (
+                  {citations.map(citation => (
                     <SelectItem key={citation.id} value={citation.id}>
                       {citation.title}
                       {citation.authorNames && ` (${citation.authorNames})`}
@@ -312,7 +313,7 @@ export function CitationForm({
                       <SelectContent>
                         <SelectItem value="none">None</SelectItem>
 
-                        {MonthsArray.map((month) => (
+                        {MonthsArray.map(month => (
                           <SelectItem key={month.value} value={month.value.toString()}>
                             {month.label}
                           </SelectItem>

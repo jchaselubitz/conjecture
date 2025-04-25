@@ -1,4 +1,5 @@
 import type { Metadata, ResolvingMetadata } from 'next';
+
 import { StatementContainer } from '@/containers/StatementContainer';
 import { getDraftsByStatementSlug, getPublishedStatement } from '@/lib/actions/statementActions';
 import { createClient } from '@/supabase/server';

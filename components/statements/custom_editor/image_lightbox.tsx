@@ -1,10 +1,11 @@
 'use client';
 
 import { XIcon } from 'lucide-react';
+import Image from 'next/image';
 import { Dispatch, SetStateAction } from 'react';
+
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { UpsertImageDataType } from '@/lib/actions/statementActions';
-
 interface ImageLightboxProps {
   src: string;
   alt: string;
@@ -40,7 +41,20 @@ export function ImageLightbox({
         <div className="relative flex items-center justify-center">
           {src && (
             <div className="relative max-w-[95vw] max-h-[95vh]">
-              <img src={src} alt={alt} className="object-contain max-w-[95vw] max-h-[95vh]" />
+              <Image
+                src={src}
+                alt={alt}
+                width={1000}
+                height={1000}
+                sizes="95vw"
+                className="object-contain"
+                style={{
+                  maxWidth: '95vw',
+                  maxHeight: '95vh',
+                  width: 'auto',
+                  height: 'auto'
+                }}
+              />
             </div>
           )}
         </div>

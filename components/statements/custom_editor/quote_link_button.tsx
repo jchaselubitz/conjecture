@@ -1,5 +1,6 @@
 import { Editor } from '@tiptap/react';
 import { Check, Quote } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { useCopyToClipboard } from '@/lib/hooks/useCopyToClipboard';
 import { cn } from '@/lib/utils';

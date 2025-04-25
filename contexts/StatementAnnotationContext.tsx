@@ -1,6 +1,6 @@
 'use client';
 
-import { AnnotationWithComments, BaseCommentWithUser, NewAnnotation } from 'kysely-codegen';
+import { AnnotationWithComments, BaseCommentWithUser } from 'kysely-codegen';
 import {
   createContext,
   Dispatch,
@@ -10,6 +10,7 @@ import {
   useEffect,
   useState
 } from 'react';
+
 import { CommentWithReplies } from '@/components/statements/comment';
 import { nestComments } from '@/lib/helpers/helpersGeneral';
 
@@ -54,7 +55,7 @@ export function StatementAnnotationProvider({ children }: { children: ReactNode 
 
   useEffect(() => {
     setSelectedAnnotation(
-      (annotations.find((a) => a.id === selectedAnnotationId) as AnnotationWithComments) || null
+      (annotations.find(a => a.id === selectedAnnotationId) as AnnotationWithComments) || null
     );
   }, [selectedAnnotationId, annotations, setSelectedAnnotation]);
 
@@ -63,7 +64,7 @@ export function StatementAnnotationProvider({ children }: { children: ReactNode 
   };
 
   const handleCommentDeleted = (commentId: string) => {
-    setComments((prevComments) => prevComments.filter((comment) => comment.id !== commentId));
+    setComments(prevComments => prevComments.filter(comment => comment.id !== commentId));
     // If we were replying to this comment, cancel the reply
     if (replyToComment?.id === commentId) {
       setReplyToComment(null);

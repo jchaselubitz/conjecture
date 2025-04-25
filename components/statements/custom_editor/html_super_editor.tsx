@@ -1,14 +1,16 @@
 import 'katex/dist/katex.min.css';
+
 import { EditorContent, FloatingMenu } from '@tiptap/react';
 import { AnnotationWithComments, DraftWithAnnotations } from 'kysely-codegen';
 import React from 'react';
+
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { cn } from '@/lib/utils';
 
+import { useHtmlSuperEditor } from './hooks/useHtmlSuperEditor';
 import { AnnotationMenu } from './annotation_menu';
 import { BlockTypeChooser } from './block_type_chooser';
 import { CitationNodeEditor } from './citation_node_editor';
-import { useHtmlSuperEditor } from './hooks/useHtmlSuperEditor';
 interface HTMLSuperEditorProps {
   statement: DraftWithAnnotations;
   existingAnnotations: AnnotationWithComments[];

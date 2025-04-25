@@ -1,11 +1,14 @@
 import useEmblaCarousel from 'embla-carousel-react';
 import { AnnotationWithComments, BaseCommentWithUser } from 'kysely-codegen';
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
+import { ButtonLoadingState } from '@/components/ui/loading-button';
 import { nestComments } from '@/lib/helpers/helpersGeneral';
 
 import { CommentWithReplies } from '../comment';
+
 import AnnotationDetailMobile from './ad_mobile';
 import CommentInput from './comment_input';
 
@@ -24,6 +27,8 @@ interface AnnotationDrawerProps {
   cancelReply: () => void;
   setComments: Dispatch<SetStateAction<CommentWithReplies[]>>;
   setReplyToComment: Dispatch<SetStateAction<BaseCommentWithUser | null>>;
+  handleDeleteAnnotation: () => void;
+  deletingButtonState: ButtonLoadingState;
 }
 
 export default function AnnotationDrawer({
@@ -37,7 +42,9 @@ export default function AnnotationDrawer({
   replyToComment,
   cancelReply,
   setComments,
-  setReplyToComment
+  setReplyToComment,
+  handleDeleteAnnotation,
+  deletingButtonState
 }: AnnotationDrawerProps) {
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [emblaRan, setEmblaRan] = useState(false);
@@ -102,7 +109,7 @@ export default function AnnotationDrawer({
           <div className="overflow-hidden" ref={emblaRef}>
             {annotations && (
               <div className="flex ">
-                {filteredAnnotations.map((annotation) => (
+                {filteredAnnotations.map(annotation => (
                   <div key={annotation.id} className="flex-[0_0_100%]">
                     <AnnotationDetailMobile
                       annotation={annotation}
@@ -110,6 +117,8 @@ export default function AnnotationDrawer({
                       statementId={statement.statementId}
                       nestedComments={nestComments(annotation.comments)}
                       setReplyToComment={setReplyToComment}
+                      handleDeleteAnnotation={handleDeleteAnnotation}
+                      deletingButtonState={deletingButtonState}
                     />
                   </div>
                 ))}

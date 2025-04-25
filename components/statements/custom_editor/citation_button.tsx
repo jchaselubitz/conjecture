@@ -1,6 +1,7 @@
 import { Editor } from '@tiptap/react';
 import { NewStatementCitation } from 'kysely-codegen';
 import { Asterisk } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Tooltip } from '@/components/ui/tooltip';

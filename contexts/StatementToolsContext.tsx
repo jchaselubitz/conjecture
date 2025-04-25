@@ -10,6 +10,7 @@ import {
   useEffect,
   useState
 } from 'react';
+
 import { UpsertImageDataType } from '@/lib/actions/statementActions';
 
 import { useStatementContext } from './StatementBaseContext';
@@ -93,13 +94,13 @@ export function StatementToolsProvider({ children }: { children: ReactNode }) {
   });
 
   const setLatexPopoverOpen = (open: boolean) =>
-    setPopoverState((prev) => ({ ...prev, latex: open }));
+    setPopoverState(prev => ({ ...prev, latex: open }));
   const setImagePopoverOpen = (open: boolean) =>
-    setPopoverState((prev) => ({ ...prev, image: open }));
+    setPopoverState(prev => ({ ...prev, image: open }));
   const setCitationPopoverOpen = (open: boolean) =>
-    setPopoverState((prev) => ({ ...prev, citation: open }));
+    setPopoverState(prev => ({ ...prev, citation: open }));
   const setImageLightboxOpen = (open: boolean) =>
-    setPopoverState((prev) => ({ ...prev, imageLightbox: open }));
+    setPopoverState(prev => ({ ...prev, imageLightbox: open }));
 
   return (
     <StatementToolsContext.Provider

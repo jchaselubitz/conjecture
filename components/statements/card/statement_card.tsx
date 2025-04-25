@@ -2,6 +2,7 @@ import { format } from 'date-fns';
 import { DraftWithUser } from 'kysely-codegen';
 import Image from 'next/image';
 import Link from 'next/link';
+
 import Byline from '@/components/statements/byline';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import {
@@ -13,6 +14,7 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+
 import { StatusBadge } from './status_badge';
 
 interface StatementCardProps {

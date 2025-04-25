@@ -1,5 +1,6 @@
 import { BaseStatementCitation } from 'kysely-codegen';
 import React from 'react';
+
 import { cn } from '@/lib/utils';
 
 import { Footnote } from './footnote';

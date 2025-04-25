@@ -2,11 +2,13 @@
 import { Menu } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+
 import { useUserContext } from '@/contexts/userContext';
 
 import CreatePostButton from '../special_buttons/create_post_button';
 import { Button } from '../ui/button';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '../ui/drawer';
+
 import UserButton from './user_button';
 
 export default function AppNav() {

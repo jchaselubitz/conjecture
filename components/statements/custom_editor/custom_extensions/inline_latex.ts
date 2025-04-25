@@ -1,7 +1,8 @@
-import { mergeAttributes, Node } from "@tiptap/core";
-import { nanoid } from "nanoid";
-import { Plugin, PluginKey } from "prosemirror-state";
-import { processLatex } from "./helpers/helpersLatexExtension";
+import { mergeAttributes, Node } from '@tiptap/core';
+import { nanoid } from 'nanoid';
+import { Plugin, PluginKey } from 'prosemirror-state';
+
+import { processLatex } from './helpers/helpersLatexExtension';
 
 export interface InlineLatexOptions {
   /**
@@ -17,7 +18,7 @@ export interface InlineLatexOptions {
   defaultContent?: string;
 }
 
-declare module "@tiptap/core" {
+declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     inlineLatex: {
       /**
@@ -27,9 +28,7 @@ declare module "@tiptap/core" {
       /**
        * Update inline LaTeX node
        */
-      updateInlineLatex: (
-        options: { latexId: string; content: string },
-      ) => ReturnType;
+      updateInlineLatex: (options: { latexId: string; content: string }) => ReturnType;
       /**
        * Delete LaTeX node by ID
        */
@@ -39,39 +38,39 @@ declare module "@tiptap/core" {
 }
 
 export const InlineLatex = Node.create<InlineLatexOptions>({
-  name: "inlineLatex",
+  name: 'inlineLatex',
 
   addOptions() {
     return {
       HTMLAttributes: {},
-      defaultContent: "\\alpha + \\beta = \\gamma",
+      defaultContent: '\\alpha + \\beta = \\gamma'
     };
   },
 
   inline: true,
-  group: "inline",
+  group: 'inline',
   atom: true,
 
   addAttributes() {
     return {
       latex: {
-        default: "",
-        parseHTML: (element) => element.getAttribute("data-latex"),
-        renderHTML: (attributes) => {
+        default: '',
+        parseHTML: element => element.getAttribute('data-latex'),
+        renderHTML: attributes => {
           return {
-            "data-latex": attributes.latex,
+            'data-latex': attributes.latex
           };
-        },
+        }
       },
       latexId: {
         default: null,
-        parseHTML: (element) => element.getAttribute("data-id"),
-        renderHTML: (attributes) => {
+        parseHTML: element => element.getAttribute('data-id'),
+        renderHTML: attributes => {
           return {
-            "data-id": attributes.latexId || nanoid(),
+            'data-id': attributes.latexId || nanoid()
           };
-        },
-      },
+        }
+      }
     };
   },
 
@@ -79,124 +78,118 @@ export const InlineLatex = Node.create<InlineLatexOptions>({
     return [
       {
         tag: "span[data-type='inline-latex']",
-        getAttrs: (node) => {
-          if (typeof node === "string") return {};
+        getAttrs: node => {
+          if (typeof node === 'string') return {};
           const element = node as HTMLElement;
           return {
-            latex: element.getAttribute("data-latex"),
-            latexId: element.getAttribute("data-id"),
+            latex: element.getAttribute('data-latex'),
+            latexId: element.getAttribute('data-id')
           };
-        },
-      },
+        }
+      }
     ];
   },
 
   renderHTML({ HTMLAttributes, node }) {
     return [
-      "span",
-      mergeAttributes(
-        this.options.HTMLAttributes,
-        HTMLAttributes,
-        {
-          "data-type": "inline-latex",
-          "data-latex": node.attrs.latex,
-          "data-id": node.attrs.latexId,
-          class: "inline-latex",
-          style: "display: inline-block; vertical-align: middle;",
-        },
-      ),
+      'span',
+      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
+        'data-type': 'inline-latex',
+        'data-latex': node.attrs.latex,
+        'data-id': node.attrs.latexId,
+        class: 'inline-latex',
+        style: 'display: inline-block; vertical-align: middle;'
+      }),
       // This placeholder will be replaced with rendered LaTeX
-      node.attrs.latex || "Click to edit LaTeX",
+      node.attrs.latex || 'Click to edit LaTeX'
     ];
   },
 
   addCommands() {
     return {
-      insertInlineLatex: (options = {}) => ({ chain, commands }) => {
-        const latexId = nanoid();
-        return commands.insertContent({
-          type: this.name,
-          attrs: {
-            latex: options.content || this.options.defaultContent,
-            latexId,
-          },
-        });
-      },
-      updateInlineLatex: (options) => ({ tr, state, dispatch }) => {
-        // Find the node with the given ID
-        const { doc } = state;
-        let nodePos = -1;
-
-        doc.descendants((node, pos) => {
-          if (
-            node.type.name === this.name &&
-            node.attrs.latexId === options.latexId
-          ) {
-            nodePos = pos;
-            return false;
-          }
-          return true;
-        });
-
-        if (nodePos === -1) {
-          console.warn(
-            `No inline LaTeX node found with ID: ${options.latexId}`,
-          );
-          return false;
-        }
-
-        // Update the node with new content
-        if (dispatch) {
-          const currentNode = doc.nodeAt(nodePos);
-          if (!currentNode) return false;
-
-          tr.setNodeMarkup(nodePos, undefined, {
-            ...currentNode.attrs,
-            latex: options.content,
+      insertInlineLatex:
+        (options = {}) =>
+        ({ chain, commands }) => {
+          const latexId = nanoid();
+          return commands.insertContent({
+            type: this.name,
+            attrs: {
+              latex: options.content || this.options.defaultContent,
+              latexId
+            }
           });
-          dispatch(tr);
-        }
+        },
+      updateInlineLatex:
+        options =>
+        ({ tr, state, dispatch }) => {
+          // Find the node with the given ID
+          const { doc } = state;
+          let nodePos = -1;
 
-        return true;
-      },
-      deleteInlineLatex: (options) => ({ tr, state, dispatch }) => {
-        if (!dispatch) return false;
-        const { doc } = state;
-        let nodePos = -1;
+          doc.descendants((node, pos) => {
+            if (node.type.name === this.name && node.attrs.latexId === options.latexId) {
+              nodePos = pos;
+              return false;
+            }
+            return true;
+          });
 
-        doc.descendants((node, pos) => {
-          if (
-            node.type.name === this.name &&
-            node.attrs.latexId === options.latexId
-          ) {
-            nodePos = pos;
+          if (nodePos === -1) {
+            console.warn(`No inline LaTeX node found with ID: ${options.latexId}`);
             return false;
           }
+
+          // Update the node with new content
+          if (dispatch) {
+            const currentNode = doc.nodeAt(nodePos);
+            if (!currentNode) return false;
+
+            tr.setNodeMarkup(nodePos, undefined, {
+              ...currentNode.attrs,
+              latex: options.content
+            });
+            dispatch(tr);
+          }
+
           return true;
-        });
+        },
+      deleteInlineLatex:
+        options =>
+        ({ tr, state, dispatch }) => {
+          if (!dispatch) return false;
+          const { doc } = state;
+          let nodePos = -1;
 
-        if (nodePos === -1) {
-          return false;
+          doc.descendants((node, pos) => {
+            if (node.type.name === this.name && node.attrs.latexId === options.latexId) {
+              nodePos = pos;
+              return false;
+            }
+            return true;
+          });
+
+          if (nodePos === -1) {
+            return false;
+          }
+
+          // Delete the node at the found position
+          tr.delete(nodePos, nodePos + doc.nodeAt(nodePos)!.nodeSize);
+          dispatch(tr);
+          return true;
         }
-
-        // Delete the node at the found position
-        tr.delete(nodePos, nodePos + doc.nodeAt(nodePos)!.nodeSize);
-        dispatch(tr);
-        return true;
-      },
     };
   },
 
   addKeyboardShortcuts() {
     return {
-      "Mod-Shift-i": () => this.editor.commands.insertInlineLatex(),
+      'Mod-Shift-i': () => this.editor.commands.insertInlineLatex()
     };
   },
 
   addProseMirrorPlugins() {
     return [
       new Plugin({
-        key: new PluginKey("inlineLatexProcessor"),
+        key: new PluginKey('inlineLatexProcessor'),
         view(editorView) {
           const processLatexInView = () => {
             processLatex(editorView.dom);
@@ -213,10 +206,11 @@ export const InlineLatex = Node.create<InlineLatexOptions>({
                 let hasLatexContentChanged = false;
 
                 view.state.doc.descendants((node, pos) => {
-                  if (node.type.name === "inlineLatex") {
+                  if (node.type.name === 'inlineLatex') {
                     const prevNode = prevState.doc.nodeAt(pos);
                     if (
-                      !prevNode || prevNode.type.name !== "inlineLatex" ||
+                      !prevNode ||
+                      prevNode.type.name !== 'inlineLatex' ||
                       prevNode.attrs.latex !== node.attrs.latex
                     ) {
                       hasLatexContentChanged = true;
@@ -233,10 +227,10 @@ export const InlineLatex = Node.create<InlineLatexOptions>({
             },
             destroy() {
               // Clean up if needed
-            },
+            }
           };
-        },
-      }),
+        }
+      })
     ];
-  },
+  }
 });

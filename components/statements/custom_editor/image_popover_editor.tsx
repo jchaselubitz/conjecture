@@ -2,8 +2,10 @@
 
 import { ImageIcon, Trash2 } from 'lucide-react';
 import { nanoid } from 'nanoid';
+import { default as NextImage } from 'next/image';
 import { usePathname } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { ButtonLoadingState } from '@/components/ui/loading-button';
@@ -12,7 +14,7 @@ import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { useUserContext } from '@/contexts/userContext';
-import { deleteStatementImage, upsertStatementImage } from '@/lib/actions/statementActions';
+import { deleteStatementImage } from '@/lib/actions/statementActions';
 
 import { saveImage, updateImage } from './custom_extensions/helpers/helpersImageExtension';
 
@@ -162,9 +164,12 @@ export function ImagePopoverEditor({
             {error ? (
               <div className="text-red-500 text-sm">{error}</div>
             ) : previewUrl ? (
-              <img
+              <NextImage
                 src={previewUrl}
-                alt={alt || undefined}
+                alt={alt || ''}
+                width={1000}
+                height={1000}
+                sizes="95vw"
                 className="max-w-full max-h-[200px] object-contain"
               />
             ) : (
@@ -187,14 +192,14 @@ export function ImagePopoverEditor({
           <Input
             placeholder="Alt text (for accessibility)"
             value={alt || undefined}
-            onChange={(e) => setAlt(e.target.value)}
+            onChange={e => setAlt(e.target.value)}
           />
 
           {/* Caption Input */}
           <Input
             placeholder="Caption"
             value={caption || undefined}
-            onChange={(e) => setCaption(e.target.value)}
+            onChange={e => setCaption(e.target.value)}
           />
 
           {/* Actions */}

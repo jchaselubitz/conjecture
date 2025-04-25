@@ -4,8 +4,8 @@ import {
   Kysely,
   PostgresDialect,
   Selectable,
-  Updateable,
-} from "kysely";
+  Updateable
+} from 'kysely';
 import {
   Annotation,
   Comment,
@@ -16,24 +16,24 @@ import {
   Profile,
   StatementCitation,
   StatementImage,
-  StatementVote,
-} from "kysely-codegen";
-import { Pool } from "pg";
+  StatementVote
+} from 'kysely-codegen';
+import { Pool } from 'pg';
 
 const db = new Kysely<DB>({
   plugins: [new CamelCasePlugin()],
   dialect: new PostgresDialect({
     pool: new Pool({
       connectionString: process.env.DATABASE_URL,
-      max: 10,
-    }),
-  }),
+      max: 10
+    })
+  })
 });
 
-declare module "kysely-codegen" {
+declare module 'kysely-codegen' {
   export type RevalidationPath = {
     path: string;
-    type?: "page" | "layout" | undefined;
+    type?: 'page' | 'layout' | undefined;
   };
 
   export type BaseProfile = Selectable<Profile>;

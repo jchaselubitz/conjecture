@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/nextjs';
 import { BaseCommentWithUser } from 'kysely-codegen';
 import { ArrowUp, Edit2, RefreshCw, Reply, Trash2 } from 'lucide-react';
 import { startTransition, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -58,13 +59,13 @@ export default function CommentControls({
   const isCreatorOrModerator = isCreator || isModerator;
 
   const voteCount = votes?.length || 0;
-  const hasUpvoted = votes?.some((vote) => vote.userId === userId) || false;
+  const hasUpvoted = votes?.some(vote => vote.userId === userId) || false;
 
   const handleVote = async () => {
     if (!userId) return;
     try {
       const newVotes = hasUpvoted
-        ? votes?.filter((vote) => vote.userId !== userId)
+        ? votes?.filter(vote => vote.userId !== userId)
         : [
             ...(votes || []),
             {

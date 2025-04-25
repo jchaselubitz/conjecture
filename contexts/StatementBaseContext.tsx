@@ -15,6 +15,7 @@ import {
   useState
 } from 'react';
 import { useDebounce } from 'use-debounce';
+
 import { createDraft, publishDraft, updateDraft } from '@/lib/actions/statementActions';
 
 interface StatementContextType {
@@ -53,13 +54,13 @@ export function StatementProvider({
   const version = versionString ? parseInt(versionString, 10) : undefined;
 
   const [statement, setStatement] = useState<DraftWithAnnotations>(
-    drafts?.find((draft) => draft.versionNumber === version) ?? drafts[0]
+    drafts?.find(draft => draft.versionNumber === version) ?? drafts[0]
   );
 
   const [updatedStatement, setUpdatedStatement] = useState<DraftWithAnnotations>(statement);
 
   useEffect(() => {
-    const foundDraft = drafts?.find((draft) => draft.versionNumber === version);
+    const foundDraft = drafts?.find(draft => draft.versionNumber === version);
     if (foundDraft && foundDraft.id !== statement?.id) {
       setStatement(foundDraft);
     } else if (!foundDraft && drafts.length > 0 && drafts[0].id !== statement?.id) {
@@ -84,7 +85,7 @@ export function StatementProvider({
 
   const versionOptions = useMemo(() => {
     return drafts
-      .map((draft) => {
+      .map(draft => {
         return {
           v: draft.versionNumber,
           versionNumber: draft.versionNumber.toString(),

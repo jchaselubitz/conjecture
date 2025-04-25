@@ -4,7 +4,7 @@ export const handleImageCompression = async (imageFile: File): Promise<File | un
   const options = {
     maxSizeMB: 1,
     maxWidthOrHeight: 1920,
-    useWebWorker: true,
+    useWebWorker: true
   };
   try {
     return await imageCompression(imageFile, options);
@@ -15,13 +15,12 @@ export const handleImageCompression = async (imageFile: File): Promise<File | un
 
 export const fileToImageUrl = (file: File): Promise<string> => {
   if (!file) return Promise.resolve('');
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const reader = new FileReader();
 
-    reader.onload = (e) => {
+    reader.onload = e => {
       resolve(e.target?.result as string);
     };
     reader.readAsDataURL(file);
   });
 };
-

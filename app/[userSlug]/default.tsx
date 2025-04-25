@@ -1,4 +1,3 @@
-import { Metadata, ResolvingMetadata } from 'next';
 import AppNav from '@/components/navigation/app_nav';
 import { StatementListContainer } from '@/containers/StatementListContainer';
 import { getDrafts } from '@/lib/actions/statementActions';

@@ -3,12 +3,13 @@ import { ChevronLeft, Upload } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { RefObject, startTransition, useEffect, useMemo, useRef } from 'react';
+import { RefObject, useEffect, useMemo, useRef } from 'react';
 import { useState } from 'react';
 import { useFixedStyleWithIOsKeyboard } from 'react-ios-keyboard-viewport';
 import { ImperativePanelGroupHandle } from 'react-resizable-panels';
 import TextareaAutosize from 'react-textarea-autosize';
 import { toast } from 'sonner';
+
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
@@ -21,13 +22,14 @@ import ReadNav from '../navigation/read_nav';
 import { AspectRatio } from '../ui/aspect-ratio';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import Byline from './byline';
+
 import { EditorMenu } from './custom_editor/editor_menu';
 import HTMLSuperEditor from './custom_editor/html_super_editor';
 import { ImageLightbox } from './custom_editor/image_lightbox';
 import { ImageNodeEditor } from './custom_editor/image_node_editor';
 import { LatexNodeEditor } from './custom_editor/latex_node_editor';
 import { FootnoteList } from './footnote/footnote_list';
+import Byline from './byline';
 import StatementOptions from './statement_options';
 
 export interface StatementDetailsProps {
@@ -68,8 +70,8 @@ export default function StatementDetails({
 
   const orderedFootnotes = useMemo(() => {
     const footnotes: BaseStatementCitation[] = [];
-    footnoteIds.forEach((id) => {
-      const footnote = citations.find((citation) => citation.id === id);
+    footnoteIds.forEach(id => {
+      const footnote = citations.find(citation => citation.id === id);
       if (footnote) {
         footnotes.push(footnote);
       }
@@ -124,6 +126,7 @@ export default function StatementDetails({
       });
       router.refresh();
     } catch (error) {
+      console.error(error);
       toast('Error', {
         description: 'Failed to upload image. Please try again.'
       });

@@ -30,7 +30,7 @@ export default async function Feed() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {statements.length > 0 ? (
-            statements.map((statement) => (
+            statements.map(statement => (
               <StatementCard
                 key={statement.statementId}
                 statement={statement.drafts[0]}

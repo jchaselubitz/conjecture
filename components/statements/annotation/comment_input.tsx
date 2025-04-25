@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
+
 import { Button } from '@/components/ui/button';
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
 import { Textarea } from '@/components/ui/textarea';
@@ -63,7 +64,7 @@ export default function CommentInput({
         parentId: replyToComment?.id || null
       };
 
-      setComments((prevComments) => [
+      setComments(prevComments => [
         ...nestComments([
           ...prevComments,
           {
@@ -144,7 +145,7 @@ export default function CommentInput({
             autoFocus={showCommentInput}
             placeholder={replyToComment ? 'Write your reply...' : 'Share your thoughts...'}
             value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
+            onChange={e => setCommentText(e.target.value)}
             onKeyDown={!isMobile ? handleKeyDown : undefined}
             className="min-h-[80px] focus-visible:ring-0 bg-background"
           />

@@ -1,6 +1,7 @@
 import { BaseStatementVote } from 'kysely-codegen';
 import { ArrowUp } from 'lucide-react';
 import { startTransition, useOptimistic } from 'react';
+
 import { useUserContext } from '@/contexts/userContext';
 import { toggleStatementUpvote } from '@/lib/actions/statementActions';
 
@@ -24,13 +25,13 @@ export default function VoteButton({ statementId, upvotes, className }: VoteButt
   );
 
   const voteCount = optVotes?.length || 0;
-  const hasUpvoted = optVotes?.some((vote) => vote.userId === userId) || false;
+  const hasUpvoted = optVotes?.some(vote => vote.userId === userId) || false;
 
   const handleVote = async () => {
     if (!userId) return;
     try {
       const newVotes = hasUpvoted
-        ? optVotes.filter((vote) => vote.userId !== userId)
+        ? optVotes.filter(vote => vote.userId !== userId)
         : [
             ...optVotes,
             {

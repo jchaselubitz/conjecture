@@ -1,5 +1,6 @@
 import { Editor } from '@tiptap/react';
 import { Heading1, Heading2, Heading3, List, ListOrdered, Quote } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 

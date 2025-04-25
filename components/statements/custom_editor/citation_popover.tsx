@@ -3,6 +3,7 @@
 import { Editor } from '@tiptap/react';
 import React from 'react';
 import { useWindowSize } from 'react-use';
+
 import { DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { Drawer } from '@/components/ui/drawer';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';

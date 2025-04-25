@@ -1,14 +1,20 @@
 import { AnnotationWithComments, BaseCommentWithUser } from 'kysely-codegen';
+import { RefreshCw, Trash2 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+
 import { AccordionContent, AccordionTrigger } from '@/components/ui/accordion';
 import { Card } from '@/components/ui/card';
+import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
+import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
 import { cn } from '@/lib/utils';
 
 import AnnotationHeader from '../annotation_header';
 import { CommentWithReplies } from '../comment';
 import Comment from '../comment';
+
 import CommentInput from './comment_input';
 
 interface AnnotationDetailDesktopProps {
@@ -17,6 +23,8 @@ interface AnnotationDetailDesktopProps {
   statementId: string;
   statementCreatorId: string;
   nestedComments: CommentWithReplies[];
+  handleDeleteAnnotation: () => void;
+  deletingButtonState: ButtonLoadingState;
 }
 
 export default function AnnotationDetailDesktop({
@@ -24,7 +32,9 @@ export default function AnnotationDetailDesktop({
   selected,
   statementId,
   statementCreatorId,
-  nestedComments
+  nestedComments,
+  handleDeleteAnnotation,
+  deletingButtonState
 }: AnnotationDetailDesktopProps) {
   const {
     replyToComment,
@@ -35,9 +45,10 @@ export default function AnnotationDetailDesktop({
     comments
   } = useStatementAnnotationContext();
 
+  const { editor } = useStatementContext();
   const { userId } = useUserContext();
   const isCreator = userId === statementCreatorId;
-
+  const editable = editor?.isEditable;
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
 
   const handleReplyClick = (comment: BaseCommentWithUser) => {
@@ -73,18 +84,48 @@ export default function AnnotationDetailDesktop({
     <Card
       ref={containerRef}
       className={cn(
-        'p-0 gap-0 max-h-4/5 overflow-y-auto',
+        'p-0 gap-0 max-h-4/5 overflow-y-auto min-w-72',
         selected ? 'shadow-2xl my-4' : 'shadow-none hover:shadow-md  '
       )}
     >
-      <AccordionTrigger className={cn('w-full p-4 hover:no-underline')}>
-        <AnnotationHeader annotation={annotation} isCreator={isCreator} />
-      </AccordionTrigger>
-
+      <div className="relative flex items-end w-full">
+        <AccordionTrigger className={'w-full p-4 hover:no-underline'} fullWidth>
+          <AnnotationHeader
+            annotation={annotation}
+            isCreator={isCreator}
+            isMobile={false}
+            handleDeleteAnnotation={handleDeleteAnnotation}
+            deletingButtonState={deletingButtonState}
+          />
+        </AccordionTrigger>
+        {isCreator && editable && (
+          <div className="absolute right-11 bottom-4">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <LoadingButton
+                    buttonState={deletingButtonState}
+                    onClick={handleDeleteAnnotation}
+                    text={<Trash2 className="w-4 h-4" color="red" />}
+                    variant="ghost"
+                    size="sm"
+                    loadingText={<RefreshCw className="w-4 h-4 animate-spin" />}
+                    successText="Deleted"
+                    errorText="Error deleting annotation"
+                  />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Delete annotation</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        )}
+      </div>
       <AccordionContent className="flex flex-col px-4 pb-4 gap-3">
         {comments.length > 0 && (
           <div className=" border-none pb-1 ">
-            {comments.map((comment) => (
+            {comments.map(comment => (
               <Comment
                 key={comment.id}
                 comment={comment}

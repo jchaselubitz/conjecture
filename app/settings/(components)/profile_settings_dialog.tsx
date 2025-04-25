@@ -2,6 +2,7 @@
 import { FollowWithFollowed, FollowWithFollower } from 'kysely-codegen';
 import { useState } from 'react';
 import { useAsync } from 'react-use';
+
 import {
   Dialog,
   DialogContent,
@@ -63,7 +64,7 @@ export default function ProfileSettingsDialog() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {following.map((user) => (
+                  {following.map(user => (
                     <TableRow key={user.id}>
                       <TableCell>{user.followedName}</TableCell>
                       <TableCell>{user.followedUsername}</TableCell>
@@ -83,7 +84,7 @@ export default function ProfileSettingsDialog() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {followers.map((user) => (
+                  {followers.map(user => (
                     <TableRow key={user.id}>
                       <TableCell>{user.followerName}</TableCell>
                       <TableCell>{user.followerUsername}</TableCell>

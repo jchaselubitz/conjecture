@@ -2,10 +2,11 @@
 
 import { AnnotationWithComments } from 'kysely-codegen';
 import { X } from 'lucide-react';
+
 import { Accordion, AccordionItem } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
+import { ButtonLoadingState } from '@/components/ui/loading-button';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
-import { nestComments } from '@/lib/helpers/helpersGeneral';
 
 import AnnotationDetailDesktop from './ad_desktop';
 interface AnnotationPanelProps {
@@ -14,6 +15,8 @@ interface AnnotationPanelProps {
   handleAnnotationSelection: (annotationId: string) => void;
   statementId: string;
   statementCreatorId: string;
+  handleDeleteAnnotation: () => void;
+  deletingButtonState: ButtonLoadingState;
 }
 
 export default function AnnotationPanel({
@@ -21,7 +24,9 @@ export default function AnnotationPanel({
   filteredAnnotations,
   handleAnnotationSelection,
   statementId,
-  statementCreatorId
+  statementCreatorId,
+  handleDeleteAnnotation,
+  deletingButtonState
 }: AnnotationPanelProps) {
   const { selectedAnnotationId, comments } = useStatementAnnotationContext();
 
@@ -37,10 +42,10 @@ export default function AnnotationPanel({
         type="single"
         collapsible
         value={selectedAnnotationId}
-        onValueChange={(value) => handleAnnotationSelection(value)}
+        onValueChange={value => handleAnnotationSelection(value)}
       >
         <div className="flex md:flex-col gap-2 mx-auto max-w-11/12 ">
-          {filteredAnnotations.map((annotation) => (
+          {filteredAnnotations.map(annotation => (
             <AccordionItem key={annotation.id} value={annotation.id} className="border-none">
               <AnnotationDetailDesktop
                 key={annotation.id}
@@ -49,6 +54,8 @@ export default function AnnotationPanel({
                 selected={selectedAnnotationId === annotation.id}
                 statementCreatorId={statementCreatorId}
                 nestedComments={comments}
+                handleDeleteAnnotation={handleDeleteAnnotation}
+                deletingButtonState={deletingButtonState}
               />
             </AccordionItem>
           ))}

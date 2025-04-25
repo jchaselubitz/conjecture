@@ -3,6 +3,7 @@
 import { BaseCommentVote, BaseCommentWithUser } from 'kysely-codegen';
 import { DotIcon } from 'lucide-react';
 import React, { useOptimistic, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { useUserContext } from '@/contexts/userContext';
 import { editComment } from '@/lib/actions/commentActions';
@@ -12,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { ButtonLoadingState, LoadingButton } from '../ui/loading-button';
 import { Textarea } from '../ui/textarea';
+
 import CommentControls from './comment_controls';
 export type CommentWithReplies = BaseCommentWithUser & {
   children: BaseCommentWithUser[];
@@ -157,7 +159,7 @@ const Comment: React.FC<CommentProps> = ({
           <div className="flex flex-col gap-2 mt-4">
             <Textarea
               defaultValue={comment.content}
-              onChange={(e) => setCommentContent(e.target.value)}
+              onChange={e => setCommentContent(e.target.value)}
               className="w-full bg-white/70"
             />
             <div className="flex items-center gap-2">
@@ -200,7 +202,7 @@ const Comment: React.FC<CommentProps> = ({
       {/* Nested replies */}
       {replies.length > 0 && (
         <div className="">
-          {replies.map((reply) => (
+          {replies.map(reply => (
             <Comment
               key={reply.id}
               comment={reply}

@@ -1,9 +1,11 @@
 'use client';
 
 import 'katex/dist/katex.min.css';
+
 import katex from 'katex';
 import { Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
@@ -87,7 +89,7 @@ export function LatexPopoverEditor({ children }: LatexPopoverEditorProps) {
           <Textarea
             className="font-mono resize-none h-32 text-sm"
             value={latex}
-            onChange={(e) => setLatex(e.target.value)}
+            onChange={e => setLatex(e.target.value)}
             placeholder="Enter your LaTeX here..."
             autoFocus
           />

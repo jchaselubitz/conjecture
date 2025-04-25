@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useWindowSize } from 'react-use';
+
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { formatDate } from '@/lib/helpers/helpersDate';
@@ -93,13 +94,13 @@ export default function EditNav() {
             <DropdownMenuItem>
               <Select
                 value={updatedStatement?.versionNumber.toString()}
-                onValueChange={(value) => changeVersion(parseInt(value, 10))}
+                onValueChange={value => changeVersion(parseInt(value, 10))}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a version" />
                 </SelectTrigger>
                 <SelectContent>
-                  {versionOptions.map((v) => (
+                  {versionOptions.map(v => (
                     <SelectItem key={v.versionNumber} value={v.versionNumber}>
                       v{v.versionNumber} -{' '}
                       <span className="text-sm text-zinc-500">
