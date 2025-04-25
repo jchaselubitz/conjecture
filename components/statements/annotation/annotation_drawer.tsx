@@ -47,19 +47,11 @@ export default function AnnotationDrawer({
     dragFree: false
   });
 
-  const commentsLength = comments.length;
-
   useEffect(() => {
     if (!!replyToComment) {
       setShowCommentInput(true);
     }
   }, [replyToComment]);
-
-  useEffect(() => {
-    if (commentsLength === 0) {
-      setShowCommentInput(true);
-    }
-  }, [commentsLength]);
 
   const onSelect = useCallback(() => {
     if (!emblaApi || !filteredAnnotations) return;
@@ -98,25 +90,20 @@ export default function AnnotationDrawer({
     onCancelReply();
   };
 
-  const nextPreviousAnnotation = useCallback(
-    ({ direction }: { direction: 'next' | 'previous' }) => {
-      if (!emblaApi || !filteredAnnotations) return;
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
 
-      const nextPreviousAnnotation =
-        filteredAnnotations[selectedIndex + (direction === 'next' ? 1 : -1)];
-      if (nextPreviousAnnotation) {
-        handleAnnotationSelection(nextPreviousAnnotation.id);
-      }
-    },
-    [emblaApi, filteredAnnotations, handleAnnotationSelection, selectedIndex]
-  );
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
   // console.log('selectedIndex', selectedIndex, filteredAnnotations);
   const canGoNext = () => {
     return selectedIndex < filteredAnnotations.length - 1;
   };
 
   const canGoPrevious = () => {
-    return selectedIndex > 1;
+    return selectedIndex > 0;
   };
 
   return (
@@ -125,10 +112,10 @@ export default function AnnotationDrawer({
       repositionInputs={false}
       onOpenChange={onHandleCloseAnnotationDrawer}
     >
-      <DrawerContent className="pt-2 h-[60dvh] focus:outline-none" handle={false}>
+      <DrawerContent className="pt-2 h-[60dvh] focus:outline-none " handle={false}>
         <DrawerTitle className="sr-only">Comments</DrawerTitle>
 
-        <div className="overflow-y-auto w-full ">
+        <div className="overflow-y-auto w-full min-h-2/3">
           <div className="overflow-hidden" ref={emblaRef}>
             {annotations && (
               <div className="flex ">
@@ -167,7 +154,7 @@ export default function AnnotationDrawer({
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => nextPreviousAnnotation({ direction: 'previous' })}
+                    onClick={scrollPrev}
                     className="h-8 w-fit text-muted-foreground flex justify-center items-center gap-2 "
                   >
                     <ChevronLeft className="h-4 w-4" /> Previous
@@ -187,7 +174,7 @@ export default function AnnotationDrawer({
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => nextPreviousAnnotation({ direction: 'next' })}
+                    onClick={scrollNext}
                     className="h-8 w-fit text-muted-foreground flex justify-center items-center gap-2"
                   >
                     Next <ChevronRight className="h-4 w-4" />
