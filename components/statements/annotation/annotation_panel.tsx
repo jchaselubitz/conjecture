@@ -5,7 +5,6 @@ import { X } from 'lucide-react';
 
 import { Accordion, AccordionItem } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { ButtonLoadingState } from '@/components/ui/loading-button';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 
 import AnnotationDetailDesktop from './ad_desktop';
@@ -15,8 +14,7 @@ interface AnnotationPanelProps {
   handleAnnotationSelection: (annotationId: string) => void;
   statementId: string;
   statementCreatorId: string;
-  handleDeleteAnnotation: () => void;
-  deletingButtonState: ButtonLoadingState;
+  handleDeleteAnnotation: (annotation: AnnotationWithComments) => Promise<void>;
 }
 
 export default function AnnotationPanel({
@@ -25,10 +23,9 @@ export default function AnnotationPanel({
   handleAnnotationSelection,
   statementId,
   statementCreatorId,
-  handleDeleteAnnotation,
-  deletingButtonState
+  handleDeleteAnnotation
 }: AnnotationPanelProps) {
-  const { selectedAnnotationId, comments } = useStatementAnnotationContext();
+  const { selectedAnnotationId } = useStatementAnnotationContext();
 
   return (
     <div className="flex flex-col mt-4 gap-6 mx-auto overflow-auto w-full">
@@ -53,9 +50,7 @@ export default function AnnotationPanel({
                 statementId={statementId}
                 selected={selectedAnnotationId === annotation.id}
                 statementCreatorId={statementCreatorId}
-                nestedComments={comments}
                 handleDeleteAnnotation={handleDeleteAnnotation}
-                deletingButtonState={deletingButtonState}
               />
             </AccordionItem>
           ))}

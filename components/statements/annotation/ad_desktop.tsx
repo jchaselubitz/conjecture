@@ -1,6 +1,6 @@
 import { AnnotationWithComments, BaseCommentWithUser } from 'kysely-codegen';
 import { RefreshCw, Trash2 } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { AccordionContent, AccordionTrigger } from '@/components/ui/accordion';
 import { Card } from '@/components/ui/card';
@@ -22,9 +22,8 @@ interface AnnotationDetailDesktopProps {
   annotation: AnnotationWithComments;
   statementId: string;
   statementCreatorId: string;
-  nestedComments: CommentWithReplies[];
-  handleDeleteAnnotation: () => void;
-  deletingButtonState: ButtonLoadingState;
+
+  handleDeleteAnnotation: (annotation: AnnotationWithComments) => Promise<void>;
 }
 
 export default function AnnotationDetailDesktop({
@@ -32,23 +31,15 @@ export default function AnnotationDetailDesktop({
   selected,
   statementId,
   statementCreatorId,
-  nestedComments,
-  handleDeleteAnnotation,
-  deletingButtonState
+  handleDeleteAnnotation
 }: AnnotationDetailDesktopProps) {
-  const {
-    replyToComment,
-    setReplyToComment,
-    setComments,
-    cancelReply,
-    handleCommentDeleted,
-    comments
-  } = useStatementAnnotationContext();
+  const { setReplyToComment, handleCommentDeleted, comments } = useStatementAnnotationContext();
 
   const { editor } = useStatementContext();
   const { userId } = useUserContext();
   const isCreator = userId === statementCreatorId;
   const editable = editor?.isEditable;
+  const [deletingButtonState, setDeletingButtonState] = useState<ButtonLoadingState>('default');
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
 
   const handleReplyClick = (comment: BaseCommentWithUser) => {
@@ -65,6 +56,12 @@ export default function AnnotationDetailDesktop({
     }, 100);
   };
 
+  const handleDelete = async () => {
+    setDeletingButtonState('loading');
+    await handleDeleteAnnotation(annotation);
+    setDeletingButtonState('success');
+  };
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -76,7 +73,7 @@ export default function AnnotationDetailDesktop({
     }
   }, [selected]);
 
-  const earliestComment = nestedComments.sort(
+  const earliestComment = comments.sort(
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   )[0];
 
@@ -95,7 +92,6 @@ export default function AnnotationDetailDesktop({
             isCreator={isCreator}
             isMobile={false}
             handleDeleteAnnotation={handleDeleteAnnotation}
-            deletingButtonState={deletingButtonState}
           />
         </AccordionTrigger>
         {isCreator && editable && (
@@ -105,7 +101,7 @@ export default function AnnotationDetailDesktop({
                 <TooltipTrigger asChild>
                   <LoadingButton
                     buttonState={deletingButtonState}
-                    onClick={handleDeleteAnnotation}
+                    onClick={handleDelete}
                     text={<Trash2 className="w-4 h-4" color="red" />}
                     variant="ghost"
                     size="sm"
@@ -140,13 +136,7 @@ export default function AnnotationDetailDesktop({
             ))}
           </div>
         )}
-        <CommentInput
-          annotation={annotation}
-          replyToComment={replyToComment}
-          onCancelReply={cancelReply}
-          setComments={setComments}
-          setReplyToComment={setReplyToComment}
-        />
+        <CommentInput annotation={annotation} />
       </AccordionContent>
     </Card>
   );

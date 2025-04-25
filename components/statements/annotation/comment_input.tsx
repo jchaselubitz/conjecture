@@ -11,36 +11,25 @@ import { Button } from '@/components/ui/button';
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { useUserContext } from '@/contexts/userContext';
 import { createComment } from '@/lib/actions/commentActions';
 import { nestComments } from '@/lib/helpers/helpersGeneral';
 
-import { CommentWithReplies } from '../comment';
-interface Comment {
-  content: string;
-  id: string;
-}
-
 interface CommentInputProps {
   annotation: AnnotationWithComments;
-  replyToComment: Comment | null;
-  onCancelReply: () => void;
-  setComments: React.Dispatch<React.SetStateAction<CommentWithReplies[]>>;
-  setReplyToComment: React.Dispatch<React.SetStateAction<BaseCommentWithUser | null>>;
   showCommentInput?: boolean;
   setShowCommentInput?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function CommentInput({
   annotation,
-  replyToComment,
-  onCancelReply,
-  setComments,
-  setReplyToComment,
-  setShowCommentInput,
-  showCommentInput
+  showCommentInput,
+  setShowCommentInput
 }: CommentInputProps) {
   const { name, imageUrl, userId } = useUserContext();
+  const { replyToComment, setReplyToComment, setComments, cancelReply } =
+    useStatementAnnotationContext();
 
   const isMobile = useWindowSize().width < 600;
 
@@ -64,16 +53,15 @@ export default function CommentInput({
         parentId: replyToComment?.id || null
       };
 
-      setComments(prevComments => [
+      setComments([
         ...nestComments([
-          ...prevComments,
+          ...annotation.comments,
           {
             ...newComment,
             createdAt: new Date(),
             updatedAt: new Date(),
             userImageUrl: imageUrl || '',
-            userName: name || '',
-            children: []
+            userName: name || ''
           }
         ])
       ]);
@@ -98,7 +86,7 @@ export default function CommentInput({
 
   const handleCancel = () => {
     setShowCommentInput?.(false);
-    onCancelReply();
+    cancelReply();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -132,7 +120,7 @@ export default function CommentInput({
                 variant="ghost"
                 size="sm"
                 className="h-6 w-6 p-0 shrink-0"
-                onClick={onCancelReply}
+                onClick={cancelReply}
                 aria-label="Cancel reply"
               >
                 <X className="h-3 w-3" />

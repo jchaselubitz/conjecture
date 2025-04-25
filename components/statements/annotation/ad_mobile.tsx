@@ -15,8 +15,7 @@ interface AnnotationDetailMobileProps {
   statementId: string;
   setReplyToComment: Dispatch<SetStateAction<BaseCommentWithUser | null>>;
   nestedComments: CommentWithReplies[];
-  handleDeleteAnnotation: () => void;
-  deletingButtonState: ButtonLoadingState;
+  handleDeleteAnnotation: (annotation: AnnotationWithComments) => Promise<void>;
 }
 
 export default function AnnotationDetailMobile({
@@ -24,10 +23,9 @@ export default function AnnotationDetailMobile({
   statementCreatorId,
   statementId,
   nestedComments,
-  handleDeleteAnnotation,
-  deletingButtonState
+  handleDeleteAnnotation
 }: AnnotationDetailMobileProps) {
-  const { setReplyToComment, handleCommentDeleted } = useStatementAnnotationContext();
+  const { setReplyToComment, handleCommentDeleted, comments } = useStatementAnnotationContext();
 
   const { userId } = useUserContext();
   const isCreator = userId === statementCreatorId;
@@ -59,11 +57,10 @@ export default function AnnotationDetailMobile({
           isCreator={isCreator}
           isMobile={true}
           handleDeleteAnnotation={handleDeleteAnnotation}
-          deletingButtonState={deletingButtonState}
         />
-        {nestedComments.length > 0 && (
+        {comments.length > 0 && (
           <div className="border-b pb-1 border-muted">
-            {nestedComments.map(comment => (
+            {comments.map(comment => (
               <Comment
                 key={comment.id}
                 comment={comment}

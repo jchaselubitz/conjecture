@@ -3,8 +3,8 @@
 import { useSelectedLayoutSegment } from 'next/navigation';
 
 import AppNav from '@/components/navigation/app_nav';
-import { StatementListContainerLoading } from '@/containers/StatementListContainer';
 import { Skeleton } from '@/components/ui/skeleton';
+import { StatementListContainerLoading } from '@/containers/StatementListContainer';
 export default function UserLoading() {
   const segment = useSelectedLayoutSegment();
 

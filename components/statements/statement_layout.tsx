@@ -41,8 +41,6 @@ export default function StatementLayout({
     selectedAnnotationId,
     setSelectedAnnotationId,
     selectedAnnotation,
-    replyToComment,
-    cancelReply,
     setReplyToComment,
     setComments,
     annotations,
@@ -56,28 +54,23 @@ export default function StatementLayout({
   const [editMode, setEditMode] = useState(editModeEnabled);
   const { editor, updatedStatement } = useStatementContext();
   const [annotationMode, setAnnotationMode] = useState<boolean>(!isMobile);
-  const [deletingButtonState, setDeletingButtonState] = useState<ButtonLoadingState>('default');
 
-  const handleDeleteAnnotation = async () => {
-    setDeletingButtonState('loading');
-    const annotationId = selectedAnnotationId;
-    if (!annotationId) return;
+  const handleDeleteAnnotation = async (annotation: AnnotationWithComments) => {
+    if (!annotation) return;
 
     try {
-      if (editor && selectedAnnotation) {
+      if (editor) {
         await deleteAnnotation({
-          annotationId: annotationId,
+          annotationId: annotation.id,
           statementCreatorId: updatedStatement?.creatorId,
-          annotationCreatorId: selectedAnnotation?.userId,
+          annotationCreatorId: annotation?.userId,
           statementId: updatedStatement.statementId
         });
 
-        editor.commands.deleteAnnotationHighlight(annotationId);
+        editor.commands.deleteAnnotationHighlight(annotation.id);
         setAnnotations((prevAnnotations: AnnotationWithComments[]) =>
-          prevAnnotations.filter(a => a.id !== annotationId)
+          prevAnnotations.filter(a => a.id !== annotation.id)
         );
-
-        setDeletingButtonState('success');
       } else {
         throw new Error('Editor not found');
       }
@@ -206,12 +199,7 @@ export default function StatementLayout({
         annotations={annotations}
         statement={updatedStatement}
         selectedAnnotation={selectedAnnotation}
-        replyToComment={replyToComment}
-        cancelReply={cancelReply}
-        setComments={setComments}
-        setReplyToComment={setReplyToComment}
         handleDeleteAnnotation={handleDeleteAnnotation}
-        deletingButtonState={deletingButtonState}
       />
     </div>
   );
@@ -244,7 +232,6 @@ export default function StatementLayout({
               filteredAnnotations={filteredAnnotations}
               handleAnnotationSelection={handleAnnotationSelection}
               handleDeleteAnnotation={handleDeleteAnnotation}
-              deletingButtonState={deletingButtonState}
             />
           )}
         </div>

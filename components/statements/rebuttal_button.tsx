@@ -85,10 +85,8 @@ export default function RebuttalButton({
       </DialogTrigger>
       <DialogContent className="max-w-xs md:max-w-md top-20 md:top-[50%] translate-y-[-10%] md:translate-y-[-50%] ">
         <DialogHeader>
-          <DialogTitle>Respond to statement</DialogTitle>
-          <DialogDescription>
-            You are responding to: <span className="font-medium">{existingTitle}</span>
-          </DialogDescription>
+          <DialogTitle>Respond to {existingTitle}</DialogTitle>
+          <DialogDescription>Write a linked critique.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

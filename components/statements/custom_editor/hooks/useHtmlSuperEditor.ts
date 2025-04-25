@@ -16,6 +16,7 @@ import { useWindowSize } from 'react-use';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
+import { deleteAnnotation } from '@/lib/actions/annotationActions';
 import { deleteCitation } from '@/lib/actions/citationActions';
 import { deleteStatementImage } from '@/lib/actions/statementActions';
 import {
@@ -200,6 +201,59 @@ export const useHtmlSuperEditor = ({
     },
     onUpdate: ({ editor, transaction }) => {
       if (transaction.docChanged) {
+        // Check if any annotationHighlight marks were removed
+        const beforeAnnotationIds = new Set<string>();
+        transaction.before.descendants((node, pos) => {
+          node.marks
+            .filter(mark => mark.type.name === 'annotationHighlight' && mark.attrs.annotationId)
+            .forEach(mark => beforeAnnotationIds.add(mark.attrs.annotationId));
+        });
+
+        const afterAnnotationIds = new Set<string>();
+        editor.state.doc.descendants((node, pos) => {
+          node.marks
+            .filter(mark => mark.type.name === 'annotationHighlight' && mark.attrs.annotationId)
+            .forEach(mark => afterAnnotationIds.add(mark.attrs.annotationId));
+        });
+
+        const removedAnnotationIds = [...beforeAnnotationIds].filter(
+          id => !afterAnnotationIds.has(id)
+        );
+
+        if (removedAnnotationIds.length > 0) {
+          // Ensure annotations state is accessible here, maybe pass it directly or rely on context value being up-to-date enough
+          const currentAnnotations = annotations; // Assuming 'annotations' from context is available
+
+          removedAnnotationIds.forEach(async removedId => {
+            const removedAnnotation = currentAnnotations.find(a => a.id === removedId);
+            if (removedAnnotation && removedAnnotation.userId) {
+              const annotationCreatorId = removedAnnotation.userId;
+              const statementCreatorId = updatedStatement.creatorId; // Assuming updatedStatement is available
+              const currentStatementId = updatedStatement.statementId; // Assuming updatedStatement is available
+
+              if (!statementCreatorId || !currentStatementId) {
+                console.error('Missing statement creator ID or statement ID for deletion.');
+                return;
+              }
+
+              try {
+                console.log(`Attempting to delete annotation: ${removedId}`);
+                await deleteAnnotation({
+                  annotationId: removedId,
+                  statementCreatorId: updatedStatement?.creatorId,
+                  annotationCreatorId: annotationCreatorId,
+                  statementId: currentStatementId
+                });
+              } catch (error) {
+                console.error(`Failed to delete annotation ${removedId}:`, error);
+                // Handle error appropriately, maybe notify the user
+              }
+            } else {
+              console.warn(`Could not find annotation data for removed ID: ${removedId}`);
+            }
+          });
+        }
+
         const hasAnnotationChanges = transaction.steps.some((step: Step) => {
           const mark = (step as any).mark;
           const annotationId = mark?.attrs?.annotationId;
@@ -248,6 +302,7 @@ export const useHtmlSuperEditor = ({
             event.key === 'ArrowUp' ||
             event.key === 'ArrowDown' ||
             ((event.metaKey || event.ctrlKey) && event.key === 'a') || // Select all
+            ((event.metaKey || event.ctrlKey) && event.key === 'c') || // Allow copy (both Cmd+C and Ctrl+C)
             event.key === 'Home' ||
             event.key === 'End' ||
             event.key === 'PageUp' ||

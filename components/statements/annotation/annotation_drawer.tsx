@@ -1,13 +1,12 @@
 import useEmblaCarousel from 'embla-carousel-react';
-import { AnnotationWithComments, BaseCommentWithUser } from 'kysely-codegen';
-import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
+import { AnnotationWithComments } from 'kysely-codegen';
+import { ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
-import { ButtonLoadingState } from '@/components/ui/loading-button';
+import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { nestComments } from '@/lib/helpers/helpersGeneral';
-
-import { CommentWithReplies } from '../comment';
 
 import AnnotationDetailMobile from './ad_mobile';
 import CommentInput from './comment_input';
@@ -23,12 +22,7 @@ interface AnnotationDrawerProps {
   filteredAnnotations: AnnotationWithComments[];
   handleAnnotationSelection: (annotationId: string) => void;
   selectedAnnotation: AnnotationWithComments | null;
-  replyToComment: BaseCommentWithUser | null;
-  cancelReply: () => void;
-  setComments: Dispatch<SetStateAction<CommentWithReplies[]>>;
-  setReplyToComment: Dispatch<SetStateAction<BaseCommentWithUser | null>>;
-  handleDeleteAnnotation: () => void;
-  deletingButtonState: ButtonLoadingState;
+  handleDeleteAnnotation: (annotation: AnnotationWithComments) => Promise<void>;
 }
 
 export default function AnnotationDrawer({
@@ -39,14 +33,13 @@ export default function AnnotationDrawer({
   filteredAnnotations,
   handleAnnotationSelection,
   selectedAnnotation,
-  replyToComment,
-  cancelReply,
-  setComments,
-  setReplyToComment,
-  handleDeleteAnnotation,
-  deletingButtonState
+  handleDeleteAnnotation
 }: AnnotationDrawerProps) {
+  const { replyToComment, setReplyToComment, cancelReply, comments } =
+    useStatementAnnotationContext();
+
   const [showCommentInput, setShowCommentInput] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [emblaRan, setEmblaRan] = useState(false);
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: 'center',
@@ -54,17 +47,26 @@ export default function AnnotationDrawer({
     dragFree: false
   });
 
+  const commentsLength = comments.length;
+
   useEffect(() => {
-    if (replyToComment) {
+    if (!!replyToComment) {
       setShowCommentInput(true);
     }
   }, [replyToComment]);
+
+  useEffect(() => {
+    if (commentsLength === 0) {
+      setShowCommentInput(true);
+    }
+  }, [commentsLength]);
 
   const onSelect = useCallback(() => {
     if (!emblaApi || !filteredAnnotations) return;
     const selectedIndex = emblaApi.selectedScrollSnap();
     const selectedAnnotation = filteredAnnotations[selectedIndex];
     if (selectedAnnotation) {
+      setSelectedIndex(selectedIndex);
       setShowCommentInput(false);
       handleAnnotationSelection(selectedAnnotation.id);
     }
@@ -96,6 +98,27 @@ export default function AnnotationDrawer({
     onCancelReply();
   };
 
+  const nextPreviousAnnotation = useCallback(
+    ({ direction }: { direction: 'next' | 'previous' }) => {
+      if (!emblaApi || !filteredAnnotations) return;
+
+      const nextPreviousAnnotation =
+        filteredAnnotations[selectedIndex + (direction === 'next' ? 1 : -1)];
+      if (nextPreviousAnnotation) {
+        handleAnnotationSelection(nextPreviousAnnotation.id);
+      }
+    },
+    [emblaApi, filteredAnnotations, handleAnnotationSelection, selectedIndex]
+  );
+  // console.log('selectedIndex', selectedIndex, filteredAnnotations);
+  const canGoNext = () => {
+    return selectedIndex < filteredAnnotations.length - 1;
+  };
+
+  const canGoPrevious = () => {
+    return selectedIndex > 1;
+  };
+
   return (
     <Drawer
       open={showAnnotationDrawer}
@@ -115,10 +138,9 @@ export default function AnnotationDrawer({
                       annotation={annotation}
                       statementCreatorId={statement.creatorId}
                       statementId={statement.statementId}
-                      nestedComments={nestComments(annotation.comments)}
+                      nestedComments={nestComments(comments)}
                       setReplyToComment={setReplyToComment}
                       handleDeleteAnnotation={handleDeleteAnnotation}
-                      deletingButtonState={deletingButtonState}
                     />
                   </div>
                 ))}
@@ -135,22 +157,44 @@ export default function AnnotationDrawer({
                   showCommentInput={showCommentInput}
                   setShowCommentInput={setShowCommentInput}
                   annotation={selectedAnnotation}
-                  replyToComment={replyToComment}
-                  onCancelReply={cancelReply}
-                  setComments={setComments}
-                  setReplyToComment={setReplyToComment}
                 />
               )}
             </div>
           ) : (
-            <div className="w-full px-2 py-2">
+            <div className="w-full px-2 py-2 flex gap-2 items-center justify-between">
+              <div className="w-24 flex pl-2">
+                {canGoPrevious() && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => nextPreviousAnnotation({ direction: 'previous' })}
+                    className="h-8 w-fit text-muted-foreground flex justify-center items-center gap-2 "
+                  >
+                    <ChevronLeft className="h-4 w-4" /> Previous
+                    <span className="sr-only">Previous annotation</span>
+                  </Button>
+                )}
+              </div>
               <Button
                 variant="ghost"
                 onClick={() => setShowCommentInput(true)}
-                className="w-full border-2 rounded-lg text-left text-muted-foreground justify-start"
+                className="rounded-lg text-left text-muted-foreground justify-center w-fit"
               >
-                Add comment
+                Add comment <MessageCircle className="h-4 w-4" />
               </Button>
+              <div className="w-24 flex justify-end pr-2">
+                {canGoNext() && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => nextPreviousAnnotation({ direction: 'next' })}
+                    className="h-8 w-fit text-muted-foreground flex justify-center items-center gap-2"
+                  >
+                    Next <ChevronRight className="h-4 w-4" />
+                    <span className="sr-only">Next annotation</span>
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </div>

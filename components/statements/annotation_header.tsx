@@ -1,5 +1,6 @@
 import { AnnotationWithComments } from 'kysely-codegen';
 import { RefreshCw, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
@@ -10,19 +11,25 @@ interface AnnotationHeaderProps {
   annotation: AnnotationWithComments;
   isCreator: boolean;
   isMobile: boolean;
-  handleDeleteAnnotation: () => void;
-  deletingButtonState: ButtonLoadingState;
+  handleDeleteAnnotation: (annotation: AnnotationWithComments) => void;
 }
 
 export default function AnnotationHeader({
   annotation,
   isCreator,
   isMobile,
-  handleDeleteAnnotation,
-  deletingButtonState
+  handleDeleteAnnotation
 }: AnnotationHeaderProps) {
   const { editor } = useStatementContext();
   const editable = editor?.isEditable;
+
+  const [deletingButtonState, setDeletingButtonState] = useState<ButtonLoadingState>('default');
+
+  const handleDelete = async () => {
+    setDeletingButtonState('loading');
+    await handleDeleteAnnotation(annotation);
+    setDeletingButtonState('success');
+  };
 
   return (
     <div className="flex flex-col gap-3 w-full">
@@ -54,7 +61,7 @@ export default function AnnotationHeader({
               <TooltipTrigger asChild>
                 <LoadingButton
                   buttonState={deletingButtonState}
-                  onClick={handleDeleteAnnotation}
+                  onClick={handleDelete}
                   text={<Trash2 className="w-4 h-4" color="red" />}
                   variant="ghost"
                   size="sm"
