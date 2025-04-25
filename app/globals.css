@@ -28,6 +28,14 @@
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --radius: 0.625rem;
+
+  /* Brand Colors */
+  --brand-brown: #2D1810;
+  --brand-terra: #C26033;
+  --brand-terra-dark: #A74D29;
+  --brand-gray: #4A4A4A;
+  --brand-beige: #FDF6EC;
+
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.141 0.005 285.823);
   --sidebar-primary: oklch(0.21 0.006 285.885);
@@ -108,6 +116,14 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+
+  /* Brand Colors */
+  --color-brand-brown: var(--brand-brown);
+  --color-brand-terra: var(--brand-terra);
+  --color-brand-terra-dark: var(--brand-terra-dark);
+  --color-brand-gray: var(--brand-gray);
+  --color-brand-beige: var(--brand-beige);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -128,5 +144,42 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Add utility classes for brand colors */
+@layer utilities {
+  .text-brand-brown {
+    color: var(--brand-brown);
+  }
+  .text-brand-terra {
+    color: var(--brand-terra);
+  }
+  .text-brand-terra-dark {
+    color: var(--brand-terra-dark);
+  }
+  .text-brand-gray {
+    color: var(--brand-gray);
+  }
+  .bg-brand-terra {
+    background-color: var(--brand-terra);
+  }
+  .bg-brand-terra-dark {
+    background-color: var(--brand-terra-dark);
+  }
+  .bg-brand-beige {
+    background-color: var(--brand-beige);
+  }
+  .border-brand-terra {
+    border-color: var(--brand-terra);
+  }
+  .hover\:bg-brand-terra-dark:hover {
+    background-color: var(--brand-terra-dark);
+  }
+  .hover\:bg-brand-beige:hover {
+    background-color: var(--brand-beige);
+  }
+  .hover\:text-brand-terra-dark:hover {
+    color: var(--brand-terra-dark);
   }
 }

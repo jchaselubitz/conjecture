@@ -11,7 +11,10 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Conject',
-  description: 'Conjecture and Critique'
+  description: 'Conjecture and Critique',
+  icons: {
+    icon: '/favicon.ico'
+  }
 };
 
 export default async function RootLayout({

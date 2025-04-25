@@ -4,6 +4,25 @@
 
 Conject is a platform designed for the rigorous presentation, discussion, and critique of complex ideas, arguments, or research. Unlike traditional blogging platforms primarily focused on publishing, Conject allows users to engage with posts (conjectures) by writing linked rebuttals, posting inline comments with replies and voting, and challenging citations.
 
+## Brand Colors
+
+The platform uses a warm, earthy color palette that emphasizes readability and sophistication:
+
+- `#2D1810` - Brand Brown: Primary text color for headings
+- `#C26033` - Terra Cotta: Primary brand color, used for accents and primary buttons
+- `#A74D29` - Dark Terra Cotta: Used for hover states and interactive elements
+- `#4A4A4A` - Brand Gray: Secondary text color for body content
+- `#FDF6EC` - Light Beige: Used for subtle hover states and backgrounds
+
+These colors are available as Tailwind utility classes with the following naming convention:
+- `text-brand-brown`
+- `text-brand-terra`
+- `text-brand-terra-dark`
+- `text-brand-gray`
+- `bg-brand-terra`
+- `bg-brand-beige`
+etc.
+
 ## Custom Editor Features
 
 Based on the code in `components/statements/custom_editor`, the editor includes the following features:
@@ -61,4 +80,4 @@ Based on the code in `components/statements/custom_editor`, the editor includes 
 *   **Component Library:** Built using Shadcn UI components for a consistent look and feel.
 *   **State Management:** Uses React Context API extensively for managing editor state, tool status, and shared data across components.
 *   **Backend Integration:** Leverages server-side functions/actions for data persistence (saving/deleting citations, images, updating content).
-*   **Loading Indicators:** Provides visual feedback for asynchronous operations (e.g., saving images) using specialized buttons (`LoadingButton`). 
+*   **Loading Indicators:** Provides visual feedback for asynchronous operations (e.g., saving images) using specialized buttons (`LoadingButton`).
