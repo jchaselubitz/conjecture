@@ -11,7 +11,7 @@ interface AnnotationHeaderProps {
   annotation: AnnotationWithComments;
   isCreator: boolean;
   isMobile: boolean;
-  handleDeleteAnnotation: (annotation: AnnotationWithComments) => void;
+  handleDeleteAnnotation: (annotation: AnnotationWithComments) => Promise<void>;
 }
 
 export default function AnnotationHeader({

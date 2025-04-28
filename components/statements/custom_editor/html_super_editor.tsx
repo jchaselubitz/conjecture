@@ -78,7 +78,7 @@ const HTMLSuperEditor = ({
         editor={editor}
         className={cn(
           'ProseMirror',
-          annotatable && 'annotator-container',
+          annotatable && 'annotator-container' && 'min-h-[40px]',
           !editMode && 'pseudo-readonly'
         )}
         spellCheck={editMode}

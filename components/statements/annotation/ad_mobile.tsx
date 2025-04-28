@@ -3,7 +3,6 @@ import { Dispatch, SetStateAction, useRef } from 'react';
 
 import Comment from '@/components/statements/comment';
 import { CommentWithReplies } from '@/components/statements/comment';
-
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { useUserContext } from '@/contexts/userContext';
 

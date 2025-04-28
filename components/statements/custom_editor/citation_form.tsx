@@ -36,6 +36,7 @@ import {
   citationDateCreator,
   upsertCitation
 } from './custom_extensions/helpers/helpersCitationExtension';
+import { useStatementUpdateContext } from '@/contexts/StatementUpdateProvider';
 const citationFormSchema = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
   authorNames: z.string().optional(),
@@ -71,7 +72,8 @@ export function CitationForm({
   editor
 }: CitationFormProps) {
   const { userId } = useUserContext();
-  const { updateStatementDraft, updatedStatement } = useStatementContext();
+  const { updatedStatement } = useStatementContext();
+  const { updateStatementDraft } = useStatementUpdateContext();
   const { citationData, setCitationData, citations, setCitations } = useStatementToolsContext();
   const pathname = usePathname();
   const [saveButtonState, setSaveButtonState] = useState<ButtonLoadingState>('default');
@@ -186,7 +188,7 @@ export function CitationForm({
           setCitations
         });
 
-        await updateStatementDraft({ ...updatedStatement, content: editor.getHTML() });
+        await updateStatementDraft();
 
         onOpenChange(false);
         setSaveButtonState('default');

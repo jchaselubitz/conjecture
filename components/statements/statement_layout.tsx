@@ -12,12 +12,12 @@ import AnnotationPanel from '@/components/statements/annotation/annotation_panel
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
+import { useStatementUpdateContext } from '@/contexts/StatementUpdateProvider';
 import { useUserContext } from '@/contexts/userContext';
 import { deleteAnnotation } from '@/lib/actions/annotationActions';
 
 import AppNav from '../navigation/app_nav';
 import EditNav from '../navigation/edit_nav';
-import { ButtonLoadingState } from '../ui/loading-button';
 
 import AnnotationDrawer from './annotation/annotation_drawer';
 import StatementDetails from './statement_details';
@@ -53,6 +53,7 @@ export default function StatementLayout({
 
   const [editMode, setEditMode] = useState(editModeEnabled);
   const { editor, updatedStatement } = useStatementContext();
+  const { updateStatementDraft } = useStatementUpdateContext();
   const [annotationMode, setAnnotationMode] = useState<boolean>(!isMobile);
 
   const handleDeleteAnnotation = async (annotation: AnnotationWithComments) => {
@@ -71,6 +72,7 @@ export default function StatementLayout({
         setAnnotations((prevAnnotations: AnnotationWithComments[]) =>
           prevAnnotations.filter(a => a.id !== annotation.id)
         );
+        await updateStatementDraft();
       } else {
         throw new Error('Editor not found');
       }

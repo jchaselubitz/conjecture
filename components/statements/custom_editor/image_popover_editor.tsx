@@ -15,6 +15,7 @@ import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { useUserContext } from '@/contexts/userContext';
 import { deleteStatementImage } from '@/lib/actions/statementActions';
+import { useStatementUpdateContext } from '@/contexts/StatementUpdateProvider';
 
 import { saveImage, updateImage } from './custom_extensions/helpers/helpersImageExtension';
 
@@ -32,8 +33,9 @@ export function ImagePopoverEditor({
   const pathname = usePathname();
   const { imagePopoverOpen, setImagePopoverOpen, initialImageData, setInitialImageData } =
     useStatementToolsContext();
-  const { editor, updateStatementDraft } = useStatementContext();
+  const { editor } = useStatementContext();
   const { userId } = useUserContext();
+  const { updateStatementDraft } = useStatementUpdateContext();
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>(initialImageData.src || '');
   const [alt, setAlt] = useState(initialImageData.alt);
@@ -94,7 +96,7 @@ export function ImagePopoverEditor({
 
     if (editor && userId && statementId) {
       const updateDraft = async () => {
-        await updateStatementDraft({ content: editor.getHTML() });
+        await updateStatementDraft();
       };
 
       try {

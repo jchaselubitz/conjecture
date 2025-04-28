@@ -35,7 +35,6 @@ export async function deleteFile({
 
   const supabase = await createClient();
   const { data, error } = await supabase.storage.from(bucket).remove([path]);
-  console.log(data, error);
   if (error) {
     Sentry.captureException(error);
     throw new Error('Failed to delete image');

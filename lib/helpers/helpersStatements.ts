@@ -17,6 +17,7 @@ export type PositionParams = {
   height: number;
 };
 
+import { Node as ProsemirrorNode } from '@tiptap/pm/model';
 import { nanoid } from 'nanoid';
 import { Dispatch, SetStateAction } from 'react';
 
@@ -33,11 +34,24 @@ export const generateStatementId = (): string => {
   return hash.slice(0, 10);
 };
 
-export const getMarks = (editor: Editor, markTypes: string[]) => {
-  const marks: { node: any }[] = [];
+// Define the return type for getMarks
+type MarkInfo = {
+  node: ProsemirrorNode;
+  pos: number;
+  end: number; // Position after the node
+};
+
+export const getMarks = (editor: Editor, markTypes: string[]): MarkInfo[] => {
+  const marks: MarkInfo[] = [];
   editor.state.doc.descendants((node, pos) => {
-    if (node.marks?.some(mark => markTypes.includes(mark.type.name))) {
-      marks.push({ node });
+    // Ensure we are dealing with a ProsemirrorNode, not any node
+    const prosemirrorNode = node as ProsemirrorNode;
+    if (prosemirrorNode.marks?.some(mark => markTypes.includes(mark.type.name))) {
+      marks.push({
+        node: prosemirrorNode,
+        pos,
+        end: pos + prosemirrorNode.nodeSize
+      });
     }
   });
   return marks;
@@ -53,57 +67,49 @@ export const getNodes = (editor: Editor, nodeTypes: string[]) => {
   return nodes;
 };
 
+// Update the type definition for marks parameter in ensureAnnotationMarks
+type EnsureAnnotationMarksProps = {
+  editor: Editor;
+  annotations: AnnotationWithComments[]; // Use the initial annotations from props
+  draftId: string;
+  // setAnnotations: Dispatch<SetStateAction<AnnotationWithComments[]>>; // REMOVE
+  marks: MarkInfo[];
+};
+
+// This function now primarily serves to check consistency on load, not modify state.
 export const ensureAnnotationMarks = async ({
   editor,
-  annotations,
+  annotations, // The initial annotations from props
   draftId,
-  setAnnotations,
+  // setAnnotations, // REMOVE
   marks
-}: {
-  editor: Editor;
-  annotations: AnnotationWithComments[];
-  draftId: string;
-  setAnnotations: Dispatch<SetStateAction<AnnotationWithComments[]>>;
-  marks: { node: any }[];
-}) => {
-  marks.forEach(async ({ node }) => {
+}: EnsureAnnotationMarksProps) => {
+  // No batching logic needed anymore
+
+  marks.forEach(markInfo => {
+    const { node, pos } = markInfo;
     const annotationMark = node.marks.find((mark: any) => mark.type.name === 'annotationHighlight');
+
     if (annotationMark) {
       const annotationId = annotationMark.attrs.annotationId;
-      const existingAnnotation = annotations.find(a => a.id === annotationId);
+      // Check against the *initial* annotations passed in
+      const existsInInitialState = annotations.some(a => a.id === annotationId);
 
-      if (!existingAnnotation) {
-        const newAnnotation: AnnotationWithComments = {
-          id: annotationId,
-          text: node.text || '',
-          userId: annotationMark.attrs.userId,
-          draftId: draftId,
-          tag: annotationMark.attrs.tag,
-          isPublic: true,
-          createdAt: new Date(annotationMark.attrs.createdAt),
-          updatedAt: new Date(),
-          start: editor.state.selection.from,
-          end: editor.state.selection.to,
-          comments: [],
-          userName: '',
-          userImageUrl: ''
-        };
-        setAnnotations([...annotations, newAnnotation]);
-        await createAnnotation({
-          annotation: {
-            id: newAnnotation.id,
-            tag: newAnnotation.tag || null,
-            text: newAnnotation.text,
-            start: newAnnotation.start,
-            end: newAnnotation.end,
-            userId: newAnnotation.userId,
-            draftId: newAnnotation.draftId.toString()
-          },
-          statementId: draftId
-        });
+      if (!existsInInitialState) {
+        // Log a warning if a mark exists in HTML but not in the initial annotation data.
+        // This indicates a potential data inconsistency.
+        console.warn(
+          `[ensureAnnotationMarks] Annotation mark found in initial HTML for ID [${annotationId}] at position ${pos}, but no corresponding annotation was provided in initial props. The mark might be drawn later by useEffect if state changes, but check for data inconsistency.`,
+          { markAttributes: annotationMark.attrs }
+        );
       }
+
+      // No need to check start/end validity or create/add annotations here.
+      // The useEffect hook handles drawing marks based on the authoritative state.
     }
   });
+
+  // No state updates or DB calls from this function anymore.
 };
 
 export const ensureCitations = async ({
@@ -390,6 +396,7 @@ export const createStatementAnnotation = async ({
       userImageUrl: ''
     };
     setAnnotations([...annotations, newAnnotation]);
+
     await createAnnotation({
       annotation: {
         id: newAnnotation.id,

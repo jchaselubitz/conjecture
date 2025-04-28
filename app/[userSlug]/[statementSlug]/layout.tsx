@@ -1,6 +1,7 @@
 import { StatementAnnotationProvider } from '@/contexts/StatementAnnotationContext';
 import { StatementProvider } from '@/contexts/StatementBaseContext';
 import { StatementToolsProvider } from '@/contexts/StatementToolsContext';
+import { StatementUpdateProvider } from '@/contexts/StatementUpdateProvider';
 import { getUser } from '@/lib/actions/baseActions';
 import { getDraftsByStatementSlug } from '@/lib/actions/statementActions';
 
@@ -19,7 +20,12 @@ export default async function UserStatementLayout({
   return (
     <StatementProvider drafts={drafts} userId={userId}>
       <StatementToolsProvider>
-        <StatementAnnotationProvider>{children}</StatementAnnotationProvider>
+        <StatementAnnotationProvider>
+          <StatementUpdateProvider>
+            {/* StatementUpdateProvider should go here */}
+            {children}
+          </StatementUpdateProvider>
+        </StatementAnnotationProvider>
       </StatementToolsProvider>
     </StatementProvider>
   );

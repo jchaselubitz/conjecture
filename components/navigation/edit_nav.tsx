@@ -8,6 +8,7 @@ import { useWindowSize } from 'react-use';
 
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
+import { useStatementUpdateContext } from '@/contexts/StatementUpdateProvider';
 import { formatDate } from '@/lib/helpers/helpersDate';
 
 import { Button } from '../ui/button';
@@ -25,12 +26,12 @@ export default function EditNav() {
     versionOptions,
     updatedStatement,
     saveStatementDraft,
-    updateStatementDraft,
     togglePublish,
-    isUpdating,
     nextVersionNumber,
     changeVersion
   } = useStatementContext();
+
+  const { updateStatementDraft, isUpdating } = useStatementUpdateContext();
 
   const [saveButtonState, setSaveButtonState] = useState<ButtonLoadingState>('default');
   const [updateButtonState, setUpdateButtonState] = useState<ButtonLoadingState>('default');
@@ -50,7 +51,7 @@ export default function EditNav() {
   const handleUpdate = async () => {
     try {
       setUpdateButtonState('loading');
-      await updateStatementDraft(updatedStatement);
+      await updateStatementDraft();
       setUpdateButtonState('success');
     } catch (error) {
       console.error(error);

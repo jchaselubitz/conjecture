@@ -22,7 +22,6 @@ interface AnnotationDetailDesktopProps {
   annotation: AnnotationWithComments;
   statementId: string;
   statementCreatorId: string;
-
   handleDeleteAnnotation: (annotation: AnnotationWithComments) => Promise<void>;
 }
 

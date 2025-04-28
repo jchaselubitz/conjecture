@@ -2,7 +2,7 @@ import { BaseDraft, BaseStatementCitation } from 'kysely-codegen';
 import { ChevronLeft, Upload } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { RefObject, useEffect, useMemo, useRef } from 'react';
 import { useState } from 'react';
 import { useFixedStyleWithIOsKeyboard } from 'react-ios-keyboard-viewport';
@@ -62,6 +62,7 @@ export default function StatementDetails({
     useStatementToolsContext();
 
   const router = useRouter();
+  const pathname = usePathname();
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [footnoteIds, setFootnoteIds] = useState<string[]>([]);
@@ -83,13 +84,11 @@ export default function StatementDetails({
 
   const handleEditModeToggle = () => {
     setSelectedAnnotationId(undefined);
-    const url = new URL(window.location.href);
     if (!editMode) {
-      url.searchParams.set('edit', 'true');
-      router.push(url.toString());
+      router.push(`${pathname}?edit=true`);
     } else {
-      url.searchParams.delete('edit');
-      router.push(url.toString());
+      console.log('pushing pathname', pathname);
+      router.push(pathname);
     }
   };
 
@@ -290,11 +289,11 @@ export default function StatementDetails({
 
         <Byline statement={updatedStatement} />
 
-        <div className="rounded-lg overflow-hidden bg-background">
+        <div className="rounded-lg overflow-hidden bg-background ">
           <HTMLSuperEditor
             key={`editor-content-${editMode}`}
             statement={updatedStatement}
-            style={{ minHeight: '20px' }}
+            style={{ minHeight: '40px' }}
             existingAnnotations={annotations}
             userId={userId}
             onAnnotationClick={handleAnnotationClick}

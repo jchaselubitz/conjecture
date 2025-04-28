@@ -38,6 +38,7 @@ import { Citation } from '../custom_extensions/citation';
 import { InlineLatex } from '../custom_extensions/inline_latex';
 import { handleCitationPaste } from '../custom_extensions/quote_paste_handler';
 import { QuotePasteHandler } from '../custom_extensions/quote_paste_handler';
+
 interface UseHtmlSuperEditorProps {
   statement: DraftWithAnnotations;
   existingAnnotations: AnnotationWithComments[];
@@ -51,8 +52,14 @@ interface UseHtmlSuperEditorProps {
   setFootnoteIds: (ids: string[]) => void;
 }
 
-// Define expected shape if getNodes/getMarks return specific structures
-// Assuming getNodes returns an array of objects with at least node and pos
+// Define the MarkInfo type here to match the one in helpersStatements
+type MarkInfo = {
+  node: ProsemirrorNode;
+  pos: number;
+  end: number; // Position after the node
+};
+
+// Assuming getMarks returns an array of objects with at least node and pos
 type NodeInfo = { node: ProsemirrorNode; pos: number; [key: string]: any };
 // Linter indicates getMarks returns { node: any; }[] structure.
 // We need to find the 'annotationHighlight' mark within node.marks.
@@ -175,17 +182,15 @@ export const useHtmlSuperEditor = ({
     editable: false,
     onCreate: ({ editor }) => {
       // Use type assertion carefully, ensure the helpers actually return compatible types
-      // If getMarks returns { node: any }[], we cannot safely cast to MarkInfo[].
-      // Let's remove the cast for annotationMarks for now and see if types downstream complain.
-      const annotationMarks = getMarks(editor, ['annotationHighlight']);
+      // Let's use the specific MarkInfo type for annotationMarks.
+      const annotationMarks = getMarks(editor, ['annotationHighlight']) as MarkInfo[]; // Use MarkInfo[] type
       const citationNodes = getNodes(editor, ['citation', 'citation-block']) as NodeInfo[];
 
       ensureAnnotationMarks({
-        marks: annotationMarks,
+        marks: annotationMarks, // Pass the correctly typed marks
         editor,
         annotations,
-        draftId,
-        setAnnotations
+        draftId
       });
 
       const citationIds = citationNodes.map(nodeInfo => nodeInfo.node.attrs.citationId);
@@ -201,59 +206,6 @@ export const useHtmlSuperEditor = ({
     },
     onUpdate: ({ editor, transaction }) => {
       if (transaction.docChanged) {
-        // Check if any annotationHighlight marks were removed
-        const beforeAnnotationIds = new Set<string>();
-        transaction.before.descendants((node, pos) => {
-          node.marks
-            .filter(mark => mark.type.name === 'annotationHighlight' && mark.attrs.annotationId)
-            .forEach(mark => beforeAnnotationIds.add(mark.attrs.annotationId));
-        });
-
-        const afterAnnotationIds = new Set<string>();
-        editor.state.doc.descendants((node, pos) => {
-          node.marks
-            .filter(mark => mark.type.name === 'annotationHighlight' && mark.attrs.annotationId)
-            .forEach(mark => afterAnnotationIds.add(mark.attrs.annotationId));
-        });
-
-        const removedAnnotationIds = [...beforeAnnotationIds].filter(
-          id => !afterAnnotationIds.has(id)
-        );
-
-        if (removedAnnotationIds.length > 0) {
-          // Ensure annotations state is accessible here, maybe pass it directly or rely on context value being up-to-date enough
-          const currentAnnotations = annotations; // Assuming 'annotations' from context is available
-
-          removedAnnotationIds.forEach(async removedId => {
-            const removedAnnotation = currentAnnotations.find(a => a.id === removedId);
-            if (removedAnnotation && removedAnnotation.userId) {
-              const annotationCreatorId = removedAnnotation.userId;
-              const statementCreatorId = updatedStatement.creatorId; // Assuming updatedStatement is available
-              const currentStatementId = updatedStatement.statementId; // Assuming updatedStatement is available
-
-              if (!statementCreatorId || !currentStatementId) {
-                console.error('Missing statement creator ID or statement ID for deletion.');
-                return;
-              }
-
-              try {
-                console.log(`Attempting to delete annotation: ${removedId}`);
-                await deleteAnnotation({
-                  annotationId: removedId,
-                  statementCreatorId: updatedStatement?.creatorId,
-                  annotationCreatorId: annotationCreatorId,
-                  statementId: currentStatementId
-                });
-              } catch (error) {
-                console.error(`Failed to delete annotation ${removedId}:`, error);
-                // Handle error appropriately, maybe notify the user
-              }
-            } else {
-              console.warn(`Could not find annotation data for removed ID: ${removedId}`);
-            }
-          });
-        }
-
         const hasAnnotationChanges = transaction.steps.some((step: Step) => {
           const mark = (step as any).mark;
           const annotationId = mark?.attrs?.annotationId;
@@ -262,10 +214,7 @@ export const useHtmlSuperEditor = ({
         });
 
         if (!editMode && !hasAnnotationChanges) {
-          // Find the previous content (before the blocked transaction)
           const previousContent = transaction.before.content.toJSON();
-          // Need to handle potential differences if initial content was different
-          // This simple revert might not cover all edge cases perfectly
           editor.commands.setContent(previousContent);
           return;
         }
