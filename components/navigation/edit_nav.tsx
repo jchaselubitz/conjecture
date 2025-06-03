@@ -21,7 +21,10 @@ import {
 } from '../ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import ViewModeButton from '../view_mode_button';
+import { useUserContext } from '@/contexts/userContext';
 export default function EditNav() {
+  const { currentUserSlug } = useUserContext();
+
   const {
     versionOptions,
     updatedStatement,
@@ -139,7 +142,11 @@ export default function EditNav() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push(`/[userSlug]/${updatedStatement?.statementId}`)}
+            onClick={() =>
+              router.push(
+                `/${currentUserSlug}/${updatedStatement?.statementId}?version=${updatedStatement?.versionNumber}`
+              )
+            }
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -175,7 +182,7 @@ export default function EditNav() {
                 />
                 <ViewModeButton
                   handleEditModeToggle={() =>
-                    router.push(`/[userSlug]/${updatedStatement?.statementId}`)
+                    router.push(`/${currentUserSlug}/${updatedStatement?.statementId}`)
                   }
                   iconOnly={isMobile}
                   variant="default"

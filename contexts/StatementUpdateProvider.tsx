@@ -33,9 +33,7 @@ export function StatementUpdateProvider({ children }: { children: ReactNode }) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // --- Moved updateStatementDraft logic here ---
   const updateStatementDraft = useCallback(async () => {
-    // Guard clauses moved here
     if (!editor || !debouncedStatement || !userId || !annotations || !statement) {
       return;
     }

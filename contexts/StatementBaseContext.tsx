@@ -24,6 +24,7 @@ interface StatementContextType {
   editor: Editor | null;
   setEditor: (editor: Editor | null) => void;
   userId: string | undefined;
+  writerUserSlug: string | undefined | null;
   statement: DraftWithAnnotations;
   debouncedStatement: DraftWithAnnotations | undefined;
 }
@@ -33,20 +34,24 @@ const StatementContext = createContext<StatementContextType | undefined>(undefin
 export function StatementProvider({
   children,
   drafts,
-  userId
+  userId,
+  writerUserSlug
 }: {
   children: ReactNode;
   drafts: DraftWithAnnotations[];
   userId: string | undefined;
+  writerUserSlug: string | undefined | null;
 }) {
   const router = useRouter();
   const params = useSearchParams();
   const versionString = params.get('version');
-  const version = versionString ? parseInt(versionString, 10) : undefined;
+  const version = versionString ? parseInt(versionString, 10) : 1;
 
   const [statement, setStatement] = useState<DraftWithAnnotations>(
     drafts?.find(draft => draft.versionNumber === version) ?? drafts[0]
   );
+
+  //Need to do some silliness here to make sure preserve the state of updatedStatement while statement updates in the background. Without it, some changes to the HTMLcontent will be lost.
 
   const [updatedStatement, setUpdatedStatement] = useState<DraftWithAnnotations>(statement);
 
@@ -87,7 +92,7 @@ export function StatementProvider({
   const nextVersionNumber = versionOptions.length + 1;
 
   const changeVersion = (newVersion: number) => {
-    router.push(`/[userSlug]/${statement.statementId}?version=${newVersion}`);
+    router.push(`/${writerUserSlug}/${statement.statementId}?version=${newVersion}`);
   };
 
   const saveStatementDraft = async () => {
@@ -135,6 +140,7 @@ export function StatementProvider({
         editor,
         setEditor,
         userId,
+        writerUserSlug,
         statement,
         debouncedStatement
       }}

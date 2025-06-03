@@ -10,7 +10,7 @@ interface UserContextType {
   name: string | undefined;
   email: string | undefined;
   username: string | undefined;
-  userSlug: string | undefined;
+  currentUserSlug: string | undefined;
   settingsDialog: boolean;
   setSettingsDialog: (settingsDialog: boolean) => void;
 }
@@ -37,7 +37,7 @@ export function UserProvider({
     name: userProfile?.name || undefined,
     email: userEmail || undefined,
     username: userProfile?.username || undefined,
-    userSlug: userSlug || undefined
+    currentUserSlug: userSlug || undefined
   };
 
   return (

@@ -1,24 +1,24 @@
-'use server';
+"use server";
 
-import { EditedAnnotation } from 'kysely-codegen';
-import { revalidatePath } from 'next/cache';
+import { EditedAnnotation } from "kysely-codegen";
+import { revalidatePath } from "next/cache";
 
-import { createClient } from '@/supabase/server';
+import { createClient } from "@/supabase/server";
 
-import db from '../database';
+import db from "../database";
 
 export async function getAnnotationsForDraft({ draftId }: { draftId: string }) {
   const annotations = await db
-    .selectFrom('annotation')
+    .selectFrom("annotation")
     .selectAll()
-    .where('draftId', '=', draftId)
+    .where("draftId", "=", draftId)
     .execute();
   return annotations;
 }
 
 export async function createAnnotation({
   annotation,
-  statementId
+  statementId,
 }: {
   annotation: {
     id: string;
@@ -32,20 +32,19 @@ export async function createAnnotation({
   statementId: string;
 }) {
   const { id: annotationId } = await db
-    .insertInto('annotation')
+    .insertInto("annotation")
     .values({
-      ...annotation
+      ...annotation,
     })
-    .returning('id')
+    .returning("id")
     .executeTakeFirstOrThrow();
-  revalidatePath(`/[userSlug]/${statementId}`, 'page');
-  console.log(annotationId, 'annotationId');
+  revalidatePath(`/[userSlug]/${statementId}`, "page");
   return annotationId;
 }
 
 export async function updateAnnotation({
   annotation,
-  statementId
+  statementId,
 }: {
   annotation: EditedAnnotation;
   statementId: string;
@@ -53,37 +52,37 @@ export async function updateAnnotation({
   const supabase = await createClient();
 
   const {
-    data: { user }
+    data: { user },
   } = await supabase.auth.getUser();
 
   if (!user || user.id !== annotation.userId) {
-    return { error: 'Unauthorized' };
+    return { error: "Unauthorized" };
   }
   if (!annotation.id) {
-    return { error: 'Annotation ID is required' };
+    return { error: "Annotation ID is required" };
   }
 
   const annotationId = annotation.id;
   const { start, end, text } = annotation;
 
   await db
-    .updateTable('annotation')
+    .updateTable("annotation")
     .set({
       id: annotationId,
       start,
       end,
-      text
+      text,
     })
-    .where('id', '=', annotation.id)
+    .where("id", "=", annotation.id)
     .execute();
-  revalidatePath(`/[userSlug]/${statementId}`, 'page');
+  revalidatePath(`/[userSlug]/${statementId}`, "page");
 }
 
 export async function deleteAnnotation({
   annotationId,
   statementCreatorId,
   annotationCreatorId,
-  statementId
+  statementId,
 }: {
   annotationId: string;
   statementCreatorId: string;
@@ -92,27 +91,27 @@ export async function deleteAnnotation({
 }) {
   const supabase = await createClient();
   const {
-    data: { user }
+    data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error('No user found');
+    throw new Error("No user found");
   }
 
   if (user.id === annotationCreatorId || user.id === statementCreatorId) {
-    await db.deleteFrom('annotation').where('id', '=', annotationId).execute();
+    await db.deleteFrom("annotation").where("id", "=", annotationId).execute();
   } else {
-    throw new Error('Unauthorized');
+    throw new Error("Unauthorized");
   }
 
-  revalidatePath(`/[userSlug]/${statementId}`, 'page');
+  revalidatePath(`/[userSlug]/${statementId}`, "page");
 }
 
 export async function deleteAnnotationsBatch({
   annotationIds,
   userId, // The ID of the user initiating the delete, for authorization
   statementCreatorId, // Optional: Creator of the statement for authorization rules
-  statementId // For revalidation
+  statementId, // For revalidation
 }: {
   annotationIds: string[];
   userId: string;
@@ -120,20 +119,20 @@ export async function deleteAnnotationsBatch({
   statementId: string;
 }) {
   if (!annotationIds || annotationIds.length === 0) {
-    console.log('No annotation IDs provided for batch deletion.');
+    console.log("No annotation IDs provided for batch deletion.");
     return { success: true, deletedCount: 0 }; // Nothing to delete
   }
 
   const supabase = await createClient();
   const {
-    data: { user }
+    data: { user },
   } = await supabase.auth.getUser();
 
   if (!user || user.id !== userId) {
     // Basic check: User must be logged in and match the provided userId
     // More complex auth might be needed depending on rules (e.g., can only delete own, or statement creator can delete all)
     // For now, we assume the caller provides the correct userId and potentially statementCreatorId if needed for checks elsewhere
-    throw new Error('Unauthorized: User mismatch or not logged in.');
+    throw new Error("Unauthorized: User mismatch or not logged in.");
   }
 
   // Add more sophisticated authorization logic here if needed
@@ -143,8 +142,8 @@ export async function deleteAnnotationsBatch({
 
   try {
     const result = await db
-      .deleteFrom('annotation')
-      .where('id', 'in', annotationIds)
+      .deleteFrom("annotation")
+      .where("id", "in", annotationIds)
       // Add an additional authorization check if necessary, e.g.:
       // .where((eb) => eb.or([
       //   eb('userId', '=', userId), // User can delete their own
@@ -155,18 +154,18 @@ export async function deleteAnnotationsBatch({
     const deletedCount = Number(result?.numDeletedRows ?? 0); // Use numDeletedRows for Kysely PgDialect
 
     console.log(
-      `Attempted to delete ${annotationIds.length} annotations. Deleted: ${deletedCount}`
+      `Attempted to delete ${annotationIds.length} annotations. Deleted: ${deletedCount}`,
     );
 
     if (deletedCount > 0) {
-      revalidatePath(`/[userSlug]/${statementId}`, 'page');
+      revalidatePath(`/[userSlug]/${statementId}`, "page");
       // Consider revalidating specific annotation-related paths if applicable
     }
 
     return { success: true, deletedCount };
   } catch (error) {
-    console.error('Error deleting annotations batch:', error);
+    console.error("Error deleting annotations batch:", error);
     // Consider more specific error handling or re-throwing
-    throw new Error('Failed to delete annotations batch.');
+    throw new Error("Failed to delete annotations batch.");
   }
 }

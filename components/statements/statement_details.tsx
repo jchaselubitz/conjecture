@@ -1,5 +1,5 @@
 import { BaseDraft, BaseStatementCitation } from 'kysely-codegen';
-import { ChevronLeft, Upload } from 'lucide-react';
+import { ChevronLeft, Loader2, Upload } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -31,6 +31,7 @@ import { LatexNodeEditor } from './custom_editor/latex_node_editor';
 import { FootnoteList } from './footnote/footnote_list';
 import Byline from './byline';
 import StatementOptions from './statement_options';
+import { cn } from '@/lib/utils';
 
 export interface StatementDetailsProps {
   editMode: boolean;
@@ -55,8 +56,8 @@ export default function StatementDetails({
   annotationMode,
   setAnnotationMode
 }: StatementDetailsProps) {
-  const { userId, userSlug } = useUserContext();
-  const { editor, setUpdatedStatement, updatedStatement } = useStatementContext();
+  const { userId, currentUserSlug } = useUserContext();
+  const { editor, setUpdatedStatement, updatedStatement, writerUserSlug } = useStatementContext();
   const { selectedAnnotationId, setSelectedAnnotationId } = useStatementAnnotationContext();
   const { initialImageData, setInitialImageData, setImageLightboxOpen, citations } =
     useStatementToolsContext();
@@ -66,7 +67,6 @@ export default function StatementDetails({
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [footnoteIds, setFootnoteIds] = useState<string[]>([]);
-
   const { statementId, title, subtitle, headerImg, annotations } = updatedStatement;
 
   const orderedFootnotes = useMemo(() => {
@@ -87,7 +87,6 @@ export default function StatementDetails({
     if (!editMode) {
       router.push(`${pathname}?edit=true`);
     } else {
-      console.log('pushing pathname', pathname);
       router.push(pathname);
     }
   };
@@ -112,24 +111,31 @@ export default function StatementDetails({
       alert('You must be logged in to upload an image.');
       return;
     }
+    setIsUploading(true);
     try {
-      await headerImageChange({
+      const imageUrl = await headerImageChange({
         event,
         userId,
         statementId: prepStatementId,
         headerImg: headerImg ?? '',
         updateStatementHeaderImageUrl
       });
+      if (imageUrl) {
+        setUpdatedStatement({
+          ...updatedStatement,
+          headerImg: imageUrl
+        });
+        setIsUploading(false);
+      }
       toast('Success', {
         description: 'Profile picture updated successfully!'
       });
-      router.refresh();
+      setIsUploading(false);
     } catch (error) {
       console.error(error);
       toast('Error', {
         description: 'Failed to upload image. Please try again.'
       });
-    } finally {
       setIsUploading(false);
     }
   };
@@ -181,11 +187,21 @@ export default function StatementDetails({
               alt="Statement cover image"
               fill
               className="h-full w-full md:rounded-md object-cover"
+              priority
             />
             {updatedStatement.creatorId === userId && editMode && (
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <div
+                className={cn(
+                  'absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center',
+                  isUploading && 'opacity-100'
+                )}
+              >
                 <Button variant="outline" className="gap-2" onClick={handlePhotoButtonClick}>
-                  <Upload className="h-4 w-4" />
+                  {isUploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="h-4 w-4" />
+                  )}
                   <span className="text-sm">Change cover image</span>
                 </Button>
               </div>
@@ -195,7 +211,11 @@ export default function StatementDetails({
       ) : editMode ? (
         <div className="flex items-center justify-center w-full my-14 md:px-4">
           <Button variant="outline" className="gap-2" onClick={handlePhotoButtonClick}>
-            <Upload className="h-4 w-4" />
+            {isUploading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Upload className="h-4 w-4" />
+            )}
             <span className="text-sm text-muted-foreground">
               Choose or drag and drop a cover image
             </span>
@@ -212,12 +232,14 @@ export default function StatementDetails({
           accept="image/*"
           className="hidden"
           id="avatar-upload"
-          onChange={handleHeaderImageChange}
+          onChange={e => {
+            handleHeaderImageChange(e);
+          }}
           disabled={isUploading || !editMode}
         />
         <div className="flex flex-col gap-1 mt-6 md:mt-10 md:mb-5 ">
           {updatedStatement.parentStatementId && (
-            <Link href={`/[userSlug]/${updatedStatement.parentStatementId}`}>
+            <Link href={`/${writerUserSlug}/${updatedStatement.parentStatementId}`}>
               <p className="bg-yellow-50 text-lg text-yellow-900 px-2 py-1 rounded-md flex items-center gap-2 w-fit hover:bg-yellow-100 transition-colors">
                 <ChevronLeft className="w-4 h-4" />
                 Response to: {parentStatement?.title}
@@ -334,7 +356,7 @@ export default function StatementDetails({
               statementId={statementId}
               editor={editor}
               editMode={editMode}
-              userSlug={userSlug ?? ''}
+              userSlug={currentUserSlug ?? ''}
             />
           </div>
         )}

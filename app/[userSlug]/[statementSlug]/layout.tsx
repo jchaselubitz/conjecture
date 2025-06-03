@@ -10,15 +10,15 @@ export default async function UserStatementLayout({
   params
 }: {
   children: React.ReactNode;
-  params: Promise<{ statementSlug: string }>;
+  params: Promise<{ statementSlug: string; writerUserSlug: string }>;
 }) {
-  const statementSlug = (await params).statementSlug;
+  const { statementSlug, writerUserSlug } = await params;
   const drafts = await getDraftsByStatementSlug(statementSlug);
   const user = await getUser();
   const userId = user?.id;
 
   return (
-    <StatementProvider drafts={drafts} userId={userId}>
+    <StatementProvider drafts={drafts} userId={userId} writerUserSlug={writerUserSlug}>
       <StatementToolsProvider>
         <StatementAnnotationProvider>
           <StatementUpdateProvider>

@@ -1,15 +1,19 @@
-import { Plugin, PluginKey } from '@tiptap/pm/state';
-import { Decoration, DecorationSet } from '@tiptap/pm/view';
-import { Editor, Extension } from '@tiptap/react';
-import crypto from 'crypto';
-import { BaseStatementCitation, BaseStatementImage, NewStatementCitation } from 'kysely-codegen';
-import { AnnotationWithComments } from 'kysely-codegen';
+import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { Decoration, DecorationSet } from "@tiptap/pm/view";
+import { Editor, Extension } from "@tiptap/react";
+import crypto from "crypto";
+import {
+  BaseStatementCitation,
+  BaseStatementImage,
+  NewStatementCitation,
+} from "kysely-codegen";
+import { AnnotationWithComments } from "kysely-codegen";
 
-import { createAnnotation } from '../actions/annotationActions';
-import { UpsertImageDataType } from '../actions/statementActions';
-import { uploadStatementImage } from '../actions/storageActions';
+import { createAnnotation } from "../actions/annotationActions";
+import { UpsertImageDataType } from "../actions/statementActions";
+import { uploadStatementImage } from "../actions/storageActions";
 
-import { handleImageCompression } from './helpersImages';
+import { handleImageCompression } from "./helpersImages";
 export type PositionParams = {
   x: number;
   y: number;
@@ -17,19 +21,21 @@ export type PositionParams = {
   height: number;
 };
 
-import { Node as ProsemirrorNode } from '@tiptap/pm/model';
-import { nanoid } from 'nanoid';
-import { Dispatch, SetStateAction } from 'react';
+import { Node as ProsemirrorNode } from "@tiptap/pm/model";
+import { nanoid } from "nanoid";
+import { Dispatch, SetStateAction } from "react";
 
-import { deleteCitations } from '../actions/citationActions';
+import { deleteCitations } from "../actions/citationActions";
+import * as Sentry from "@sentry/nextjs";
+import { RevalidationPath } from "kysely-codegen";
 
 export const generateStatementId = (): string => {
   const randomNumber = Math.floor(Math.random() * 100000);
   const currentDatetime = new Date().toISOString();
   const hash = crypto
-    .createHash('sha256')
+    .createHash("sha256")
     .update(currentDatetime + randomNumber.toString())
-    .digest('hex');
+    .digest("hex");
 
   return hash.slice(0, 10);
 };
@@ -46,11 +52,13 @@ export const getMarks = (editor: Editor, markTypes: string[]): MarkInfo[] => {
   editor.state.doc.descendants((node, pos) => {
     // Ensure we are dealing with a ProsemirrorNode, not any node
     const prosemirrorNode = node as ProsemirrorNode;
-    if (prosemirrorNode.marks?.some(mark => markTypes.includes(mark.type.name))) {
+    if (
+      prosemirrorNode.marks?.some((mark) => markTypes.includes(mark.type.name))
+    ) {
       marks.push({
         node: prosemirrorNode,
         pos,
-        end: pos + prosemirrorNode.nodeSize
+        end: pos + prosemirrorNode.nodeSize,
       });
     }
   });
@@ -82,25 +90,29 @@ export const ensureAnnotationMarks = async ({
   annotations, // The initial annotations from props
   draftId,
   // setAnnotations, // REMOVE
-  marks
+  marks,
 }: EnsureAnnotationMarksProps) => {
   // No batching logic needed anymore
 
-  marks.forEach(markInfo => {
+  marks.forEach((markInfo) => {
     const { node, pos } = markInfo;
-    const annotationMark = node.marks.find((mark: any) => mark.type.name === 'annotationHighlight');
+    const annotationMark = node.marks.find((mark: any) =>
+      mark.type.name === "annotationHighlight"
+    );
 
     if (annotationMark) {
       const annotationId = annotationMark.attrs.annotationId;
       // Check against the *initial* annotations passed in
-      const existsInInitialState = annotations.some(a => a.id === annotationId);
+      const existsInInitialState = annotations.some((a) =>
+        a.id === annotationId
+      );
 
       if (!existsInInitialState) {
         // Log a warning if a mark exists in HTML but not in the initial annotation data.
         // This indicates a potential data inconsistency.
         console.warn(
           `[ensureAnnotationMarks] Annotation mark found in initial HTML for ID [${annotationId}] at position ${pos}, but no corresponding annotation was provided in initial props. The mark might be drawn later by useEffect if state changes, but check for data inconsistency.`,
-          { markAttributes: annotationMark.attrs }
+          { markAttributes: annotationMark.attrs },
         );
       }
 
@@ -115,7 +127,7 @@ export const ensureAnnotationMarks = async ({
 export const ensureCitations = async ({
   citations,
   nodeIds,
-  statementCreatorId
+  statementCreatorId,
 }: {
   citations: BaseStatementCitation[];
   nodeIds: string[];
@@ -123,8 +135,8 @@ export const ensureCitations = async ({
 }) => {
   // here we want to delete any citations in the DB that do not exist in the editor
   const citationsToDelete = citations
-    .filter(citation => !nodeIds.includes(citation.id))
-    .map(citation => citation.id);
+    .filter((citation) => !nodeIds.includes(citation.id))
+    .map((citation) => citation.id);
   if (citationsToDelete.length > 0) {
     await deleteCitations(citationsToDelete, statementCreatorId);
   }
@@ -135,7 +147,7 @@ export const headerImageChange = async ({
   userId,
   statementId,
   headerImg,
-  updateStatementHeaderImageUrl
+  updateStatementHeaderImageUrl,
 }: {
   event: React.ChangeEvent<HTMLInputElement>;
   userId: string;
@@ -144,47 +156,65 @@ export const headerImageChange = async ({
   updateStatementHeaderImageUrl: ({
     statementId,
     imageUrl,
-    creatorId
+    creatorId,
+    revalidationPath,
   }: {
     statementId: string;
     imageUrl: string;
     creatorId: string;
+    revalidationPath: RevalidationPath;
   }) => Promise<void>;
-}) => {
-  const files = event.target.files?.length ? Array.from(event.target.files) : null;
-  if (files && files.length > 0) {
-    files.map(async file => {
-      const compressedFile = await handleImageCompression(file);
-      if (!compressedFile) return;
+}): Promise<string | undefined> => {
+  try {
+    const files = event.target.files?.length
+      ? Array.from(event.target.files)
+      : null;
+    if (files && files.length > 0) {
+      const imageUrl = await Promise.all(files.map(async (file) => {
+        const compressedFile = await handleImageCompression(file);
+        if (!compressedFile) return;
 
-      const fileFormData = new FormData();
-      fileFormData.append('image', compressedFile);
-      if (!userId) {
-        alert('Please set your profile name first.');
-        return;
-      }
-      const imageUrl = await uploadStatementImage({
-        file: fileFormData,
-        creatorId: userId,
-        statementId,
-        fileName: compressedFile.name,
-        oldImageUrl: headerImg ?? null
-      });
-      if (!imageUrl) throw new Error('Failed to upload image');
-      await updateStatementHeaderImageUrl({
-        statementId,
-        imageUrl,
-        creatorId: userId
-      });
-    });
+        const fileFormData = new FormData();
+        fileFormData.append("image", compressedFile);
+        if (!userId) {
+          alert("Please set your profile name first.");
+          return;
+        }
+        const imageUrl = await uploadStatementImage({
+          file: fileFormData,
+          creatorId: userId,
+          statementId,
+          fileName: compressedFile.name,
+          oldImageUrl: headerImg ?? null,
+        });
+        if (!imageUrl) throw new Error("Failed to upload image");
+        try {
+          await updateStatementHeaderImageUrl({
+            statementId,
+            imageUrl,
+            creatorId: userId,
+            revalidationPath: { path: `/${userId}/${statementId}` },
+          });
+        } catch (error) {
+          throw Error("Failed to update statement header image");
+        }
+        return imageUrl;
+      }));
+      return imageUrl[0];
+    }
+  } catch (error) {
+    console.error(error);
+    Sentry.captureException(error);
   }
 };
 
-const quoteHighlightKey = new PluginKey('quoteHighlight');
+const quoteHighlightKey = new PluginKey("quoteHighlight");
 
-export const createQuoteHighlight = (searchParamsGetter: () => URLSearchParams) => {
+export const createQuoteHighlight = (
+  searchParamsGetter: () => URLSearchParams,
+) => {
   return Extension.create({
-    name: 'quoteHighlight',
+    name: "quoteHighlight",
 
     addProseMirrorPlugins() {
       let decorationSet = DecorationSet.empty;
@@ -194,24 +224,26 @@ export const createQuoteHighlight = (searchParamsGetter: () => URLSearchParams) 
           key: quoteHighlightKey,
           props: {
             decorations(state) {
-              const location = searchParamsGetter().get('location');
+              const location = searchParamsGetter().get("location");
               if (!location) return DecorationSet.empty;
 
-              const [start, end] = location.split('-').map((pos: string) => parseInt(pos, 10));
+              const [start, end] = location.split("-").map((pos: string) =>
+                parseInt(pos, 10)
+              );
               if (isNaN(start) || isNaN(end)) return DecorationSet.empty;
 
               // Create a decoration that adds the quoted-text class
               const decoration = Decoration.inline(start, end, {
-                class: 'quoted-text'
+                class: "quoted-text",
               });
 
               decorationSet = DecorationSet.create(state.doc, [decoration]);
               return decorationSet;
-            }
-          }
-        })
+            },
+          },
+        }),
       ];
-    }
+    },
   });
 };
 
@@ -224,12 +256,12 @@ export type LatexPopoverProps = {
   setIsBlock: (displayMode: boolean) => void;
   setSelectedLatexId: (latexId: string | null) => void;
   setSelectedNodePosition: (
-    position: { x: number; y: number; width: number; height: number } | null
+    position: { x: number; y: number; width: number; height: number } | null,
   ) => void;
   setLatexPopoverOpen: (open: boolean) => void;
 };
 export const openLatexPopover = ({
-  latex = '',
+  latex = "",
   displayMode = true,
   latexId = null,
   position = null,
@@ -237,7 +269,7 @@ export const openLatexPopover = ({
   setIsBlock,
   setSelectedLatexId,
   setSelectedNodePosition,
-  setLatexPopoverOpen
+  setLatexPopoverOpen,
 }: LatexPopoverProps) => {
   setCurrentLatex(latex);
   setIsBlock(displayMode);
@@ -259,15 +291,15 @@ export const openImageLightbox = ({
   id,
   statementImages,
   setInitialImageData,
-  setImageLightboxOpen
+  setImageLightboxOpen,
 }: ImageLightboxProps) => {
   if (id) {
-    const existingImage = statementImages.find(image => image.id === id);
+    const existingImage = statementImages.find((image) => image.id === id);
     setInitialImageData({
-      src: existingImage?.src ?? '',
-      alt: existingImage?.alt ?? '',
-      id: existingImage?.id ?? '',
-      statementId: existingImage?.statementId ?? ''
+      src: existingImage?.src ?? "",
+      alt: existingImage?.alt ?? "",
+      id: existingImage?.id ?? "",
+      statementId: existingImage?.statementId ?? "",
     });
     setImageLightboxOpen(true);
   }
@@ -282,32 +314,32 @@ export type ImagePopoverProps = {
   statementImages?: BaseStatementImage[];
   setInitialImageData: Dispatch<SetStateAction<UpsertImageDataType>>;
   setSelectedNodePosition: (
-    position: { x: number; y: number; width: number; height: number } | null
+    position: { x: number; y: number; width: number; height: number } | null,
   ) => void;
   setImagePopoverOpen: (open: boolean) => void;
   statementId: string;
 };
 
 export const openImagePopover = ({
-  src = '',
-  alt = '',
-  id = '',
-  caption = '',
+  src = "",
+  alt = "",
+  id = "",
+  caption = "",
   position = null,
   statementImages = [],
   setInitialImageData,
   setSelectedNodePosition,
   setImagePopoverOpen,
-  statementId
+  statementId,
 }: ImagePopoverProps) => {
-  const existingImage = statementImages.find(image => image.id === id);
+  const existingImage = statementImages.find((image) => image.id === id);
   if (existingImage) {
     setInitialImageData({
-      src: existingImage.src ?? src ?? '',
-      alt: existingImage.alt ?? alt ?? '',
-      caption: existingImage.caption ?? caption ?? '',
+      src: existingImage.src ?? src ?? "",
+      alt: existingImage.alt ?? alt ?? "",
+      caption: existingImage.caption ?? caption ?? "",
       statementId,
-      id
+      id,
     });
   }
   if (position) {
@@ -321,7 +353,7 @@ export type CitationPopoverProps = {
   position?: { x: number; y: number; width: number; height: number } | null;
   setCitationData: (data: NewStatementCitation) => void;
   setSelectedNodePosition: (
-    position: { x: number; y: number; width: number; height: number } | null
+    position: { x: number; y: number; width: number; height: number } | null,
   ) => void;
   setCitationPopoverOpen: (open: boolean) => void;
 };
@@ -331,7 +363,7 @@ export const openCitationPopover = ({
   position = null,
   setCitationData,
   setSelectedNodePosition,
-  setCitationPopoverOpen
+  setCitationPopoverOpen,
 }: CitationPopoverProps) => {
   if (!citationData) return;
 
@@ -363,7 +395,7 @@ export const createStatementAnnotation = async ({
   showAuthorComments,
   showReaderComments,
   setSelectedAnnotationId,
-  setAnnotations
+  setAnnotations,
 }: CreateAnnotationProps) => {
   if (!userId || !editor || !setSelectedAnnotationId || !setAnnotations) return;
   // Check if text is actually selected
@@ -387,13 +419,13 @@ export const createStatementAnnotation = async ({
       draftId,
       start: editor.state.selection.from,
       end: editor.state.selection.to,
-      tag: '',
+      tag: "",
       isPublic: true,
       createdAt: new Date(),
       updatedAt: new Date(),
       comments: [],
-      userName: '',
-      userImageUrl: ''
+      userName: "",
+      userImageUrl: "",
     };
     setAnnotations([...annotations, newAnnotation]);
 
@@ -405,9 +437,9 @@ export const createStatementAnnotation = async ({
         start: newAnnotation.start,
         end: newAnnotation.end,
         userId: newAnnotation.userId,
-        draftId: newAnnotation.draftId.toString()
+        draftId: newAnnotation.draftId.toString(),
       },
-      statementId: draftId
+      statementId: draftId,
     });
 
     // Apply the highlight mark
@@ -423,11 +455,10 @@ export const createStatementAnnotation = async ({
         annotationId: newAnnotation.id,
         userId: newAnnotation.userId,
         isAuthor: newAnnotation.userId === statementCreatorId,
-        createdAt:
-          newAnnotation.createdAt instanceof Date
-            ? newAnnotation.createdAt.toISOString()
-            : new Date().toISOString(),
-        tag: newAnnotation.tag || null
+        createdAt: newAnnotation.createdAt instanceof Date
+          ? newAnnotation.createdAt.toISOString()
+          : new Date().toISOString(),
+        tag: newAnnotation.tag || null,
       })
       .run();
 
