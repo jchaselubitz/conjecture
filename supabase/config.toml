@@ -166,6 +166,10 @@ content_path = "./supabase/templates/reset.html"
 subject = "Confirm email change"
 content_path = "./supabase/templates/emailChange.html"
 
+[auth.email.template.magic_link]
+subject = "Magic link"
+content_path = "./supabase/templates/magic.html"
+
 
 # Use a production-ready SMTP server
 # [auth.email.smtp]
