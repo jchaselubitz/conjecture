@@ -34,7 +34,7 @@ export async function StatementCard({ statement, isPublic, pathname }: Statement
       (statement.content.length > previewLength ? '...' : '')
     : statement.subtitle || 'No preview available';
 
-  const annotationCount = statement.annotations?.length || 0;
+  // const annotationCount = statement.annotations?.length || 0;
 
   return (
     <Link
@@ -77,7 +77,7 @@ export async function StatementCard({ statement, isPublic, pathname }: Statement
               {formattedDate}
             </CardDescription>
           </div>
-          <div className="text-sm font-medium">{annotationCount}</div>
+          {/* <div className="text-sm font-medium">{annotationCount}</div> */}
         </CardFooter>
       </Card>
     </Link>

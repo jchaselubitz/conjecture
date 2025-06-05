@@ -13,9 +13,9 @@ import { LoadingButton } from '@/components/ui/loading-button';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
+import { useStatementUpdateContext } from '@/contexts/StatementUpdateProvider';
 import { useUserContext } from '@/contexts/userContext';
 import { deleteStatementImage } from '@/lib/actions/statementActions';
-import { useStatementUpdateContext } from '@/contexts/StatementUpdateProvider';
 
 import { saveImage, updateImage } from './custom_extensions/helpers/helpersImageExtension';
 

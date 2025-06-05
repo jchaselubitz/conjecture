@@ -13,7 +13,7 @@ import UserButton from './user_button';
 
 export default function AppNav() {
   const [open, setOpen] = useState(false);
-  const { userId, userSlug } = useUserContext();
+  const { userId, currentUserSlug } = useUserContext();
 
   return (
     <header className="border-b px-4 z-40 bg-background">
@@ -36,7 +36,11 @@ export default function AppNav() {
                 </Link>
                 {userId && (
                   <>
-                    <Link href={`/${userSlug}`} className="text-lg" onClick={() => setOpen(false)}>
+                    <Link
+                      href={`/${currentUserSlug}`}
+                      className="text-lg"
+                      onClick={() => setOpen(false)}
+                    >
                       My Conjectures
                     </Link>
 
@@ -59,7 +63,7 @@ export default function AppNav() {
             <>
               <nav className="hidden md:flex items-center gap-6">
                 <Link href="/feed">Feed</Link>
-                <Link href={`/${userSlug}`}>My Conjectures</Link>
+                <Link href={`/${currentUserSlug}`}>My Conjectures</Link>
                 <CreatePostButton
                   text="New Conjecture"
                   loadingText="Creating ..."

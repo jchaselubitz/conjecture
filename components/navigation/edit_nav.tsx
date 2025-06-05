@@ -9,6 +9,7 @@ import { useWindowSize } from 'react-use';
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementUpdateContext } from '@/contexts/StatementUpdateProvider';
+import { useUserContext } from '@/contexts/userContext';
 import { formatDate } from '@/lib/helpers/helpersDate';
 
 import { Button } from '../ui/button';
@@ -21,7 +22,6 @@ import {
 } from '../ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import ViewModeButton from '../view_mode_button';
-import { useUserContext } from '@/contexts/userContext';
 export default function EditNav() {
   const { currentUserSlug } = useUserContext();
 

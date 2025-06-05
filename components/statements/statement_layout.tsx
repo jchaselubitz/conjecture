@@ -3,7 +3,12 @@
 import './prose.css';
 
 import * as Sentry from '@sentry/nextjs';
-import { AnnotationWithComments, BaseDraft, DraftWithAnnotations } from 'kysely-codegen';
+import {
+  AnnotationWithComments,
+  BaseDraft,
+  DraftWithAnnotations,
+  DraftWithUser
+} from 'kysely-codegen';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
@@ -15,27 +20,35 @@ import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementUpdateContext } from '@/contexts/StatementUpdateProvider';
 import { useUserContext } from '@/contexts/userContext';
 import { deleteAnnotation } from '@/lib/actions/annotationActions';
+import { groupThreadsByParentId } from '@/lib/helpers/helpersStatements';
 
+import VerticalCardStack from '../card_stacks/vertical_card_stack';
 import AppNav from '../navigation/app_nav';
 import EditNav from '../navigation/edit_nav';
 
 import AnnotationDrawer from './annotation/annotation_drawer';
 import StatementDetails from './statement_details';
+
 interface StatementDetailsProps {
   statement: DraftWithAnnotations;
   authorCommentsEnabled: boolean;
   readerCommentsEnabled: boolean;
   editModeEnabled: boolean;
-  parentStatement: BaseDraft | null;
+  parentStatement: DraftWithUser | null | undefined;
+  thread: DraftWithUser[];
 }
 
 export default function StatementLayout({
   authorCommentsEnabled,
   readerCommentsEnabled,
   editModeEnabled,
-  parentStatement
+  parentStatement,
+  thread
 }: StatementDetailsProps) {
   const { userId } = useUserContext();
+  const { statement } = useStatementContext();
+
+  const familyTree = groupThreadsByParentId(thread, statement);
 
   const {
     selectedAnnotationId,
@@ -110,35 +123,62 @@ export default function StatementLayout({
   }, [selectedAnnotationId]);
 
   useEffect(() => {
-    const savedSizeString = localStorage.getItem('annotationPanelSize');
-    const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
-    panelGroupRef.current?.setLayout(savedSize ?? [100, 0]);
+    const savedStackSize = localStorage.getItem('stack_panel_size');
+    const savedStackSizeNumber = savedStackSize ? parseInt(JSON.parse(savedStackSize), 10) : null;
+    const savedAnnotationPanelSize = localStorage.getItem('annotation_panel_size');
+    const savedAnnotationPanelSizeNumber = savedAnnotationPanelSize
+      ? (parseInt(JSON.parse(savedAnnotationPanelSize), 10) ?? 0)
+      : null;
+
+    const calculatedPrimaryPanelSize =
+      100 - (savedStackSizeNumber ?? 0) - (savedAnnotationPanelSizeNumber ?? 0);
+
+    panelGroupRef.current?.setLayout([
+      savedAnnotationPanelSize ? 30 : 0,
+      calculatedPrimaryPanelSize ? 70 : 100,
+      savedAnnotationPanelSizeNumber ?? 0
+    ]);
   }, []);
 
   const handleCloseAnnotationPanel = () => {
+    const currentLayout = panelGroupRef.current?.getLayout();
     setSelectedAnnotationId(undefined);
     setReplyToComment(null);
     setComments([]);
     setSelectedAnnotation(null);
-    panelGroupRef.current?.setLayout([100, 0]);
+    panelGroupRef.current?.setLayout([currentLayout?.[0] ?? 30, currentLayout?.[1] ?? 70, 0]);
     const newUrl = `${window.location.pathname}`;
     router.replace(newUrl, { scroll: false });
-    localStorage.removeItem('annotationPanelSize');
+    localStorage.setItem('annotation_panel_size', JSON.stringify(0));
+  };
+
+  const handleToggleStack = () => {
+    const savedStackSize = localStorage.getItem('stack_panel_size');
+    const savedStackSizeNumber = savedStackSize ? parseInt(JSON.parse(savedStackSize), 10) : null;
+    const currentLayout = panelGroupRef.current?.getLayout();
+    if (currentLayout?.[0] === 0) {
+      panelGroupRef.current?.setLayout([savedStackSizeNumber ?? 30, currentLayout?.[1] ?? 70, 0]);
+    } else {
+      panelGroupRef.current?.setLayout([0, currentLayout?.[1] ?? 100, currentLayout?.[2] ?? 0]);
+    }
   };
 
   const handleCloseAnnotationDrawer = () => {
     if (!!editMode || !!annotationMode) {
       editor?.setEditable(true);
     }
-
     setShowAnnotationDrawer(false);
     handleCloseAnnotationPanel();
   };
 
   const onLayout = (layout: number[]) => {
-    if (layout[0] < 85) {
-      localStorage.setItem('annotationPanelSize', JSON.stringify(layout));
+    if (layout[0] !== 0) {
+      localStorage.setItem('stack_panel_size', JSON.stringify(layout[0]));
     }
+    if (layout[2] !== 0) {
+      localStorage.setItem('annotation_panel_size', JSON.stringify(layout[2]));
+    }
+    // panelGroupRef.current?.setLayout([layout[0], layout[1], layout[2]]);
   };
 
   const onShowAuthorCommentsChange = (checked: boolean) => {
@@ -192,6 +232,7 @@ export default function StatementLayout({
         panelGroupRef={panelGroupRef}
         annotationMode={annotationMode}
         setAnnotationMode={setAnnotationMode}
+        familyTree={familyTree}
       />
       <AnnotationDrawer
         showAnnotationDrawer={showAnnotationDrawer}
@@ -208,10 +249,30 @@ export default function StatementLayout({
 
   const desktopLayout = (
     <ResizablePanelGroup direction="horizontal" ref={panelGroupRef} onLayout={onLayout}>
+      <ResizablePanel
+        id="card-stack"
+        defaultSize={20}
+        minSize={20}
+        collapsible={true}
+        className="hidden md:block relative bg-gray-50 "
+      >
+        <div className="relative w-full h-full">
+          {/* add a sidebar button that collapses this resizable panel */}
+
+          <div className="absolute top-1/4 p-4 w-full">
+            <VerticalCardStack
+              familyTree={familyTree}
+              currentTitle={updatedStatement?.title || ''}
+            />
+          </div>
+        </div>
+      </ResizablePanel>
+      <ResizableHandle />
       <ResizablePanel id="editor" defaultSize={100} minSize={60}>
         <div className=" flex flex-col overflow-y-auto h-full">
           <StatementDetails
             parentStatement={parentStatement}
+            handleToggleStack={handleToggleStack}
             editMode={editMode && isCreator}
             showAuthorComments={showAuthorComments}
             showReaderComments={showReaderComments}
@@ -220,6 +281,7 @@ export default function StatementLayout({
             panelGroupRef={panelGroupRef}
             annotationMode={annotationMode}
             setAnnotationMode={setAnnotationMode}
+            familyTree={familyTree}
           />
         </div>
       </ResizablePanel>

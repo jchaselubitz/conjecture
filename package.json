@@ -49,8 +49,6 @@
     "@radix-ui/react-tabs": "^1.1.9",
     "@radix-ui/react-tooltip": "^1.1.8",
     "@sentry/nextjs": "^9",
-    "@snaplet/copycat": "^6.0.0",
-    "@snaplet/seed": "^0.98.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.49.1",
     "@tailwindcss/postcss": "^4.0.12",
@@ -65,6 +63,7 @@
     "@tiptap/react": "^2.11.5",
     "@tiptap/starter-kit": "^2.11.5",
     "@types/turndown": "^5.0.5",
+    "bcryptjs": "^3.0.2",
     "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -96,6 +95,8 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@snaplet/copycat": "^6.0.0",
+    "@snaplet/seed": "^0.98.0",
     "@types/katex": "^0.16.7",
     "@types/next-pwa": "^5.6.9",
     "@types/node": "^20",

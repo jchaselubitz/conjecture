@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/select';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
+import { useStatementUpdateContext } from '@/contexts/StatementUpdateProvider';
 import { useUserContext } from '@/contexts/userContext';
 import { deleteCitation } from '@/lib/actions/citationActions';
 import { MonthsArray } from '@/lib/lists';
@@ -36,7 +37,6 @@ import {
   citationDateCreator,
   upsertCitation
 } from './custom_extensions/helpers/helpersCitationExtension';
-import { useStatementUpdateContext } from '@/contexts/StatementUpdateProvider';
 const citationFormSchema = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
   authorNames: z.string().optional(),

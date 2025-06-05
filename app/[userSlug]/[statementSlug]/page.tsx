@@ -1,7 +1,11 @@
 import type { Metadata, ResolvingMetadata } from 'next';
 
 import { StatementContainer } from '@/containers/StatementContainer';
-import { getDraftsByStatementSlug, getPublishedStatement } from '@/lib/actions/statementActions';
+import {
+  getDraftsByStatementSlug,
+  getFullThread,
+  getPublishedStatement
+} from '@/lib/actions/statementActions';
 import { createClient } from '@/supabase/server';
 
 type Props = {
@@ -39,9 +43,10 @@ export default async function CreatePage({ params, searchParams }: Props) {
   const { edit } = await searchParams;
 
   const drafts = await getDraftsByStatementSlug(statementSlug);
+  const thread = await getFullThread(drafts[0]?.threadId ?? '');
   const creator = drafts[0]?.creatorId.toString();
   const isCreator = creator === userId;
   const editMode = edit === 'true' && isCreator;
 
-  return <StatementContainer edit={editMode} drafts={drafts} />;
+  return <StatementContainer edit={editMode} drafts={drafts} thread={thread} />;
 }

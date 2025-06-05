@@ -19,10 +19,6 @@ export const getUserProfile = async (slug?: string): Promise<BaseProfile | null 
     data: { user }
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    return null;
-  }
-
   let profile = db
     .selectFrom('profile')
     .leftJoin('follow', 'profile.id', 'follow.followed')
@@ -47,11 +43,14 @@ export const getUserProfile = async (slug?: string): Promise<BaseProfile | null 
 
   if (slug) {
     profile = profile.where('profile.username', '=', slug);
-  } else {
+  } else if (user) {
     profile = profile.where('profile.id', '=', user.id);
+  } else {
+    return null;
   }
+  const result = await profile.executeTakeFirst();
 
-  return (await profile.executeTakeFirst()) as BaseProfile;
+  return result as BaseProfile;
 };
 
 export async function createAnonymousUser() {
@@ -125,7 +124,7 @@ export const signIn = async ({ email, password }: { email: string; password: str
   if (error) {
     console.log(error);
     Sentry.captureException(error);
-    return redirect('/login?message=Could not authenticate user');
+    return redirect(`/login?message=${error.message}`);
   }
 
   const redirectUrl =

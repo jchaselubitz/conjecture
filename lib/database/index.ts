@@ -60,12 +60,11 @@ declare module 'kysely-codegen' {
   export type EditedStatementCitation = Updateable<StatementCitation>;
 
   export type BaseDraft = Selectable<Draft> & {
-    annotations: BaseAnnotation[];
     slug: string | null | undefined;
   };
   export type DraftWithUser = BaseDraft & {
     creatorName: string | null | undefined;
-    creatorImageUrl: string | null | undefined;
+    creatorImageUrl?: string | null | undefined;
     creatorSlug: string | null | undefined;
   };
   export type DraftWithAnnotations = DraftWithUser & {

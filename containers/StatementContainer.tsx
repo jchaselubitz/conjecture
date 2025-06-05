@@ -1,16 +1,19 @@
-import { DraftWithAnnotations } from 'kysely-codegen';
+import { DraftWithAnnotations, DraftWithUser } from 'kysely-codegen';
 import { cookies } from 'next/headers';
 
 import StatementLayout from '@/components/statements/statement_layout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getPublishedStatement } from '@/lib/actions/statementActions';
+import { groupThreadsByParentId } from '@/lib/helpers/helpersStatements';
 
 export async function StatementContainer({
   drafts,
-  edit
+  edit,
+  thread
 }: {
   drafts: DraftWithAnnotations[];
   edit: boolean;
+  thread: DraftWithUser[];
 }) {
   const cookieStore = await cookies();
   const authorCommentCookie = cookieStore.get('show_author_comments');
@@ -21,9 +24,7 @@ export async function StatementContainer({
 
   const statement = drafts.find(draft => draft.publishedAt !== null) ?? drafts[drafts.length - 1];
 
-  const parentStatement = statement.parentStatementId
-    ? await getPublishedStatement(statement.slug ?? '')
-    : null;
+  const parentStatement = thread.find(draft => draft.statementId === statement.parentStatementId);
 
   return (
     <div className="md:flex-1 bg-background md:h-screen h-full">
@@ -33,6 +34,7 @@ export async function StatementContainer({
         readerCommentsEnabled={readerCommentsEnabled}
         editModeEnabled={edit ?? false}
         parentStatement={parentStatement}
+        thread={thread}
       />
     </div>
   );

@@ -1,5 +1,5 @@
-import { BaseDraft, BaseStatementCitation } from 'kysely-codegen';
-import { ChevronLeft, Loader2, Upload } from 'lucide-react';
+import { BaseDraft, BaseStatementCitation, DraftWithUser } from 'kysely-codegen';
+import { ChevronLeft, Loader2, Sidebar, Upload } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -17,7 +17,9 @@ import { useUserContext } from '@/contexts/userContext';
 import { updateStatementHeaderImageUrl } from '@/lib/actions/statementActions';
 import { headerImageChange } from '@/lib/helpers/helpersStatements';
 import { generateStatementId } from '@/lib/helpers/helpersStatements';
+import { cn } from '@/lib/utils';
 
+import InlineCardStack from '../card_stacks/inline_card_stack';
 import ReadNav from '../navigation/read_nav';
 import { AspectRatio } from '../ui/aspect-ratio';
 import { Button } from '../ui/button';
@@ -31,16 +33,20 @@ import { LatexNodeEditor } from './custom_editor/latex_node_editor';
 import { FootnoteList } from './footnote/footnote_list';
 import Byline from './byline';
 import StatementOptions from './statement_options';
-import { cn } from '@/lib/utils';
 
 export interface StatementDetailsProps {
   editMode: boolean;
   showAuthorComments: boolean;
   showReaderComments: boolean;
+  handleToggleStack?: () => void;
   onShowAuthorCommentsChange: (checked: boolean) => void;
   onShowReaderCommentsChange: (checked: boolean) => void;
   panelGroupRef: RefObject<ImperativePanelGroupHandle | null>;
-  parentStatement: BaseDraft | null;
+  parentStatement: DraftWithUser | null | undefined;
+  familyTree: {
+    precedingPosts: DraftWithUser[];
+    followingPosts: DraftWithUser[];
+  };
   annotationMode: boolean;
   setAnnotationMode: (annotationMode: boolean) => void;
 }
@@ -49,15 +55,17 @@ export default function StatementDetails({
   editMode,
   showAuthorComments,
   showReaderComments,
+  handleToggleStack,
   onShowAuthorCommentsChange,
   onShowReaderCommentsChange,
   panelGroupRef,
   parentStatement,
+  familyTree,
   annotationMode,
   setAnnotationMode
 }: StatementDetailsProps) {
   const { userId, currentUserSlug } = useUserContext();
-  const { editor, setUpdatedStatement, updatedStatement, writerUserSlug } = useStatementContext();
+  const { editor, setUpdatedStatement, updatedStatement } = useStatementContext();
   const { selectedAnnotationId, setSelectedAnnotationId } = useStatementAnnotationContext();
   const { initialImageData, setInitialImageData, setImageLightboxOpen, citations } =
     useStatementToolsContext();
@@ -93,10 +101,12 @@ export default function StatementDetails({
 
   const handleAnnotationClick = async (annotationId: string) => {
     setSelectedAnnotationId(annotationId);
-    const savedSizeString = localStorage.getItem('annotationPanelSize');
-    const savedSize = savedSizeString ? JSON.parse(savedSizeString) : null;
+    const savedAnnotationPanelSize = localStorage.getItem('annotation_panel_size');
+    const savedAnnotationPanelSizeNumber = savedAnnotationPanelSize
+      ? (parseInt(JSON.parse(savedAnnotationPanelSize), 10) ?? null)
+      : null;
     if (panelGroupRef.current) {
-      panelGroupRef.current.setLayout(savedSize ?? [70, 30]);
+      panelGroupRef.current.setLayout([0, 70, 30]);
     }
   };
 
@@ -178,194 +188,203 @@ export default function StatementDetails({
   };
 
   return (
-    <div className="flex flex-col md:mt-12 md:mx-auto w-full max-w-screen md:max-w-3xl  ">
-      {headerImg ? (
-        <div className="relative group md:px-4">
-          <AspectRatio ratio={16 / 9} className="bg-muted rounded-md">
-            <Image
-              src={headerImg ?? ''}
-              alt="Statement cover image"
-              fill
-              className="h-full w-full md:rounded-md object-cover"
-              priority
-            />
-            {updatedStatement.creatorId === userId && editMode && (
-              <div
-                className={cn(
-                  'absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center',
-                  isUploading && 'opacity-100'
-                )}
-              >
-                <Button variant="outline" className="gap-2" onClick={handlePhotoButtonClick}>
-                  {isUploading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Upload className="h-4 w-4" />
-                  )}
-                  <span className="text-sm">Change cover image</span>
-                </Button>
-              </div>
-            )}
-          </AspectRatio>
-        </div>
-      ) : editMode ? (
-        <div className="flex items-center justify-center w-full my-14 md:px-4">
-          <Button variant="outline" className="gap-2" onClick={handlePhotoButtonClick}>
-            {isUploading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Upload className="h-4 w-4" />
-            )}
-            <span className="text-sm text-muted-foreground">
-              Choose or drag and drop a cover image
-            </span>
-          </Button>
-        </div>
-      ) : (
-        <></>
+    <div className="overflow-y-auto h-full">
+      {handleToggleStack && (
+        <Button variant="ghost" size="icon" className="a m-1 z-50" onClick={handleToggleStack}>
+          <Sidebar className="w-4 h-4" />
+        </Button>
       )}
-
-      <div className="flex flex-col px-4 gap-6 ">
-        <Input
-          type="file"
-          ref={photoInputRef}
-          accept="image/*"
-          className="hidden"
-          id="avatar-upload"
-          onChange={e => {
-            handleHeaderImageChange(e);
-          }}
-          disabled={isUploading || !editMode}
-        />
-        <div className="flex flex-col gap-1 mt-6 md:mt-10 md:mb-5 ">
-          {updatedStatement.parentStatementId && (
-            <Link href={`/${writerUserSlug}/${updatedStatement.parentStatementId}`}>
-              <p className="bg-yellow-50 text-lg text-yellow-900 px-2 py-1 rounded-md flex items-center gap-2 w-fit hover:bg-yellow-100 transition-colors">
-                <ChevronLeft className="w-4 h-4" />
-                Response to: {parentStatement?.title}
-              </p>
-            </Link>
-          )}
-          <div className="flex justify-between items-center">
-            {editMode ? (
-              <TextareaAutosize
-                name="title"
-                disabled={!editMode}
-                placeholder="Give it a title..."
-                className="shadow-none rounded-none border-0 border-b py-4 md:text-5xl text-3xl font-bold h-fit focus:outline-none focus:border-zinc-500 focus-visible:ring-0 w-full resize-none bg-transparent"
-                defaultValue={updatedStatement?.title || ''}
-                minRows={1}
-                maxRows={2}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                  setUpdatedStatement({
-                    ...updatedStatement,
-                    title: e.target.value,
-                    statementId: prepStatementId
-                  })
-                }
+      <div className="flex flex-col md:mt-12 md:mx-auto w-full max-w-screen md:max-w-3xl  ">
+        {headerImg ? (
+          <div className="relative group md:px-4">
+            <AspectRatio ratio={16 / 9} className="bg-muted rounded-md">
+              <Image
+                src={headerImg ?? ''}
+                alt="Statement cover image"
+                fill
+                className="h-full w-full md:rounded-md object-cover"
+                priority
               />
-            ) : (
-              <h1 className="md:text-5xl text-3xl font-bold py-1">
-                {updatedStatement?.title ?? title}
-              </h1>
-            )}
+              {updatedStatement.creatorId === userId && editMode && (
+                <div
+                  className={cn(
+                    'absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center',
+                    isUploading && 'opacity-100'
+                  )}
+                >
+                  <Button variant="outline" className="gap-2" onClick={handlePhotoButtonClick}>
+                    {isUploading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="h-4 w-4" />
+                    )}
+                    <span className="text-sm">Change cover image</span>
+                  </Button>
+                </div>
+              )}
+            </AspectRatio>
           </div>
-          <div className="flex justify-between items-center">
-            {editMode ? (
-              <TextareaAutosize
-                name="subtitle"
-                disabled={!editMode}
-                placeholder="Give it a subtitle..."
-                className="shadow-none rounded-none border-0 border-b py-4 font-medium focus:outline-none focus:border-zinc-500 focus-visible:ring-0 w-full text-zinc-700 md:text-xl resize-none bg-transparent"
-                defaultValue={updatedStatement?.subtitle || ''}
-                minRows={1}
-                maxRows={2}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                  setUpdatedStatement({
-                    ...updatedStatement,
-                    subtitle: e.target.value,
-                    statementId: prepStatementId
-                  })
-                }
-              />
-            ) : (
-              <h2 className="font-medium py-1 md:text-xl text-zinc-500">
-                {updatedStatement?.subtitle ?? subtitle}
-              </h2>
-            )}
+        ) : editMode ? (
+          <div className="flex items-center justify-center w-full my-14 md:px-4">
+            <Button variant="outline" className="gap-2" onClick={handlePhotoButtonClick}>
+              {isUploading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4" />
+              )}
+              <span className="text-sm text-muted-foreground">
+                Choose or drag and drop a cover image
+              </span>
+            </Button>
           </div>
-        </div>
-
-        <div className="flex items-center justify-between mb-5">
-          <StatementOptions
-            className="mb-0 w-full"
-            statement={updatedStatement}
-            editMode={editMode}
-            showAuthorComments={showAuthorComments}
-            showReaderComments={showReaderComments}
-            handleEditModeToggle={handleEditModeToggle}
-            onShowAuthorCommentsChange={onShowAuthorCommentsChange}
-            onShowReaderCommentsChange={onShowReaderCommentsChange}
-          />
-        </div>
-
-        <Byline statement={updatedStatement} />
-
-        <div className="rounded-lg overflow-hidden bg-background ">
-          <HTMLSuperEditor
-            key={`editor-content-${editMode}`}
-            statement={updatedStatement}
-            style={{ minHeight: '40px' }}
-            existingAnnotations={annotations}
-            userId={userId}
-            onAnnotationClick={handleAnnotationClick}
-            placeholder="Start typing or paste content here..."
-            annotatable={annotatable}
-            selectedAnnotationId={selectedAnnotationId}
-            setSelectedAnnotationId={setSelectedAnnotationId}
-            showAuthorComments={showAuthorComments}
-            showReaderComments={showReaderComments}
-            editMode={editMode}
-            setFootnoteIds={setFootnoteIds}
-          />
-        </div>
-        {!editMode ? (
-          <ImageLightbox
-            src={initialImageData.src}
-            alt={initialImageData.alt ?? ''}
-            id={initialImageData.id}
-            statementId={statementId}
-            setInitialImageData={setInitialImageData}
-            setImageLightboxOpen={setImageLightboxOpen}
-          />
         ) : (
-          <>
-            <LatexNodeEditor />
-            <ImageNodeEditor
-              statementId={statementId}
-              statementCreatorId={updatedStatement.creatorId}
-            />
-          </>
-        )}
-        {editor && (
-          <div
-            className="md:fixed flex z-50 md:bottom-10 left-0 right-0 mx-auto md:left-auto md:right-auto md:mx-auto md:ml-20 px-2 justify-center max-w-full "
-            style={displayStyle}
-          >
-            <EditorMenu
-              statementId={statementId}
-              editor={editor}
-              editMode={editMode}
-              userSlug={currentUserSlug ?? ''}
-            />
-          </div>
+          <></>
         )}
 
-        <FootnoteList citations={orderedFootnotes} />
-        {!editMode && (
-          <ReadNav annotationMode={annotationMode} setAnnotationMode={setAnnotationMode} />
-        )}
-        <div className="h-14" />
+        <div className="flex flex-col px-4 gap-6 ">
+          <Input
+            type="file"
+            ref={photoInputRef}
+            accept="image/*"
+            className="hidden"
+            id="avatar-upload"
+            onChange={e => {
+              handleHeaderImageChange(e);
+            }}
+            disabled={isUploading || !editMode}
+          />
+          <div className="flex flex-col gap-1 mt-6 md:mt-10 md:mb-5 ">
+            {updatedStatement.parentStatementId && (
+              <Link href={`/${parentStatement?.creatorSlug}/${parentStatement?.slug}`}>
+                <p className="bg-yellow-50 text-lg text-yellow-900 px-2 py-1 rounded-md flex items-center gap-2 w-fit hover:bg-yellow-100 transition-colors">
+                  <ChevronLeft className="w-4 h-4" />
+                  Response to: {parentStatement?.title}
+                </p>
+              </Link>
+            )}
+            <div className="flex justify-between items-center">
+              {editMode ? (
+                <TextareaAutosize
+                  name="title"
+                  disabled={!editMode}
+                  placeholder="Give it a title..."
+                  className="shadow-none rounded-none border-0 border-b py-4 md:text-5xl text-3xl font-bold h-fit focus:outline-none focus:border-zinc-500 focus-visible:ring-0 w-full resize-none bg-transparent"
+                  defaultValue={updatedStatement?.title || ''}
+                  minRows={1}
+                  maxRows={2}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                    setUpdatedStatement({
+                      ...updatedStatement,
+                      title: e.target.value,
+                      statementId: prepStatementId
+                    })
+                  }
+                />
+              ) : (
+                <h1 className="md:text-5xl text-3xl font-bold py-1">
+                  {updatedStatement?.title ?? title}
+                </h1>
+              )}
+            </div>
+            <div className="flex justify-between items-center">
+              {editMode ? (
+                <TextareaAutosize
+                  name="subtitle"
+                  disabled={!editMode}
+                  placeholder="Give it a subtitle..."
+                  className="shadow-none rounded-none border-0 border-b py-4 font-medium focus:outline-none focus:border-zinc-500 focus-visible:ring-0 w-full text-zinc-700 md:text-xl resize-none bg-transparent"
+                  defaultValue={updatedStatement?.subtitle || ''}
+                  minRows={1}
+                  maxRows={2}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                    setUpdatedStatement({
+                      ...updatedStatement,
+                      subtitle: e.target.value,
+                      statementId: prepStatementId
+                    })
+                  }
+                />
+              ) : (
+                <h2 className="font-medium py-1 md:text-xl text-zinc-500">
+                  {updatedStatement?.subtitle ?? subtitle}
+                </h2>
+              )}
+            </div>
+          </div>
+          <div className="md:hidden">
+            <InlineCardStack familyTree={familyTree} currentTitle={updatedStatement?.title || ''} />
+          </div>
+          <div className="flex items-center justify-between mb-5">
+            <StatementOptions
+              className="mb-0 w-full"
+              statement={updatedStatement}
+              editMode={editMode}
+              showAuthorComments={showAuthorComments}
+              showReaderComments={showReaderComments}
+              handleEditModeToggle={handleEditModeToggle}
+              onShowAuthorCommentsChange={onShowAuthorCommentsChange}
+              onShowReaderCommentsChange={onShowReaderCommentsChange}
+            />
+          </div>
+
+          <Byline statement={updatedStatement} />
+
+          <div className="rounded-lg overflow-hidden bg-background ">
+            <HTMLSuperEditor
+              key={`editor-content-${editMode}`}
+              statement={updatedStatement}
+              style={{ minHeight: '40px' }}
+              existingAnnotations={annotations}
+              userId={userId}
+              onAnnotationClick={handleAnnotationClick}
+              placeholder="Start typing or paste content here..."
+              annotatable={annotatable}
+              selectedAnnotationId={selectedAnnotationId}
+              setSelectedAnnotationId={setSelectedAnnotationId}
+              showAuthorComments={showAuthorComments}
+              showReaderComments={showReaderComments}
+              editMode={editMode}
+              setFootnoteIds={setFootnoteIds}
+            />
+          </div>
+          {!editMode ? (
+            <ImageLightbox
+              src={initialImageData.src}
+              alt={initialImageData.alt ?? ''}
+              id={initialImageData.id}
+              statementId={statementId}
+              setInitialImageData={setInitialImageData}
+              setImageLightboxOpen={setImageLightboxOpen}
+            />
+          ) : (
+            <>
+              <LatexNodeEditor />
+              <ImageNodeEditor
+                statementId={statementId}
+                statementCreatorId={updatedStatement.creatorId}
+              />
+            </>
+          )}
+          {editor && (
+            <div
+              className="md:fixed flex z-50 md:bottom-10 left-0 right-0 mx-auto md:left-auto md:right-auto md:mx-auto md:ml-20 px-2 justify-center max-w-full "
+              style={displayStyle}
+            >
+              <EditorMenu
+                statementId={statementId}
+                editor={editor}
+                editMode={editMode}
+                userSlug={currentUserSlug ?? ''}
+              />
+            </div>
+          )}
+
+          <FootnoteList citations={orderedFootnotes} />
+          {!editMode && (
+            <ReadNav annotationMode={annotationMode} setAnnotationMode={setAnnotationMode} />
+          )}
+          <div className="h-14" />
+        </div>
       </div>
     </div>
   );
