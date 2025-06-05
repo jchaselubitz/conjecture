@@ -142,9 +142,9 @@ export default function StatementLayout({
     setComments([]);
     setSelectedAnnotation(null);
     const currentStackSize = currentLayout?.[0];
-    const currentAnnotationSize = currentLayout?.[2];
-    const calculatedPrimaryPanelSize = 100 - (currentStackSize ?? 0) - (currentAnnotationSize ?? 0);
-    panelGroupRef.current?.setLayout([currentStackSize ?? 30, calculatedPrimaryPanelSize ?? 70, 0]);
+
+    const calculatedPrimaryPanelSize = 100 - (currentStackSize ?? 0);
+    panelGroupRef.current?.setLayout([currentStackSize ?? 30, calculatedPrimaryPanelSize, 0]);
     const newUrl = `${window.location.pathname}`;
     router.replace(newUrl, { scroll: false });
   };
