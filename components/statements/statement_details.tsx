@@ -105,8 +105,13 @@ export default function StatementDetails({
     const savedAnnotationPanelSizeNumber = savedAnnotationPanelSize
       ? (parseInt(JSON.parse(savedAnnotationPanelSize), 10) ?? null)
       : null;
+
     if (panelGroupRef.current) {
-      panelGroupRef.current.setLayout([0, 70, 30]);
+      panelGroupRef.current.setLayout([
+        0,
+        100 - (savedAnnotationPanelSizeNumber ?? 0),
+        savedAnnotationPanelSizeNumber ?? 30
+      ]);
     }
   };
 

@@ -67,6 +67,12 @@ export default function StatementLayout({
   const [editMode, setEditMode] = useState(editModeEnabled);
   const { editor, updatedStatement } = useStatementContext();
   const { updateStatementDraft } = useStatementUpdateContext();
+
+  const [showAnnotationDrawer, setShowAnnotationDrawer] = useState(false);
+  const isCreator = updatedStatement.creatorId === userId;
+  const [showAuthorComments, setShowAuthorComments] = useState(authorCommentsEnabled);
+  const [showReaderComments, setShowReaderComments] = useState(readerCommentsEnabled);
+  const [savedPanelSizes, setSavedPanelSizes] = useState<number[]>([0, 70, 30]);
   const [annotationMode, setAnnotationMode] = useState<boolean>(!isMobile);
 
   const handleDeleteAnnotation = async (annotation: AnnotationWithComments) => {
@@ -106,21 +112,13 @@ export default function StatementLayout({
     }
   }, [editMode, annotationMode, editor, isMobile]);
 
-  const [showAnnotationDrawer, setShowAnnotationDrawer] = useState(false);
-  const isCreator = updatedStatement.creatorId === userId;
-
-  const panelGroupRef = useRef<React.ElementRef<typeof ResizablePanelGroup>>(null);
-
-  // Add effect to handle viewport changes
-
-  const [showAuthorComments, setShowAuthorComments] = useState(authorCommentsEnabled);
-  const [showReaderComments, setShowReaderComments] = useState(readerCommentsEnabled);
-
   useEffect(() => {
     if (selectedAnnotationId) {
       setShowAnnotationDrawer(true);
     }
   }, [selectedAnnotationId]);
+
+  const panelGroupRef = useRef<React.ElementRef<typeof ResizablePanelGroup>>(null);
 
   useEffect(() => {
     const savedStackSize = localStorage.getItem('stack_panel_size');
@@ -133,12 +131,15 @@ export default function StatementLayout({
     const calculatedPrimaryPanelSize =
       100 - (savedStackSizeNumber ?? 0) - (savedAnnotationPanelSizeNumber ?? 0);
 
-    panelGroupRef.current?.setLayout([
-      savedAnnotationPanelSize ? 30 : 0,
-      calculatedPrimaryPanelSize ? 70 : 100,
-      savedAnnotationPanelSizeNumber ?? 0
-    ]);
-  }, []);
+    const panelSizes = [
+      savedAnnotationPanelSizeNumber ?? 0,
+      calculatedPrimaryPanelSize ?? 70,
+      savedStackSizeNumber ?? 30
+    ];
+
+    setSavedPanelSizes(panelSizes);
+    panelGroupRef.current?.setLayout(panelSizes);
+  }, [panelGroupRef.current, setSavedPanelSizes]);
 
   const handleCloseAnnotationPanel = () => {
     const currentLayout = panelGroupRef.current?.getLayout();
@@ -146,18 +147,26 @@ export default function StatementLayout({
     setReplyToComment(null);
     setComments([]);
     setSelectedAnnotation(null);
-    panelGroupRef.current?.setLayout([currentLayout?.[0] ?? 30, currentLayout?.[1] ?? 70, 0]);
+    const currentStackSize = currentLayout?.[0];
+    const currentAnnotationSize = currentLayout?.[2];
+    const calculatedPrimaryPanelSize = 100 - (currentStackSize ?? 0) - (currentAnnotationSize ?? 0);
+    panelGroupRef.current?.setLayout([currentStackSize ?? 30, calculatedPrimaryPanelSize ?? 70, 0]);
     const newUrl = `${window.location.pathname}`;
     router.replace(newUrl, { scroll: false });
-    localStorage.setItem('annotation_panel_size', JSON.stringify(0));
   };
 
   const handleToggleStack = () => {
     const savedStackSize = localStorage.getItem('stack_panel_size');
     const savedStackSizeNumber = savedStackSize ? parseInt(JSON.parse(savedStackSize), 10) : null;
     const currentLayout = panelGroupRef.current?.getLayout();
+    const calculatedPrimaryPanelSize = 100 - (savedStackSizeNumber ?? 0);
+
     if (currentLayout?.[0] === 0) {
-      panelGroupRef.current?.setLayout([savedStackSizeNumber ?? 30, currentLayout?.[1] ?? 70, 0]);
+      panelGroupRef.current?.setLayout([
+        savedStackSizeNumber ?? 30,
+        calculatedPrimaryPanelSize ?? 70,
+        0
+      ]);
     } else {
       panelGroupRef.current?.setLayout([0, currentLayout?.[1] ?? 100, currentLayout?.[2] ?? 0]);
     }
@@ -172,10 +181,10 @@ export default function StatementLayout({
   };
 
   const onLayout = (layout: number[]) => {
-    if (layout[0] !== 0) {
+    if (layout[0] > 0) {
       localStorage.setItem('stack_panel_size', JSON.stringify(layout[0]));
     }
-    if (layout[2] !== 0) {
+    if (layout[2] > 0) {
       localStorage.setItem('annotation_panel_size', JSON.stringify(layout[2]));
     }
     // panelGroupRef.current?.setLayout([layout[0], layout[1], layout[2]]);
