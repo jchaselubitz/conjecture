@@ -20,6 +20,7 @@ import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementUpdateContext } from '@/contexts/StatementUpdateProvider';
 import { useUserContext } from '@/contexts/userContext';
 import { deleteAnnotation } from '@/lib/actions/annotationActions';
+import { getPanelSizeNumber } from '@/lib/helpers/helpersLayout';
 import { groupThreadsByParentId } from '@/lib/helpers/helpersStatements';
 
 import VerticalCardStack from '../card_stacks/vertical_card_stack';
@@ -72,7 +73,6 @@ export default function StatementLayout({
   const isCreator = updatedStatement.creatorId === userId;
   const [showAuthorComments, setShowAuthorComments] = useState(authorCommentsEnabled);
   const [showReaderComments, setShowReaderComments] = useState(readerCommentsEnabled);
-  const [savedPanelSizes, setSavedPanelSizes] = useState<number[]>([0, 70, 30]);
   const [annotationMode, setAnnotationMode] = useState<boolean>(!isMobile);
 
   const handleDeleteAnnotation = async (annotation: AnnotationWithComments) => {
@@ -121,25 +121,19 @@ export default function StatementLayout({
   const panelGroupRef = useRef<React.ElementRef<typeof ResizablePanelGroup>>(null);
 
   useEffect(() => {
-    const savedStackSize = localStorage.getItem('stack_panel_size');
-    const savedStackSizeNumber = savedStackSize ? parseInt(JSON.parse(savedStackSize), 10) : null;
-    const savedAnnotationPanelSize = localStorage.getItem('annotation_panel_size');
-    const savedAnnotationPanelSizeNumber = savedAnnotationPanelSize
-      ? (parseInt(JSON.parse(savedAnnotationPanelSize), 10) ?? 0)
-      : null;
+    const savedStackSize = getPanelSizeNumber('stack_panel_size');
+    const savedAnnotationPanelSize = getPanelSizeNumber('annotation_panel_size');
 
     const calculatedPrimaryPanelSize =
-      100 - (savedStackSizeNumber ?? 0) - (savedAnnotationPanelSizeNumber ?? 0);
+      100 - (savedStackSize ?? 0) - (savedAnnotationPanelSize ?? 0);
 
     const panelSizes = [
-      savedAnnotationPanelSizeNumber ?? 0,
+      savedAnnotationPanelSize ?? 0,
       calculatedPrimaryPanelSize ?? 70,
-      savedStackSizeNumber ?? 30
+      savedStackSize ?? 30
     ];
-
-    setSavedPanelSizes(panelSizes);
     panelGroupRef.current?.setLayout(panelSizes);
-  }, [panelGroupRef.current, setSavedPanelSizes]);
+  });
 
   const handleCloseAnnotationPanel = () => {
     const currentLayout = panelGroupRef.current?.getLayout();
@@ -156,17 +150,12 @@ export default function StatementLayout({
   };
 
   const handleToggleStack = () => {
-    const savedStackSize = localStorage.getItem('stack_panel_size');
-    const savedStackSizeNumber = savedStackSize ? parseInt(JSON.parse(savedStackSize), 10) : null;
+    const savedStackSize = getPanelSizeNumber('stack_panel_size');
     const currentLayout = panelGroupRef.current?.getLayout();
-    const calculatedPrimaryPanelSize = 100 - (savedStackSizeNumber ?? 0);
+    const calculatedPrimaryPanelSize = 100 - (savedStackSize ?? 0);
 
     if (currentLayout?.[0] === 0) {
-      panelGroupRef.current?.setLayout([
-        savedStackSizeNumber ?? 30,
-        calculatedPrimaryPanelSize ?? 70,
-        0
-      ]);
+      panelGroupRef.current?.setLayout([savedStackSize ?? 30, calculatedPrimaryPanelSize ?? 70, 0]);
     } else {
       panelGroupRef.current?.setLayout([0, currentLayout?.[1] ?? 100, currentLayout?.[2] ?? 0]);
     }

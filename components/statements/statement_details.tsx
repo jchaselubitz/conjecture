@@ -15,6 +15,7 @@ import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { useUserContext } from '@/contexts/userContext';
 import { updateStatementHeaderImageUrl } from '@/lib/actions/statementActions';
+import { getPanelSizeNumber } from '@/lib/helpers/helpersLayout';
 import { headerImageChange } from '@/lib/helpers/helpersStatements';
 import { generateStatementId } from '@/lib/helpers/helpersStatements';
 import { cn } from '@/lib/utils';
@@ -101,16 +102,13 @@ export default function StatementDetails({
 
   const handleAnnotationClick = async (annotationId: string) => {
     setSelectedAnnotationId(annotationId);
-    const savedAnnotationPanelSize = localStorage.getItem('annotation_panel_size');
-    const savedAnnotationPanelSizeNumber = savedAnnotationPanelSize
-      ? (parseInt(JSON.parse(savedAnnotationPanelSize), 10) ?? null)
-      : null;
+    const savedAnnotationPanelSize = getPanelSizeNumber('annotation_panel_size');
 
     if (panelGroupRef.current) {
       panelGroupRef.current.setLayout([
         0,
-        100 - (savedAnnotationPanelSizeNumber ?? 0),
-        savedAnnotationPanelSizeNumber ?? 30
+        100 - (savedAnnotationPanelSize ?? 0),
+        savedAnnotationPanelSize ?? 30
       ]);
     }
   };
