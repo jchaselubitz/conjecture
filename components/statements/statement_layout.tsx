@@ -141,10 +141,10 @@ export default function StatementLayout({
     setReplyToComment(null);
     setComments([]);
     setSelectedAnnotation(null);
-    const currentStackSize = currentLayout?.[0];
-
+    const currentStackSize = currentLayout?.[0] ?? 30;
     const calculatedPrimaryPanelSize = 100 - (currentStackSize ?? 0);
-    panelGroupRef.current?.setLayout([currentStackSize ?? 30, calculatedPrimaryPanelSize, 0]);
+
+    panelGroupRef.current?.setLayout([currentStackSize, calculatedPrimaryPanelSize, 0]);
     const newUrl = `${window.location.pathname}`;
     router.replace(newUrl, { scroll: false });
   };
@@ -284,7 +284,7 @@ export default function StatementLayout({
         </div>
       </ResizablePanel>
       <ResizableHandle />
-      <ResizablePanel id="annotation-panel" defaultSize={0}>
+      <ResizablePanel id="annotation-panel" defaultSize={0} collapsible={true}>
         <div className="overflow-y-auto h-full  ">
           {annotations && (
             <AnnotationPanel
