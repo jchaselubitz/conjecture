@@ -1,6 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -32,15 +33,17 @@ type FormValues = z.infer<typeof formSchema>;
 interface RebuttalButtonProps {
   existingStatementId: string;
   existingTitle: string;
-  existingThreadId: string | null;
+  existingThreadId: string | null | undefined;
   className?: string;
+  buttonText?: React.ReactNode | string;
 }
 
 export default function RebuttalButton({
   existingStatementId,
   existingTitle,
   existingThreadId,
-  className
+  className,
+  buttonText = 'Respond'
 }: RebuttalButtonProps) {
   const [open, setOpen] = useState(false);
   const [buttonState, setButtonState] = useState<ButtonLoadingState>('default');
@@ -79,8 +82,8 @@ export default function RebuttalButton({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className={className} disabled={!userId}>
-          Respond
+        <Button variant="outline" className={className}>
+          {buttonText}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-xs md:max-w-md top-20 md:top-[50%] translate-y-[-10%] md:translate-y-[-50%] ">
@@ -88,51 +91,66 @@ export default function RebuttalButton({
           <DialogTitle>Respond to {existingTitle}</DialogTitle>
           <DialogDescription>Write a linked critique.</DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter a title for your response" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="subtitle"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Subtitle</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Enter a subtitle (optional)"
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="flex justify-end pt-2">
-              <LoadingButton
-                type="submit"
-                buttonState={buttonState}
-                text="Begin writing your response"
-                loadingText="Creating..."
-                successText="Created!"
-                errorText="Failed to create"
-                setButtonState={setButtonState}
+        {userId ? (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter a title for your response" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-          </form>
-        </Form>
+              <FormField
+                control={form.control}
+                name="subtitle"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Subtitle</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Enter a subtitle (optional)"
+                        className="resize-none"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex justify-end pt-2">
+                <LoadingButton
+                  type="submit"
+                  buttonState={buttonState}
+                  text="Begin writing your response"
+                  loadingText="Creating..."
+                  successText="Created!"
+                  errorText="Failed to create"
+                  setButtonState={setButtonState}
+                />
+              </div>
+            </form>
+          </Form>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Link href="/login">
+              <Button variant="default" size="sm">
+                Login
+              </Button>
+            </Link>
+            <Link href="/sign-up">
+              <Button variant="outline" size="sm">
+                Create Account
+              </Button>
+            </Link>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

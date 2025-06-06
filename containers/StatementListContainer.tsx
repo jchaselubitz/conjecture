@@ -14,7 +14,7 @@ interface StatementListContainerProps {
   pathname: string;
 }
 
-export async function StatementListContainer({
+export function StatementListContainer({
   statements,
   title = 'Statements',
   pathname
@@ -52,7 +52,7 @@ export async function StatementListContainer({
   );
 }
 
-export async function StatementListContainerLoading() {
+export function StatementListContainerLoading() {
   return (
     <>
       <div className="flex items-center justify-between pb-8 ">

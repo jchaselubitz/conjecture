@@ -2,7 +2,8 @@ import 'katex/dist/katex.min.css';
 
 import { EditorContent, FloatingMenu } from '@tiptap/react';
 import { AnnotationWithComments, DraftWithAnnotations } from 'kysely-codegen';
-import React from 'react';
+import React, { RefObject } from 'react';
+import { ImperativePanelGroupHandle } from 'react-resizable-panels';
 
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { cn } from '@/lib/utils';
@@ -26,6 +27,7 @@ interface HTMLSuperEditorProps {
   showAuthorComments: boolean;
   showReaderComments: boolean;
   setFootnoteIds: (ids: string[]) => void;
+  panelGroupRef: RefObject<ImperativePanelGroupHandle | null>;
 }
 
 const HTMLSuperEditor = ({
@@ -42,7 +44,8 @@ const HTMLSuperEditor = ({
   setSelectedAnnotationId,
   showAuthorComments,
   showReaderComments,
-  setFootnoteIds
+  setFootnoteIds,
+  panelGroupRef
 }: HTMLSuperEditorProps) => {
   const { latexPopoverOpen, imagePopoverOpen } = useStatementToolsContext();
 
@@ -103,6 +106,7 @@ const HTMLSuperEditor = ({
         canAnnotate={annotatable}
         statementId={statementId}
         editor={editor}
+        panelGroupRef={panelGroupRef}
       />
 
       {editMode && !latexPopoverOpen && !imagePopoverOpen && (

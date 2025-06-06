@@ -3,12 +3,7 @@
 import './prose.css';
 
 import * as Sentry from '@sentry/nextjs';
-import {
-  AnnotationWithComments,
-  BaseDraft,
-  DraftWithAnnotations,
-  DraftWithUser
-} from 'kysely-codegen';
+import { AnnotationWithComments, DraftWithAnnotations, DraftWithUser } from 'kysely-codegen';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
@@ -20,7 +15,14 @@ import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementUpdateContext } from '@/contexts/StatementUpdateProvider';
 import { useUserContext } from '@/contexts/userContext';
 import { deleteAnnotation } from '@/lib/actions/annotationActions';
-import { getPanelSizeNumber } from '@/lib/helpers/helpersLayout';
+import {
+  balancePanelSizes,
+  getPanelState,
+  minAnnotationPanelSize,
+  minEditorPanelSize,
+  minStackSize,
+  setPanelState
+} from '@/lib/helpers/helpersLayout';
 import { groupThreadsByParentId } from '@/lib/helpers/helpersStatements';
 
 import VerticalCardStack from '../card_stacks/vertical_card_stack';
@@ -121,44 +123,31 @@ export default function StatementLayout({
   const panelGroupRef = useRef<React.ElementRef<typeof ResizablePanelGroup>>(null);
 
   useEffect(() => {
-    const savedStackSize = getPanelSizeNumber('stack_panel_size');
-    const savedAnnotationPanelSize = getPanelSizeNumber('annotation_panel_size');
-
-    const calculatedPrimaryPanelSize =
-      100 - (savedStackSize ?? 0) - (savedAnnotationPanelSize ?? 0);
-
-    const panelSizes = [
-      savedAnnotationPanelSize ?? 0,
-      calculatedPrimaryPanelSize ?? 70,
-      savedStackSize ?? 30
-    ];
-    panelGroupRef.current?.setLayout(panelSizes);
+    balancePanelSizes(panelGroupRef);
   });
 
   const handleCloseAnnotationPanel = () => {
-    const currentLayout = panelGroupRef.current?.getLayout();
     setSelectedAnnotationId(undefined);
     setReplyToComment(null);
     setComments([]);
     setSelectedAnnotation(null);
-    const currentStackSize = currentLayout?.[0] ?? 30;
-    const calculatedPrimaryPanelSize = 100 - (currentStackSize ?? 0);
-
-    panelGroupRef.current?.setLayout([currentStackSize, calculatedPrimaryPanelSize, 0]);
+    setPanelState({
+      target: 'annotation_panel_size',
+      isOpen: false,
+      panelGroupRef
+    });
     const newUrl = `${window.location.pathname}`;
     router.replace(newUrl, { scroll: false });
   };
 
   const handleToggleStack = () => {
-    const savedStackSize = getPanelSizeNumber('stack_panel_size');
-    const currentLayout = panelGroupRef.current?.getLayout();
-    const calculatedPrimaryPanelSize = 100 - (savedStackSize ?? 0);
-
-    if (currentLayout?.[0] === 0) {
-      panelGroupRef.current?.setLayout([savedStackSize ?? 30, calculatedPrimaryPanelSize ?? 70, 0]);
-    } else {
-      panelGroupRef.current?.setLayout([0, currentLayout?.[1] ?? 100, currentLayout?.[2] ?? 0]);
-    }
+    const { size: savedStackSize, isOpen: savedStackOpen } = getPanelState('stack_panel_size');
+    setPanelState({
+      target: 'stack_panel_size',
+      isOpen: !savedStackOpen,
+      size: savedStackSize,
+      panelGroupRef
+    });
   };
 
   const handleCloseAnnotationDrawer = () => {
@@ -171,12 +160,20 @@ export default function StatementLayout({
 
   const onLayout = (layout: number[]) => {
     if (layout[0] > 0) {
-      localStorage.setItem('stack_panel_size', JSON.stringify(layout[0]));
+      setPanelState({ target: 'stack_panel_size', isOpen: true, size: layout[0], panelGroupRef });
+    } else {
+      setPanelState({ target: 'stack_panel_size', isOpen: false, panelGroupRef });
     }
     if (layout[2] > 0) {
-      localStorage.setItem('annotation_panel_size', JSON.stringify(layout[2]));
+      setPanelState({
+        target: 'annotation_panel_size',
+        isOpen: true,
+        size: layout[2],
+        panelGroupRef
+      });
+    } else {
+      setPanelState({ target: 'annotation_panel_size', isOpen: false, panelGroupRef });
     }
-    // panelGroupRef.current?.setLayout([layout[0], layout[1], layout[2]]);
   };
 
   const onShowAuthorCommentsChange = (checked: boolean) => {
@@ -250,7 +247,7 @@ export default function StatementLayout({
       <ResizablePanel
         id="card-stack"
         defaultSize={20}
-        minSize={20}
+        minSize={minStackSize}
         collapsible={true}
         className="hidden md:block relative bg-gray-50 "
       >
@@ -261,12 +258,14 @@ export default function StatementLayout({
             <VerticalCardStack
               familyTree={familyTree}
               currentTitle={updatedStatement?.title || ''}
+              currentStatementId={updatedStatement.statementId}
+              currentThreadId={updatedStatement.threadId}
             />
           </div>
         </div>
       </ResizablePanel>
       <ResizableHandle />
-      <ResizablePanel id="editor" defaultSize={100} minSize={60}>
+      <ResizablePanel id="editor" defaultSize={100} minSize={minEditorPanelSize}>
         <div className=" flex flex-col overflow-y-auto h-full">
           <StatementDetails
             parentStatement={parentStatement}
@@ -284,7 +283,12 @@ export default function StatementLayout({
         </div>
       </ResizablePanel>
       <ResizableHandle />
-      <ResizablePanel id="annotation-panel" defaultSize={0} collapsible={true}>
+      <ResizablePanel
+        id="annotation-panel"
+        defaultSize={0}
+        minSize={minAnnotationPanelSize}
+        collapsible={true}
+      >
         <div className="overflow-y-auto h-full  ">
           {annotations && (
             <AnnotationPanel

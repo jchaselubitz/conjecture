@@ -1,9 +1,12 @@
 import { BubbleMenu, Editor } from '@tiptap/react';
 import Link from 'next/link';
+import { RefObject } from 'react';
+import { ImperativePanelGroupHandle } from 'react-resizable-panels';
 
 import { Button } from '@/components/ui/button';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { useUserContext } from '@/contexts/userContext';
+import { setPanelState } from '@/lib/helpers/helpersLayout';
 import { createStatementAnnotation } from '@/lib/helpers/helpersStatements';
 import { useCopyToClipboard } from '@/lib/hooks/useCopyToClipboard';
 import { cn } from '@/lib/utils';
@@ -19,6 +22,7 @@ interface AnnotationMenuProps {
   editMode: boolean;
   statementId: string;
   editor: Editor | null;
+  panelGroupRef: RefObject<ImperativePanelGroupHandle | null>;
 }
 
 export const AnnotationMenu = ({
@@ -29,7 +33,8 @@ export const AnnotationMenu = ({
   editMode,
   statementId,
   canAnnotate = false,
-  editor
+  editor,
+  panelGroupRef
 }: AnnotationMenuProps) => {
   const { userId } = useUserContext();
   const { annotations, setAnnotations, setSelectedAnnotationId } = useStatementAnnotationContext();
@@ -48,6 +53,11 @@ export const AnnotationMenu = ({
       showReaderComments,
       setSelectedAnnotationId,
       setAnnotations
+    });
+    setPanelState({
+      target: 'annotation_panel_size',
+      isOpen: true,
+      panelGroupRef
     });
   };
 

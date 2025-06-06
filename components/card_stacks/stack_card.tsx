@@ -1,4 +1,3 @@
-import { DraftWithUser } from 'kysely-codegen';
 import Link from 'next/link';
 import React from 'react';
 

@@ -15,7 +15,7 @@ import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { useUserContext } from '@/contexts/userContext';
 import { updateStatementHeaderImageUrl } from '@/lib/actions/statementActions';
-import { getPanelSizeNumber } from '@/lib/helpers/helpersLayout';
+import { balancePanelSizes, getPanelState, setPanelState } from '@/lib/helpers/helpersLayout';
 import { headerImageChange } from '@/lib/helpers/helpersStatements';
 import { generateStatementId } from '@/lib/helpers/helpersStatements';
 import { cn } from '@/lib/utils';
@@ -102,15 +102,14 @@ export default function StatementDetails({
 
   const handleAnnotationClick = async (annotationId: string) => {
     setSelectedAnnotationId(annotationId);
-    const savedAnnotationPanelSize = getPanelSizeNumber('annotation_panel_size');
+    const { size: savedAnnotationPanelSize } = getPanelState('annotation_panel_size');
 
-    if (panelGroupRef.current) {
-      panelGroupRef.current.setLayout([
-        0,
-        100 - (savedAnnotationPanelSize ?? 0),
-        savedAnnotationPanelSize ?? 30
-      ]);
-    }
+    setPanelState({
+      target: 'annotation_panel_size',
+      isOpen: true,
+      size: savedAnnotationPanelSize,
+      panelGroupRef
+    });
   };
 
   const handlePhotoButtonClick = () => {
@@ -193,7 +192,12 @@ export default function StatementDetails({
   return (
     <div className="overflow-y-auto h-full">
       {handleToggleStack && (
-        <Button variant="ghost" size="icon" className="a m-1 z-50" onClick={handleToggleStack}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className=" z-50 sticky top-0"
+          onClick={handleToggleStack}
+        >
           <Sidebar className="w-4 h-4" />
         </Button>
       )}
@@ -348,6 +352,7 @@ export default function StatementDetails({
               showReaderComments={showReaderComments}
               editMode={editMode}
               setFootnoteIds={setFootnoteIds}
+              panelGroupRef={panelGroupRef}
             />
           </div>
           {!editMode ? (
