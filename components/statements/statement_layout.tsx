@@ -248,6 +248,7 @@ export default function StatementLayout({
         id="card-stack"
         defaultSize={20}
         minSize={minStackSize}
+        maxSize={30}
         collapsible={true}
         className="hidden md:block relative bg-gray-50 "
       >

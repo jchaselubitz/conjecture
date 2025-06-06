@@ -25,7 +25,7 @@ export default function VerticalCardStack({
   const { precedingPosts, followingPosts } = familyTree;
 
   return (
-    <div className={cn(' max-w-96 w-full z-30 flex flex-col items-start  ')}>
+    <div className={cn(' max-w-96 w-full z-30 flex flex-col items-start mx-auto ')}>
       {/* Preceding posts */}
       <div className="flex flex-col gap-1 w-full">
         {precedingPosts.map((post, index) => (
