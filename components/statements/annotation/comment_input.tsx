@@ -39,7 +39,8 @@ export default function CommentInput({
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
   const pathname = usePathname();
   const pathnameWithoutParams = pathname.split('/').slice(0, 3).join('/');
-  const revalidationPath = { path: pathnameWithoutParams };
+  const revalidationPath = { path: pathnameWithoutParams, type: 'layout' };
+
 
   const handleSubmitComment = async () => {
     if (!commentText.trim() || !userId) return;
@@ -53,9 +54,9 @@ export default function CommentInput({
         parentId: replyToComment?.id || null
       };
 
-      setComments([
+      setComments(prevComments => [
         ...nestComments([
-          ...annotation.comments,
+          ...prevComments,
           {
             ...newComment,
             createdAt: new Date(),

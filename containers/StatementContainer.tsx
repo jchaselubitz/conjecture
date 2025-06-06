@@ -24,8 +24,10 @@ export async function StatementContainer({
   const statement = drafts.find(draft => draft.publishedAt !== null) ?? drafts[drafts.length - 1];
   const parentStatement = thread.find(draft => draft.statementId === statement.parentStatementId);
 
-  const stackCookie = cookieStore.get('stack_panel_size')?.value;
-  const annotationCookie = cookieStore.get('annotation_panel_size')?.value;
+  const stackCookie =
+    cookieStore.get('stack_panel_size')?.value ?? JSON.stringify({ size: 25, isOpen: true });
+  const annotationCookie =
+    cookieStore.get('annotation_panel_size')?.value ?? JSON.stringify({ size: 25, isOpen: true });
   const panelSizes = balancePanelSizes({ stackCookie, annotationCookie });
 
   return (

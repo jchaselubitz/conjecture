@@ -195,6 +195,8 @@ export default function StatementLayout({
     document.cookie = `show_reader_comments=${checked.toString()}`;
   };
 
+  //useMemo ??
+
   const filteredAnnotations = annotations.filter(annotation => {
     if (showAuthorComments && showReaderComments) {
       return true;
