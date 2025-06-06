@@ -3,8 +3,7 @@ import { cookies } from 'next/headers';
 
 import StatementLayout from '@/components/statements/statement_layout';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getPublishedStatement } from '@/lib/actions/statementActions';
-import { groupThreadsByParentId } from '@/lib/helpers/helpersStatements';
+import { balancePanelSizes } from '@/lib/helpers/helpersLayout';
 
 export async function StatementContainer({
   drafts,
@@ -23,8 +22,11 @@ export async function StatementContainer({
   const readerCommentsEnabled = readerCommentCookie ? readerCommentCookie?.value === 'true' : true;
 
   const statement = drafts.find(draft => draft.publishedAt !== null) ?? drafts[drafts.length - 1];
-
   const parentStatement = thread.find(draft => draft.statementId === statement.parentStatementId);
+
+  const stackCookie = cookieStore.get('stack_panel_size')?.value;
+  const annotationCookie = cookieStore.get('annotation_panel_size')?.value;
+  const panelSizes = balancePanelSizes({ stackCookie, annotationCookie });
 
   return (
     <div className="md:flex-1 bg-background md:h-screen h-full">
@@ -35,6 +37,7 @@ export async function StatementContainer({
         editModeEnabled={edit ?? false}
         parentStatement={parentStatement}
         thread={thread}
+        startingPanelSizes={panelSizes}
       />
     </div>
   );

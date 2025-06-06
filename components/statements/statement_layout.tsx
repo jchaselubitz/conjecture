@@ -21,6 +21,7 @@ import {
   minAnnotationPanelSize,
   minEditorPanelSize,
   minStackSize,
+  setPanelSizes,
   setPanelState
 } from '@/lib/helpers/helpersLayout';
 import { groupThreadsByParentId } from '@/lib/helpers/helpersStatements';
@@ -39,6 +40,7 @@ interface StatementDetailsProps {
   editModeEnabled: boolean;
   parentStatement: DraftWithUser | null | undefined;
   thread: DraftWithUser[];
+  startingPanelSizes: number[];
 }
 
 export default function StatementLayout({
@@ -46,7 +48,8 @@ export default function StatementLayout({
   readerCommentsEnabled,
   editModeEnabled,
   parentStatement,
-  thread
+  thread,
+  startingPanelSizes
 }: StatementDetailsProps) {
   const { userId } = useUserContext();
   const { statement } = useStatementContext();
@@ -123,7 +126,7 @@ export default function StatementLayout({
   const panelGroupRef = useRef<React.ElementRef<typeof ResizablePanelGroup>>(null);
 
   useEffect(() => {
-    balancePanelSizes(panelGroupRef);
+    setPanelSizes(panelGroupRef);
   });
 
   const handleCloseAnnotationPanel = () => {
@@ -246,7 +249,7 @@ export default function StatementLayout({
     <ResizablePanelGroup direction="horizontal" ref={panelGroupRef} onLayout={onLayout}>
       <ResizablePanel
         id="card-stack"
-        defaultSize={20}
+        defaultSize={startingPanelSizes[0]}
         minSize={minStackSize}
         maxSize={30}
         collapsible={true}
@@ -266,7 +269,7 @@ export default function StatementLayout({
         </div>
       </ResizablePanel>
       <ResizableHandle />
-      <ResizablePanel id="editor" defaultSize={100} minSize={minEditorPanelSize}>
+      <ResizablePanel id="editor" defaultSize={startingPanelSizes[1]} minSize={minEditorPanelSize}>
         <div className=" flex flex-col overflow-y-auto h-full">
           <StatementDetails
             parentStatement={parentStatement}
@@ -286,7 +289,7 @@ export default function StatementLayout({
       <ResizableHandle />
       <ResizablePanel
         id="annotation-panel"
-        defaultSize={0}
+        defaultSize={startingPanelSizes[2]}
         minSize={minAnnotationPanelSize}
         collapsible={true}
       >

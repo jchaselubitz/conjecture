@@ -10,15 +10,16 @@ import { Editor, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { AnnotationWithComments, DraftWithAnnotations, NewStatementCitation } from 'kysely-codegen';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { startTransition, useEffect } from 'react';
+import { RefObject, startTransition, useEffect } from 'react';
+import { ImperativePanelGroupHandle } from 'react-resizable-panels';
 import { useWindowSize } from 'react-use';
 
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
-import { deleteAnnotation } from '@/lib/actions/annotationActions';
 import { deleteCitation } from '@/lib/actions/citationActions';
 import { deleteStatementImage } from '@/lib/actions/statementActions';
+import { setPanelState } from '@/lib/helpers/helpersLayout';
 import {
   createQuoteHighlight,
   ensureAnnotationMarks,
@@ -50,6 +51,7 @@ interface UseHtmlSuperEditorProps {
   selectedAnnotationId: string | undefined;
   setSelectedAnnotationId: (id: string | undefined) => void;
   setFootnoteIds: (ids: string[]) => void;
+  panelGroupRef: RefObject<ImperativePanelGroupHandle | null>;
 }
 
 // Define the MarkInfo type here to match the one in helpersStatements
@@ -75,7 +77,8 @@ export const useHtmlSuperEditor = ({
   editMode,
   selectedAnnotationId,
   setSelectedAnnotationId,
-  setFootnoteIds
+  setFootnoteIds,
+  panelGroupRef
 }: UseHtmlSuperEditorProps): Editor | null => {
   const { setEditor, setUpdatedStatement, updatedStatement } = useStatementContext();
   const { annotations, setAnnotations } = useStatementAnnotationContext();
@@ -458,7 +461,12 @@ export const useHtmlSuperEditor = ({
     const annotationId = searchParams.get('annotation-id');
     if (annotationId && setSelectedAnnotationId) {
       setSelectedAnnotationId(annotationId);
+      setPanelState({
+        target: 'annotation_panel_size',
+        isOpen: true,
 
+        panelGroupRef
+      });
       setTimeout(() => {
         const annotationElement = document.querySelector(`[data-annotation-id="${annotationId}"]`);
         if (annotationElement) {
@@ -469,7 +477,7 @@ export const useHtmlSuperEditor = ({
         }
       }, 100);
     }
-  }, [searchParams, setSelectedAnnotationId, isMobile, editor]);
+  }, [searchParams, setSelectedAnnotationId, isMobile, editor, panelGroupRef]);
 
   // Sets the annotation-id in the url when the editor is focused
   useEffect(() => {

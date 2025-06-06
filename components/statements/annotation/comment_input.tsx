@@ -66,13 +66,13 @@ export default function CommentInput({
         ])
       ]);
 
+      setCommentText('');
       await createComment({
         comment: newComment,
         parentId: replyToComment?.id,
         revalidationPath: revalidationPath
       });
 
-      setCommentText('');
       setReplyToComment(null);
       setSubmittingButtonState('success');
     } catch (error) {

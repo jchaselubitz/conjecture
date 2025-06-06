@@ -57,7 +57,6 @@ const Comment: React.FC<CommentProps> = ({
 
   const handleEditComment = async () => {
     if (!userId) return;
-
     try {
       await editComment({
         id: comment.id,

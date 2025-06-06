@@ -1,7 +1,7 @@
 'use client';
 
 import { AnnotationWithComments } from 'kysely-codegen';
-import { X } from 'lucide-react';
+import { ArrowRightToLineIcon } from 'lucide-react';
 
 import { Accordion, AccordionItem } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,7 @@ export default function AnnotationPanel({
       <div className="flex justify-between mx-auto max-w-11/12 w-full items-center">
         <h2 className="text-lg font-bold">Comments</h2>
         <Button variant="ghost" onClick={handleCloseAnnotationPanel}>
-          <X className="w-4 h-4" />
+          <ArrowRightToLineIcon className="w-4 h-4" />
         </Button>
       </div>
       <Accordion

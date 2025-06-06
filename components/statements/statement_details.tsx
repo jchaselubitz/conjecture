@@ -102,14 +102,16 @@ export default function StatementDetails({
 
   const handleAnnotationClick = async (annotationId: string) => {
     setSelectedAnnotationId(annotationId);
-    const { size: savedAnnotationPanelSize } = getPanelState('annotation_panel_size');
-
-    setPanelState({
-      target: 'annotation_panel_size',
-      isOpen: true,
-      size: savedAnnotationPanelSize,
-      panelGroupRef
-    });
+    const { size: savedAnnotationPanelSize, isOpen: savedAnnotationPanelOpen } =
+      getPanelState('annotation_panel_size');
+    if (!savedAnnotationPanelOpen) {
+      setPanelState({
+        target: 'annotation_panel_size',
+        isOpen: true,
+        size: savedAnnotationPanelSize,
+        panelGroupRef
+      });
+    }
   };
 
   const handlePhotoButtonClick = () => {

@@ -63,7 +63,8 @@ const HTMLSuperEditor = ({
     editMode,
     selectedAnnotationId,
     setSelectedAnnotationId,
-    setFootnoteIds
+    setFootnoteIds,
+    panelGroupRef
   });
 
   return (
