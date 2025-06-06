@@ -25,6 +25,7 @@ interface StatementAnnotationContextType {
   setSelectedAnnotation: Dispatch<SetStateAction<AnnotationWithComments | null>>;
   comments: CommentWithReplies[];
   setComments: Dispatch<SetStateAction<CommentWithReplies[]>>;
+  addComment: (comment: CommentWithReplies) => void;
   replyToComment: BaseCommentWithUser | null;
   setReplyToComment: Dispatch<SetStateAction<BaseCommentWithUser | null>>;
   cancelReply: () => void;
@@ -36,7 +37,7 @@ const StatementAnnotationContext = createContext<StatementAnnotationContextType 
 );
 
 export function StatementAnnotationProvider({ children }: { children: ReactNode }) {
-  const { updatedStatement } = useStatementContext();
+  const { updatedStatement, setUpdatedStatement } = useStatementContext();
 
   const [annotations, setAnnotations] = useState<AnnotationWithComments[]>(
     updatedStatement.annotations
@@ -64,9 +65,39 @@ export function StatementAnnotationProvider({ children }: { children: ReactNode 
     setReplyToComment(null);
   };
 
+  // a kind of hackish way to keep the comments in sync with the annotations
+  const handleAddComment = (comment: CommentWithReplies) => {
+    setComments(prevComments => nestComments([...prevComments, comment]));
+    const newAnnotations = annotations.map(a =>
+      a.id === selectedAnnotationId
+        ? {
+            ...a,
+            comments: [...a.comments, comment]
+          }
+        : a
+    );
+    setUpdatedStatement({
+      ...updatedStatement,
+      annotations: newAnnotations as AnnotationWithComments[]
+    });
+  };
+
+  // a kind of hackish way to keep the comments in sync with the annotations
   const handleCommentDeleted = (commentId: string) => {
     setComments(prevComments => prevComments.filter(comment => comment.id !== commentId));
     // If we were replying to this comment, cancel the reply
+    const newAnnotations = annotations.map(a =>
+      a.id === selectedAnnotationId
+        ? {
+            ...a,
+            comments: a.comments.filter(comment => comment.id !== commentId)
+          }
+        : a
+    );
+    setUpdatedStatement({
+      ...updatedStatement,
+      annotations: newAnnotations as AnnotationWithComments[]
+    });
     if (replyToComment?.id === commentId) {
       setReplyToComment(null);
     }
@@ -87,6 +118,7 @@ export function StatementAnnotationProvider({ children }: { children: ReactNode 
         setSelectedAnnotation,
         comments,
         setComments,
+        addComment: handleAddComment,
         replyToComment,
         setReplyToComment,
         cancelReply,

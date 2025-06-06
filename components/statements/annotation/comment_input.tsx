@@ -1,6 +1,6 @@
 'use client';
 
-import { AnnotationWithComments, BaseCommentWithUser } from 'kysely-codegen';
+import { AnnotationWithComments } from 'kysely-codegen';
 import { X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -28,7 +28,7 @@ export default function CommentInput({
   setShowCommentInput
 }: CommentInputProps) {
   const { name, imageUrl, userId } = useUserContext();
-  const { replyToComment, setReplyToComment, setComments, cancelReply } =
+  const { replyToComment, setReplyToComment, addComment, cancelReply, setComments } =
     useStatementAnnotationContext();
 
   const isMobile = useWindowSize().width < 600;
@@ -39,8 +39,7 @@ export default function CommentInput({
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
   const pathname = usePathname();
   const pathnameWithoutParams = pathname.split('/').slice(0, 3).join('/');
-  const revalidationPath = { path: pathnameWithoutParams, type: 'layout' };
-
+  const revalidationPath = { path: pathnameWithoutParams, type: 'layout' as const };
 
   const handleSubmitComment = async () => {
     if (!commentText.trim() || !userId) return;
@@ -54,18 +53,14 @@ export default function CommentInput({
         parentId: replyToComment?.id || null
       };
 
-      setComments(prevComments => [
-        ...nestComments([
-          ...prevComments,
-          {
-            ...newComment,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            userImageUrl: imageUrl || '',
-            userName: name || ''
-          }
-        ])
-      ]);
+      addComment({
+        ...newComment,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        userImageUrl: imageUrl || '',
+        userName: name || '',
+        children: []
+      });
 
       setCommentText('');
       await createComment({
