@@ -144,7 +144,7 @@ export default function EditNav() {
             size="icon"
             onClick={() =>
               router.push(
-                `/${currentUserSlug}/${updatedStatement?.statementId}?version=${updatedStatement?.versionNumber}`
+                `/${currentUserSlug}/${updatedStatement?.slug}?version=${updatedStatement?.versionNumber}`
               )
             }
           >
@@ -182,7 +182,7 @@ export default function EditNav() {
                 />
                 <ViewModeButton
                   handleEditModeToggle={() =>
-                    router.push(`/${currentUserSlug}/${updatedStatement?.statementId}`)
+                    router.push(`/${currentUserSlug}/${updatedStatement?.slug}`)
                   }
                   iconOnly={isMobile}
                   variant="default"

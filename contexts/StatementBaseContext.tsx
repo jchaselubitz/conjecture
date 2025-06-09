@@ -92,7 +92,7 @@ export function StatementProvider({
   const nextVersionNumber = versionOptions.length + 1;
 
   const changeVersion = (newVersion: number) => {
-    router.push(`/${writerUserSlug}/${statement.statementId}?version=${newVersion}`);
+    router.push(`/${writerUserSlug}/${statement.slug}?version=${newVersion}`);
   };
 
   const saveStatementDraft = async () => {

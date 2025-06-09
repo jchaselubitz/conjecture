@@ -385,6 +385,7 @@ export default function StatementDetails({
                 editor={editor}
                 editMode={editMode}
                 userSlug={currentUserSlug ?? ''}
+                statementSlug={updatedStatement.slug}
               />
             </div>
           )}
