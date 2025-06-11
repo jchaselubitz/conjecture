@@ -42,6 +42,7 @@ export function StatementAnnotationProvider({ children }: { children: ReactNode 
   const [annotations, setAnnotations] = useState<AnnotationWithComments[]>(
     updatedStatement.annotations
   );
+
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | undefined>(undefined);
   const [selectedAnnotation, setSelectedAnnotation] = useState<AnnotationWithComments | null>(null);
 
