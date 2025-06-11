@@ -157,7 +157,7 @@ const Comment: React.FC<CommentProps> = ({
         {editingComment ? (
           <div className="flex flex-col gap-2 mt-4">
             <Textarea
-              defaultValue={comment.content}
+              defaultValue={commentContent}
               onChange={e => setCommentContent(e.target.value)}
               className="w-full bg-white/70"
             />
@@ -178,7 +178,7 @@ const Comment: React.FC<CommentProps> = ({
             </div>
           </div>
         ) : (
-          <p className="text-sm whitespace-pre-wrap break-words">{comment.content}</p>
+          <p className="text-sm whitespace-pre-wrap break-words">{commentContent}</p>
         )}
         {/* Reply button */}
       </div>
