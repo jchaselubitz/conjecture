@@ -15,7 +15,7 @@ import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { useUserContext } from '@/contexts/userContext';
 import { updateStatementHeaderImageUrl } from '@/lib/actions/statementActions';
-import { balancePanelSizes, getPanelState, setPanelState } from '@/lib/helpers/helpersLayout';
+import { getPanelState, setPanelState } from '@/lib/helpers/helpersLayout';
 import { headerImageChange } from '@/lib/helpers/helpersStatements';
 import { generateStatementId } from '@/lib/helpers/helpersStatements';
 import { cn } from '@/lib/utils';

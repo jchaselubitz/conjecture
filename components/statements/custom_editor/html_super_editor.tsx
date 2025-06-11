@@ -12,6 +12,8 @@ import { useHtmlSuperEditor } from './hooks/useHtmlSuperEditor';
 import { AnnotationMenu } from './annotation_menu';
 import { BlockTypeChooser } from './block_type_chooser';
 import { CitationNodeEditor } from './citation_node_editor';
+import { VideoPopover } from './video_popover';
+
 interface HTMLSuperEditorProps {
   statement: DraftWithAnnotations;
   existingAnnotations: AnnotationWithComments[];
@@ -47,7 +49,7 @@ const HTMLSuperEditor = ({
   setFootnoteIds,
   panelGroupRef
 }: HTMLSuperEditorProps) => {
-  const { latexPopoverOpen, imagePopoverOpen } = useStatementToolsContext();
+  const { latexPopoverOpen, imagePopoverOpen, videoPopoverOpen } = useStatementToolsContext();
 
   const draftId = statement.id;
   const statementId = statement.statementId;
@@ -109,8 +111,9 @@ const HTMLSuperEditor = ({
         editor={editor}
         panelGroupRef={panelGroupRef}
       />
+      <VideoPopover />
 
-      {editMode && !latexPopoverOpen && !imagePopoverOpen && (
+      {editMode && !latexPopoverOpen && !imagePopoverOpen && !videoPopoverOpen && (
         <div>
           <FloatingMenu editor={editor} tippyOptions={{ duration: 100 }}>
             <BlockTypeChooser statementId={statementId} editor={editor} />

@@ -5,6 +5,7 @@ import {
   Heading1,
   Heading2,
   Heading3,
+  Heading4,
   Italic,
   LinkIcon,
   List,
@@ -114,6 +115,25 @@ export function EditorMenu({
           >
             <Heading3 className="h-4 w-4" />
           </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
+            className={cn(
+              editor.isActive('heading', { level: 4 }) && activeButtonClassName,
+              buttonClassName
+            )}
+          >
+            <Heading4 className="h-4 w-4" />
+          </Button>
+          {/* <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().setHardBreak().run()}
+            className={cn(editor.isActive('hardBreak') && activeButtonClassName, buttonClassName)}
+          >
+            <Space className="h-4 w-4" />
+          </Button> */}
           <Button
             variant="ghost"
             size="sm"

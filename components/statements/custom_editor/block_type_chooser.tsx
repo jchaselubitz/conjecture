@@ -1,11 +1,19 @@
 import { Editor } from '@tiptap/react';
-import { Heading1, Heading2, Heading3, List, ListOrdered, Quote } from 'lucide-react';
+import {
+  Heading1,
+  Heading2,
+  Heading3,
+  List,
+  ListOrdered,
+  Quote,
+} from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 import { ImageButton } from './image_button';
 import { LatexButton } from './latex_button';
+import { VideoButton } from './video_button';
 
 interface BlockTypeChooserProps {
   statementId: string;
@@ -15,7 +23,7 @@ interface BlockTypeChooserProps {
 export function BlockTypeChooser({ statementId, editor }: BlockTypeChooserProps) {
   if (!editor) return null;
   return (
-    <div className="flex items-center gap-1 rounded-lg border bg-background p-1 shadow-sm">
+    <div className="flex items-center gap-1 rounded-lg border bg-background p-1 shadow-sm w-fit">
       <Button
         variant="ghost"
         size="sm"
@@ -68,6 +76,7 @@ export function BlockTypeChooser({ statementId, editor }: BlockTypeChooserProps)
       </Button>
       <LatexButton editor={editor} displayMode={true} />
 
+      <VideoButton statementId={statementId} />
       <ImageButton statementId={statementId} />
     </div>
   );
