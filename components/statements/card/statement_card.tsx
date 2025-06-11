@@ -84,6 +84,6 @@ export function StatementCard({ statement, isPublic, pathname }: StatementCardPr
   );
 }
 
-export async function StatementCardLoading() {
+export function StatementCardLoading() {
   return <Skeleton className="animate-pulse h-48 bg-gray-200 rounded-lg"></Skeleton>;
 }
