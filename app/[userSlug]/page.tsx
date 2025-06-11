@@ -1,6 +1,5 @@
 import { Metadata, ResolvingMetadata } from 'next';
 
-import AppNav from '@/components/navigation/app_nav';
 import { StatementListContainer } from '@/containers/StatementListContainer';
 import { getDrafts } from '@/lib/actions/statementActions';
 import { getUserProfile } from '@/lib/actions/userActions';
@@ -45,13 +44,12 @@ export default async function UserPage({ params }: UserPageProps) {
     return <div>User not found</div>;
   }
 
-  const { name, id } = profile;
+  const { id } = profile;
 
   const statements = await getDrafts({ creatorId: id, publishedOnly: !userIsCreator });
 
   return (
     <div>
-      <AppNav />
       <main className="flex-1 mx-auto bg-background container py-8 px-4 md:px-0">
         <StatementListContainer
           statements={statements}

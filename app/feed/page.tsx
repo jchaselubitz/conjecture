@@ -1,4 +1,3 @@
-import AppNav from '@/components/navigation/app_nav';
 import { StatementCard } from '@/components/statements/card';
 import { getDrafts } from '@/lib/actions/statementActions';
 
@@ -11,7 +10,6 @@ export default async function Feed() {
   if ('error' in statements) {
     return (
       <div className="min-h-screen bg-background">
-        <AppNav />
         <main className="container max-w-4xl pt-20 px-4">
           <div className="text-center py-12">
             <h3 className="text-lg font-medium">Please sign in to view your feed</h3>
@@ -23,7 +21,6 @@ export default async function Feed() {
 
   return (
     <div className="flex flex-col h-screen ">
-      <AppNav />
       <main className="flex-1 mx-auto bg-background container px-4 md:px-0 ">
         <div className="flex items-center justify-between my-8">
           <h1 className="text-3xl font-bold">Feed</h1>

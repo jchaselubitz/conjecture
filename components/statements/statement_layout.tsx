@@ -27,11 +27,12 @@ import {
 import { groupThreadsByParentId } from '@/lib/helpers/helpersStatements';
 
 import VerticalCardStack from '../card_stacks/vertical_card_stack';
-import AppNav from '../navigation/app_nav';
+
 import EditNav from '../navigation/edit_nav';
 
 import AnnotationDrawer from './annotation/annotation_drawer';
 import StatementDetails from './statement_details';
+import { useEditModeContext } from '@/contexts/EditModeProvider';
 
 interface StatementDetailsProps {
   statement: DraftWithAnnotations;
@@ -70,7 +71,7 @@ export default function StatementLayout({
   const router = useRouter();
   const isMobile = useWindowSize().width < 600;
 
-  const [editMode, setEditMode] = useState(editModeEnabled);
+  const { editMode, setEditMode } = useEditModeContext();
   const { editor, updatedStatement } = useStatementContext();
   const { updateStatementDraft } = useStatementUpdateContext();
 
@@ -313,7 +314,7 @@ export default function StatementLayout({
 
   return (
     <div className="flex flex-col h-full w-full">
-      {editMode ? <EditNav /> : <AppNav />}
+      {editMode ? <EditNav /> : <></>}
 
       {isMobile ? mobileLayout : desktopLayout}
     </div>

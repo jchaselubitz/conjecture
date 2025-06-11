@@ -10,10 +10,14 @@ import { Button } from '../ui/button';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '../ui/drawer';
 
 import UserButton from './user_button';
+import { useEditModeContext } from '@/contexts/EditModeProvider';
 
 export default function AppNav() {
   const [open, setOpen] = useState(false);
   const { userId, currentUserSlug } = useUserContext();
+  const { editMode } = useEditModeContext();
+
+  if (editMode) return null;
 
   return (
     <header className="border-b px-4 z-40 bg-background">

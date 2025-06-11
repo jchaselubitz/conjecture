@@ -2,7 +2,6 @@ import { DraftWithAnnotations, DraftWithUser } from 'kysely-codegen';
 import { cookies } from 'next/headers';
 
 import StatementLayout from '@/components/statements/statement_layout';
-import { Skeleton } from '@/components/ui/skeleton';
 import { balancePanelSizes } from '@/lib/helpers/helpersLayout';
 
 export async function StatementContainer({
@@ -41,24 +40,6 @@ export async function StatementContainer({
         thread={thread}
         startingPanelSizes={panelSizes}
       />
-    </div>
-  );
-}
-
-export async function StatementContainerLoading() {
-  return (
-    <div className="md:flex-1 bg-background md:h-screen h-full gap-8">
-      <Skeleton className="w-full h-96" />
-      <Skeleton className="w-full h-24" />
-      <div className="flex flex-col gap-2">
-        <Skeleton className="w-full h-12" />
-        <Skeleton className="w-full h-12" />
-        <Skeleton className="w-full h-12" />
-        <Skeleton className="w-full h-12" />
-        <Skeleton className="w-full h-12" />
-        <Skeleton className="w-full h-12" />
-      </div>
-      <Skeleton className="w-full h-12" />
     </div>
   );
 }

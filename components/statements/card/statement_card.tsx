@@ -13,7 +13,6 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 
 import { StatusBadge } from './status_badge';
 
@@ -82,8 +81,4 @@ export function StatementCard({ statement, isPublic, pathname }: StatementCardPr
       </Card>
     </Link>
   );
-}
-
-export function StatementCardLoading() {
-  return <Skeleton className="animate-pulse h-48 bg-gray-200 rounded-lg"></Skeleton>;
 }

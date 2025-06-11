@@ -21,10 +21,7 @@ export default async function UserStatementLayout({
     <StatementProvider drafts={drafts} userId={userId} writerUserSlug={writerUserSlug}>
       <StatementToolsProvider>
         <StatementAnnotationProvider>
-          <StatementUpdateProvider>
-            {/* StatementUpdateProvider should go here */}
-            {children}
-          </StatementUpdateProvider>
+          <StatementUpdateProvider>{children}</StatementUpdateProvider>
         </StatementAnnotationProvider>
       </StatementToolsProvider>
     </StatementProvider>
