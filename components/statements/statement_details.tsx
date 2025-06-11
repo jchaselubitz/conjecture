@@ -1,4 +1,4 @@
-import { BaseDraft, BaseStatementCitation, DraftWithUser } from 'kysely-codegen';
+import { BaseStatementCitation, DraftWithUser } from 'kysely-codegen';
 import { ChevronLeft, Loader2, Sidebar, Upload } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';

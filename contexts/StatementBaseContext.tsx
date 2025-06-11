@@ -4,7 +4,16 @@ import * as Sentry from '@sentry/nextjs';
 import { Editor } from '@tiptap/react';
 import { DraftWithAnnotations } from 'kysely-codegen';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  Dispatch,
+  ReactNode,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react';
 import { useDebounce } from 'use-debounce';
 
 import { createDraft, publishDraft } from '@/lib/actions/statementActions';
@@ -16,7 +25,7 @@ interface StatementContextType {
     createdAt: Date;
   }[];
   updatedStatement: DraftWithAnnotations;
-  setUpdatedStatement: (action: DraftWithAnnotations) => void;
+  setUpdatedStatement: Dispatch<SetStateAction<DraftWithAnnotations>>;
   saveStatementDraft: () => Promise<void>;
   nextVersionNumber: number;
   changeVersion: (version: number) => void;

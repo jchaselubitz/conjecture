@@ -1,10 +1,21 @@
 import { DraftWithAnnotations } from 'kysely-codegen';
-import { BarChart3, MoreHorizontal, PencilLine, Trash2 } from 'lucide-react';
+import {
+  BarChart3,
+  Calendar1,
+  CalendarClock,
+  MoreHorizontal,
+  PencilLine,
+  Trash2
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { useUserContext } from '@/contexts/userContext';
-import { deleteStatement, updateStatementUrl } from '@/lib/actions/statementActions';
+import {
+  deleteStatement,
+  updateStatementUrl,
+  updateDraftPublicationDate
+} from '@/lib/actions/statementActions';
 import { checkValidStatementSlug } from '@/lib/helpers/helpersStatements';
 import { cn } from '@/lib/utils';
 
@@ -25,6 +36,10 @@ import ViewModeButton from '../view_mode_button';
 import { CommentIndicatorButton } from './comments_menu';
 import RebuttalButton from './rebuttal_button';
 import VoteButton from './vote_button';
+import { Calendar } from '../ui/calendar';
+import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
+import { useStatementContext } from '@/contexts/StatementBaseContext';
+
 interface StatementOptionsProps {
   statement: DraftWithAnnotations;
   editMode: boolean;
@@ -51,6 +66,14 @@ export default function StatementOptions({
   const [buttonState, setButtonState] = useState<ButtonLoadingState>('default');
   const [slugError, setSlugError] = useState<string | null>(null);
   const [slug, setSlug] = useState<string>(statement.slug || '');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [calendarDate, setCalendarDate] = useState<Date | null>(
+    statement.publishedAt ? new Date(statement.publishedAt) : null
+  );
+  const { setUpdatedStatement } = useStatementContext();
+  const [calendarLoading, setCalendarLoading] = useState(false);
+  const [calendarError, setCalendarError] = useState<string | null>(null);
+
   const handleDelete = async () => {
     try {
       await deleteStatement(statement.statementId, statement.creatorId, statement.headerImg || '');
@@ -100,6 +123,36 @@ export default function StatementOptions({
     }
   };
 
+  const handleUpdatePublicationDate = async (date: Date | null) => {
+    if (!date) return;
+    if (date > new Date()) {
+      setCalendarError('Cannot set a future date');
+      return;
+    }
+    setCalendarLoading(true);
+    setCalendarError(null);
+    try {
+      await updateDraftPublicationDate({
+        id: statement.id,
+        statementId: statement.statementId,
+        creatorId: statement.creatorId,
+        publishedAt: date,
+        creatorSlug: statement.creatorSlug
+      });
+      setUpdatedStatement(prev => ({
+        ...prev,
+        publishedAt: date
+      }));
+      setCalendarDate(date);
+      setDialogOpen(false);
+      // Optionally, refresh or revalidate here
+    } catch (e) {
+      setCalendarError('Failed to update date');
+    } finally {
+      setCalendarLoading(false);
+    }
+  };
+
   return (
     <div className={cn('gap-3 flex flex-col', className)}>
       <Separator />
@@ -137,6 +190,9 @@ export default function StatementOptions({
                   editMode={editMode}
                   handleEditModeToggle={handleEditModeToggle}
                   handleDelete={handleDelete}
+                  dialogOpen={dialogOpen}
+                  setDialogOpen={setDialogOpen}
+                  calendarDate={calendarDate}
                 />
               )}
             </>
@@ -171,6 +227,32 @@ export default function StatementOptions({
       )}
 
       <Separator />
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent
+          className="bg-transparent border-none shadow-none p-0 max-w-fit"
+          showCloseButton={false}
+        >
+          <DialogTitle className="sr-only">Set Publication Date</DialogTitle>
+          <Calendar
+            mode="single"
+            selected={calendarDate ?? undefined}
+            onSelect={date => {
+              if (!date || date > new Date()) return;
+              // Only trigger if the day is different
+              const prev = calendarDate;
+              if (!prev || prev.toDateString() !== date.toDateString()) {
+                setCalendarDate(date);
+                handleUpdatePublicationDate(date);
+                setDialogOpen(false);
+              }
+            }}
+            className="rounded-md border shadow-sm"
+            captionLayout="dropdown"
+            disabled={date => date > new Date()}
+          />
+          {calendarError && <div className="text-sm text-red-500 mt-1">{calendarError}</div>}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -178,11 +260,16 @@ export default function StatementOptions({
 const CreatorOptionsButton = ({
   editMode,
   handleEditModeToggle,
-  handleDelete
+  handleDelete,
+  setDialogOpen,
+  calendarDate
 }: {
   editMode: boolean;
   handleEditModeToggle: () => void;
   handleDelete: () => void;
+  dialogOpen: boolean;
+  setDialogOpen: (open: boolean) => void;
+  calendarDate: Date | null;
 }) => {
   return (
     <DropdownMenu>
@@ -203,6 +290,11 @@ const CreatorOptionsButton = ({
           <PencilLine className="mr-2 h-4 w-4" />
           {editMode ? 'View' : 'Edit'}
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setDialogOpen(true)}>
+          <CalendarClock className="mr-2 h-4 w-4" />
+          Published on
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleDelete}>
           <Trash2 className="mr-2 h-4 w-4" />
           Delete

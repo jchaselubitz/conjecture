@@ -717,3 +717,31 @@ export async function toggleStatementUpvote({
     "layout",
   );
 }
+
+export async function updateDraftPublicationDate({
+  id,
+  statementId,
+  creatorId,
+  publishedAt,
+  creatorSlug,
+}: {
+  id: string;
+  statementId: string;
+  creatorId: string;
+  publishedAt: Date | null;
+  creatorSlug?: string | null | undefined;
+}) {
+  await authenticatedUser(creatorId);
+  await db
+    .updateTable("draft")
+    .set({ publishedAt })
+    .where("id", "=", id)
+    .where("statementId", "=", statementId)
+    .where("creatorId", "=", creatorId)
+    .execute();
+  if (creatorSlug) {
+    revalidatePath(`/${creatorSlug}/${statementId}`, "layout");
+  } else {
+    revalidatePath(`/[userSlug]/${statementId}`, "layout");
+  }
+}
