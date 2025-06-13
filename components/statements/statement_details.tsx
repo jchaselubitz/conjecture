@@ -1,4 +1,4 @@
-import { BaseStatementCitation, DraftWithUser } from 'kysely-codegen';
+import { BaseStatementCitation, StatementWithUser } from 'kysely-codegen';
 import { ChevronLeft, Loader2, Sidebar, Upload } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -43,10 +43,10 @@ export interface StatementDetailsProps {
   onShowAuthorCommentsChange: (checked: boolean) => void;
   onShowReaderCommentsChange: (checked: boolean) => void;
   panelGroupRef: RefObject<ImperativePanelGroupHandle | null>;
-  parentStatement: DraftWithUser | null | undefined;
+  parentStatement: StatementWithUser | null | undefined;
   familyTree: {
-    precedingPosts: DraftWithUser[];
-    followingPosts: DraftWithUser[];
+    precedingPosts: StatementWithUser[];
+    followingPosts: StatementWithUser[];
   };
   annotationMode: boolean;
   setAnnotationMode: (annotationMode: boolean) => void;
@@ -76,7 +76,8 @@ export default function StatementDetails({
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [footnoteIds, setFootnoteIds] = useState<string[]>([]);
-  const { statementId, title, subtitle, headerImg, annotations } = updatedStatement;
+  const { statementId, title, subtitle, headerImg, draft } = updatedStatement;
+  const annotations = draft.annotations;
 
   const orderedFootnotes = useMemo(() => {
     const footnotes: BaseStatementCitation[] = [];
@@ -94,7 +95,7 @@ export default function StatementDetails({
   const handleEditModeToggle = () => {
     setSelectedAnnotationId(undefined);
     if (!editMode) {
-      router.push(`${pathname}?edit=true`);
+      router.push(`${pathname}?version=${updatedStatement.draft.versionNumber}&edit=true`);
     } else {
       router.push(pathname);
     }

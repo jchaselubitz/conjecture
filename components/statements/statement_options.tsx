@@ -1,4 +1,4 @@
-import { DraftWithAnnotations } from 'kysely-codegen';
+import { DraftWithAnnotations, StatementPackage } from 'kysely-codegen';
 import {
   BarChart3,
   Calendar1,
@@ -10,17 +10,20 @@ import {
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
 import {
   deleteStatement,
-  updateStatementUrl,
-  updateDraftPublicationDate
+  updateDraftPublicationDate,
+  updateStatementUrl
 } from '@/lib/actions/statementActions';
 import { checkValidStatementSlug } from '@/lib/helpers/helpersStatements';
 import { cn } from '@/lib/utils';
 
 import { ShareButton } from '../special_buttons/share_button';
 import { Button } from '../ui/button';
+import { Calendar } from '../ui/calendar';
+import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,12 +39,9 @@ import ViewModeButton from '../view_mode_button';
 import { CommentIndicatorButton } from './comments_menu';
 import RebuttalButton from './rebuttal_button';
 import VoteButton from './vote_button';
-import { Calendar } from '../ui/calendar';
-import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
-import { useStatementContext } from '@/contexts/StatementBaseContext';
 
 interface StatementOptionsProps {
-  statement: DraftWithAnnotations;
+  statement: StatementPackage;
   editMode: boolean;
   showAuthorComments: boolean;
   showReaderComments: boolean;
@@ -68,7 +68,7 @@ export default function StatementOptions({
   const [slug, setSlug] = useState<string>(statement.slug || '');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [calendarDate, setCalendarDate] = useState<Date | null>(
-    statement.publishedAt ? new Date(statement.publishedAt) : null
+    statement.draft.publishedAt ? new Date(statement.draft.publishedAt) : null
   );
   const { setUpdatedStatement } = useStatementContext();
   const [calendarLoading, setCalendarLoading] = useState(false);
@@ -133,8 +133,8 @@ export default function StatementOptions({
     setCalendarError(null);
     try {
       await updateDraftPublicationDate({
-        id: statement.id,
-        statementId: statement.statementId,
+        id: statement.draft.id,
+        statementSlug: statement.slug,
         creatorId: statement.creatorId,
         publishedAt: date,
         creatorSlug: statement.creatorSlug

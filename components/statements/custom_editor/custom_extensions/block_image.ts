@@ -9,6 +9,7 @@ export interface BlockImageOptions {
   HTMLAttributes: Record<string, any>;
   userId: string | null;
   statementId: string | null;
+  statementSlug: string | null;
   editMode: boolean | null;
   onDelete?: (imageUrl: string) => Promise<void>;
 }
@@ -45,6 +46,7 @@ export const BlockImage = Node.create<BlockImageOptions>({
       HTMLAttributes: {},
       userId: null,
       statementId: null,
+      statementSlug: null,
       editMode: null,
       draggable: false
     };
@@ -236,6 +238,7 @@ export const BlockImage = Node.create<BlockImageOptions>({
   addProseMirrorPlugins() {
     const userId = this.options.userId;
     const statementId = this.options.statementId;
+    const statementSlug = this.options.statementSlug;
     const editMode = this.options.editMode;
     const editor = this.editor;
     return [
@@ -290,6 +293,7 @@ export const BlockImage = Node.create<BlockImageOptions>({
                   file,
                   userId,
                   statementId,
+                  statementSlug: statementSlug ?? statementId,
                   imageData: {
                     id: imageId,
                     alt: file.name,

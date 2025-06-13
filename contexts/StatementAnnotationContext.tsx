@@ -40,7 +40,7 @@ export function StatementAnnotationProvider({ children }: { children: ReactNode 
   const { updatedStatement, setUpdatedStatement } = useStatementContext();
 
   const [annotations, setAnnotations] = useState<AnnotationWithComments[]>(
-    updatedStatement.annotations
+    updatedStatement.draft.annotations
   );
 
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | undefined>(undefined);
@@ -79,7 +79,10 @@ export function StatementAnnotationProvider({ children }: { children: ReactNode 
     );
     setUpdatedStatement({
       ...updatedStatement,
-      annotations: newAnnotations as AnnotationWithComments[]
+      draft: {
+        ...updatedStatement.draft,
+        annotations: newAnnotations as AnnotationWithComments[]
+      }
     });
   };
 
@@ -97,7 +100,10 @@ export function StatementAnnotationProvider({ children }: { children: ReactNode 
     );
     setUpdatedStatement({
       ...updatedStatement,
-      annotations: newAnnotations as AnnotationWithComments[]
+      draft: {
+        ...updatedStatement.draft,
+        annotations: newAnnotations as AnnotationWithComments[]
+      }
     });
     if (replyToComment?.id === commentId) {
       setReplyToComment(null);

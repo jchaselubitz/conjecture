@@ -2,7 +2,7 @@
 
 import * as Sentry from '@sentry/nextjs';
 import { Editor } from '@tiptap/react';
-import { DraftWithAnnotations } from 'kysely-codegen';
+import { DraftWithAnnotations, StatementPackage, StatementWithUser } from 'kysely-codegen';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   createContext,
@@ -19,13 +19,9 @@ import { useDebounce } from 'use-debounce';
 import { createDraft, publishDraft } from '@/lib/actions/statementActions';
 
 interface StatementContextType {
-  versionOptions: {
-    v: number;
-    versionNumber: string;
-    createdAt: Date;
-  }[];
-  updatedStatement: DraftWithAnnotations;
-  setUpdatedStatement: Dispatch<SetStateAction<DraftWithAnnotations>>;
+  versionOptions: { versionNumber: number; createdAt: Date }[];
+  updatedStatement: StatementPackage;
+  setUpdatedStatement: Dispatch<SetStateAction<StatementPackage>>;
   saveStatementDraft: () => Promise<void>;
   nextVersionNumber: number;
   changeVersion: (version: number) => void;
@@ -34,91 +30,87 @@ interface StatementContextType {
   setEditor: (editor: Editor | null) => void;
   userId: string | undefined;
   writerUserSlug: string | undefined | null;
-  statement: DraftWithAnnotations;
-  debouncedStatement: DraftWithAnnotations | undefined;
+  statement: StatementPackage;
+  debouncedStatement: StatementPackage | undefined;
+  parentStatement: StatementWithUser | undefined;
+  thread: StatementWithUser[];
 }
 
 const StatementContext = createContext<StatementContextType | undefined>(undefined);
 
 export function StatementProvider({
   children,
-  drafts,
+  statementPackage,
   userId,
-  writerUserSlug
+  writerUserSlug,
+  thread,
+  version,
+  versionList
 }: {
   children: ReactNode;
-  drafts: DraftWithAnnotations[];
+  statementPackage: StatementPackage;
   userId: string | undefined;
   writerUserSlug: string | undefined | null;
+  thread: StatementWithUser[];
+  version: number;
+  versionList: { versionNumber: number; createdAt: Date }[];
 }) {
   const router = useRouter();
   const params = useSearchParams();
-  const versionString = params.get('version');
-  const version = versionString ? parseInt(versionString, 10) : 1;
 
-  const [statement, setStatement] = useState<DraftWithAnnotations>(
-    drafts?.find(draft => draft.versionNumber === version) ?? drafts[0]
+  // const draft = statementPackage.draft;
+  // const statementDetails = {
+  //   slug: statementPackage.slug ?? '',
+  //   creatorId: statementPackage.creatorId ?? '',
+  //   creatorName: statementPackage.creatorName ?? '',
+  //   creatorSlug: statementPackage.creatorSlug ?? '',
+  //   headerImg: statementPackage.headerImg ?? '',
+  //   parentStatementId: statementPackage.parentStatementId ?? '',
+  //   subtitle: statementPackage.subtitle ?? '',
+  //   threadId: statementPackage.threadId ?? '',
+  //   title: statementPackage.title ?? '',
+  //   citations: statementPackage.citations ?? [],
+  //   upvotes: statementPackage.upvotes ?? []
+  // };
+
+  const parentStatement = thread.find(
+    draft => draft.statementId === statementPackage.parentStatementId
   );
 
   //Need to do some silliness here to make sure preserve the state of updatedStatement while statement updates in the background. Without it, some changes to the HTMLcontent will be lost.
 
-  const [updatedStatement, setUpdatedStatement] = useState<DraftWithAnnotations>(statement);
+  const [updatedStatement, setUpdatedStatement] = useState<StatementPackage>(statementPackage);
 
-  useEffect(() => {
-    const foundDraft = drafts?.find(draft => draft.versionNumber === version);
-    if (foundDraft && foundDraft.id !== statement?.id) {
-      setStatement(foundDraft);
-    } else if (!foundDraft && drafts.length > 0 && drafts[0].id !== statement?.id) {
-      setStatement(drafts[0]);
-    } else if (!statement && drafts.length > 0) {
-      setStatement(drafts[0]);
-    }
-  }, [version, drafts, statement]); // Add statement.id as a dependency
-
-  const [debouncedStatement, setDebouncedStatement] = useDebounce<DraftWithAnnotations | undefined>(
+  const [debouncedStatement, setDebouncedStatement] = useDebounce<StatementPackage | undefined>(
     updatedStatement,
     500
   );
 
   useEffect(() => {
-    setDebouncedStatement(updatedStatement as DraftWithAnnotations);
+    setDebouncedStatement(updatedStatement);
   }, [updatedStatement, setDebouncedStatement]);
 
   const [editor, setEditor] = useState<Editor | null>(null);
 
-  const versionOptions = useMemo(() => {
-    return drafts
-      .map(draft => {
-        return {
-          v: draft.versionNumber,
-          versionNumber: draft.versionNumber.toString(),
-          createdAt: draft.createdAt
-        };
-      })
-      .sort((a, b) => a.v - b.v);
-  }, [drafts]);
-
-  const nextVersionNumber = versionOptions.length + 1;
+  const nextVersionNumber = versionList.length + 1;
 
   const changeVersion = (newVersion: number) => {
-    router.push(`/${writerUserSlug}/${statement.slug}?version=${newVersion}`);
+    router.push(`/${writerUserSlug}/${statementPackage.slug}?version=${newVersion}`);
   };
 
   const saveStatementDraft = async () => {
-    const { title, content, headerImg, statementId, annotations, subtitle } =
-      updatedStatement || {};
+    const { title, draft, statementId } = updatedStatement;
+    const { content, annotations } = draft;
+
     if (!title || !content) {
       return;
     }
     try {
       await createDraft({
-        title,
         content,
-        headerImg: headerImg || undefined,
         statementId: statementId || undefined,
-        versionNumber: drafts?.length + 1,
-        annotations: annotations || undefined,
-        subtitle: subtitle || undefined
+        versionNumber: nextVersionNumber,
+        annotations: annotations || undefined
       });
     } catch (err) {
       Sentry.captureException(err);
@@ -127,10 +119,11 @@ export function StatementProvider({
 
   const togglePublish = async () => {
     if (!updatedStatement) return;
-    const { statementId, id, publishedAt, creatorId } = updatedStatement;
+    const { statementId, draft, creatorId } = updatedStatement;
+    const { publishedAt } = draft;
     await publishDraft({
       statementId,
-      id,
+      id: draft.id,
       publish: publishedAt ? false : true,
       creatorId
     });
@@ -139,7 +132,7 @@ export function StatementProvider({
   return (
     <StatementContext.Provider
       value={{
-        versionOptions,
+        versionOptions: versionList,
         updatedStatement,
         setUpdatedStatement,
         saveStatementDraft,
@@ -150,8 +143,10 @@ export function StatementProvider({
         setEditor,
         userId,
         writerUserSlug,
-        statement,
-        debouncedStatement
+        statement: statementPackage,
+        debouncedStatement,
+        parentStatement,
+        thread
       }}
     >
       {children}

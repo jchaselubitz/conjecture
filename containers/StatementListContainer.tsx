@@ -1,14 +1,9 @@
-import { DraftWithUser } from 'kysely-codegen';
+import { StatementWithUser } from 'kysely-codegen';
 
 import { StatementCard } from '@/components/statements/card';
 
-type Statement = {
-  statementId: string;
-  drafts: DraftWithUser[];
-};
-
 interface StatementListContainerProps {
-  statements: Statement[] | { error: string };
+  statements: StatementWithUser[] | { error: string };
   title?: string;
   pathname: string;
 }
@@ -34,11 +29,7 @@ export function StatementListContainer({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {statements.length > 0 ? (
           statements.map(statement => (
-            <StatementCard
-              key={statement.statementId}
-              statement={statement.drafts[0]}
-              pathname={pathname}
-            />
+            <StatementCard key={statement.statementId} statement={statement} pathname={pathname} />
           ))
         ) : (
           <div className="text-center py-12 col-span-full">

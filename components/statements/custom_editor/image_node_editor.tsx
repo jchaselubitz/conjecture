@@ -11,9 +11,14 @@ export type NewImageData = {
 interface ImageNodeEditorProps {
   statementId: string;
   statementCreatorId: string;
+  statementSlug?: string | null | undefined;
 }
 
-export function ImageNodeEditor({ statementId, statementCreatorId }: ImageNodeEditorProps) {
+export function ImageNodeEditor({
+  statementId,
+  statementCreatorId,
+  statementSlug
+}: ImageNodeEditorProps) {
   const { selectedNodePosition, imagePopoverOpen } = useStatementToolsContext();
 
   if (!selectedNodePosition || !imagePopoverOpen) return null;
@@ -30,7 +35,11 @@ export function ImageNodeEditor({ statementId, statementCreatorId }: ImageNodeEd
         zIndex: 50
       }}
     >
-      <ImagePopoverEditor statementId={statementId} statementCreatorId={statementCreatorId}>
+      <ImagePopoverEditor
+        statementId={statementId}
+        statementCreatorId={statementCreatorId}
+        statementSlug={statementSlug}
+      >
         <div />
       </ImagePopoverEditor>
     </div>

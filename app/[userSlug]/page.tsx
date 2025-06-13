@@ -1,7 +1,7 @@
 import { Metadata, ResolvingMetadata } from 'next';
 
 import { StatementListContainer } from '@/containers/StatementListContainer';
-import { getDrafts } from '@/lib/actions/statementActions';
+import { getStatements } from '@/lib/actions/statementActions';
 import { getUserProfile } from '@/lib/actions/userActions';
 import { createClient } from '@/supabase/server';
 
@@ -46,7 +46,7 @@ export default async function UserPage({ params }: UserPageProps) {
 
   const { id } = profile;
 
-  const statements = await getDrafts({ creatorId: id, publishedOnly: !userIsCreator });
+  const statements = await getStatements({ creatorId: id, publishedOnly: !userIsCreator });
 
   return (
     <div>

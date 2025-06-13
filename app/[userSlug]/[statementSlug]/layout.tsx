@@ -1,29 +1,3 @@
-import { StatementAnnotationProvider } from '@/contexts/StatementAnnotationContext';
-import { StatementProvider } from '@/contexts/StatementBaseContext';
-import { StatementToolsProvider } from '@/contexts/StatementToolsContext';
-import { StatementUpdateProvider } from '@/contexts/StatementUpdateProvider';
-import { getUser } from '@/lib/actions/baseActions';
-import { getDraftsByStatementSlug } from '@/lib/actions/statementActions';
-
-export default async function UserStatementLayout({
-  children,
-  params
-}: {
-  children: React.ReactNode;
-  params: Promise<{ statementSlug: string; writerUserSlug: string }>;
-}) {
-  const { statementSlug, writerUserSlug } = await params;
-  const drafts = await getDraftsByStatementSlug(statementSlug);
-  const user = await getUser();
-  const userId = user?.id;
-
-  return (
-    <StatementProvider drafts={drafts} userId={userId} writerUserSlug={writerUserSlug}>
-      <StatementToolsProvider>
-        <StatementAnnotationProvider>
-          <StatementUpdateProvider>{children}</StatementUpdateProvider>
-        </StatementAnnotationProvider>
-      </StatementToolsProvider>
-    </StatementProvider>
-  );
+export default async function UserStatementLayout({ children }: { children: React.ReactNode }) {
+  return children;
 }

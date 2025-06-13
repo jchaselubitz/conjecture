@@ -1,16 +1,21 @@
 import type { Metadata, ResolvingMetadata } from 'next';
 
 import { StatementContainer } from '@/containers/StatementContainer';
+import { StatementAnnotationProvider } from '@/contexts/StatementAnnotationContext';
+import { StatementProvider } from '@/contexts/StatementBaseContext';
+import { StatementToolsProvider } from '@/contexts/StatementToolsContext';
+import { StatementUpdateProvider } from '@/contexts/StatementUpdateProvider';
+import { getUser } from '@/lib/actions/baseActions';
 import {
-  getDraftsByStatementSlug,
   getFullThread,
-  getPublishedStatement
+  getPublishedOrLatest,
+  getPublishedStatement,
+  getStatementPackage
 } from '@/lib/actions/statementActions';
-import { createClient } from '@/supabase/server';
 
 type Props = {
-  params: Promise<{ statementSlug: string }>;
-  searchParams: Promise<{ edit: string }>;
+  params: Promise<{ statementSlug: string; userSlug: string }>;
+  searchParams: Promise<{ edit: string; version: string }>;
 };
 
 export async function generateMetadata(
@@ -33,20 +38,42 @@ export async function generateMetadata(
 }
 
 export default async function CreatePage({ params, searchParams }: Props) {
-  const supabase = await createClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-
+  const user = await getUser();
   const userId = user?.id?.toString();
-  const { statementSlug } = await params;
-  const { edit } = await searchParams;
+  const { statementSlug, userSlug } = await params;
+  const { edit, version } = await searchParams;
 
-  const drafts = await getDraftsByStatementSlug(statementSlug);
-  const thread = await getFullThread(drafts[0]?.threadId ?? '');
-  const creator = drafts[0]?.creatorId.toString();
+  const userIsCollaborator = user?.user_metadata.username === userSlug;
+  const selection = await getPublishedOrLatest(statementSlug);
+
+  const versionNumber = version ? parseInt(version, 10) : selection?.version;
+
+  const statementPackage = await getStatementPackage({
+    statementSlug,
+    version: userIsCollaborator ? versionNumber : undefined
+  });
+
+  const thread = await getFullThread(statementPackage.threadId ?? '');
+  const creator = statementPackage.creatorId.toString();
   const isCreator = creator === userId;
   const editMode = edit === 'true' && isCreator;
 
-  return <StatementContainer edit={editMode} drafts={drafts} thread={thread} />;
+  return (
+    <StatementProvider
+      statementPackage={statementPackage}
+      userId={userId}
+      writerUserSlug={userSlug}
+      thread={thread}
+      version={versionNumber ?? 1}
+      versionList={selection?.versionList ?? []}
+    >
+      <StatementToolsProvider>
+        <StatementAnnotationProvider>
+          <StatementUpdateProvider>
+            <StatementContainer edit={editMode} />
+          </StatementUpdateProvider>
+        </StatementAnnotationProvider>
+      </StatementToolsProvider>
+    </StatementProvider>
+  );
 }

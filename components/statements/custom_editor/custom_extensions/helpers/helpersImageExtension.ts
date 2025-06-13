@@ -9,11 +9,13 @@ export const handleImageChange = async ({
   file,
   userId,
   statementId,
+  statementSlug,
   imageData
 }: {
   file: File;
   userId: string;
   statementId: string;
+  statementSlug: string | undefined | null;
   imageData: UpsertImageDataType;
 }): Promise<{ imageId: string; imageUrl: string } | undefined> => {
   if (file) {
@@ -39,7 +41,11 @@ export const handleImageChange = async ({
         src: imageUrl,
         statementId,
         alt: imageData.alt,
-        caption: imageData.caption
+        caption: imageData.caption,
+        revalidationPath: {
+          path: `/[userSlug]/${statementSlug}`,
+          type: 'layout'
+        }
       });
       return { imageId: imageData.id, imageUrl };
     } catch (error) {
@@ -54,12 +60,14 @@ export const saveImage = async ({
   editor,
   userId,
   statementId,
+  statementSlug,
   imageData,
   file
 }: {
   editor: Editor;
   userId: string;
   statementId: string;
+  statementSlug: string | undefined | null;
   imageData: UpsertImageDataType;
   file: File;
 }) => {
@@ -67,6 +75,7 @@ export const saveImage = async ({
     file,
     userId,
     statementId,
+    statementSlug,
     imageData
   });
 
@@ -114,12 +123,14 @@ export const updateImage = async ({
   userId,
   pathname,
   statementId,
+  statementSlug,
   imageData
 }: {
   editor: Editor;
   userId: string;
   pathname: string;
   statementId: string;
+  statementSlug: string | undefined | null;
   imageData: UpsertImageDataType;
 }) => {
   // Check if an image with this ID already exists in the document
@@ -137,9 +148,10 @@ export const updateImage = async ({
     id: imageData.id,
     caption: imageData.caption,
     statementId,
+
     revalidationPath: {
-      path: '/',
-      type: 'page'
+      path: `/[userSlug]/${statementSlug}`,
+      type: 'layout'
     }
   });
 

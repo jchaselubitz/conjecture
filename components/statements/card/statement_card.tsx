@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { DraftWithUser } from 'kysely-codegen';
+import { StatementWithUser } from 'kysely-codegen';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -17,23 +17,23 @@ import {
 import { StatusBadge } from './status_badge';
 
 interface StatementCardProps {
-  statement: DraftWithUser;
+  statement: StatementWithUser;
   isPublic?: boolean;
   pathname: string;
 }
 
 export function StatementCard({ statement, isPublic, pathname }: StatementCardProps) {
-  const formattedDate = statement.publishedAt
-    ? format(new Date(statement.publishedAt), 'MMM d, yyyy')
+  const formattedDate = statement.draft.publishedAt
+    ? format(new Date(statement.draft.publishedAt), 'MMM d, yyyy')
     : format(new Date(statement.updatedAt), 'MMM d, yyyy');
 
   const previewLength = isPublic ? 200 : 100;
-  const contentPreview = statement.content
-    ? statement.content.replace(/<[^>]*>?/gm, '').slice(0, previewLength) +
-      (statement.content.length > previewLength ? '...' : '')
+  const contentPreview = statement.draft.content
+    ? statement.draft.content.replace(/<[^>]*>?/gm, '').slice(0, previewLength) +
+      (statement.draft.content.length > previewLength ? '...' : '')
     : statement.subtitle || 'No preview available';
 
-  // const annotationCount = statement.annotations?.length || 0;
+  // const annotationCount = statement.draft.annotations?.length || 0;
 
   return (
     <Link
@@ -71,7 +71,7 @@ export function StatementCard({ statement, isPublic, pathname }: StatementCardPr
         </CardContent>
         <CardFooter className="absolute bottom-0 left-0 right-0 flex justify-between py-3">
           <div className="flex items-center gap-2">
-            <StatusBadge isPublished={statement.publishedAt !== null} />
+            <StatusBadge isPublished={statement.draft.publishedAt !== null} />
             <CardDescription className="text-sm text-muted-foreground">
               {formattedDate}
             </CardDescription>

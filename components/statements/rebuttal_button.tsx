@@ -1,13 +1,14 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { nanoid } from 'nanoid';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { useUserContext } from '@/contexts/userContext';
-import { createDraft } from '@/lib/actions/statementActions';
+import { createStatement, updateStatementThreadId } from '@/lib/actions/statementActions';
 
 import { Button } from '../ui/button';
 import {
@@ -33,7 +34,7 @@ type FormValues = z.infer<typeof formSchema>;
 interface RebuttalButtonProps {
   existingStatementId: string;
   existingTitle: string;
-  existingThreadId: string | null | undefined;
+  existingThreadId: string | null;
   className?: string;
   buttonText?: React.ReactNode | string;
 }
@@ -47,7 +48,9 @@ export default function RebuttalButton({
 }: RebuttalButtonProps) {
   const [open, setOpen] = useState(false);
   const [buttonState, setButtonState] = useState<ButtonLoadingState>('default');
-  const { userId } = useUserContext();
+  const { userId, currentUserSlug } = useUserContext();
+
+  const threadId = existingThreadId ?? nanoid();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -58,18 +61,26 @@ export default function RebuttalButton({
   });
 
   const onSubmit = async (data: FormValues) => {
-    if (!userId) {
+    if (!userId || !currentUserSlug) {
+      alert('User not found');
       return;
     }
 
     try {
       setButtonState('loading');
-      await createDraft({
+      if (!existingThreadId) {
+        await updateStatementThreadId({
+          statementId: existingStatementId,
+          threadId
+        });
+      }
+      await createStatement({
+        creatorSlug: currentUserSlug,
+        creatorId: userId,
         title: data.title,
         subtitle: data.subtitle,
-        versionNumber: 1,
         parentId: existingStatementId,
-        threadId: existingThreadId
+        threadId
       });
       setButtonState('success');
       // Dialog will close automatically due to navigation in createDraft

@@ -5,8 +5,8 @@ import crypto from 'crypto';
 import {
   BaseStatementCitation,
   BaseStatementImage,
-  DraftWithUser,
-  NewStatementCitation
+  NewStatementCitation,
+  StatementWithUser
 } from 'kysely-codegen';
 import { AnnotationWithComments } from 'kysely-codegen';
 
@@ -418,6 +418,7 @@ export const createStatementAnnotation = async ({
       userName: '',
       userImageUrl: ''
     };
+    console.log('newAnnotation', [...annotations, newAnnotation]);
     setAnnotations([...annotations, newAnnotation]);
 
     await createAnnotation({
@@ -464,10 +465,13 @@ export const checkValidStatementSlug = (slug: string) => {
   return slug.match(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 };
 
-export const groupThreadsByParentId = (threads: DraftWithUser[], currentDraft: DraftWithUser) => {
+export const groupThreadsByParentId = (
+  threads: StatementWithUser[],
+  currentDraft: StatementWithUser
+) => {
   const precedingPostsRecursive = (
-    precedingDraft: DraftWithUser,
-    precedingPosts: DraftWithUser[]
+    precedingDraft: StatementWithUser,
+    precedingPosts: StatementWithUser[]
   ) => {
     const precedingPost = threads.find(
       draft => draft.statementId === precedingDraft.parentStatementId
@@ -477,13 +481,13 @@ export const groupThreadsByParentId = (threads: DraftWithUser[], currentDraft: D
       precedingPostsRecursive(precedingPost, precedingPosts);
     }
     return precedingPosts.sort(
-      (a, b) => (a.publishedAt?.getTime() ?? 0) - (b.publishedAt?.getTime() ?? 0)
+      (a, b) => (a.draft.publishedAt?.getTime() ?? 0) - (b.draft.publishedAt?.getTime() ?? 0)
     );
   };
 
   const precedingPosts = precedingPostsRecursive(currentDraft, []);
 
-  const followingPosts: DraftWithUser[] = threads.filter(draft => {
+  const followingPosts: StatementWithUser[] = threads.filter(draft => {
     if (draft.statementId !== currentDraft.statementId) {
       if (draft.parentStatementId === currentDraft.statementId) {
         return draft;

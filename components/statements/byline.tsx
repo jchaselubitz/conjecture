@@ -1,5 +1,6 @@
 'use client';
-import { DraftWithUser } from 'kysely-codegen';
+
+import { StatementWithUser } from 'kysely-codegen';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -11,7 +12,7 @@ import { useUserContext } from '@/contexts/userContext';
 import { getFollow, toggleFollow } from '@/lib/actions/userActions';
 import { formatDate } from '@/lib/helpers/helpersDate';
 
-const Byline = ({ statement }: { statement: DraftWithUser }) => {
+const Byline = ({ statement }: { statement: StatementWithUser }) => {
   const router = useRouter();
   const { userId } = useUserContext();
   const [buttonState, setButtonState] = useState<ButtonLoadingState>('default');
@@ -120,20 +121,20 @@ const Byline = ({ statement }: { statement: DraftWithUser }) => {
         <Tooltip>
           <TooltipTrigger>
             <div className="text-xs text-muted-foreground bg-zinc-100 rounded-sm px-2 py-1">
-              {statement?.publishedAt
-                ? formatDate({ date: statement.publishedAt })
+              {statement?.draft.publishedAt
+                ? formatDate({ date: statement.draft.publishedAt })
                 : 'Not published'}
             </div>
           </TooltipTrigger>
-          {statement?.publishedAt && (
+          {statement?.draft.publishedAt && (
             <TooltipContent>
-              <p>Published {formatDate({ date: statement.publishedAt, withTime: true })}</p>
+              <p>Published {formatDate({ date: statement.draft.publishedAt, withTime: true })}</p>
             </TooltipContent>
           )}
         </Tooltip>
       </TooltipProvider>
       <div className="text-xs text-muted-foreground bg-zinc-100 rounded-sm px-2 py-1">
-        v{statement?.versionNumber}
+        v{statement?.draft.versionNumber}
       </div>
     </div>
   );

@@ -69,7 +69,7 @@ export async function uploadStatementImage({
       await deleteFile({
         bucket,
         url: oldImageUrl,
-        folderPath: `${userId}/${statementId}`
+        folderPath: `${statementId}`
       });
     }
     const fileForUpload = file.get('image') as File;
@@ -77,14 +77,14 @@ export async function uploadStatementImage({
     const { data, error } = await uploadFile({
       bucket,
       file: fileForUpload,
-      path: `${userId}/${statementId}/${fileName}`
+      path: `${statementId}/${fileName}`
     });
 
     if (error) {
       if (error.message === 'The resource already exists') {
         const publicUrl = getPublicFile({
           bucket,
-          path: `${userId}/${statementId}/${fileName}`
+          path: `/${statementId}/${fileName}`
         });
         return publicUrl;
       }
@@ -124,9 +124,10 @@ export async function deleteStoredStatementImage({
     throw new Error('Unauthorized');
   }
 
-  const bucket = 'statement-images';
-  const path = `${userId}/${statementId}`;
-  await deleteFile({ bucket, url, folderPath: path });
+  // we should keep these images because there may be different ones across drafts
+  // const bucket = "statement-images";
+  // const path = `${statementId}`;
+  // await deleteFile({ bucket, url, folderPath: path });
 }
 
 export async function uploadProfileImage({

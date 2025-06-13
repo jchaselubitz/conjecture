@@ -1,12 +1,11 @@
 import { StatementCard } from '@/components/statements/card';
-import { getDrafts } from '@/lib/actions/statementActions';
+import { getStatements } from '@/lib/actions/statementActions';
 
 export default async function Feed() {
-  const statements = await getDrafts({
+  const statements = await getStatements({
     forCurrentUser: false,
     publishedOnly: true
   });
-
   if ('error' in statements) {
     return (
       <div className="min-h-screen bg-background">
@@ -30,9 +29,9 @@ export default async function Feed() {
             statements.map(statement => (
               <StatementCard
                 key={statement.statementId}
-                statement={statement.drafts[0]}
+                statement={statement}
                 isPublic={true}
-                pathname={statement.creatorSlug}
+                pathname={statement.creatorSlug ?? ''}
               />
             ))
           ) : (

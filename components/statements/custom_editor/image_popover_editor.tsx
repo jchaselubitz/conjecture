@@ -23,11 +23,13 @@ interface ImagePopoverEditorProps {
   children: React.ReactNode;
   statementId: string;
   statementCreatorId: string;
+  statementSlug?: string | null | undefined;
 }
 
 export function ImagePopoverEditor({
   statementId,
   statementCreatorId,
+  statementSlug,
   children
 }: ImagePopoverEditorProps) {
   const pathname = usePathname();
@@ -54,7 +56,7 @@ export function ImagePopoverEditor({
       alt: '',
       id: '',
       caption: '',
-      statementId
+      statementId: statementId
     });
   };
 
@@ -106,6 +108,7 @@ export function ImagePopoverEditor({
             editor,
             userId,
             statementId,
+            statementSlug,
             imageData: {
               alt: alt || file?.name || '',
               src: previewUrl,
@@ -122,6 +125,7 @@ export function ImagePopoverEditor({
             userId,
             pathname,
             statementId,
+            statementSlug,
             imageData: {
               alt: alt || file?.name || '',
               src: initialImageData.src,

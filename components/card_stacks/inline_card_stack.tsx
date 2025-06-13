@@ -1,4 +1,4 @@
-import { DraftWithUser } from 'kysely-codegen';
+import { StatementWithUser } from 'kysely-codegen';
 import React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -15,8 +15,8 @@ export default function InlineCardStack({
   currentTitle
 }: {
   familyTree: {
-    precedingPosts: DraftWithUser[];
-    followingPosts: DraftWithUser[];
+    precedingPosts: StatementWithUser[];
+    followingPosts: StatementWithUser[];
   };
   currentTitle: string;
 }) {
@@ -27,7 +27,7 @@ export default function InlineCardStack({
       {/* Preceding posts */}
       {precedingPosts.map((post, index) => (
         <StackCard
-          key={post.id}
+          key={post.statementId}
           title={post.title ?? ''}
           author={post.creatorName ?? post.creatorSlug ?? ''}
           creatorSlug={post.creatorSlug ?? ''}
@@ -36,7 +36,7 @@ export default function InlineCardStack({
           opacity={1}
           className={cn('-mb-6', index === precedingPosts.length - 1 && 'mb-1')}
           tabIndex={0}
-          publishedAt={post.publishedAt}
+          publishedAt={post.draft.publishedAt ?? null}
         />
       ))}
       {/* Separator with more space and current post title */}
@@ -53,7 +53,7 @@ export default function InlineCardStack({
       {/* Following posts */}
       {followingPosts.map((post, index) => (
         <StackCard
-          key={post.id}
+          key={post.statementId}
           title={post.title ?? ''}
           author={post.creatorName ?? post.creatorSlug ?? ''}
           creatorSlug={post.creatorSlug ?? ''}
@@ -62,7 +62,7 @@ export default function InlineCardStack({
           opacity={1}
           className={cn('-mb-6', index === followingPosts.length - 1 && 'mb-1')}
           tabIndex={0}
-          publishedAt={post.publishedAt}
+          publishedAt={post.draft.publishedAt ?? null}
         />
       ))}
     </div>

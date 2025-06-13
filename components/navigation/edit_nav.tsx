@@ -90,14 +90,14 @@ export default function EditNav() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm">
-            {`v${updatedStatement.versionNumber}`} <ChevronDown className="h-4 w-4" />
+            {`v${updatedStatement.draft.versionNumber}`} <ChevronDown className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuGroup>
             <DropdownMenuItem>
               <Select
-                value={updatedStatement?.versionNumber.toString()}
+                value={updatedStatement?.draft.versionNumber.toString()}
                 onValueChange={value => changeVersion(parseInt(value, 10))}
               >
                 <SelectTrigger className="w-full">
@@ -105,7 +105,7 @@ export default function EditNav() {
                 </SelectTrigger>
                 <SelectContent>
                   {versionOptions.map(v => (
-                    <SelectItem key={v.versionNumber} value={v.versionNumber}>
+                    <SelectItem key={v.versionNumber} value={v.versionNumber.toString()}>
                       v{v.versionNumber} -{' '}
                       <span className="text-sm text-zinc-500">
                         {formatDate({ date: v.createdAt })}
@@ -144,7 +144,7 @@ export default function EditNav() {
             size="icon"
             onClick={() =>
               router.push(
-                `/${currentUserSlug}/${updatedStatement?.slug}?version=${updatedStatement?.versionNumber}`
+                `/${currentUserSlug}/${updatedStatement?.slug}?version=${updatedStatement?.draft.versionNumber}`
               )
             }
           >
@@ -170,14 +170,14 @@ export default function EditNav() {
                   onClick={handlePublish}
                   buttonState={publishButtonState}
                   text={
-                    updatedStatement.publishedAt
+                    updatedStatement.draft.publishedAt
                       ? `Hide`
-                      : `Publish v${updatedStatement.versionNumber}`
+                      : `Publish v${updatedStatement.draft.versionNumber}`
                   }
-                  loadingText={updatedStatement.publishedAt ? 'Hiding...' : 'Publishing...'}
+                  loadingText={updatedStatement.draft.publishedAt ? 'Hiding...' : 'Publishing...'}
                   setButtonState={setPublishButtonState}
                   reset
-                  successText={updatedStatement.publishedAt ? 'Hidden' : 'Published'}
+                  successText={updatedStatement.draft.publishedAt ? 'Hidden' : 'Published'}
                   errorText="Failed to publish"
                 />
                 <ViewModeButton

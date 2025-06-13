@@ -1,4 +1,4 @@
-import { DraftWithUser } from 'kysely-codegen';
+import { StatementWithUser } from 'kysely-codegen';
 import { Plus } from 'lucide-react';
 import React from 'react';
 
@@ -15,8 +15,8 @@ export default function VerticalCardStack({
   currentThreadId
 }: {
   familyTree: {
-    precedingPosts: DraftWithUser[];
-    followingPosts: DraftWithUser[];
+    precedingPosts: StatementWithUser[];
+    followingPosts: StatementWithUser[];
   };
   currentTitle: string;
   currentStatementId: string;
@@ -30,7 +30,7 @@ export default function VerticalCardStack({
       <div className="flex flex-col gap-1 w-full">
         {precedingPosts.map((post, index) => (
           <StackCard
-            key={post.id}
+            key={post.statementId}
             title={post.title ?? ''}
             author={post.creatorName ?? post.creatorSlug ?? ''}
             creatorSlug={post.creatorSlug ?? ''}
@@ -39,7 +39,7 @@ export default function VerticalCardStack({
             opacity={1 - index * 0.12}
             className={cn('mb-1')}
             tabIndex={0}
-            publishedAt={post.publishedAt}
+            publishedAt={post.draft.publishedAt ?? null}
           />
         ))}
       </div>
@@ -58,7 +58,7 @@ export default function VerticalCardStack({
       <div className="flex flex-col gap-1 w-full">
         {followingPosts.map((post, idx) => (
           <StackCard
-            key={post.id}
+            key={post.statementId}
             title={post.title ?? ''}
             author={post.creatorName ?? post.creatorSlug ?? ''}
             creatorSlug={post.creatorSlug ?? ''}
@@ -66,7 +66,7 @@ export default function VerticalCardStack({
             zIndex={followingPosts.length - idx}
             opacity={1 - idx * 0.12}
             tabIndex={0}
-            publishedAt={post.publishedAt}
+            publishedAt={post.draft.publishedAt ?? null}
           />
         ))}
         <div className="w-full flex">
@@ -80,7 +80,7 @@ export default function VerticalCardStack({
             }
             existingStatementId={currentStatementId}
             existingTitle={currentTitle}
-            existingThreadId={currentThreadId}
+            existingThreadId={currentThreadId ?? null}
           />
         </div>{' '}
       </div>

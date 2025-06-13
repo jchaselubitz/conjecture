@@ -12,7 +12,7 @@ import {
 } from 'react';
 
 import { deleteAnnotationsBatch } from '@/lib/actions/annotationActions';
-import { updateDraft } from '@/lib/actions/statementActions';
+import { updateDraft, updateStatement } from '@/lib/actions/statementActions';
 import { getMarks } from '@/lib/helpers/helpersStatements';
 
 import { useStatementAnnotationContext } from './StatementAnnotationContext';
@@ -39,7 +39,7 @@ export function StatementUpdateProvider({ children }: { children: ReactNode }) {
     }
 
     let annotationsToKeep = [...annotations];
-    let cleanedHtmlContent = debouncedStatement.content;
+    let cleanedHtmlContent = debouncedStatement.draft.content;
 
     try {
       const currentMarks = getMarks(editor, ['annotationHighlight']);
@@ -57,11 +57,10 @@ export function StatementUpdateProvider({ children }: { children: ReactNode }) {
       const orphanedIds = orphanedAnnotations.map(ann => ann.id);
 
       if (orphanedIds.length > 0) {
-        // console.log('[UpdateProvider] Found orphaned annotations, deleting:', orphanedIds);
         const deleteResult = await deleteAnnotationsBatch({
           annotationIds: orphanedIds,
           userId: userId,
-          statementId: debouncedStatement.statementId
+          statementId: statement.statementId
         });
 
         if (deleteResult.success) {
@@ -69,55 +68,60 @@ export function StatementUpdateProvider({ children }: { children: ReactNode }) {
           // Update state via the context setter
           setAnnotations(keptAnnotations);
           annotationsToKeep = keptAnnotations;
-          // console.log(
-          //   `[UpdateProvider] Successfully deleted ${deleteResult.deletedCount} orphaned annotations.`
-          // );
         } else {
           console.error('[UpdateProvider] Failed to delete orphaned annotations from DB.');
-          setError('Failed to clean up annotations during save.'); // Set error state here
+          setError('Failed to clean up annotations during save.');
         }
-        // Get potentially cleaned HTML only if orphans were processed
+
         cleanedHtmlContent = editor.getHTML();
       }
     } catch (gcError) {
       console.error('[UpdateProvider] Error during annotation garbage collection:', gcError);
       Sentry.captureException(gcError, { tags: { context: 'AnnotationGC' } });
-      setError('Error cleaning up annotations during save.'); // Set error state here
-      // Decide how to proceed - maybe skip the update? For now, we allow it to continue.
+      setError('Error cleaning up annotations during save.');
     }
 
-    // Compare against the *original* statement state from StatementBaseContext
+    const { title, subtitle, headerImg, statementId, draft, creatorId } = debouncedStatement;
+    const { id, versionNumber } = draft;
+
     const isStale =
-      cleanedHtmlContent === statement.content &&
-      debouncedStatement.title === statement.title &&
-      debouncedStatement.subtitle === statement.subtitle &&
-      debouncedStatement.headerImg === statement.headerImg;
+      cleanedHtmlContent === statement.draft.content &&
+      title === statement.title &&
+      subtitle === statement.subtitle &&
+      headerImg === statement.headerImg;
 
     if (isStale && annotationsToKeep.length === annotations.length) {
-      // console.log('[UpdateProvider] Skipping update, no changes detected after debounce and GC.');
-      return; // Skip update if nothing changed
+      return;
     }
 
-    // --- Moved updateDraft call here ---
-    const { title, subtitle, headerImg, statementId, versionNumber, creatorId } =
-      debouncedStatement;
-
-    // Use the local isUpdating/error state
     setIsUpdating(true);
     setError(null);
 
+    if (
+      title !== statement.title ||
+      subtitle !== statement.subtitle ||
+      headerImg !== statement.headerImg
+    ) {
+      try {
+        await updateStatement({
+          statementId: statementId,
+          creatorId: creatorId,
+          title: title ?? statement.title ?? '',
+          subtitle: subtitle ?? statement.subtitle ?? ''
+        });
+      } catch (err) {
+        console.error('[UpdateProvider] Error updating statement:', err);
+        setError('Error updating statement'); // Set error state here
+        Sentry.captureException(err, { tags: { context: 'UpdateStatement' } });
+      }
+    }
     try {
       await updateDraft({
-        id: statement.id, // Use the original statement ID
-        title: title ?? undefined,
-        subtitle: subtitle ?? undefined,
+        id,
         content: cleanedHtmlContent ?? undefined,
-        headerImg: headerImg ?? undefined,
-        versionNumber: versionNumber, // Ensure this isn't null/undefined
-        statementId: statementId, // Ensure this isn't null/undefined
-        creatorId: creatorId // Ensure this isn't null/undefined
+        versionNumber: versionNumber,
+        creatorId: creatorId
       });
-      console.log('[UpdateProvider] Draft updated successfully.');
     } catch (err) {
       console.error('[UpdateProvider] Error updating draft:', err);
       setError('Error updating draft'); // Set error state here
@@ -135,10 +139,9 @@ export function StatementUpdateProvider({ children }: { children: ReactNode }) {
     // No need for setIsUpdating/setError here as they are component state
   ]);
 
-  // --- Moved useEffect to trigger update ---
   useEffect(() => {
     // Trigger update only if debounced statement exists and userId is present
-    if (debouncedStatement?.id && userId) {
+    if (debouncedStatement?.draft.id && userId) {
       startTransition(() => {
         updateStatementDraft();
       });

@@ -1,30 +1,31 @@
-import "katex/dist/katex.min.css";
+import 'katex/dist/katex.min.css';
 
-import Link from "@tiptap/extension-link";
-import Placeholder from "@tiptap/extension-placeholder";
-import Typography from "@tiptap/extension-typography";
-import { Node as ProsemirrorNode, Slice } from "@tiptap/pm/model";
-import { Step } from "@tiptap/pm/transform";
-import { EditorView } from "@tiptap/pm/view";
-import { Editor, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Youtube from "@tiptap/extension-youtube";
+import Link from '@tiptap/extension-link';
+import Placeholder from '@tiptap/extension-placeholder';
+import Typography from '@tiptap/extension-typography';
+import Youtube from '@tiptap/extension-youtube';
+import { Node as ProsemirrorNode, Slice } from '@tiptap/pm/model';
+import { Step } from '@tiptap/pm/transform';
+import { EditorView } from '@tiptap/pm/view';
+import { Editor, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
 import {
   AnnotationWithComments,
   DraftWithAnnotations,
   NewStatementCitation,
-} from "kysely-codegen";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { RefObject, startTransition, useEffect } from "react";
-import { ImperativePanelGroupHandle } from "react-resizable-panels";
-import { useWindowSize } from "react-use";
+  StatementPackage
+} from 'kysely-codegen';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { RefObject, startTransition, useEffect } from 'react';
+import { ImperativePanelGroupHandle } from 'react-resizable-panels';
+import { useWindowSize } from 'react-use';
 
-import { useStatementAnnotationContext } from "@/contexts/StatementAnnotationContext";
-import { useStatementContext } from "@/contexts/StatementBaseContext";
-import { useStatementToolsContext } from "@/contexts/StatementToolsContext";
-import { deleteCitation } from "@/lib/actions/citationActions";
-import { deleteStatementImage } from "@/lib/actions/statementActions";
-import { setPanelState } from "@/lib/helpers/helpersLayout";
+import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
+import { useStatementContext } from '@/contexts/StatementBaseContext';
+import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
+import { deleteCitation } from '@/lib/actions/citationActions';
+import { deleteStatementImage } from '@/lib/actions/statementActions';
+import { setPanelState } from '@/lib/helpers/helpersLayout';
 import {
   createQuoteHighlight,
   ensureAnnotationMarks,
@@ -34,19 +35,19 @@ import {
   openCitationPopover,
   openImageLightbox,
   openImagePopover,
-  openLatexPopover,
-} from "@/lib/helpers/helpersStatements";
+  openLatexPopover
+} from '@/lib/helpers/helpersStatements';
 
-import { AnnotationHighlight } from "../custom_extensions/annotation_highlight";
-import { BlockImage } from "../custom_extensions/block_image";
-import { BlockLatex } from "../custom_extensions/block_latex";
-import { Citation } from "../custom_extensions/citation";
-import { InlineLatex } from "../custom_extensions/inline_latex";
-import { handleCitationPaste } from "../custom_extensions/quote_paste_handler";
-import { QuotePasteHandler } from "../custom_extensions/quote_paste_handler";
+import { AnnotationHighlight } from '../custom_extensions/annotation_highlight';
+import { BlockImage } from '../custom_extensions/block_image';
+import { BlockLatex } from '../custom_extensions/block_latex';
+import { Citation } from '../custom_extensions/citation';
+import { InlineLatex } from '../custom_extensions/inline_latex';
+import { handleCitationPaste } from '../custom_extensions/quote_paste_handler';
+import { QuotePasteHandler } from '../custom_extensions/quote_paste_handler';
 
 interface UseHtmlSuperEditorProps {
-  statement: DraftWithAnnotations;
+  statement: StatementPackage;
   existingAnnotations: AnnotationWithComments[];
   userId: string | undefined;
   onAnnotationClick?: (id: string) => void;
@@ -83,10 +84,9 @@ export const useHtmlSuperEditor = ({
   selectedAnnotationId,
   setSelectedAnnotationId,
   setFootnoteIds,
-  panelGroupRef,
+  panelGroupRef
 }: UseHtmlSuperEditorProps): Editor | null => {
-  const { setEditor, setUpdatedStatement, updatedStatement } =
-    useStatementContext();
+  const { setEditor, setUpdatedStatement, updatedStatement } = useStatementContext();
   const { annotations, setAnnotations } = useStatementAnnotationContext();
   const {
     setSelectedNodePosition,
@@ -99,14 +99,14 @@ export const useHtmlSuperEditor = ({
     setImagePopoverOpen,
     setImageLightboxOpen,
     setLatexPopoverOpen,
-    setCitations,
+    setCitations
   } = useStatementToolsContext();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isMobile = useWindowSize().width < 600;
-  const htmlContent = updatedStatement.content;
-  const draftId = updatedStatement.id;
+  const htmlContent = updatedStatement.draft.content;
+  const draftId = updatedStatement.draft.id;
   const statementId = updatedStatement.statementId;
   const statementCreatorId = updatedStatement.creatorId;
   const citations = updatedStatement.citations;
@@ -123,80 +123,81 @@ export const useHtmlSuperEditor = ({
         history: {},
         blockquote: {
           HTMLAttributes: {
-            class: "custom-blockquote",
-          },
+            class: 'custom-blockquote'
+          }
         },
         heading: {
-          levels: [1, 2, 3, 4],
-        },
+          levels: [1, 2, 3, 4]
+        }
       }),
       Youtube.configure({
         controls: false,
-        nocookie: true,
+        nocookie: true
       }),
       Typography,
       Link.configure({
         openOnClick: true,
         HTMLAttributes: {
-          class: "prose-link",
-          target: "_blank",
-          rel: "noopener noreferrer",
-        },
+          class: 'prose-link',
+          target: '_blank',
+          rel: 'noopener noreferrer'
+        }
       }),
       Placeholder.configure({
         placeholder,
-        emptyEditorClass: "is-editor-empty",
+        emptyEditorClass: 'is-editor-empty'
       }),
       InlineLatex,
       BlockLatex.configure({
         HTMLAttributes: {
-          class: "latex-popover-editor",
-        },
+          class: 'latex-popover-editor'
+        }
       }),
       BlockImage.configure({
         HTMLAttributes: {
-          class: "block-image",
+          class: 'block-image'
         },
         userId,
         statementId,
+        statementSlug: statement.slug,
         editMode,
         onDelete: async (imageId: string) => {
           try {
             await deleteStatementImage(
               imageId,
               statementId,
-              statementCreatorId,
-              {
-                path: pathname,
-                type: "layout",
-              },
+              statementCreatorId
+              // {
+              //   path: pathname,
+              //   type: "layout",
+              // },
             );
           } catch (error) {
-            console.error("Failed to delete image:", error);
+            console.error('Failed to delete image:', error);
           }
-        },
+        }
       }),
       AnnotationHighlight.configure({
         HTMLAttributes: {
-          class: "annotation",
-        },
+          class: 'annotation'
+        }
       }),
       Citation.configure({
         onDelete: async (citationId: string) => {
           try {
             await deleteCitation(citationId, statementCreatorId);
           } catch (error) {
-            console.error("Failed to delete citation:", error);
+            console.error('Failed to delete citation:', error);
           }
-        },
+        }
       }),
       QuoteHighlight,
       QuotePasteHandler.configure({
         creatorId: statementCreatorId,
         currentStatementId: statementId,
         handleCitationPaste,
-        setCitations,
-      }),
+        setCitations
+      })
     ],
     immediatelyRender: false,
     content: htmlContent,
@@ -204,31 +205,24 @@ export const useHtmlSuperEditor = ({
     onCreate: ({ editor }) => {
       // Use type assertion carefully, ensure the helpers actually return compatible types
       // Let's use the specific MarkInfo type for annotationMarks.
-      const annotationMarks = getMarks(editor, [
-        "annotationHighlight",
-      ]) as MarkInfo[]; // Use MarkInfo[] type
-      const citationNodes = getNodes(editor, [
-        "citation",
-        "citation-block",
-      ]) as NodeInfo[];
+      const annotationMarks = getMarks(editor, ['annotationHighlight']) as MarkInfo[]; // Use MarkInfo[] type
+      const citationNodes = getNodes(editor, ['citation', 'citation-block']) as NodeInfo[];
 
       ensureAnnotationMarks({
         marks: annotationMarks, // Pass the correctly typed marks
         editor,
         annotations,
-        draftId,
+        draftId
       });
 
-      const citationIds = citationNodes.map((nodeInfo) =>
-        nodeInfo.node.attrs.citationId
-      );
+      const citationIds = citationNodes.map(nodeInfo => nodeInfo.node.attrs.citationId);
       setFootnoteIds(citationIds);
 
       if (citations.length > 0 && editMode) {
         ensureCitations({
           citations,
           nodeIds: citationIds,
-          statementCreatorId,
+          statementCreatorId
         });
       }
     },
@@ -238,7 +232,7 @@ export const useHtmlSuperEditor = ({
           const mark = (step as any).mark;
           const annotationId = mark?.attrs?.annotationId;
           if (!annotationId) return false;
-          return mark.type.name === "annotationHighlight";
+          return mark.type.name === 'annotationHighlight';
         });
 
         if (!editMode && !hasAnnotationChanges) {
@@ -247,19 +241,14 @@ export const useHtmlSuperEditor = ({
           return;
         }
 
-        const citationNodes = getNodes(editor, [
-          "citation",
-          "citation-block",
-        ]) as NodeInfo[];
-        const citationIds = citationNodes.map((nodeInfo) =>
-          nodeInfo.node.attrs.citationId
-        );
+        const citationNodes = getNodes(editor, ['citation', 'citation-block']) as NodeInfo[];
+        const citationIds = citationNodes.map(nodeInfo => nodeInfo.node.attrs.citationId);
         setFootnoteIds(citationIds);
 
         const newContent = editor.getHTML();
         const newStatement = {
           ...updatedStatement,
-          content: newContent,
+          content: newContent
         };
         startTransition(() => {
           setUpdatedStatement(newStatement);
@@ -278,16 +267,17 @@ export const useHtmlSuperEditor = ({
     editorProps: {
       handleKeyDown: (view, event) => {
         if (!editMode) {
-          const isSelectionKey = event.key === "ArrowLeft" ||
-            event.key === "ArrowRight" ||
-            event.key === "ArrowUp" ||
-            event.key === "ArrowDown" ||
-            ((event.metaKey || event.ctrlKey) && event.key === "a") || // Select all
-            ((event.metaKey || event.ctrlKey) && event.key === "c") || // Allow copy (both Cmd+C and Ctrl+C)
-            event.key === "Home" ||
-            event.key === "End" ||
-            event.key === "PageUp" ||
-            event.key === "PageDown";
+          const isSelectionKey =
+            event.key === 'ArrowLeft' ||
+            event.key === 'ArrowRight' ||
+            event.key === 'ArrowUp' ||
+            event.key === 'ArrowDown' ||
+            ((event.metaKey || event.ctrlKey) && event.key === 'a') || // Select all
+            ((event.metaKey || event.ctrlKey) && event.key === 'c') || // Allow copy (both Cmd+C and Ctrl+C)
+            event.key === 'Home' ||
+            event.key === 'End' ||
+            event.key === 'PageUp' ||
+            event.key === 'PageDown';
           if (isSelectionKey) {
             return false; // Allow selection keys
           }
@@ -300,27 +290,18 @@ export const useHtmlSuperEditor = ({
         // Let clicks happen for selection, but handle specific node clicks below
         return false;
       },
-      transformPastedText: (text) => {
+      transformPastedText: text => {
         // Prevent pasting in non-editMode mode
-        return editMode ? text : "";
+        return editMode ? text : '';
       },
-      handleDrop: (
-        view: EditorView,
-        event: DragEvent,
-        slice: Slice,
-        moved: boolean,
-      ): boolean => {
+      handleDrop: (view: EditorView, event: DragEvent, slice: Slice, moved: boolean): boolean => {
         if (!editMode) {
           event.preventDefault();
           return true; // Indicate handled, prevent default Tiptap drop
         }
         return false; // Allow default Tiptap drop behavior
       },
-      handlePaste: (
-        view: EditorView,
-        event: ClipboardEvent,
-        slice: Slice,
-      ): boolean => {
+      handlePaste: (view: EditorView, event: ClipboardEvent, slice: Slice): boolean => {
         if (!editMode) {
           event.preventDefault();
           return true; // Indicate handled, prevent default Tiptap paste
@@ -334,54 +315,52 @@ export const useHtmlSuperEditor = ({
 
           const imageNode = element.closest('img[data-type="block-image"]');
           const citationNode = element.closest(
-            '[data-type="citation"], [data-type="citation-block"]',
+            '[data-type="citation"], [data-type="citation-block"]'
           );
           let latexNode = element.closest(
-            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+            '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
           );
 
           if (!latexNode) {
-            const katexElement = element.closest(
-              ".katex, .katex-html, .katex-rendered",
-            );
+            const katexElement = element.closest('.katex, .katex-html, .katex-rendered');
             if (katexElement) {
               latexNode = katexElement.closest(
-                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block',
+                '[data-type="latex"], [data-type="latex-block"], .inline-latex, .latex-block'
               );
             }
           }
-          const annotationElement = element.closest(".annotation");
+          const annotationElement = element.closest('.annotation');
 
           // Image click handling
           if (imageNode) {
-            const id = imageNode.getAttribute("data-image-id");
+            const id = imageNode.getAttribute('data-image-id');
             if (!id) return true; // Should not happen, but good practice
 
             if (editMode) {
               const rect = imageNode.getBoundingClientRect();
               openImagePopover({
-                src: imageNode.getAttribute("src") || "",
-                alt: imageNode.getAttribute("alt") || "",
-                caption: imageNode.getAttribute("caption") || "",
+                src: imageNode.getAttribute('src') || '',
+                alt: imageNode.getAttribute('alt') || '',
+                caption: imageNode.getAttribute('caption') || '',
                 id,
                 position: {
                   x: rect.left,
                   y: rect.top,
                   width: rect.width,
-                  height: rect.height,
+                  height: rect.height
                 },
                 statementImages: statement.images,
                 setInitialImageData,
                 setSelectedNodePosition,
                 setImagePopoverOpen,
-                statementId,
+                statementId
               });
             } else {
               openImageLightbox({
                 id,
                 statementImages: statement.images,
                 setInitialImageData,
-                setImageLightboxOpen,
+                setImageLightboxOpen
               });
             }
             event.preventDefault();
@@ -396,14 +375,12 @@ export const useHtmlSuperEditor = ({
               x: rect.left,
               y: rect.top,
               width: rect.width,
-              height: rect.height,
+              height: rect.height
             };
-            const id = citationNode.getAttribute("data-citation-id");
+            const id = citationNode.getAttribute('data-citation-id');
             if (!id) return true;
 
-            const selectedCitation = citations.find((c) =>
-              c.id.toString() === id
-            );
+            const selectedCitation = citations.find(c => c.id.toString() === id);
             if (!selectedCitation) return true;
 
             const citationData: NewStatementCitation = {
@@ -422,14 +399,14 @@ export const useHtmlSuperEditor = ({
               publisher: selectedCitation.publisher,
               titlePublication: selectedCitation.titlePublication,
               volume: selectedCitation.volume,
-              pageType: selectedCitation.pageType,
+              pageType: selectedCitation.pageType
             };
             openCitationPopover({
               citationData,
               position,
               setCitationData,
               setSelectedNodePosition,
-              setCitationPopoverOpen,
+              setCitationPopoverOpen
             });
             event.preventDefault();
             event.stopPropagation();
@@ -438,27 +415,26 @@ export const useHtmlSuperEditor = ({
 
           // LaTeX click handling (only in edit mode for popover)
           if (latexNode && editMode) {
-            let id = latexNode.getAttribute("data-id");
-            let latex = latexNode.getAttribute("data-latex") ||
-              latexNode.getAttribute("data-original-content");
+            let id = latexNode.getAttribute('data-id');
+            let latex =
+              latexNode.getAttribute('data-latex') ||
+              latexNode.getAttribute('data-original-content');
 
             if (!latex) {
-              const katexWrapper = latexNode.querySelector(
-                ".katex-rendered, .katex",
-              );
-              latex = katexWrapper ? "" : latexNode.textContent || "";
+              const katexWrapper = latexNode.querySelector('.katex-rendered, .katex');
+              latex = katexWrapper ? '' : latexNode.textContent || '';
             }
 
             const displayMode =
-              latexNode.getAttribute("data-display-mode") === "true" ||
-              latexNode.classList.contains("latex-block");
+              latexNode.getAttribute('data-display-mode') === 'true' ||
+              latexNode.classList.contains('latex-block');
 
             const rect = latexNode.getBoundingClientRect();
             const position = {
               x: rect.left,
               y: rect.top,
               width: rect.width,
-              height: rect.height,
+              height: rect.height
             };
 
             openLatexPopover({
@@ -469,7 +445,7 @@ export const useHtmlSuperEditor = ({
               setIsBlock,
               setSelectedLatexId,
               setSelectedNodePosition: () => setSelectedNodePosition(position), // Pass position directly
-              setLatexPopoverOpen,
+              setLatexPopoverOpen
             });
 
             event.preventDefault();
@@ -480,7 +456,7 @@ export const useHtmlSuperEditor = ({
           // Annotation click handling
 
           if (annotationElement && onAnnotationClick) {
-            const id = annotationElement.getAttribute("data-annotation-id");
+            const id = annotationElement.getAttribute('data-annotation-id');
             event.preventDefault();
             event.stopPropagation();
             if (id) {
@@ -490,9 +466,9 @@ export const useHtmlSuperEditor = ({
             }
           }
           return false;
-        },
-      },
-    },
+        }
+      }
+    }
   });
   useEffect(() => {
     setEditor(editor);
@@ -501,23 +477,21 @@ export const useHtmlSuperEditor = ({
   //Scrolls to the annotation when the url has an annotation-id
   useEffect(() => {
     if (!editor) return;
-    const annotationId = searchParams.get("annotation-id");
+    const annotationId = searchParams.get('annotation-id');
     if (annotationId && setSelectedAnnotationId) {
       setSelectedAnnotationId(annotationId);
       setPanelState({
-        target: "annotation_panel_size",
+        target: 'annotation_panel_size',
         isOpen: true,
 
-        panelGroupRef,
+        panelGroupRef
       });
       setTimeout(() => {
-        const annotationElement = document.querySelector(
-          `[data-annotation-id="${annotationId}"]`,
-        );
+        const annotationElement = document.querySelector(`[data-annotation-id="${annotationId}"]`);
         if (annotationElement) {
           annotationElement.scrollIntoView({
-            behavior: "smooth",
-            block: isMobile ? "start" : "center",
+            behavior: 'smooth',
+            block: isMobile ? 'start' : 'center'
           });
         }
       }, 100);
@@ -529,20 +503,20 @@ export const useHtmlSuperEditor = ({
     if (!editor) return;
     const params = new URLSearchParams(window.location.search);
     if (selectedAnnotationId) {
-      params.set("annotation-id", selectedAnnotationId);
+      params.set('annotation-id', selectedAnnotationId);
       setTimeout(() => {
         const annotationElement = document.querySelector(
-          `[data-annotation-id="${selectedAnnotationId}"]`,
+          `[data-annotation-id="${selectedAnnotationId}"]`
         );
         if (annotationElement) {
           annotationElement.scrollIntoView({
-            behavior: "smooth",
-            block: isMobile ? "start" : "center", // Use existing isMobile logic
+            behavior: 'smooth',
+            block: isMobile ? 'start' : 'center' // Use existing isMobile logic
           });
         }
       }, 100); // Delay allows DOM updates
     } else {
-      params.delete("annotation-id");
+      params.delete('annotation-id');
     }
     const newUrl = `${window.location.pathname}?${params.toString()}`;
     // Use replaceState to avoid adding to history
@@ -556,39 +530,30 @@ export const useHtmlSuperEditor = ({
 
     const applyAnnotations = () => {
       // Check if annotations actually changed to prevent unnecessary updates
-      const currentMarksInfo = getMarks(editor, [
-        "annotationHighlight",
-      ]) as GetMarksNodeInfo[];
+      const currentMarksInfo = getMarks(editor, ['annotationHighlight']) as GetMarksNodeInfo[];
       // We need to access mark.attrs.annotationId. Find the correct mark on the node.
       const currentAnnotationIds = new Set(
-        currentMarksInfo.flatMap((info) =>
+        currentMarksInfo.flatMap(info =>
           info.node.marks
-            .filter((mark) => mark.type.name === "annotationHighlight")
-            .map((mark) => mark.attrs.annotationId)
-        ),
+            .filter(mark => mark.type.name === 'annotationHighlight')
+            .map(mark => mark.attrs.annotationId)
+        )
       );
-      const incomingAnnotationIds = new Set(annotations.map((a) => a.id));
+      const incomingAnnotationIds = new Set(annotations.map(a => a.id));
 
       // Simple check: If sizes differ or any incoming ID is not present
       let needsUpdate =
         currentAnnotationIds.size !== incomingAnnotationIds.size ||
-        annotations.some((a) => !currentAnnotationIds.has(a.id));
+        annotations.some(a => !currentAnnotationIds.has(a.id));
 
       if (!needsUpdate) {
         // More thorough check: verify attributes like 'selected'
         editor.state.doc.descendants((node, pos) => {
           if (!node.isText) return;
-          const mark = node.marks.find((m) =>
-            m.type.name === "annotationHighlight"
-          );
+          const mark = node.marks.find(m => m.type.name === 'annotationHighlight');
           if (mark) {
-            const annotation = annotations.find((a) =>
-              a.id === mark.attrs.annotationId
-            );
-            if (
-              annotation &&
-              mark.attrs.selected !== (annotation.id === selectedAnnotationId)
-            ) {
+            const annotation = annotations.find(a => a.id === mark.attrs.annotationId);
+            if (annotation && mark.attrs.selected !== (annotation.id === selectedAnnotationId)) {
               needsUpdate = true;
               return false; // Stop descending if update is needed
             }
@@ -599,11 +564,8 @@ export const useHtmlSuperEditor = ({
       if (!needsUpdate) return; // Skip if no changes detected
 
       editor.commands.unsetAnnotationHighlight(); // Clear existing marks first
-      annotations.forEach((annotation) => {
-        if (
-          !annotation.id || !annotation.userId || annotation.start < 0 ||
-          annotation.end < 0
-        ) {
+      annotations.forEach(annotation => {
+        if (!annotation.id || !annotation.userId || annotation.start < 0 || annotation.end < 0) {
           return;
         }
         // Ensure positions are valid within the current document
@@ -619,11 +581,12 @@ export const useHtmlSuperEditor = ({
             annotationId: annotation.id,
             userId: annotation.userId,
             isAuthor: annotation.userId === statementCreatorId,
-            createdAt: annotation.createdAt instanceof Date
-              ? annotation.createdAt.toISOString()
-              : String(annotation.createdAt),
+            createdAt:
+              annotation.createdAt instanceof Date
+                ? annotation.createdAt.toISOString()
+                : String(annotation.createdAt),
             tag: annotation.tag || null,
-            selected,
+            selected
           })
           .run();
       });
@@ -661,9 +624,9 @@ export const useHtmlSuperEditor = ({
   useEffect(() => {
     if (!editor || editMode) return; // Only scroll if not in edit mode
 
-    const location = searchParams.get("location");
+    const location = searchParams.get('location');
     if (location) {
-      const [start, end] = location.split("-").map((pos) => parseInt(pos, 10));
+      const [start, end] = location.split('-').map(pos => parseInt(pos, 10));
       if (!isNaN(start) && !isNaN(end) && start < end && start >= 0) {
         // Ensure positions are within bounds
         const docSize = editor.state.doc.content.size;
@@ -676,7 +639,7 @@ export const useHtmlSuperEditor = ({
           const view = editor.view;
           // Ensure the editor view is ready
           if (!view.dom.isConnected) {
-            console.warn("Editor view not connected yet for scrolling.");
+            console.warn('Editor view not connected yet for scrolling.');
             return;
           }
 
@@ -684,9 +647,9 @@ export const useHtmlSuperEditor = ({
           editor.commands.setTextSelection({ from: validStart, to: validEnd });
           const domNode = editor.view.domAtPos(validStart).node;
           if (domNode instanceof Element) {
-            domNode.scrollIntoView({ behavior: "smooth", block: "center" });
+            domNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
           } else {
-            console.log("Could not find DOM node at position:", validStart);
+            console.log('Could not find DOM node at position:', validStart);
           }
           // Highlight logic (optional, using decorations)
           // ... could add temporary decoration here ...
@@ -696,17 +659,17 @@ export const useHtmlSuperEditor = ({
             // ... remove temporary decoration if added ...
 
             const newParams = new URLSearchParams(window.location.search);
-            if (newParams.get("location") === location) {
+            if (newParams.get('location') === location) {
               // Avoid race conditions
-              newParams.delete("location");
+              newParams.delete('location');
               const newUrl = `${window.location.pathname}${
-                newParams.toString() ? `?${newParams.toString()}` : ""
+                newParams.toString() ? `?${newParams.toString()}` : ''
               }`;
-              window.history.replaceState({}, "", newUrl);
+              window.history.replaceState({}, '', newUrl);
             }
           }, 3000);
         } catch (error) {
-          console.error("Error scrolling to location:", error);
+          console.error('Error scrolling to location:', error);
         }
       }
     }

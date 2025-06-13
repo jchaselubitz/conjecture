@@ -3,14 +3,14 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
+import AppNav from '@/components/navigation/app_nav';
 import { Toaster } from '@/components/ui/sonner';
+import { EditModeProvider } from '@/contexts/EditModeProvider';
 import { UserProvider } from '@/contexts/userContext';
 import { getUserProfile } from '@/lib/actions/userActions';
 import { createClient } from '@/supabase/server';
 
 import ProfileSettingsDialog from './settings/(components)/profile_settings_dialog';
-import AppNav from '@/components/navigation/app_nav';
-import { EditModeProvider } from '@/contexts/EditModeProvider';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {

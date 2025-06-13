@@ -3,8 +3,8 @@
 import { VariantProps } from 'class-variance-authority';
 import { useState } from 'react';
 
-import { createDraft } from '@/lib/actions/statementActions';
-import { generateStatementId } from '@/lib/helpers/helpersStatements';
+import { useUserContext } from '@/contexts/userContext';
+import { createStatement } from '@/lib/actions/statementActions';
 
 import { buttonVariants } from '../ui/button';
 import { ButtonLoadingState, LoadingButton } from '../ui/loading-button';
@@ -26,14 +26,16 @@ export default function CreatePostButton({
   errorText?: string;
 }) {
   const [buttonState, setButtonState] = useState<ButtonLoadingState>('default');
-
+  const { currentUserSlug, userId } = useUserContext();
   const handleClick = async () => {
-    const statementId = generateStatementId();
     setButtonState('loading');
     try {
-      await createDraft({
-        statementId,
-        versionNumber: 1
+      if (!currentUserSlug || !userId) {
+        throw new Error('User not found');
+      }
+      await createStatement({
+        creatorSlug: currentUserSlug,
+        creatorId: userId
       });
       setButtonState('success');
     } catch (error) {

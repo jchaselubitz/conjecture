@@ -4,8 +4,8 @@ import {
   Kysely,
   PostgresDialect,
   Selectable,
-  Updateable
-} from 'kysely';
+  Updateable,
+} from "kysely";
 import {
   Annotation,
   Comment,
@@ -14,26 +14,27 @@ import {
   Draft,
   Follow,
   Profile,
+  Statement,
   StatementCitation,
   StatementImage,
-  StatementVote
-} from 'kysely-codegen';
-import { Pool } from 'pg';
+  StatementVote,
+} from "kysely-codegen";
+import { Pool } from "pg";
 
 const db = new Kysely<DB>({
   plugins: [new CamelCasePlugin()],
   dialect: new PostgresDialect({
     pool: new Pool({
       connectionString: process.env.DATABASE_URL,
-      max: 10
-    })
-  })
+      max: 10,
+    }),
+  }),
 });
 
-declare module 'kysely-codegen' {
+declare module "kysely-codegen" {
   export type RevalidationPath = {
     path: string;
-    type?: 'page' | 'layout' | undefined;
+    type?: "page" | "layout" | undefined;
   };
 
   export type BaseProfile = Selectable<Profile>;
@@ -62,12 +63,8 @@ declare module 'kysely-codegen' {
   export type BaseDraft = Selectable<Draft> & {
     slug: string | null | undefined;
   };
-  export type DraftWithUser = BaseDraft & {
-    creatorName: string | null | undefined;
-    creatorImageUrl?: string | null | undefined;
-    creatorSlug: string | null | undefined;
-  };
-  export type DraftWithAnnotations = DraftWithUser & {
+
+  export type DraftWithAnnotations = BaseDraft & {
     images: BaseStatementImage[];
     annotations: AnnotationWithComments[];
     upvotes: BaseStatementVote[];
@@ -118,10 +115,26 @@ declare module 'kysely-codegen' {
   export type NewFollow = Insertable<Follow>;
   export type EditedFollow = Updateable<Follow>;
 
-  export type Statement = {
-    statementId: string;
-    creatorSlug: string;
-    drafts: DraftWithUser[];
+  export type BaseStatement = Selectable<Statement>;
+
+  export type StatementWithUser = BaseStatement & {
+    creatorName: string | null | undefined;
+    creatorImageUrl?: string | null | undefined;
+    creatorSlug: string | null | undefined;
+    draft: {
+      publishedAt?: Date | null | undefined;
+      versionNumber: number;
+      content?: string | null | undefined;
+    };
+  };
+
+  // export type StatementDraft = DraftWithAnnotations & StatementWithUser;
+
+  export type StatementPackage = StatementWithUser & {
+    images: BaseStatementImage[];
+    draft: DraftWithAnnotations;
+    citations: BaseStatementCitation[];
+    upvotes: BaseStatementVote[];
   };
 }
 export default db;

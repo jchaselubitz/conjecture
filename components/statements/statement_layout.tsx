@@ -3,20 +3,20 @@
 import './prose.css';
 
 import * as Sentry from '@sentry/nextjs';
-import { AnnotationWithComments, DraftWithAnnotations, DraftWithUser } from 'kysely-codegen';
+import { AnnotationWithComments } from 'kysely-codegen';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
 
 import AnnotationPanel from '@/components/statements/annotation/annotation_panel';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import { useEditModeContext } from '@/contexts/EditModeProvider';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementUpdateContext } from '@/contexts/StatementUpdateProvider';
 import { useUserContext } from '@/contexts/userContext';
 import { deleteAnnotation } from '@/lib/actions/annotationActions';
 import {
-  balancePanelSizes,
   getPanelState,
   minAnnotationPanelSize,
   minEditorPanelSize,
@@ -27,20 +27,15 @@ import {
 import { groupThreadsByParentId } from '@/lib/helpers/helpersStatements';
 
 import VerticalCardStack from '../card_stacks/vertical_card_stack';
-
 import EditNav from '../navigation/edit_nav';
 
 import AnnotationDrawer from './annotation/annotation_drawer';
 import StatementDetails from './statement_details';
-import { useEditModeContext } from '@/contexts/EditModeProvider';
 
 interface StatementDetailsProps {
-  statement: DraftWithAnnotations;
   authorCommentsEnabled: boolean;
   readerCommentsEnabled: boolean;
   editModeEnabled: boolean;
-  parentStatement: DraftWithUser | null | undefined;
-  thread: DraftWithUser[];
   startingPanelSizes: number[];
 }
 
@@ -48,12 +43,10 @@ export default function StatementLayout({
   authorCommentsEnabled,
   readerCommentsEnabled,
   editModeEnabled,
-  parentStatement,
-  thread,
   startingPanelSizes
 }: StatementDetailsProps) {
   const { userId } = useUserContext();
-  const { statement } = useStatementContext();
+  const { statement, parentStatement, thread } = useStatementContext();
 
   const familyTree = groupThreadsByParentId(thread, statement);
 

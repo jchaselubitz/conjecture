@@ -100,18 +100,7 @@ async function main() {
         name: 'jake',
         email: 'jake@c.com',
         username: 'jchaselubitz'
-      },
-      banned_until: null,
-      deleted_at: null,
-      invited_at: null,
-      confirmation_token: null,
-      confirmation_sent_at: null,
-      recovery_token: null,
-      recovery_sent_at: null,
-      email_change_token_new: null,
-      email_change: null,
-      email_change_sent_at: null,
-      last_sign_in_at: null
+      }
     },
     {
       instance_id: '00000000-0000-0000-0000-000000000000',
@@ -154,7 +143,6 @@ async function main() {
         email: 'simas@c.com',
         username: 'simas'
       },
-      banned_until: null,
       deleted_at: null,
       invited_at: null,
       confirmation_token: null,
@@ -162,18 +150,18 @@ async function main() {
       recovery_token: null,
       recovery_sent_at: null,
       email_change_token_new: null,
-      email_change: null,
+      email_change: '',
       email_change_sent_at: null,
-      last_sign_in_at: null
+      last_sign_in_at: null,
+      banned_until: null
     }
   ]);
   const generatedUsers = await seed.users(
-    Array.from({ length: 8 }).map((_, i) => {
+    Array.from({ length: 6 }).map((_, i) => {
       const seedStr = `user-${i}`;
       const email = copycat.email(seedStr, { domain: 'acme.org' });
       return {
         instance_id: '00000000-0000-0000-0000-000000000000',
-        id: copycat.uuid(seedStr),
         email,
         encrypted_password: plainHashedPassword,
         role: 'authenticated',
@@ -183,9 +171,8 @@ async function main() {
         raw_user_meta_data: {
           name: email.split('@')[0],
           email,
-          username: copycat.username(seedStr)
+          username: email.split('@')[0]
         },
-        banned_until: null,
         deleted_at: null,
         invited_at: null,
         confirmation_token: null,
@@ -193,26 +180,13 @@ async function main() {
         recovery_token: null,
         recovery_sent_at: null,
         email_change_token_new: null,
-        email_change: null,
+        email_change: '',
         email_change_sent_at: null,
         last_sign_in_at: null
       };
     })
   );
   const users = [...fixedUsers.users, ...generatedUsers.users];
-
-  // --- Generate profiles ---
-  // const profiles = await seed.profile(users.map((user, i) => {
-  //  const seedStr = `profile-${i}`;
-  //  return {
-  //   id: user.id,
-  //   username: user.raw_user_meta_data?.username || copycat.username(seedStr),
-  //   name: user.raw_user_meta_data?.name || copycat.fullName(seedStr),
-  //   image_url: null,
-  //   created_at: new Date().toISOString(),
-  //   updated_at: new Date().toISOString(),
-  //  };
-  // }));
 
   // --- Generate follows ---
   // const follows = await seed.follow(Array.from({ length: 10 }).map((_, i) => {
@@ -239,106 +213,153 @@ async function main() {
     return nanoid();
   });
 
+  const fixedStatements = await seed.statement([
+    {
+      slug: statementIds[0],
+      statement_id: statementIds[0],
+      parent_statement_id: null,
+      header_img:
+        'https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75',
+      title: content[0].title,
+      subtitle: content[0].subtitle,
+      creator_id: fixedUsers.users[0].id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      thread_id: '1'
+    },
+    {
+      slug: statementIds[1],
+      statement_id: statementIds[1],
+      parent_statement_id: statementIds[0],
+      title: content[1].title,
+      subtitle: content[1].subtitle,
+      header_img:
+        'https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75',
+      creator_id: fixedUsers.users[1].id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      thread_id: '1'
+    },
+    {
+      slug: statementIds[2],
+      statement_id: statementIds[2],
+      parent_statement_id: statementIds[1],
+      title: content[2].title,
+      subtitle: content[2].subtitle,
+      header_img:
+        'https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75',
+      creator_id: fixedUsers.users[2].id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      thread_id: '1'
+    },
+    {
+      slug: statementIds[3],
+      statement_id: statementIds[3],
+      parent_statement_id: statementIds[2],
+      title: content[3].title,
+      subtitle: content[3].subtitle,
+      header_img:
+        'https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75',
+      creator_id: fixedUsers.users[2].id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      thread_id: '1'
+    }
+  ]);
+
+  const statement = await seed.statement(
+    Array.from({ length: 6 }).map((_, i) => {
+      const id = statementIds[i + 4];
+      return {
+        slug: id,
+        statement_id: id,
+        parent_statement_id: null,
+        title: content[i + 4].title,
+        subtitle: content[i + 4].subtitle,
+        header_img:
+          'https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75',
+        creator_id: generatedUsers.users[i].id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        thread_id: null
+      };
+    })
+  );
+
+  const statements = [...fixedStatements.statement, ...statement.statement];
+
+  const collaborators = await seed.collaborator(
+    Array.from({ length: 10 }).map((_, i) => {
+      return {
+        statement_id: statementIds[0],
+        user_id: users[i].id,
+        role: 'leadAuthor',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+    })
+  );
+
   const fixedDrafts = await seed.draft([
     {
       id: 1, // identity column, so just use 1-based index
-      creator_id: fixedUsers.users[1].id,
-      title: content[1].title,
-      subtitle: content[1].subtitle,
       content: content[1].text,
-      header_img:
-        'https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       statement_id: statementIds[1],
       version_number: 1,
       published_at: new Date().toISOString(),
-      parent_statement_id: null,
-      thread_id: '1'
+      creator_id: fixedUsers.users[0].id
     },
     {
       id: 2, // identity column, so just use 1-based index
-      creator_id: fixedUsers.users[0].id,
-      title: content[0].title,
-      subtitle: content[0].subtitle,
       content: content[0].text,
-      header_img:
-        'https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75',
-      created_at: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 4).toISOString(),
-      updated_at: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 4).toISOString(),
-
+      created_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 4).toISOString(),
+      updated_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 4).toISOString(),
       statement_id: statementIds[0],
       version_number: 1,
-      published_at: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 4).toISOString(),
-      parent_statement_id: statementIds[1],
-      thread_id: '1'
+      published_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 4).toISOString(),
+      creator_id: fixedUsers.users[0].id
     },
     {
-      id: 3, // identity column, so just use 1-based index
-      creator_id: fixedUsers.users[2].id,
-      title: content[2].title,
-      subtitle: content[2].subtitle,
+      id: 3, // identity column, so just use 1+based index
       content: content[2].text,
-      header_img:
-        'https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75',
-      created_at: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 2).toISOString(),
-      updated_at: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 2).toISOString(),
+      created_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 2).toISOString(),
+      updated_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 2).toISOString(),
       statement_id: statementIds[2],
       version_number: 1,
-      published_at: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 2).toISOString(),
-      parent_statement_id: statementIds[2],
-      thread_id: '1'
+      published_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 2).toISOString(),
+      creator_id: fixedUsers.users[0].id
     },
     {
       id: 4, // identity column, so just use 1-based index
-      creator_id: fixedUsers.users[3].id,
-      title: content[3].title,
-      subtitle: content[3].subtitle,
       content: content[3].text,
-      header_img:
-        'https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75',
       created_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).toISOString(),
       updated_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).toISOString(),
       statement_id: statementIds[3],
       version_number: 1,
       published_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).toISOString(),
-      parent_statement_id: statementIds[2],
-      thread_id: '1'
+      creator_id: fixedUsers.users[0].id
     }
   ]);
 
   const generatedDrafts = await seed.draft(
     Array.from({ length: 6 }).map((_, i) => {
-      const count = i + 5;
+      const count = i + 4;
       return {
-        id: count, // identity column, so just use 1-based index
-        creator_id: generatedUsers.users[i].id,
-        title: content[count].title,
-        subtitle: content[count].subtitle,
+        id: count + 1, // identity column, so just use 1-based index
         content: content[count].text,
-        header_img:
-          'https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         statement_id: statementIds[count],
         version_number: 1,
         published_at: new Date().toISOString(),
-        parent_statement_id: null,
-        thread_id: null
+        creator_id: generatedUsers.users[i].id
       };
     })
   );
   const drafts = [...fixedDrafts.draft, ...generatedDrafts.draft];
-
-  const { statement_url } = await seed.statement_url(
-    Array.from({ length: 10 }).map((_, i) => {
-      return {
-        slug: statementIds[i],
-        statement_id: statementIds[i],
-        created_at: new Date().toISOString()
-      };
-    })
-  );
 
   // --- Generate annotation ---
   const { annotation } = await seed.annotation(
@@ -364,7 +385,6 @@ async function main() {
   const comments = await seed.comment(
     Array.from({ length: 20 }).map((_, i) => {
       const seedStr = `comment-${i}`;
-
       return {
         id: copycat.uuid(seedStr),
         user_id: users[Math.floor(Math.random() * users.length)].id,
@@ -380,11 +400,9 @@ async function main() {
   const statementImages = await seed.statement_image(
     Array.from({ length: 10 }).map((_, i) => {
       const seedStr = `statement_image-${i}`;
-
       return {
         id: copycat.uuid(seedStr),
-        statement_id: drafts[i].statement_id,
-        creator_id: users[i].id,
+        statement_id: statementIds[0],
         src: 'https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75',
         alt: copycat.words(seedStr),
         caption: copycat.sentence(seedStr),
@@ -400,7 +418,7 @@ async function main() {
 
       return {
         id: copycat.uuid(seedStr),
-        statement_id: drafts[i].statement_id,
+        statement_id: statementIds[0],
         author_names: copycat.fullName(seedStr),
         year: copycat.int(`${seedStr}-year`, { min: 1900, max: 2025 }),
         month: copycat.int(`${seedStr}-month`, { min: 1, max: 12 }),

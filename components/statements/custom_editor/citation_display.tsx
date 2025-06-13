@@ -1,4 +1,4 @@
-import { BaseDraft, BaseStatementCitation } from 'kysely-codegen';
+import { BaseStatementCitation, StatementWithUser } from 'kysely-codegen';
 import { BookIcon, CalendarIcon, FileTextIcon, LinkIcon, UsersIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 export function CitationDisplay() {
   const { citationData } = useStatementToolsContext();
   const citation = citationData as BaseStatementCitation;
-  const [conjecture, setConjecture] = useState<BaseDraft | null>(null);
+  const [conjecture, setConjecture] = useState<StatementWithUser | null>(null);
 
   const formatPageRange = () => {
     const { pageType } = citation;
