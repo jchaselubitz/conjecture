@@ -1,10 +1,19 @@
-export const UserStatementRoles = [
-  { name: 'Viewer', value: 'viewer' },
-  { name: 'Reviewer', value: 'reviewer' },
-  { name: 'Moderator', value: 'moderator' },
-  { name: 'Author', value: 'author' },
-  { name: 'LeadAuthor', value: 'leadAuthor' }
-] as const;
+// export const UserStatementRoles = [
+//   { name: 'Viewer', value: 'viewer' },
+//   { name: 'Reviewer', value: 'reviewer' },
+//   { name: 'Moderator', value: 'moderator' },
+//   { name: 'Author', value: 'author' },
+//   { name: 'LeadAuthor', value: 'leadAuthor' }
+// ] as const;
+
+export enum UserStatementRoles {
+  Viewer = 'viewer',
+  Reviewer = 'reviewer',
+  Moderator = 'moderator',
+  Author = 'author',
+  LeadAuthor = 'leadAuthor',
+  SuperAdmin = 'super_admin'
+}
 
 export enum StatementPermissions {
   ViewPublished = 'viewPublished',
@@ -36,3 +45,7 @@ export const UserStatementPermissions = {
   author,
   leadAuthor
 };
+
+export const AuthorGroup = [UserStatementRoles.Author, UserStatementRoles.LeadAuthor];
+
+export const ManagerGroup = [UserStatementRoles.Moderator, UserStatementRoles.Moderator];

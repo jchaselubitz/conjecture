@@ -1,31 +1,31 @@
-import { Extension } from "@tiptap/core";
-import { Plugin, PluginKey } from "@tiptap/pm/state";
-import { EditorView } from "@tiptap/pm/view";
-import { BaseStatementCitation } from "kysely-codegen";
-import { Dispatch, SetStateAction } from "react";
+import { Extension } from '@tiptap/core';
+import { Plugin, PluginKey } from '@tiptap/pm/state';
+import { EditorView } from '@tiptap/pm/view';
+import { BaseStatementCitation } from 'kysely-codegen';
+import { Dispatch, SetStateAction } from 'react';
 
-import { getPublishedStatement } from "@/lib/actions/statementActions";
+import { getPublishedStatement } from '@/lib/actions/statementActions';
 
-import { upsertCitation } from "./helpers/helpersCitationExtension";
+import { upsertCitation } from './helpers/helpersCitationExtension';
 export const QuotePasteHandler = Extension.create({
-  name: "quotePasteHandler",
+  name: 'quotePasteHandler',
 
   addOptions() {
     return {
       creatorId: null,
       currentStatementId: null,
       handleCitationPaste: null,
-      setCitations: null,
+      setCitations: null
     };
   },
 
   addProseMirrorPlugins() {
     return [
       new Plugin({
-        key: new PluginKey("quotePasteHandler"),
+        key: new PluginKey('quotePasteHandler'),
         props: {
           handlePaste: (view, event, slice) => {
-            const text = event.clipboardData?.getData("text/plain");
+            const text = event.clipboardData?.getData('text/plain');
             if (!text) return false;
 
             const pos = view.state.selection.$from.pos;
@@ -36,9 +36,9 @@ export const QuotePasteHandler = Extension.create({
               if (url.origin !== window.location.origin) return false;
 
               // Check if we have both location and content parameters
-              const location = url.searchParams.get("location");
-              const content = url.searchParams.get("content");
-              const statementSlug = url.searchParams.get("statementSlug");
+              const location = url.searchParams.get('location');
+              const content = url.searchParams.get('content');
+              const statementSlug = url.searchParams.get('statementSlug');
 
               if (!location || !content) return false;
 
@@ -48,7 +48,7 @@ export const QuotePasteHandler = Extension.create({
               //  href: url.toString(),
               // });
               const italicText = view.state.schema.text(`"${content}" `, [
-                view.state.schema.marks.italic.create(),
+                view.state.schema.marks.italic.create()
               ]);
 
               const nodeLength = italicText.nodeSize + 1;
@@ -65,7 +65,7 @@ export const QuotePasteHandler = Extension.create({
                   currentStatementId: this.options.currentStatementId,
                   position: pos + nodeLength,
                   view: view,
-                  setCitations: this.options.setCitations,
+                  setCitations: this.options.setCitations
                 });
               }
 
@@ -74,11 +74,11 @@ export const QuotePasteHandler = Extension.create({
               // If URL parsing fails, let the default paste handler take over
               return false;
             }
-          },
-        },
-      }),
+          }
+        }
+      })
     ];
-  },
+  }
 });
 
 export const handleCitationPaste = async ({
@@ -88,7 +88,7 @@ export const handleCitationPaste = async ({
   currentStatementId,
   position,
   view,
-  setCitations,
+  setCitations
 }: {
   statementSlug: string;
   creatorId: string;
@@ -100,22 +100,22 @@ export const handleCitationPaste = async ({
 }) => {
   const statement = await getPublishedStatement(statementSlug);
   if (statement) {
-    const { title, creatorName, draft } = statement;
+    const { title, authors, draft } = statement;
     const { publishedAt } = draft;
     const year = publishedAt ? publishedAt.getFullYear() : null;
     const month = publishedAt ? publishedAt.getMonth() + 1 : null;
     const day = publishedAt ? publishedAt.getDate() : null;
 
     const citation = {
-      id: "",
-      title: title || "",
-      authorNames: creatorName || "",
+      id: '',
+      title: title || '',
+      authorNames: authors.map(author => author.name ?? author.username).join(', '),
       url: url.toString(),
       year: year,
       month: month,
       day: day,
       date: publishedAt,
-      statementId: currentStatementId,
+      statementId: currentStatementId
     };
 
     await upsertCitation({
@@ -123,10 +123,10 @@ export const handleCitationPaste = async ({
       setError: () => {},
       creatorId,
       statementId: currentStatementId,
-      pathname: "",
+      pathname: '',
       view,
       position,
-      setCitations,
+      setCitations
     });
   }
 };

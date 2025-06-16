@@ -29,7 +29,7 @@ export default function InlineCardStack({
         <StackCard
           key={post.statementId}
           title={post.title ?? ''}
-          author={post.creatorName ?? post.creatorSlug ?? ''}
+          author={post.authors.map(author => author.name ?? author.username).join(', ')}
           creatorSlug={post.creatorSlug ?? ''}
           slug={post.slug ?? ''}
           zIndex={precedingPosts.length + index}
@@ -55,7 +55,7 @@ export default function InlineCardStack({
         <StackCard
           key={post.statementId}
           title={post.title ?? ''}
-          author={post.creatorName ?? post.creatorSlug ?? ''}
+          author={post.authors.map(author => author.name ?? author.username).join(', ')}
           creatorSlug={post.creatorSlug ?? ''}
           slug={post.slug ?? ''}
           zIndex={followingPosts.length + index}

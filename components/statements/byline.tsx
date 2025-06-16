@@ -1,7 +1,6 @@
 'use client';
 
 import { StatementWithUser } from 'kysely-codegen';
-import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -11,22 +10,51 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useUserContext } from '@/contexts/userContext';
 import { getFollow, toggleFollow } from '@/lib/actions/userActions';
 import { formatDate } from '@/lib/helpers/helpersDate';
+import { cn } from '@/lib/utils';
+import Link from 'next/link';
+
+type author = {
+  id: string;
+  name: string | null | undefined;
+  username: string | null | undefined;
+  imageUrl: string | null | undefined;
+};
+
+const AvatarGroup = ({ authors }: { authors: author[] }) => {
+  return (
+    <div className="flex items-center">
+      {authors.map((author, index) => (
+        <div
+          key={author.id}
+          className={cn(index > 0 && '-ml-4 shadow-md', `z-${index * 10}`, 'rounded-full')}
+        >
+          <Avatar key={author.id}>
+            <AvatarImage src={author.imageUrl || ''} className="object-cover" />
+            <AvatarFallback>{author.name?.slice(0, 2)}</AvatarFallback>
+          </Avatar>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const Byline = ({ statement }: { statement: StatementWithUser }) => {
-  const router = useRouter();
   const { userId } = useUserContext();
-  const [buttonState, setButtonState] = useState<ButtonLoadingState>('default');
-  const [isFollowing, setIsFollowing] = useState<boolean>(false);
+  const [buttonStates, setButtonStates] = useState<Record<string, ButtonLoadingState>>({});
+  const [isFollowing, setIsFollowing] = useState<Record<string, boolean>>({});
 
   // const [followerCount, setFollowerCount] = useState<number>(0);
 
-  const getIsFollowing = useCallback(async () => {
-    if (!userId || !statement?.creatorId) {
-      return false;
-    }
-    const following = await getFollow({ followerId: userId, followingId: statement?.creatorId });
-    setIsFollowing(following);
-  }, [userId, statement?.creatorId]);
+  const getIsFollowing = useCallback(
+    async (authorId: string) => {
+      if (!userId || !authorId) {
+        return false;
+      }
+      const following = await getFollow({ followerId: userId, followingId: authorId });
+      setIsFollowing(prev => ({ ...prev, [authorId]: following }));
+    },
+    [userId]
+  );
 
   // const getFollowerCount = async () => {
   //   console.log('getFollowerCount');
@@ -38,36 +66,33 @@ const Byline = ({ statement }: { statement: StatementWithUser }) => {
 
   useEffect(() => {
     const checkFollow = async () => {
-      if (!userId || !statement?.creatorId) {
+      if (!userId) {
         return;
       }
-      getIsFollowing();
+      statement?.authors.forEach(author => {
+        getIsFollowing(author.id);
+      });
       // getFollowerCount();
     };
     checkFollow();
-  }, [userId, statement?.creatorId, getIsFollowing]);
+  }, [userId, statement?.authors, getIsFollowing]);
 
-  const handleFollow = async () => {
-    setButtonState('loading');
-    if (!userId || !statement?.creatorId) {
-      setButtonState('error');
+  const handleFollow = async (authorId: string) => {
+    setButtonStates(prev => ({ ...prev, [authorId]: 'loading' }));
+    if (!userId || !authorId) {
+      setButtonStates(prev => ({ ...prev, [authorId]: 'error' }));
+      !userId && alert('You must be logged in to follow');
       return;
     }
     try {
-      await toggleFollow({ followerId: userId, followingId: statement?.creatorId });
-      setButtonState('success');
-      getIsFollowing();
+      await toggleFollow({ followerId: userId, followingId: authorId });
+      setButtonStates(prev => ({ ...prev, [authorId]: 'success' }));
+      getIsFollowing(authorId);
     } catch (error) {
       console.error(error);
-      setButtonState('error');
+      setButtonStates(prev => ({ ...prev, [authorId]: 'error' }));
     } finally {
-      setButtonState('default');
-    }
-  };
-
-  const handleCreatorClick = () => {
-    if (statement?.creatorSlug) {
-      router.push(`/${statement.creatorSlug}`);
+      setButtonStates(prev => ({ ...prev, [authorId]: 'default' }));
     }
   };
 
@@ -76,43 +101,55 @@ const Byline = ({ statement }: { statement: StatementWithUser }) => {
       <Popover>
         <PopoverTrigger asChild>
           <div className="flex items-center gap-2 cursor-pointer">
-            <Avatar className="w-10 h-10">
-              <AvatarImage src={statement?.creatorImageUrl || ''} className="object-cover" />
-              <AvatarFallback>{statement?.creatorName?.slice(0, 2)}</AvatarFallback>
-            </Avatar>
-            <div className="font-bold">{statement?.creatorName}</div>
+            <AvatarGroup authors={statement?.authors} />
+            <div className="font-bold">
+              {statement?.authors.map(author => author.name ?? author.username).join(', ')}
+            </div>
           </div>
         </PopoverTrigger>
         <PopoverContent className="w-80 m-2">
           <div className="flex flex-col gap-4">
-            <div className="flex items-start gap-4" onClick={handleCreatorClick}>
-              <Avatar className="w-12 h-12">
-                <AvatarImage src={statement?.creatorImageUrl || ''} className="object-cover" />
-                <AvatarFallback>{statement?.creatorName?.slice(0, 2)}</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col gap-0.5">
-                <div className="flex items-center gap-2">
-                  <div className="font-bold text-lg">{statement?.creatorName}</div>
-                  <div className="text-sm text-muted-foreground">@{statement?.creatorSlug}</div>
+            <div className="flex flex-col items-start gap-4">
+              {statement?.authors.map(author => (
+                <div className="flex flex-col gap-2 w-full" key={author.id}>
+                  <div className="flex items-center gap-2">
+                    <Avatar>
+                      <AvatarImage src={author.imageUrl || ''} className="object-cover" />
+                      <AvatarFallback>{author.name?.slice(0, 2)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <div className="font-bold text-lg">{author.name ?? author.username}</div>
+                        <Link
+                          className="text-sm text-muted-foreground hover:underline"
+                          href={`/${author.username}`}
+                          prefetch={false}
+                        >
+                          @{author.username}
+                        </Link>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Joined {formatDate({ date: statement?.createdAt })}
+                      </div>
+                      {/*   <div className="text-sm text-muted-foreground">0 followers</div> */}
+                    </div>
+                  </div>
+                  <LoadingButton
+                    className="w-full"
+                    variant={isFollowing[author.id] ? 'outline' : 'default'}
+                    onClick={() => handleFollow(author.id)}
+                    disabled={userId === author.id}
+                    buttonState={buttonStates[author.id] ?? 'default'}
+                    text={
+                      userId === author.id ? 'You' : isFollowing[author.id] ? 'Following' : 'Follow'
+                    }
+                    loadingText={isFollowing[author.id] ? 'Unfollowing...' : 'Following...'}
+                    successText={isFollowing[author.id] ? 'Unfollowed' : 'Followed'}
+                    errorText="Error"
+                  />
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  Joined {formatDate({ date: statement?.createdAt })}
-                </div>
-                {/* <div className="text-sm text-muted-foreground">0 followers</div> */}
-              </div>
+              ))}
             </div>
-
-            <LoadingButton
-              className="w-full"
-              variant={isFollowing ? 'outline' : 'default'}
-              onClick={handleFollow}
-              disabled={userId === statement?.creatorId}
-              buttonState={buttonState}
-              text={userId === statement?.creatorId ? 'You' : isFollowing ? 'Following' : 'Follow'}
-              loadingText={isFollowing ? 'Unfollowing...' : 'Following...'}
-              successText={isFollowing ? 'Unfollowed' : 'Followed'}
-              errorText="Error"
-            />
           </div>
         </PopoverContent>
       </Popover>

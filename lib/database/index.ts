@@ -4,10 +4,11 @@ import {
   Kysely,
   PostgresDialect,
   Selectable,
-  Updateable,
-} from "kysely";
+  Updateable
+} from 'kysely';
 import {
   Annotation,
+  Collaborator,
   Comment,
   CommentVote,
   DB,
@@ -17,24 +18,24 @@ import {
   Statement,
   StatementCitation,
   StatementImage,
-  StatementVote,
-} from "kysely-codegen";
-import { Pool } from "pg";
+  StatementVote
+} from 'kysely-codegen';
+import { Pool } from 'pg';
 
 const db = new Kysely<DB>({
   plugins: [new CamelCasePlugin()],
   dialect: new PostgresDialect({
     pool: new Pool({
       connectionString: process.env.DATABASE_URL,
-      max: 10,
-    }),
-  }),
+      max: 10
+    })
+  })
 });
 
-declare module "kysely-codegen" {
+declare module 'kysely-codegen' {
   export type RevalidationPath = {
     path: string;
-    type?: "page" | "layout" | undefined;
+    type?: 'page' | 'layout' | undefined;
   };
 
   export type BaseProfile = Selectable<Profile>;
@@ -43,6 +44,10 @@ declare module "kysely-codegen" {
   };
   export type NewProfile = Insertable<Profile>;
   export type EditedProfile = Updateable<Profile>;
+
+  export type BaseCollaborator = Selectable<Collaborator>;
+  export type NewCollaborator = Insertable<Collaborator>;
+  export type EditedCollaborator = Updateable<Collaborator>;
 
   export type BaseStatementImage = Selectable<StatementImage>;
   export type NewStatementImage = Insertable<StatementImage> & {
@@ -118,9 +123,15 @@ declare module "kysely-codegen" {
   export type BaseStatement = Selectable<Statement>;
 
   export type StatementWithUser = BaseStatement & {
-    creatorName: string | null | undefined;
-    creatorImageUrl?: string | null | undefined;
+    authors: {
+      id: string;
+      name: string | null | undefined;
+      username: string | null | undefined;
+      imageUrl: string | null | undefined;
+    }[];
+    collaborators: BaseCollaborator[];
     creatorSlug: string | null | undefined;
+    upvotes?: BaseStatementVote[];
     draft: {
       publishedAt?: Date | null | undefined;
       versionNumber: number;

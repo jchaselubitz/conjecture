@@ -5,13 +5,14 @@ import { StatementAnnotationProvider } from '@/contexts/StatementAnnotationConte
 import { StatementProvider } from '@/contexts/StatementBaseContext';
 import { StatementToolsProvider } from '@/contexts/StatementToolsContext';
 import { StatementUpdateProvider } from '@/contexts/StatementUpdateProvider';
-import { getUser } from '@/lib/actions/baseActions';
+import { getUser, getUserRole } from '@/lib/actions/baseActions';
 import {
   getFullThread,
   getPublishedOrLatest,
   getPublishedStatement,
   getStatementPackage
 } from '@/lib/actions/statementActions';
+import { UserStatementRoles } from '@/lib/enums/permissions';
 
 type Props = {
   params: Promise<{ statementSlug: string; userSlug: string }>;
@@ -29,7 +30,7 @@ export async function generateMetadata(
   return {
     title: statement?.title,
     description: statement?.subtitle,
-    creator: statement?.creatorName,
+    creator: statement?.authors.map(author => author.name).join(', '),
     // keywords: statement?.keywords,
     openGraph: {
       images: [`${statement?.headerImg}`, ...previousImages]
@@ -37,15 +38,15 @@ export async function generateMetadata(
   };
 }
 
-export default async function CreatePage({ params, searchParams }: Props) {
+export default async function StatementPage({ params, searchParams }: Props) {
   const user = await getUser();
   const userId = user?.id?.toString();
   const { statementSlug, userSlug } = await params;
   const { edit, version } = await searchParams;
 
-  const userIsCollaborator = user?.user_metadata.username === userSlug;
+  const userRole = await getUserRole(userId, statementSlug);
+  const userIsCollaborator = userRole !== UserStatementRoles.Viewer;
   const selection = await getPublishedOrLatest(statementSlug);
-
   const versionNumber = version ? parseInt(version, 10) : selection?.version;
 
   const statementPackage = await getStatementPackage({
@@ -63,8 +64,8 @@ export default async function CreatePage({ params, searchParams }: Props) {
       statementPackage={statementPackage}
       userId={userId}
       writerUserSlug={userSlug}
+      currentUserRole={userRole}
       thread={thread}
-      version={versionNumber ?? 1}
       versionList={selection?.versionList ?? []}
     >
       <StatementToolsProvider>

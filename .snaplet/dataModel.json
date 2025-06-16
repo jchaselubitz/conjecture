@@ -636,7 +636,7 @@
             "start": 1
           },
           "hasDefaultValue": false,
-          "isId": false,
+          "isId": true,
           "maxLength": null
         },
         {
@@ -746,7 +746,15 @@
           "hasDefaultValue": false
         }
       ],
-      "uniqueConstraints": []
+      "uniqueConstraints": [
+        {
+          "name": "collaborator_pkey",
+          "fields": [
+            "id"
+          ],
+          "nullNotDistinct": false
+        }
+      ]
     },
     "comment": {
       "id": "public.comment",

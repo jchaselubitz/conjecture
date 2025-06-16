@@ -97,7 +97,7 @@ async function main() {
       is_super_admin: false,
       raw_app_meta_data: { provider: 'email', providers: ['email'] },
       raw_user_meta_data: {
-        name: 'jake',
+        name: 'Jake',
         email: 'jake@c.com',
         username: 'jchaselubitz'
       }
@@ -251,7 +251,7 @@ async function main() {
       creator_id: fixedUsers.users[2].id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      thread_id: '1'
+      thread_id: '2'
     },
     {
       slug: statementIds[3],
@@ -261,45 +261,84 @@ async function main() {
       subtitle: content[3].subtitle,
       header_img:
         'https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75',
-      creator_id: fixedUsers.users[2].id,
+      creator_id: fixedUsers.users[3].id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      thread_id: '1'
+      thread_id: '3'
     }
   ]);
 
-  const statement = await seed.statement(
-    Array.from({ length: 6 }).map((_, i) => {
-      const id = statementIds[i + 4];
-      return {
-        slug: id,
-        statement_id: id,
-        parent_statement_id: null,
-        title: content[i + 4].title,
-        subtitle: content[i + 4].subtitle,
-        header_img:
-          'https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75',
-        creator_id: generatedUsers.users[i].id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        thread_id: null
-      };
-    })
-  );
+  // const statement = await seed.statement(
+  //   Array.from({ length: 6 }).map((_, i) => {
+  //     const id = statementIds[i + 4];
+  //     return {
+  //       slug: id,
+  //       statement_id: id,
+  //       parent_statement_id: null,
+  //       title: content[i + 4].title,
+  //       subtitle: content[i + 4].subtitle,
+  //       header_img:
+  //         "https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75",
+  //       creator_id: generatedUsers.users[i].id,
+  //       created_at: new Date().toISOString(),
+  //       updated_at: new Date().toISOString(),
+  //       thread_id: null,
+  //     };
+  //   }),
+  // );
 
-  const statements = [...fixedStatements.statement, ...statement.statement];
+  // const statements = [...fixedStatements.statement, ...statement.statement];
 
-  const collaborators = await seed.collaborator(
-    Array.from({ length: 10 }).map((_, i) => {
-      return {
-        statement_id: statementIds[0],
-        user_id: users[i].id,
-        role: 'leadAuthor',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-    })
-  );
+  const fixedCollaborators = await seed.collaborator([
+    {
+      statement_id: statementIds[0],
+      user_id: fixedUsers.users[0].id,
+      role: 'leadAuthor',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      statement_id: statementIds[0],
+      user_id: fixedUsers.users[3].id,
+      role: 'author',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      statement_id: statementIds[1],
+      user_id: fixedUsers.users[1].id,
+      role: 'leadAuthor',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      statement_id: statementIds[2],
+      user_id: fixedUsers.users[2].id,
+      role: 'author',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      statement_id: statementIds[3],
+      user_id: fixedUsers.users[3].id,
+      role: 'author',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+  ]);
+
+  // const collaborators = await seed.collaborator(
+  //   Array.from({ length: 8 }).map((_, i) => {
+  //     const count = i + 2;
+  //     return {
+  //       statement_id: statementIds[count],
+  //       user_id: users[i].id,
+  //       role: "leadAuthor",
+  //       created_at: new Date().toISOString(),
+  //       updated_at: new Date().toISOString(),
+  //     };
+  //   }),
+  // );
 
   const fixedDrafts = await seed.draft([
     {
@@ -323,43 +362,63 @@ async function main() {
       creator_id: fixedUsers.users[0].id
     },
     {
-      id: 3, // identity column, so just use 1+based index
+      id: 3, // identity column, so just use 1-based index
+      content: content[0].text,
+      created_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 4).toISOString(),
+      updated_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 4).toISOString(),
+      statement_id: statementIds[0],
+      version_number: 2,
+      published_at: null,
+      creator_id: fixedUsers.users[0].id
+    },
+    {
+      id: 4, // identity column, so just use 1+based index
       content: content[2].text,
       created_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 2).toISOString(),
       updated_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 2).toISOString(),
       statement_id: statementIds[2],
       version_number: 1,
       published_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 2).toISOString(),
-      creator_id: fixedUsers.users[0].id
+      creator_id: fixedUsers.users[2].id
     },
     {
-      id: 4, // identity column, so just use 1-based index
+      id: 5, // identity column, so just use 1-based index
       content: content[3].text,
       created_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).toISOString(),
       updated_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).toISOString(),
       statement_id: statementIds[3],
       version_number: 1,
       published_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).toISOString(),
-      creator_id: fixedUsers.users[0].id
+      creator_id: fixedUsers.users[3].id
+    },
+    {
+      id: 6, // identity column, so just use 1-based index
+      content: content[3].text,
+      created_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).toISOString(),
+      updated_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).toISOString(),
+      statement_id: statementIds[3],
+      version_number: 2,
+      published_at: null,
+      creator_id: fixedUsers.users[2].id
     }
   ]);
 
-  const generatedDrafts = await seed.draft(
-    Array.from({ length: 6 }).map((_, i) => {
-      const count = i + 4;
-      return {
-        id: count + 1, // identity column, so just use 1-based index
-        content: content[count].text,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        statement_id: statementIds[count],
-        version_number: 1,
-        published_at: new Date().toISOString(),
-        creator_id: generatedUsers.users[i].id
-      };
-    })
-  );
-  const drafts = [...fixedDrafts.draft, ...generatedDrafts.draft];
+  // const generatedDrafts = await seed.draft(
+  //   Array.from({ length: 6 }).map((_, i) => {
+  //     const count = i + 4;
+  //     return {
+  //       id: count + 1, // identity column, so just use 1-based index
+  //       content: content[count].text,
+  //       created_at: new Date().toISOString(),
+  //       updated_at: new Date().toISOString(),
+  //       statement_id: statementIds[count],
+  //       version_number: 1,
+  //       published_at: new Date().toISOString(),
+  //       creator_id: generatedUsers.users[i].id,
+  //     };
+  //   }),
+  // );
+  const drafts = [...fixedDrafts.draft];
 
   // --- Generate annotation ---
   const { annotation } = await seed.annotation(

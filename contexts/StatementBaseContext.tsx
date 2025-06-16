@@ -17,6 +17,7 @@ import {
 import { useDebounce } from 'use-debounce';
 
 import { createDraft, publishDraft } from '@/lib/actions/statementActions';
+import { UserStatementRoles } from '@/lib/enums/permissions';
 
 interface StatementContextType {
   versionOptions: { versionNumber: number; createdAt: Date }[];
@@ -44,7 +45,7 @@ export function StatementProvider({
   userId,
   writerUserSlug,
   thread,
-  version,
+  currentUserRole,
   versionList
 }: {
   children: ReactNode;
@@ -52,26 +53,10 @@ export function StatementProvider({
   userId: string | undefined;
   writerUserSlug: string | undefined | null;
   thread: StatementWithUser[];
-  version: number;
+  currentUserRole: UserStatementRoles;
   versionList: { versionNumber: number; createdAt: Date }[];
 }) {
   const router = useRouter();
-  const params = useSearchParams();
-
-  // const draft = statementPackage.draft;
-  // const statementDetails = {
-  //   slug: statementPackage.slug ?? '',
-  //   creatorId: statementPackage.creatorId ?? '',
-  //   creatorName: statementPackage.creatorName ?? '',
-  //   creatorSlug: statementPackage.creatorSlug ?? '',
-  //   headerImg: statementPackage.headerImg ?? '',
-  //   parentStatementId: statementPackage.parentStatementId ?? '',
-  //   subtitle: statementPackage.subtitle ?? '',
-  //   threadId: statementPackage.threadId ?? '',
-  //   title: statementPackage.title ?? '',
-  //   citations: statementPackage.citations ?? [],
-  //   upvotes: statementPackage.upvotes ?? []
-  // };
 
   const parentStatement = thread.find(
     draft => draft.statementId === statementPackage.parentStatementId
