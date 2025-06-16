@@ -81,7 +81,9 @@ const Byline = ({ statement }: { statement: StatementWithUser }) => {
     setButtonStates(prev => ({ ...prev, [authorId]: 'loading' }));
     if (!userId || !authorId) {
       setButtonStates(prev => ({ ...prev, [authorId]: 'error' }));
-      !userId && alert('You must be logged in to follow');
+      if (!userId) {
+        alert('You must be logged in to follow');
+      }
       return;
     }
     try {
