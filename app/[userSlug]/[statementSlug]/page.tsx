@@ -54,7 +54,7 @@ export default async function StatementPage({ params, searchParams }: Props) {
     version: userIsCollaborator ? versionNumber : undefined
   });
 
-  const thread = await getFullThread(statementPackage.threadId ?? '');
+  const thread = statementPackage.threadId ? await getFullThread(statementPackage.threadId) : [];
   const creator = statementPackage.creatorId.toString();
   const isCreator = creator === userId;
   const editMode = edit === 'true' && isCreator;

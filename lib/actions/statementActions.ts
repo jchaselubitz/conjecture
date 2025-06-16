@@ -16,7 +16,6 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import db from "@/lib/database";
-import { createClient } from "@/supabase/server";
 
 import { AuthorGroup, UserStatementRoles } from "../enums/permissions";
 import {
@@ -25,7 +24,7 @@ import {
 } from "../helpers/helpersStatements";
 import { createStatementImageUrl } from "../helpers/helpersStorage";
 
-import { authenticatedUser, getUser } from "./baseActions";
+import { authenticatedUser, getUser, isAuthor } from "./baseActions";
 import { deleteStoredStatementImage } from "./storageActions";
 
 export async function getStatements({
@@ -190,10 +189,17 @@ export async function getPublishedOrLatest(statementSlug: string): Promise<
 > {
   const user = await getUser();
   const userId = user?.id;
+
+  const statement = await db
+    .selectFrom("statement")
+    .selectAll()
+    .where("slug", "=", statementSlug)
+    .executeTakeFirstOrThrow();
+
   const drafts = await db
     .selectFrom("draft")
     .selectAll()
-    .where("statementId", "=", statementSlug)
+    .where("statementId", "=", statement.statementId)
     .execute();
 
   if (drafts.length === 0) {
@@ -697,34 +703,44 @@ export async function upsertStatementImage({
   revalidationPath?: RevalidationPath;
 }) {
   //this needs permissions
-  await authenticatedUser();
-  await db
-    .insertInto("statementImage")
-    .values({
-      id,
-      src,
-      alt,
-      statementId,
-      caption,
-    })
-    .onConflict((oc) =>
-      oc
-        .column("id")
-        .doUpdateSet({
-          src,
-          alt,
-          statementId,
-          caption,
-          id,
-        })
-        .where("statementImage.id", "=", id)
-        .where("statementImage.statementId", "=", statementId)
-    )
-    .execute();
-  revalidatePath(
-    revalidationPath?.path ?? `/[userSlug]`,
-    revalidationPath?.type ?? "layout",
-  );
+  try {
+    const user = await authenticatedUser();
+    await isAuthor(user.id, statementId);
+    await db
+      .insertInto("statementImage")
+      .values({
+        id,
+        src,
+        alt,
+        statementId,
+        caption,
+      })
+      .onConflict((oc) =>
+        oc
+          .column("id")
+          .doUpdateSet({
+            src,
+            alt,
+            statementId,
+            caption,
+            id,
+          })
+          .where("statementImage.id", "=", id)
+          .where("statementImage.statementId", "=", statementId)
+      )
+      .execute();
+    revalidatePath(
+      revalidationPath?.path ?? `/[userSlug]`,
+      revalidationPath?.type ?? "layout",
+    );
+  } catch (error) {
+    if (
+      error instanceof Error && error.message.includes("User not authorized")
+    ) {
+      return { error: "User not authorized" };
+    }
+    return { error: "Failed to upsert statement image" };
+  }
 }
 
 export async function deleteStatementImage(
@@ -732,23 +748,34 @@ export async function deleteStatementImage(
   statementId: string,
   creatorId: string,
 ) {
-  const user = await authenticatedUser(creatorId);
-  const imageUrl = createStatementImageUrl({
-    userId: creatorId,
-    statementId,
-    imageId: id,
-  });
-  await deleteStoredStatementImage({
-    url: imageUrl,
-    creatorId: user.id,
-    statementId,
-  });
+  try {
+    const user = await authenticatedUser();
+    await isAuthor(user.id, statementId);
 
-  await db
-    .deleteFrom("statementImage")
-    .where("id", "=", id)
-    .where("statementId", "=", statementId)
-    .execute();
+    const imageUrl = createStatementImageUrl({
+      userId: creatorId,
+      statementId,
+      imageId: id,
+    });
+    await deleteStoredStatementImage({
+      url: imageUrl,
+      creatorId: user.id,
+      statementId,
+    });
+
+    await db
+      .deleteFrom("statementImage")
+      .where("id", "=", id)
+      .where("statementId", "=", statementId)
+      .execute();
+  } catch (error) {
+    if (
+      error instanceof Error && error.message.includes("User not authorized")
+    ) {
+      return { error: "User not authorized" };
+    }
+    return { error: "Failed to delete statement image" };
+  }
 }
 
 export async function toggleStatementUpvote({

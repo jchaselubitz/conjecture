@@ -52,7 +52,7 @@ export function StatementProvider({
   statementPackage: StatementPackage;
   userId: string | undefined;
   writerUserSlug: string | undefined | null;
-  thread: StatementWithUser[];
+  thread: StatementWithUser[] | [];
   currentUserRole: UserStatementRoles;
   versionList: { versionNumber: number; createdAt: Date }[];
 }) {
