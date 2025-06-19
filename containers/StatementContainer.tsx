@@ -12,9 +12,9 @@ export async function StatementContainer({ edit }: { edit: boolean }) {
   const readerCommentsEnabled = readerCommentCookie ? readerCommentCookie?.value === 'true' : true;
 
   const stackCookie =
-    cookieStore.get('stack_panel_size')?.value ?? JSON.stringify({ size: 25, isOpen: true });
+    cookieStore.get('stack_panel_size')?.value ?? JSON.stringify({ size: 25, isOpen: false });
   const annotationCookie =
-    cookieStore.get('annotation_panel_size')?.value ?? JSON.stringify({ size: 25, isOpen: true });
+    cookieStore.get('annotation_panel_size')?.value ?? JSON.stringify({ size: 30, isOpen: false });
   const panelSizes = balancePanelSizes({ stackCookie, annotationCookie });
 
   return (

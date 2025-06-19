@@ -31,6 +31,8 @@ import EditNav from '../navigation/edit_nav';
 
 import AnnotationDrawer from './annotation/annotation_drawer';
 import StatementDetails from './statement_details';
+import { Button } from '../ui/button';
+import { ArrowLeftToLineIcon, Sidebar } from 'lucide-react';
 
 interface StatementDetailsProps {
   authorCommentsEnabled: boolean;
@@ -73,6 +75,9 @@ export default function StatementLayout({
   const [showAuthorComments, setShowAuthorComments] = useState(authorCommentsEnabled);
   const [showReaderComments, setShowReaderComments] = useState(readerCommentsEnabled);
   const [annotationMode, setAnnotationMode] = useState<boolean>(!isMobile);
+  const [showAnnotationsButton, setShowAnnotationsButton] = useState(
+    !getPanelState('annotation_panel_size').isOpen
+  );
 
   const handleDeleteAnnotation = async (annotation: AnnotationWithComments) => {
     if (!annotation) return;
@@ -128,6 +133,7 @@ export default function StatementLayout({
     setReplyToComment(null);
     setComments([]);
     setSelectedAnnotation(null);
+    setShowAnnotationsButton(true);
     setPanelState({
       target: 'annotation_panel_size',
       isOpen: false,
@@ -145,6 +151,20 @@ export default function StatementLayout({
       size: savedStackSize,
       panelGroupRef
     });
+  };
+
+  const handleOpenComments = () => {
+    const { size: savedAnnotationPanelSize, isOpen: savedAnnotationPanelOpen } =
+      getPanelState('annotation_panel_size');
+    if (!savedAnnotationPanelOpen) {
+      setShowAnnotationsButton(false);
+      setPanelState({
+        target: 'annotation_panel_size',
+        isOpen: true,
+        size: savedAnnotationPanelSize,
+        panelGroupRef
+      });
+    }
   };
 
   const handleCloseAnnotationDrawer = () => {
@@ -221,6 +241,7 @@ export default function StatementLayout({
         editMode={editMode && isCreator}
         showAuthorComments={showAuthorComments}
         showReaderComments={showReaderComments}
+        handleOpenComments={handleOpenComments}
         onShowAuthorCommentsChange={onShowAuthorCommentsChange}
         onShowReaderCommentsChange={onShowReaderCommentsChange}
         panelGroupRef={panelGroupRef}
@@ -245,7 +266,7 @@ export default function StatementLayout({
     <ResizablePanelGroup direction="horizontal" ref={panelGroupRef} onLayout={onLayout}>
       <ResizablePanel
         id="card-stack"
-        defaultSize={startingPanelSizes[0]}
+        defaultSize={familyTree.hasPosts ? startingPanelSizes[0] : 0}
         minSize={minStackSize}
         maxSize={30}
         collapsible={true}
@@ -267,12 +288,34 @@ export default function StatementLayout({
       <ResizableHandle />
       <ResizablePanel id="editor" defaultSize={startingPanelSizes[1]} minSize={minEditorPanelSize}>
         <div className=" flex flex-col overflow-y-auto h-full">
+          <div className="hidden md:flex justify-between items-center  sticky top-0">
+            {
+              <Button
+                variant="ghost"
+                size="icon"
+                className=" z-50 mt-1 "
+                onClick={handleToggleStack}
+              >
+                <Sidebar className="w-4 h-4" />
+              </Button>
+            }
+            {!editMode && showAnnotationsButton && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="z-50 mt-1"
+                onClick={handleOpenComments}
+              >
+                <ArrowLeftToLineIcon className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
           <StatementDetails
             parentStatement={parentStatement}
-            handleToggleStack={handleToggleStack}
             editMode={editMode && isCreator}
             showAuthorComments={showAuthorComments}
             showReaderComments={showReaderComments}
+            handleOpenComments={handleOpenComments}
             onShowAuthorCommentsChange={onShowAuthorCommentsChange}
             onShowReaderCommentsChange={onShowReaderCommentsChange}
             panelGroupRef={panelGroupRef}

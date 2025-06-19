@@ -28,8 +28,8 @@ export default function AnnotationPanel({
   const { selectedAnnotationId } = useStatementAnnotationContext();
 
   return (
-    <div className="flex flex-col mt-4 gap-6 mx-auto overflow-auto w-full">
-      <div className="flex justify-between mx-auto max-w-11/12 w-full items-center">
+    <div className="flex flex-col mt-1 gap-6 mx-auto overflow-auto w-full">
+      <div className="flex justify-between pl-4 w-full items-center">
         <h2 className="text-lg font-bold">Comments</h2>
         <Button variant="ghost" onClick={handleCloseAnnotationPanel}>
           <ArrowRightToLineIcon className="w-4 h-4" />

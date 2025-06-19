@@ -1,5 +1,5 @@
 import { BaseStatementCitation, StatementWithUser } from 'kysely-codegen';
-import { ChevronLeft, Loader2, Sidebar, Upload } from 'lucide-react';
+import { ArrowLeftToLineIcon, ChevronLeft, Loader2, Sidebar, Upload } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -39,7 +39,7 @@ export interface StatementDetailsProps {
   editMode: boolean;
   showAuthorComments: boolean;
   showReaderComments: boolean;
-  handleToggleStack?: () => void;
+  handleOpenComments?: () => void;
   onShowAuthorCommentsChange: (checked: boolean) => void;
   onShowReaderCommentsChange: (checked: boolean) => void;
   panelGroupRef: RefObject<ImperativePanelGroupHandle | null>;
@@ -56,7 +56,7 @@ export default function StatementDetails({
   editMode,
   showAuthorComments,
   showReaderComments,
-  handleToggleStack,
+  handleOpenComments,
   onShowAuthorCommentsChange,
   onShowReaderCommentsChange,
   panelGroupRef,
@@ -103,16 +103,7 @@ export default function StatementDetails({
 
   const handleAnnotationClick = async (annotationId: string) => {
     setSelectedAnnotationId(annotationId);
-    const { size: savedAnnotationPanelSize, isOpen: savedAnnotationPanelOpen } =
-      getPanelState('annotation_panel_size');
-    if (!savedAnnotationPanelOpen) {
-      setPanelState({
-        target: 'annotation_panel_size',
-        isOpen: true,
-        size: savedAnnotationPanelSize,
-        panelGroupRef
-      });
-    }
+    handleOpenComments?.();
   };
 
   const handlePhotoButtonClick = () => {
@@ -194,16 +185,18 @@ export default function StatementDetails({
 
   return (
     <div className="overflow-y-auto h-full">
-      {handleToggleStack && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className=" z-50 sticky top-0"
-          onClick={handleToggleStack}
-        >
-          <Sidebar className="w-4 h-4" />
-        </Button>
-      )}
+      {/* <div className="hidden md:flex justify-between items-center  sticky top-0">
+        {handleToggleStack && (
+          <Button variant="ghost" size="icon" className=" z-50 mt-1 " onClick={handleToggleStack}>
+            <Sidebar className="w-4 h-4" />
+          </Button>
+        )}
+        {handleOpenComments && !editMode && (
+          <Button variant="ghost" size="icon" className="z-50 mt-1" onClick={handleOpenComments}>
+            <ArrowLeftToLineIcon className="w-4 h-4" />
+          </Button>
+        )}
+      </div> */}
       <div className="flex flex-col md:mt-12 md:mx-auto w-full max-w-screen md:max-w-3xl  ">
         {headerImg ? (
           <div className="relative group md:px-4">
