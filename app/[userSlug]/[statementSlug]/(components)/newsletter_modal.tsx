@@ -2,10 +2,12 @@
 
 import { StatementWithUser } from 'kysely-codegen';
 import React from 'react';
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+
 import { Button } from '@/components/ui/button';
-import Newsletter from './newsletter';
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
+
+import Newsletter from './newsletter';
 
 interface NewsletterModalProps {
   statement: StatementWithUser;

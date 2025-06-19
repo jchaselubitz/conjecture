@@ -3,6 +3,7 @@ import { BarChart3, CalendarClock, MoreHorizontal, PencilLine, Trash2 } from 'lu
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import NewsletterModal from '@/app/[userSlug]/[statementSlug]/(components)/newsletter_modal';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
 import {
@@ -28,7 +29,6 @@ import { Input } from '../ui/input';
 import { ButtonLoadingState } from '../ui/loading-button';
 import { Separator } from '../ui/separator';
 import ViewModeButton from '../view_mode_button';
-import NewsletterModal from '@/app/[userSlug]/[statementSlug]/(components)/newsletter_modal';
 
 import { CommentIndicatorButton } from './comments_menu';
 import RebuttalButton from './rebuttal_button';

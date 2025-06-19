@@ -4,6 +4,7 @@ import './prose.css';
 
 import * as Sentry from '@sentry/nextjs';
 import { AnnotationWithComments } from 'kysely-codegen';
+import { ArrowLeftToLineIcon, Sidebar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
@@ -28,11 +29,10 @@ import { groupThreadsByParentId } from '@/lib/helpers/helpersStatements';
 
 import VerticalCardStack from '../card_stacks/vertical_card_stack';
 import EditNav from '../navigation/edit_nav';
+import { Button } from '../ui/button';
 
 import AnnotationDrawer from './annotation/annotation_drawer';
 import StatementDetails from './statement_details';
-import { Button } from '../ui/button';
-import { ArrowLeftToLineIcon, Sidebar } from 'lucide-react';
 
 interface StatementDetailsProps {
   authorCommentsEnabled: boolean;
@@ -255,7 +255,10 @@ export default function StatementLayout({
         filteredAnnotations={filteredAnnotations}
         handleAnnotationSelection={handleAnnotationSelection}
         annotations={annotations}
-        statement={updatedStatement}
+        statement={{
+          statementId: updatedStatement.statementId,
+          creatorId: updatedStatement.creatorId
+        }}
         selectedAnnotation={selectedAnnotation}
         handleDeleteAnnotation={handleDeleteAnnotation}
       />

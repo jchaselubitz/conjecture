@@ -1,7 +1,8 @@
 'use client';
 import { StatementWithUser } from 'kysely-codegen';
-import { getNewsletterHtml } from '@/lib/assets/newsletter_template';
 import React from 'react';
+
+import { getNewsletterHtml } from '@/lib/assets/newsletter_template';
 
 export default function Newsletter({ statement }: { statement: StatementWithUser }) {
   const title = statement.title || '';

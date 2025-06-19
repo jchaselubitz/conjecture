@@ -1,6 +1,7 @@
 'use client';
 
 import { StatementWithUser } from 'kysely-codegen';
+import Link from 'next/link';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -11,7 +12,6 @@ import { useUserContext } from '@/contexts/userContext';
 import { getFollow, toggleFollow } from '@/lib/actions/userActions';
 import { formatDate } from '@/lib/helpers/helpersDate';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
 
 type author = {
   id: string;
