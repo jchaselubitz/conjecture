@@ -7,7 +7,7 @@
     "stop": "supabase stop",
     "generate": "kysely-codegen --env-file .env.local",
     "generate-deploy": "kysely-codegen",
-    "new": "rm -rf node_modules && yarn cache clean && yarn install && yarn generate",
+    "new": "rm -rf node_modules && rm -rf .next && rm -rf .netlify && yarn cache clean && yarn install && yarn generate",
     "nuke": "yarn install && supabase db reset && supabase start && supabase status && yarn generate",
     "create-migration": "supabase db diff --use-migra -f local_schema",
     "ngrok": "ngrok http --domain=romantic-pig-living.ngrok-free.app 3000",

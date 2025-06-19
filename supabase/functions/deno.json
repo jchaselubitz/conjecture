@@ -1,0 +1,9 @@
+{
+  "tasks": {
+    "dev": "deno run --watch main.ts"
+  },
+  "imports": {
+    "date-fns/": "npm:date-fns@4.1.0/",
+    "date-fns-tz/": "npm:date-fns-tz@3.1.3/"
+  }
+}

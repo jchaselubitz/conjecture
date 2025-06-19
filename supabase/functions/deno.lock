@@ -1,0 +1,10 @@
+{
+  "version": "3",
+  "remote": {},
+  "workspace": {
+    "dependencies": [
+      "npm:date-fns-tz@3.1.3",
+      "npm:date-fns@4.1.0"
+    ]
+  }
+}
