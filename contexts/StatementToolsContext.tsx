@@ -32,6 +32,8 @@ interface StatementToolsContextType {
   setImageLightboxOpen: (open: boolean) => void;
   videoPopoverOpen: boolean;
   setVideoPopoverOpen: (open: boolean) => void;
+  newsletterModalOpen: boolean;
+  setNewsletterModalOpen: (open: boolean) => void;
   initialImageData: UpsertImageDataType;
   setInitialImageData: Dispatch<SetStateAction<UpsertImageDataType>>;
   citationData: NewStatementCitation;
@@ -93,7 +95,8 @@ export function StatementToolsProvider({ children }: { children: ReactNode }) {
     image: false,
     citation: false,
     imageLightbox: false,
-    video: false
+    video: false,
+    newsletterModal: false
   });
 
   const setLatexPopoverOpen = (open: boolean) =>
@@ -106,6 +109,8 @@ export function StatementToolsProvider({ children }: { children: ReactNode }) {
     setPopoverState(prev => ({ ...prev, imageLightbox: open }));
   const setVideoPopoverOpen = (open: boolean) =>
     setPopoverState(prev => ({ ...prev, video: open }));
+  const setNewsletterModalOpen = (open: boolean) =>
+    setPopoverState(prev => ({ ...prev, newsletterModal: open }));
 
   return (
     <StatementToolsContext.Provider
@@ -120,6 +125,8 @@ export function StatementToolsProvider({ children }: { children: ReactNode }) {
         setImageLightboxOpen,
         videoPopoverOpen: popoverState.video,
         setVideoPopoverOpen,
+        newsletterModalOpen: popoverState.newsletterModal,
+        setNewsletterModalOpen,
         currentLatex,
         setCurrentLatex,
         initialImageData,

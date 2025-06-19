@@ -7,6 +7,7 @@ import {
   PencilLine,
   Trash2
 } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -35,6 +36,7 @@ import { Input } from '../ui/input';
 import { ButtonLoadingState } from '../ui/loading-button';
 import { Separator } from '../ui/separator';
 import ViewModeButton from '../view_mode_button';
+import NewsletterModal from '@/app/[userSlug]/[statementSlug]/(components)/newsletter_modal';
 
 import { CommentIndicatorButton } from './comments_menu';
 import RebuttalButton from './rebuttal_button';
@@ -171,17 +173,24 @@ export default function StatementOptions({
               existingThreadId={statement.threadId}
             />
           )}
-          {statement.statementId && (
+          {!editMode && statement.statementId && (
             <VoteButton statementId={statement.statementId} upvotes={statement.upvotes || []} />
           )}
         </div>
-        <div className="flex items-center gap-3 w-full justify-end">
+        <div className="flex items-center gap-3  justify-end">
           {editMode ? (
-            <ViewModeButton
-              size="sm"
-              handleEditModeToggle={handleEditModeToggle}
-              className="w-full"
-            />
+            <>
+              <NewsletterModal statement={statement}>
+                <Button variant="outline" size="sm">
+                  Preview newsletter
+                </Button>
+              </NewsletterModal>
+              <ViewModeButton
+                size="sm"
+                handleEditModeToggle={handleEditModeToggle}
+                className="w-full"
+              />
+            </>
           ) : (
             <>
               <ShareButton updatedStatement={statement} />

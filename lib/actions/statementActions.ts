@@ -97,11 +97,24 @@ export async function getStatements({
     .where("id", "in", authorIds)
     .execute();
 
+  const getStatementAuthors = (
+    statement: {
+      collaborators: { userId: string }[];
+    },
+    profiles: BaseProfile[],
+  ) => {
+    return statement.collaborators
+      .map((collaborator) =>
+        profiles.find((profile) => profile.id === collaborator.userId)
+      )
+      .filter((profile): profile is BaseProfile => !!profile);
+  };
+
   return statementsList.map((statement) => ({
     ...statement,
     creatorSlug: profiles.find((profile) => profile.id === statement.creatorId)
       ?.username,
-    authors: profiles,
+    authors: getStatementAuthors(statement, profiles),
     draft: {
       publishedAt: statement.publishedAt,
       versionNumber: statement.versionNumber,

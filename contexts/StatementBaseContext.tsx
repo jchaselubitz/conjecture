@@ -2,8 +2,8 @@
 
 import * as Sentry from '@sentry/nextjs';
 import { Editor } from '@tiptap/react';
-import { DraftWithAnnotations, StatementPackage, StatementWithUser } from 'kysely-codegen';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { StatementPackage, StatementWithUser } from 'kysely-codegen';
+import { useRouter } from 'next/navigation';
 import {
   createContext,
   Dispatch,
@@ -11,7 +11,6 @@ import {
   SetStateAction,
   useContext,
   useEffect,
-  useMemo,
   useState
 } from 'react';
 import { useDebounce } from 'use-debounce';
