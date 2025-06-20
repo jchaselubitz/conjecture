@@ -2,8 +2,8 @@ import { StatementPackage } from 'kysely-codegen';
 import { BarChart3, CalendarClock, MoreHorizontal, PencilLine, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import Link from 'next/link';
 
-import NewsletterModal from '@/app/[userSlug]/[statementSlug]/(components)/newsletter_modal';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
 import {
@@ -172,11 +172,11 @@ export default function StatementOptions({
         <div className="flex items-center gap-3  justify-end">
           {editMode ? (
             <>
-              <NewsletterModal statement={statement}>
+              <Link href={`/${statement.creatorSlug}/${statement.slug}/newsletter`}>
                 <Button variant="outline" size="sm">
                   Preview newsletter
                 </Button>
-              </NewsletterModal>
+              </Link>
               <ViewModeButton
                 size="sm"
                 handleEditModeToggle={handleEditModeToggle}

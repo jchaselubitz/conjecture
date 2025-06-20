@@ -4,8 +4,8 @@ import {
   Kysely,
   PostgresDialect,
   Selectable,
-  Updateable
-} from 'kysely';
+  Updateable,
+} from "kysely";
 import {
   Annotation,
   Collaborator,
@@ -14,29 +14,29 @@ import {
   DB,
   Draft,
   Follow,
-  NotificationPolicy,
   Profile,
   Statement,
   StatementCitation,
   StatementImage,
-  StatementVote
-} from 'kysely-codegen';
-import { Pool } from 'pg';
+  StatementVote,
+  Subscription,
+} from "kysely-codegen";
+import { Pool } from "pg";
 
 const db = new Kysely<DB>({
   plugins: [new CamelCasePlugin()],
   dialect: new PostgresDialect({
     pool: new Pool({
       connectionString: process.env.DATABASE_URL,
-      max: 10
-    })
-  })
+      max: 10,
+    }),
+  }),
 });
 
-declare module 'kysely-codegen' {
+declare module "kysely-codegen" {
   export type RevalidationPath = {
     path: string;
-    type?: 'page' | 'layout' | undefined;
+    type?: "page" | "layout" | undefined;
   };
 
   export type BaseProfile = Selectable<Profile>;
@@ -49,6 +49,18 @@ declare module 'kysely-codegen' {
   export type BaseCollaborator = Selectable<Collaborator>;
   export type NewCollaborator = Insertable<Collaborator>;
   export type EditedCollaborator = Updateable<Collaborator>;
+
+  export type NotificationMedium = "email";
+
+  export type BaseSubscription = Selectable<Subscription>;
+  export type SubscriptionWithRecipient = BaseSubscription & {
+    recipientUsername: string | null;
+    recipientName: string | null;
+    recipientImageUrl: string | null;
+    recipientEmail: string | null;
+  };
+  export type NewSubscription = Insertable<Subscription>;
+  export type EditedSubscription = Updateable<Subscription>;
 
   export type BaseStatementImage = Selectable<StatementImage>;
   export type NewStatementImage = Insertable<StatementImage> & {
@@ -148,10 +160,5 @@ declare module 'kysely-codegen' {
     citations: BaseStatementCitation[];
     upvotes: BaseStatementVote[];
   };
-
-  export type NotificationMedium = 'email';
-  export type BaseNotificationPolicy = Selectable<NotificationPolicy>;
-  export type NewNotificationPolicy = Insertable<NotificationPolicy>;
-  export type EditedNotificationPolicy = Updateable<NotificationPolicy>;
 }
 export default db;

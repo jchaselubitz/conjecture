@@ -4,7 +4,7 @@ export function getNewsletterHtml({
   subtitle,
   htmlContent,
   authors,
-  postUrl
+  postUrl,
 }: {
   headerImg: string;
   title: string;
@@ -19,15 +19,18 @@ export function getNewsletterHtml({
   postUrl: string;
 }): string {
   // Create the full URL with UTM parameters
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://conject.io';
-  const fullPostUrl = `${baseUrl}${postUrl}?utm_source=newsletter&utm_medium=email&utm_campaign=statement_share`;
+  const baseUrl = typeof window !== "undefined"
+    ? window.location.origin
+    : "https://conject.io";
+  const fullPostUrl =
+    `${baseUrl}${postUrl}?utm_source=newsletter&utm_medium=email&utm_campaign=statement_share`;
 
   // Update the htmlContent to replace annotation marks with clickable links
   const updatedHtmlContent = htmlContent.replace(
     /<mark class="annotation"[^>]*data-annotation-id="([^"]*)"[^>]*>(.*?)<\/mark>/g,
     (match, annotationId, content) => {
       return `<a href="${fullPostUrl}&annotation-id=${annotationId}" target="_blank" class="annotation-link">${content}</a>`;
-    }
+    },
   );
 
   return `
@@ -45,7 +48,7 @@ export function getNewsletterHtml({
       body {
         margin: 0;
         padding: 0;
-        background: #f7f7f7;
+        background: #fff;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         line-height: 1.6;
         color: #222;
@@ -201,9 +204,9 @@ export function getNewsletterHtml({
         max-width: 768px;
         margin: 0 auto;
         background: #fff;
-        border-radius: 8px;
+    
         overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+   
       }
       
       .header-image {
@@ -223,7 +226,7 @@ export function getNewsletterHtml({
       }
       
       .content-wrapper {
-        padding: 32px 24px;
+        padding: 24px 0; 
       }
       
       .title-section {
@@ -341,52 +344,58 @@ export function getNewsletterHtml({
     </style>
   </head>
   <body>
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f7f7f7;padding:24px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;padding:24px 0;">
       <tr>
         <td align="center">
           <div class="main-container">
             ${
-              headerImg
-                ? `
+    headerImg
+      ? `
               <a href="${fullPostUrl}" class="header-link">
                 <img src="${headerImg}" alt="Header Image" class="header-image">
               </a>
             `
-                : ''
-            }
+      : ""
+  }
             
             <div class="content-wrapper">
               <a href="${fullPostUrl}" class="title-link">
                 <div class="title-section">
                   <h1>${title}</h1>
-                  ${subtitle ? `<h2>${subtitle}</h2>` : ''}
+                  ${subtitle ? `<h2>${subtitle}</h2>` : ""}
                 </div>
               </a>
               
               ${
-                authors.length > 0
-                  ? `
+    authors.length > 0
+      ? `
                 <a href="${fullPostUrl}" class="byline">
                   <div class="avatar-group">
-                    ${authors
-                      .map(author =>
-                        author.imageUrl
-                          ? `<img src="${author.imageUrl}" alt="${
-                              author.name || author.username || ''
-                            }" class="avatar">`
-                          : `<div class="avatar">${(author.name || author.username || '')
-                              .slice(0, 2)
-                              .toUpperCase()}</div>`
-                      )
-                      .join('')}
+                    ${
+        authors
+          .map((author) =>
+            author.imageUrl
+              ? `<img src="${author.imageUrl}" alt="${
+                author.name || author.username || ""
+              }" class="avatar">`
+              : `<div class="avatar">${
+                (author.name || author.username || "")
+                  .slice(0, 2)
+                  .toUpperCase()
+              }</div>`
+          )
+          .join("")
+      }
                   </div>
                   <div class="authors">
-                    ${authors.map(author => author.name || author.username).join(', ')}
+                    ${
+        authors.map((author) => author.name || author.username).join(", ")
+      }
                   </div>
                 </a>
               `
-                  : ''
-              }
+      : ""
+  }
               
               <div class="content-area">
                 ${updatedHtmlContent}

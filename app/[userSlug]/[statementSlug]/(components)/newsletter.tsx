@@ -3,8 +3,12 @@ import { StatementWithUser } from 'kysely-codegen';
 import React from 'react';
 
 import { getNewsletterHtml } from '@/lib/assets/newsletter_template';
+import { useNavContext } from '@/contexts/NavContext';
 
 export default function Newsletter({ statement }: { statement: StatementWithUser }) {
+  const { setShowNav } = useNavContext();
+  setShowNav(false);
+
   const title = statement.title || '';
   const subtitle = statement.subtitle || '';
   const headerImg = statement.headerImg || '';
@@ -21,5 +25,9 @@ export default function Newsletter({ statement }: { statement: StatementWithUser
     postUrl
   });
 
-  return <div dangerouslySetInnerHTML={{ __html: newsletterHtml }} />;
+  return (
+    <div className="h-full overflow-y-auto">
+      <div dangerouslySetInnerHTML={{ __html: newsletterHtml }} />
+    </div>
+  );
 }

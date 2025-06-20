@@ -154,17 +154,6 @@ async function main() {
         email: "simas@c.com",
         username: "simas",
       },
-      deleted_at: null,
-      invited_at: null,
-      confirmation_token: null,
-      confirmation_sent_at: null,
-      recovery_token: null,
-      recovery_sent_at: null,
-      email_change_token_new: null,
-      email_change: "",
-      email_change_sent_at: null,
-      last_sign_in_at: null,
-      banned_until: null,
     },
   ]);
   const generatedUsers = await seed.users(
@@ -184,40 +173,53 @@ async function main() {
           email,
           username: email.split("@")[0],
         },
-        deleted_at: null,
-        invited_at: null,
-        confirmation_token: null,
-        confirmation_sent_at: null,
-        recovery_token: null,
-        recovery_sent_at: null,
-        email_change_token_new: null,
-        email_change: "",
-        email_change_sent_at: null,
-        last_sign_in_at: null,
       };
     }),
   );
   const users = [...fixedUsers.users, ...generatedUsers.users];
 
   // --- Generate follows ---
-  // const follows = await seed.follow(Array.from({ length: 10 }).map((_, i) => {
-  //  const followerIdx = copycat.int(`follow-follower-${i}`, {
-  //   min: 0,
-  //   max: users.length - 1,
-  //  });
-  //  let followedIdx;
-  //  do {
-  //   followedIdx = copycat.int(`follow-followed-${i}`, {
-  //    min: 0,
-  //    max: users.length - 1,
-  //   });
-  //  } while (followedIdx === followerIdx);
-  //  return {
-  //   follower: users[followerIdx].id,
-  //   followed: users[followedIdx].id,
-  //   created_at: new Date().toISOString(),
-  //  };
-  // }));
+  const fixedFollow = await seed.follow([
+    {
+      followed: fixedUsers.users[0].id,
+      follower: fixedUsers.users[1].id,
+      created_at: new Date().toISOString(),
+    },
+    {
+      followed: fixedUsers.users[0].id,
+      follower: fixedUsers.users[2].id,
+      created_at: new Date().toISOString(),
+    },
+    {
+      followed: fixedUsers.users[0].id,
+      follower: fixedUsers.users[3].id,
+      created_at: new Date().toISOString(),
+    },
+  ]);
+
+  const fixedSubscriptions = await seed.public_subscription([
+    {
+      author_id: fixedUsers.users[0].id,
+      recipient_id: fixedUsers.users[1].id,
+      email: fixedUsers.users[1].email ?? undefined,
+      medium: "email",
+      created_at: new Date().toISOString(),
+    },
+    {
+      author_id: fixedUsers.users[0].id,
+      recipient_id: fixedUsers.users[2].id,
+      email: fixedUsers.users[2].email ?? undefined,
+      medium: "email",
+      created_at: new Date().toISOString(),
+    },
+    {
+      author_id: fixedUsers.users[0].id,
+      recipient_id: fixedUsers.users[3].id,
+      email: fixedUsers.users[3].email ?? undefined,
+      medium: "email",
+      created_at: new Date().toISOString(),
+    },
+  ]);
 
   // --- Generate draft ---
   const statementIds = Array.from({ length: 10 }).map((_, i) => {

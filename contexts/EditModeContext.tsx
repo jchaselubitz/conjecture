@@ -1,5 +1,6 @@
 'use client';
-import { createContext, ReactNode, useContext, useState } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { useNavContext } from './NavContext';
 
 interface EditModeContextType {
   editMode: boolean;
@@ -9,7 +10,16 @@ interface EditModeContextType {
 const EditModeContext = createContext<EditModeContextType | undefined>(undefined);
 
 export function EditModeProvider({ children }: { children: ReactNode }) {
+  const { setShowNav } = useNavContext();
   const [editMode, setEditMode] = useState(false);
+
+  useEffect(() => {
+    if (editMode) {
+      setShowNav(false);
+    } else {
+      setShowNav(true);
+    }
+  }, [editMode, setShowNav]);
 
   return (
     <EditModeContext.Provider value={{ editMode, setEditMode }}>

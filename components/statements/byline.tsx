@@ -58,7 +58,6 @@ const Byline = ({ statement }: { statement: StatementWithUser }) => {
 
   // const getFollowerCount = async () => {
   //   console.log('getFollowerCount');
-
   //   const followers = await getFollowers(statement?.creatorId);
   //   console.log(followers);
   //   setFollowerCount(followers.length);
@@ -87,7 +86,7 @@ const Byline = ({ statement }: { statement: StatementWithUser }) => {
       return;
     }
     try {
-      await toggleFollow({ followerId: userId, followingId: authorId });
+      await toggleFollow({ followingId: authorId });
       setButtonStates(prev => ({ ...prev, [authorId]: 'success' }));
       getIsFollowing(authorId);
     } catch (error) {

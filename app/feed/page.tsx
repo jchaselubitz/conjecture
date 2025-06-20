@@ -38,7 +38,7 @@ export default async function Feed() {
             <div className="text-center py-12 col-span-full">
               <h3 className="text-lg font-medium">No content in your feed yet</h3>
               <p className="text-muted-foreground mt-1">
-                Follow users to see their statements in your feed
+                Subscribe to users to see their statements in your feed
               </p>
             </div>
           )}

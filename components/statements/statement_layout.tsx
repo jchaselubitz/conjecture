@@ -11,7 +11,7 @@ import { useWindowSize } from 'react-use';
 
 import AnnotationPanel from '@/components/statements/annotation/annotation_panel';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import { useEditModeContext } from '@/contexts/EditModeProvider';
+import { useEditModeContext } from '@/contexts/EditModeContext';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementUpdateContext } from '@/contexts/StatementUpdateProvider';

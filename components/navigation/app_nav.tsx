@@ -3,7 +3,6 @@ import { Menu } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { useEditModeContext } from '@/contexts/EditModeProvider';
 import { useUserContext } from '@/contexts/userContext';
 
 import CreatePostButton from '../special_buttons/create_post_button';
@@ -11,13 +10,14 @@ import { Button } from '../ui/button';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '../ui/drawer';
 
 import UserButton from './user_button';
+import { useNavContext } from '@/contexts/NavContext';
 
 export default function AppNav() {
   const [open, setOpen] = useState(false);
   const { userId, currentUserSlug } = useUserContext();
-  const { editMode } = useEditModeContext();
+  const { showNav } = useNavContext();
 
-  if (editMode) return null;
+  if (!showNav) return null;
 
   return (
     <header className="border-b px-4 z-40 bg-background">
