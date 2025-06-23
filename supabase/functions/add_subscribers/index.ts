@@ -64,9 +64,10 @@ async function addSubscribers(authorId: string, emails: string[]) {
   paused: subscription.paused,
   medium: subscription.medium,
   author_id: subscription.authorId,
-  recipient_id: profiles.find((profile: any) =>
+  recipient_id: profiles.find((profile: { email: string; id: string }) =>
    profile.email === subscription.email
-  )?.id,
+  )
+   ?.id,
  }));
 
  const subscriptionsWithoutExistingProfiles = subscriptionsWithProfileIds
@@ -79,10 +80,13 @@ async function addSubscribers(authorId: string, emails: string[]) {
   ...subscriptionsWithProfileIds,
  ];
 
- // Insert subscriptions into the database
+ // Insert subscriptions into the database, skip on conflicts
  const { data, error } = await supabase
   .from("subscription")
-  .insert(allSubscriptions)
+  .upsert(allSubscriptions, {
+   onConflict: "email, author_id, medium",
+   ignoreDuplicates: false,
+  })
   .select();
 
  if (error) {

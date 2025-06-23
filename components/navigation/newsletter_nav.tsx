@@ -9,6 +9,7 @@ import { useEditModeContext } from '@/contexts/EditModeContext';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
 import { sendEmail } from '@/lib/actions/notificationActions';
+import { getNewsletterHtml } from '@/lib/assets/newsletter_template';
 
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
@@ -34,6 +35,24 @@ export default function NewsletterNav() {
     setTestEmails(newEmails);
   };
 
+  const headerImg = updatedStatement?.headerImg || '';
+  const title = updatedStatement?.title || '';
+  const subtitle = updatedStatement?.subtitle || '';
+  const htmlContent = updatedStatement?.draft.content || '';
+  const authors = updatedStatement?.authors || [];
+  const postUrl = `/${currentUserSlug}/${updatedStatement?.slug}`;
+
+  const newsletterHtml = getNewsletterHtml({
+    headerImg,
+    title,
+    subtitle,
+    htmlContent,
+    authors,
+    postUrl,
+    creatorId: updatedStatement.creatorId,
+    subscriberEmail: testEmails[0]
+  });
+
   const handleSendEmail = async () => {
     setSendEmailState('loading');
     try {
@@ -44,7 +63,7 @@ export default function NewsletterNav() {
         message: JSON.stringify({
           subject: updatedStatement.title,
           from: 'Conject <jake@notifications.cooperativ.io>',
-          html: updatedStatement.draft.content
+          html: newsletterHtml
         })
       });
       setSendEmailState('success');

@@ -30,11 +30,18 @@ export default function UserMenu({ isMenuOpen, setIsMenuOpen, children }: UserMe
     <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{name}</p>
-          </div>
-        </DropdownMenuLabel>
+        {name ? (
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">{name}</p>
+            </div>
+          </DropdownMenuLabel>
+        ) : (
+          <DropdownMenuItem className="font-normal" onClick={() => setSettingsDialog(true)}>
+            Add your name
+          </DropdownMenuItem>
+        )}
+
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={() => setSettingsDialog(true)}>

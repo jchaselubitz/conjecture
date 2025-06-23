@@ -60,6 +60,16 @@ export const getUserProfile = async (slug?: string): Promise<BaseProfile | null 
   return result as BaseProfile;
 };
 
+export const getUserByEmail = async (email: string): Promise<BaseProfile | null> => {
+  const profile = await db
+    .selectFrom('profile')
+    .selectAll()
+    .where('profile.email', '=', email)
+    .executeTakeFirst();
+
+  return profile as BaseProfile | null;
+};
+
 export async function createAnonymousUser() {
   const supabase = await createClient();
   const { error } = await supabase.auth.signInAnonymously({
@@ -362,7 +372,11 @@ export const toggleFollow = async ({ followingId }: { followingId: string }) => 
       .where('follower', '=', followerId)
       .where('followed', '=', followingId)
       .execute();
-    await db.deleteFrom('subscription').where('authorId', '=', followingId).execute();
+    await db
+      .deleteFrom('subscription')
+      .where('recipientId', '=', followerId)
+      .where('authorId', '=', followingId)
+      .execute();
   } else {
     await db
       .insertInto('follow')
@@ -370,6 +384,11 @@ export const toggleFollow = async ({ followingId }: { followingId: string }) => 
         follower: followerId,
         followed: followingId
       })
+      .execute();
+    await db
+      .deleteFrom('subscription') //effectively upserting incase the user's email is already subscribed to the author
+      .where('recipientId', '=', followerId)
+      .where('authorId', '=', followingId)
       .execute();
     await db
       .insertInto('subscription')

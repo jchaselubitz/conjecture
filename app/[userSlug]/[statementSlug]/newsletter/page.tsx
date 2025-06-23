@@ -55,7 +55,7 @@ export default async function NewsletterPage({ params, searchParams }: Props) {
             </div>
           )}
 
-          <Newsletter statement={statementPackage} />
+          <Newsletter statement={statementPackage} subscriberEmail={''} />
         </ResizablePanel>
         <ResizableHandle />
         {isCreator && (

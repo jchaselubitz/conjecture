@@ -4,7 +4,9 @@ export function getNewsletterHtml({
   subtitle,
   htmlContent,
   authors,
-  postUrl
+  postUrl,
+  creatorId,
+  subscriberEmail
 }: {
   headerImg: string;
   title: string;
@@ -16,11 +18,18 @@ export function getNewsletterHtml({
     username: string | null | undefined;
     imageUrl: string | null | undefined;
   }>;
+
   postUrl: string;
+  creatorId: string;
+  subscriberEmail?: string;
 }): string {
   // Create the full URL with UTM parameters
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://conject.io';
   const fullPostUrl = `${baseUrl}${postUrl}?utm_source=newsletter&utm_medium=email&utm_campaign=statement_share`;
+
+  const unsubscribeUrl = subscriberEmail
+    ? `${baseUrl}/${creatorId}/unsubscribe?address=${subscriberEmail}`
+    : `${baseUrl}/${creatorId}/unsubscribe`;
 
   // Update the htmlContent to replace annotation marks with clickable links
   const updatedHtmlContent = htmlContent.replace(
@@ -341,6 +350,14 @@ export function getNewsletterHtml({
     </style>
   </head>
   <body>
+    <!-- Browser view invitation -->
+    <div style="text-align: center; padding: 12px; font-size: 11px; color: #9ca3af; background: #f9fafb;">
+      Having trouble viewing this email? 
+      <a href="${fullPostUrl}" style="color: #6b7280; text-decoration: underline;">
+        View in browser
+      </a>
+    </div>
+    
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;padding:24px 0;">
       <tr>
         <td align="center">
@@ -396,6 +413,16 @@ export function getNewsletterHtml({
         </td>
       </tr>
     </table>
+    <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid #dde4ed; font-size: 12px; color: #6b7280; text-align: center;">
+      <p style="margin-bottom: 0;">
+        ${authors
+          .map(author => author.name || author.username)
+          .join(', ')} © ${new Date().getFullYear()} | 
+        <a href="${unsubscribeUrl}" style="color: #6b7280; text-decoration: underline;">
+          Unsubscribe
+        </a>
+      </p>
+    </div>
   </body>
   </html>
   `;

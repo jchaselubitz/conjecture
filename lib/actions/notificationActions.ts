@@ -100,3 +100,26 @@ export const getSubscribers = async (authorId: string): Promise<SubscriptionWith
 
   return subscribers;
 };
+
+export const unsubscribe = async (authorId: string, recipientId: string) => {
+  await db
+    .deleteFrom('subscription')
+    .where('authorId', '=', authorId)
+    .where('recipientId', '=', recipientId)
+    .execute();
+};
+
+export const subscribe = async (authorId: string, recipientId: string) => {
+  await db.insertInto('subscription').values({ authorId, recipientId, medium: 'email' }).execute();
+};
+
+export const isSubscribed = async (authorId: string, recipientId: string): Promise<boolean> => {
+  const subscription = await db
+    .selectFrom('subscription')
+    .select('id')
+    .where('authorId', '=', authorId)
+    .where('recipientId', '=', recipientId)
+    .executeTakeFirst();
+
+  return !!subscription;
+};
