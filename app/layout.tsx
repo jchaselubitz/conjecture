@@ -6,12 +6,12 @@ import { Inter } from 'next/font/google';
 import AppNav from '@/components/navigation/app_nav';
 import { Toaster } from '@/components/ui/sonner';
 import { EditModeProvider } from '@/contexts/EditModeContext';
+import { NavProvider } from '@/contexts/NavContext';
 import { UserProvider } from '@/contexts/userContext';
 import { getUserProfile } from '@/lib/actions/userActions';
 import { createClient } from '@/supabase/server';
 
 import ProfileSettingsDialog from './settings/(components)/profile_settings_dialog';
-import { NavProvider } from '@/contexts/NavContext';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {

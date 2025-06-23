@@ -2,8 +2,8 @@
 import { StatementWithUser } from 'kysely-codegen';
 import React from 'react';
 
-import { getNewsletterHtml } from '@/lib/assets/newsletter_template';
 import { useNavContext } from '@/contexts/NavContext';
+import { getNewsletterHtml } from '@/lib/assets/newsletter_template';
 
 export default function Newsletter({ statement }: { statement: StatementWithUser }) {
   const { setShowNav } = useNavContext();

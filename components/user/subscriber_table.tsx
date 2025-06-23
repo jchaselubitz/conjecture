@@ -1,5 +1,7 @@
 import { SubscriptionWithRecipient } from 'kysely-codegen';
+
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
 import { Column, SubscriberRow } from './subscriber_row';
 
 interface SubscriberTableProps {

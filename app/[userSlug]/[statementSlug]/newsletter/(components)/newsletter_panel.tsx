@@ -1,9 +1,9 @@
 'use client';
 
+import { SubscriptionWithRecipient } from 'kysely-codegen';
 import { ArrowRightToLineIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { SubscriptionWithRecipient } from 'kysely-codegen';
 import { SubscriberTable } from '@/components/user/subscriber_table';
 
 interface NewsletterPanelProps {

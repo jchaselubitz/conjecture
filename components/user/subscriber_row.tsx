@@ -1,6 +1,7 @@
 import { SubscriptionWithRecipient } from 'kysely-codegen';
-import { TableCell, TableRow } from '@/components/ui/table';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { TableCell, TableRow } from '@/components/ui/table';
 import { formatDate } from '@/lib/helpers/helpersDate';
 
 export type Column =

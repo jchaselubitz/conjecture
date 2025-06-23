@@ -3,15 +3,17 @@
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+
 import { LoadingButton } from '@/components/ui/loading-button';
+import { useEditModeContext } from '@/contexts/EditModeContext';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
+import { sendEmail } from '@/lib/actions/notificationActions';
+
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
-import { Label } from '../ui/label';
 import { Input } from '../ui/input';
-import { sendEmail } from '@/lib/actions/notificationActions';
-import { useEditModeContext } from '@/contexts/EditModeContext';
+import { Label } from '../ui/label';
 
 export default function NewsletterNav() {
   const { currentUserSlug } = useUserContext();
