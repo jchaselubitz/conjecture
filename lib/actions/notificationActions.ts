@@ -1,5 +1,6 @@
 'use server';
 import { NotificationMedium, SubscriptionWithRecipient } from 'kysely-codegen';
+import { revalidatePath } from 'next/cache';
 
 import db from '../database';
 
@@ -109,8 +110,25 @@ export const unsubscribe = async (authorId: string, recipientId: string) => {
     .execute();
 };
 
+export const unsubscribeBulk = async (authorId: string, emails: string[]) => {
+  console.log('unsubscribing bulk', authorId, emails);
+  await db
+    .deleteFrom('subscription')
+    .where('authorId', '=', authorId)
+    .where('email', 'in', emails)
+    .execute();
+  revalidatePath('/');
+};
+
 export const subscribe = async (authorId: string, recipientId: string) => {
-  await db.insertInto('subscription').values({ authorId, recipientId, medium: 'email' }).execute();
+  await db
+    .insertInto('subscription')
+    .values({
+      authorId,
+      recipientId,
+      medium: 'email'
+    })
+    .execute();
 };
 
 export const isSubscribed = async (authorId: string, recipientId: string): Promise<boolean> => {

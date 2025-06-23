@@ -158,11 +158,13 @@ export default function DragAndDrop({
             </Button>
           </div>
         ) : (
-          <div className="space-y-2 flex items-center justify-center">
-            <Upload className="h-10 w-10 mx-auto pt-1 text-muted-foreground" />
-            <div className="flex flex-col items-center justify-center">
-              <p className="text-lg font-medium">{title}</p>
-              <p className="text-sm text-muted-foreground">{description}</p>
+          <div className="flex justify-center">
+            <div className="space-y-2 flex items-center gap-4 ">
+              <Upload className="h-10 w-10 mx-auto pt-1 text-muted-foreground" />
+              <div className="flex flex-col items-center justify-center">
+                <p className="text-lg font-medium">{title}</p>
+                <p className="text-sm text-muted-foreground">{description}</p>
+              </div>
             </div>
           </div>
         )}

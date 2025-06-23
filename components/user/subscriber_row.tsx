@@ -16,11 +16,29 @@ export type Column =
 interface SubscriberRowProps {
   subscription: SubscriptionWithRecipient;
   columns: Column[];
+  isSelected: boolean;
+  onSelectChange?: ((checked: boolean) => void) | undefined;
 }
 
-export function SubscriberRow({ subscription, columns }: SubscriberRowProps) {
+export function SubscriberRow({
+  subscription,
+  columns,
+  isSelected,
+  onSelectChange
+}: SubscriberRowProps) {
   return (
     <TableRow className="hover:bg-transparent">
+      {onSelectChange && (
+        <TableCell className="w-12">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={e => onSelectChange(e.target.checked)}
+            className="h-4 w-4"
+          />
+        </TableCell>
+      )}
+
       {columns.includes('recipientImageUrl') && (
         <TableCell className="flex items-center gap-3">
           <Avatar className="h-8 w-8">
