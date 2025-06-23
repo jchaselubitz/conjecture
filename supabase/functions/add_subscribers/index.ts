@@ -1,5 +1,6 @@
 import { corsHeaders } from "../_shared/cors.ts";
 import { supabase } from "../_shared/supabase.ts";
+// import { BaseProfile } from "kysely-codegen";
 
 interface RequestBody {
  authorId: string;
@@ -48,10 +49,40 @@ async function addSubscribers(authorId: string, emails: string[]) {
   paused: false,
  }));
 
+ // find any existing profiles for the emails
+ const { data: profiles, error: profilesError } = await supabase
+  .from("profile")
+  .select("id, email")
+  .in("email", emails)
+  .limit(1000);
+
+ if (profilesError) {
+  throw profilesError;
+ }
+ const subscriptionsWithProfileIds = subscriptions.map((subscription) => ({
+  email: subscription.email,
+  paused: subscription.paused,
+  medium: subscription.medium,
+  author_id: subscription.authorId,
+  recipient_id: profiles.find((profile: any) =>
+   profile.email === subscription.email
+  )?.id,
+ }));
+
+ const subscriptionsWithoutExistingProfiles = subscriptionsWithProfileIds
+  .filter(
+   (subscription) => subscription.recipient_id !== null,
+  );
+
+ const allSubscriptions = [
+  ...subscriptionsWithoutExistingProfiles,
+  ...subscriptionsWithProfileIds,
+ ];
+
  // Insert subscriptions into the database
  const { data, error } = await supabase
   .from("subscription")
-  .insert(subscriptions)
+  .insert(allSubscriptions)
   .select();
 
  if (error) {

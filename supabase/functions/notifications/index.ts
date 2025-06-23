@@ -1,8 +1,5 @@
 import { corsHeaders } from "../_shared/cors.ts";
-import type {
-  BaseNotificationPolicy,
-  NotificationMedium,
-} from "kysely-codegen";
+import type { BaseSubscription, NotificationMedium } from "kysely-codegen";
 import { supabase } from "../_shared/supabase.ts";
 
 // export const sendSMS = async ({
@@ -126,10 +123,10 @@ const getRecipientsForItemMedium = async (
   //
   return (
     policies
-      ?.filter((policy: BaseNotificationPolicy) => {
+      ?.filter((policy: BaseSubscription) => {
         return !policy.paused;
       })
-      .map((policy: BaseNotificationPolicy) => {
+      .map((policy: BaseSubscription) => {
         return policy.handle;
       }) ?? []
   );

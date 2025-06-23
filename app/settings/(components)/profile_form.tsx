@@ -218,7 +218,10 @@ export default function ProfileForm() {
                   <FormControl>
                     <Input placeholder="Your username" {...field} />
                   </FormControl>
-                  <FormDescription>This defines your public URL.</FormDescription>
+                  <FormDescription>
+                    This defines your public URL. Changing it will break existing links to your
+                    posts.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

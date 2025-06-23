@@ -12,6 +12,8 @@
     "create-migration": "supabase db diff --use-migra -f local_schema",
     "ngrok": "ngrok http --domain=romantic-pig-living.ngrok-free.app 3000",
     "ngrok:server": "ngrok http --domain=romantic-pig-living.ngrok-free.app 54321",
+    "functions-run": "supabase functions serve",
+    "functions-deploy": "supabase functions deploy",
     "dev": "next dev",
     "build-dev": "netlify build --context=development",
     "build-branch": "netlify build --context=branch-deploy",
