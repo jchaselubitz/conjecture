@@ -44,7 +44,6 @@ export default function ProfileSettingsDialog() {
   useAsync(async () => {
     if (!userId) return;
     const subscriptions = await getSubscribers(userId);
-    console.log('subscriptions', subscriptions);
     setSubscriptions(subscriptions);
   }, [userId]);
 
