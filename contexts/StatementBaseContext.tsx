@@ -2,8 +2,8 @@
 
 import * as Sentry from '@sentry/nextjs';
 import { Editor } from '@tiptap/react';
-import { StatementPackage, StatementWithUser } from 'kysely-codegen';
-import { useRouter } from 'next/navigation';
+import { StatementPackage, StatementWithUser, SubscriptionWithRecipient } from 'kysely-codegen';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   createContext,
   Dispatch,
@@ -34,6 +34,7 @@ interface StatementContextType {
   debouncedStatement: StatementPackage | undefined;
   parentStatement: StatementWithUser | undefined;
   thread: StatementWithUser[];
+  subscribers?: SubscriptionWithRecipient[];
 }
 
 const StatementContext = createContext<StatementContextType | undefined>(undefined);
@@ -45,7 +46,8 @@ export function StatementProvider({
   writerUserSlug,
   thread,
   currentUserRole,
-  versionList
+  versionList,
+  subscribers
 }: {
   children: ReactNode;
   statementPackage: StatementPackage;
@@ -54,9 +56,11 @@ export function StatementProvider({
   thread: StatementWithUser[] | [];
   currentUserRole: UserStatementRoles;
   versionList: { versionNumber: number; createdAt: Date }[];
+  subscribers?: SubscriptionWithRecipient[];
 }) {
   const router = useRouter();
-
+  const searchParams = useSearchParams();
+  const editMode = searchParams.get('edit') === 'true';
   const parentStatement = thread.find(
     draft => draft.statementId === statementPackage.parentStatementId
   );
@@ -79,7 +83,10 @@ export function StatementProvider({
   const nextVersionNumber = versionList.length + 1;
 
   const changeVersion = (newVersion: number) => {
-    router.push(`/${writerUserSlug}/${statementPackage.slug}?version=${newVersion}`);
+    router.push(
+      `/${writerUserSlug}/${statementPackage.slug}?version=${newVersion}&edit=${editMode}`
+    );
+    router.refresh();
   };
 
   const saveStatementDraft = async () => {
@@ -130,7 +137,8 @@ export function StatementProvider({
         statement: statementPackage,
         debouncedStatement,
         parentStatement,
-        thread
+        thread,
+        subscribers
       }}
     >
       {children}

@@ -1,4 +1,5 @@
 'use client';
+
 import { StatementWithUser } from 'kysely-codegen';
 import React from 'react';
 
@@ -10,27 +11,15 @@ export default function Newsletter({
   subscriberEmail
 }: {
   statement: StatementWithUser;
-  subscriberEmail: string;
+  subscriberEmail?: string;
 }) {
   const { setShowNav } = useNavContext();
   setShowNav(false);
 
-  const title = statement.title || '';
-  const subtitle = statement.subtitle || '';
-  const headerImg = statement.headerImg || '';
-  const htmlContent = statement.draft.content || '';
-  const authors = statement.authors || [];
-  const postUrl = `/${statement.creatorSlug}/${statement.slug}`;
-
   const newsletterHtml = getNewsletterHtml({
-    headerImg,
-    title,
-    subtitle,
-    htmlContent,
-    authors,
-    postUrl,
-    creatorId: statement.creatorId,
-    subscriberEmail
+    statement,
+    subscriberEmail,
+    previewMode: true
   });
 
   return (

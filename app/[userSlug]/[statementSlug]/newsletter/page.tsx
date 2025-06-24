@@ -55,20 +55,18 @@ export default async function NewsletterPage({ params, searchParams }: Props) {
             </div>
           )}
 
-          <Newsletter statement={statementPackage} subscriberEmail={''} />
+          {/* Newsletter Preview (iframe) */}
+          {isCreator ? (
+            <Newsletter statement={statementPackage} subscriberEmail={subscribers[0]?.email} />
+          ) : (
+            <Newsletter statement={statementPackage} />
+          )}
         </ResizablePanel>
+        <ResizableHandle />
         {isCreator && (
-          <>
-            <ResizableHandle />
-            <ResizablePanel
-              id="newsletter"
-              defaultSize={30}
-              minSize={0}
-              className="flex-col hidden md:flex"
-            >
-              <NewsletterPanel subscribers={subscribers} />
-            </ResizablePanel>
-          </>
+          <ResizablePanel id="newsletter" defaultSize={30} minSize={0} className="flex flex-col">
+            <NewsletterPanel subscribers={subscribers} />
+          </ResizablePanel>
         )}
       </ResizablePanelGroup>
     </StatementProvider>

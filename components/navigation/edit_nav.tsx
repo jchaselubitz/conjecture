@@ -11,6 +11,7 @@ import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementUpdateContext } from '@/contexts/StatementUpdateProvider';
 import { useUserContext } from '@/contexts/userContext';
 import { formatDate } from '@/lib/helpers/helpersDate';
+import { sendNewsletterEmail } from '@/lib/actions/notificationActions';
 
 import { Button } from '../ui/button';
 import {
@@ -39,6 +40,8 @@ export default function EditNav() {
   const [saveButtonState, setSaveButtonState] = useState<ButtonLoadingState>('default');
   const [updateButtonState, setUpdateButtonState] = useState<ButtonLoadingState>('default');
   const [publishButtonState, setPublishButtonState] = useState<ButtonLoadingState>('default');
+  const [sendToSubscribersButtonState, setSendToSubscribersButtonState] =
+    useState<ButtonLoadingState>('default');
 
   const router = useRouter();
   const isMobile = useWindowSize().width < 600;
@@ -83,6 +86,22 @@ export default function EditNav() {
       setPublishButtonState('error');
     }
   };
+
+  const handleSendToSubscribers = async () => {
+    try {
+      setSendToSubscribersButtonState('loading');
+      await sendNewsletterEmail({
+        statement: updatedStatement,
+        authorNames: updatedStatement.authors.map(author => author.name || author.username || '')
+      });
+      setSendToSubscribersButtonState('success');
+    } catch (error) {
+      console.error(error);
+      setSendToSubscribersButtonState('error');
+    }
+  };
+
+  const isPublished = updatedStatement?.draft.publishedAt;
 
   const versionMenu = () => {
     if (!updatedStatement) return null;
@@ -165,21 +184,27 @@ export default function EditNav() {
                   reset
                   errorText="Failed to update"
                 />
-
+                {isPublished && (
+                  <LoadingButton
+                    onClick={handleSendToSubscribers}
+                    buttonState={publishButtonState}
+                    variant="outline"
+                    text="Send to subscribers"
+                    loadingText="Sending..."
+                    setButtonState={setPublishButtonState}
+                  />
+                )}
                 <LoadingButton
                   onClick={handlePublish}
                   buttonState={publishButtonState}
-                  text={
-                    updatedStatement.draft.publishedAt
-                      ? `Hide`
-                      : `Publish v${updatedStatement.draft.versionNumber}`
-                  }
-                  loadingText={updatedStatement.draft.publishedAt ? 'Hiding...' : 'Publishing...'}
+                  text={isPublished ? `Hide` : `Publish v${updatedStatement.draft.versionNumber}`}
+                  loadingText={isPublished ? 'Hiding...' : 'Publishing...'}
                   setButtonState={setPublishButtonState}
                   reset
-                  successText={updatedStatement.draft.publishedAt ? 'Hidden' : 'Published'}
+                  successText={isPublished ? 'Hidden' : 'Published'}
                   errorText="Failed to publish"
                 />
+
                 <ViewModeButton
                   handleEditModeToggle={() =>
                     router.push(`/${currentUserSlug}/${updatedStatement?.slug}`)

@@ -141,6 +141,7 @@ declare module 'kysely-codegen' {
       name: string | null | undefined;
       username: string | null | undefined;
       imageUrl: string | null | undefined;
+      email: string | null | undefined;
     }[];
     collaborators: BaseCollaborator[];
     creatorSlug: string | null | undefined;

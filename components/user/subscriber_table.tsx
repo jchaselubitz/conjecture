@@ -136,25 +136,23 @@ export function SubscriberTable({
             {columns.includes('createdAt') && <TableHead>Subscribed</TableHead>}
           </TableRow>
         </TableHeader>
-        <>
-          <TableBody className="overflow-y-auto h-full flex-1">
-            {subscriptions.map(subscription => (
-              <SubscriberRow
-                key={subscription.id}
-                subscription={subscription}
-                columns={columns}
-                isSelected={selectedSubscriptions.has(subscription.id)}
-                onSelectChange={
-                  onSubscriptionsChange
-                    ? (checked: boolean) => handleSelectSubscription(subscription.id, checked)
-                    : undefined
-                }
-              />
-            ))}
-          </TableBody>
-          <div className="h-24"></div>
-        </>
+        <TableBody className="overflow-y-auto h-full flex-1">
+          {subscriptions.map(subscription => (
+            <SubscriberRow
+              key={subscription.id}
+              subscription={subscription}
+              columns={columns}
+              isSelected={selectedSubscriptions.has(subscription.id)}
+              onSelectChange={
+                onSubscriptionsChange
+                  ? (checked: boolean) => handleSelectSubscription(subscription.id, checked)
+                  : undefined
+              }
+            />
+          ))}
+        </TableBody>
       </Table>
+      <div className="h-24"></div>
     </div>
   );
 }

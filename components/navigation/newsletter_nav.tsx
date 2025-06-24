@@ -8,8 +8,7 @@ import { LoadingButton } from '@/components/ui/loading-button';
 import { useEditModeContext } from '@/contexts/EditModeContext';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
-import { sendEmail } from '@/lib/actions/notificationActions';
-import { getNewsletterHtml } from '@/lib/assets/newsletter_template';
+import { sendNewsletterEmail } from '@/lib/actions/notificationActions';
 
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
@@ -35,36 +34,14 @@ export default function NewsletterNav() {
     setTestEmails(newEmails);
   };
 
-  const headerImg = updatedStatement?.headerImg || '';
-  const title = updatedStatement?.title || '';
-  const subtitle = updatedStatement?.subtitle || '';
-  const htmlContent = updatedStatement?.draft.content || '';
-  const authors = updatedStatement?.authors || [];
-  const postUrl = `/${currentUserSlug}/${updatedStatement?.slug}`;
-
-  const newsletterHtml = getNewsletterHtml({
-    headerImg,
-    title,
-    subtitle,
-    htmlContent,
-    authors,
-    postUrl,
-    creatorId: updatedStatement.creatorId,
-    subscriberEmail: testEmails[0]
-  });
-
   const handleSendEmail = async () => {
     setSendEmailState('loading');
     try {
       const validEmails = testEmails.filter(email => email.trim() !== '');
-      await sendEmail({
-        authorId: updatedStatement.creatorId,
-        testEmails: validEmails,
-        message: JSON.stringify({
-          subject: updatedStatement.title,
-          from: 'Conject <jake@notifications.cooperativ.io>',
-          html: newsletterHtml
-        })
+      await sendNewsletterEmail({
+        statement: updatedStatement,
+        authorNames: updatedStatement.authors.map(author => author.name || author.username || ''),
+        testEmails: [...validEmails, 'delivered@resend.dev']
       });
       setSendEmailState('success');
       setTimeout(() => {

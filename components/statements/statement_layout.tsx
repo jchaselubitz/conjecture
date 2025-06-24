@@ -352,7 +352,7 @@ export default function StatementLayout({
   );
 
   return (
-    <div className="flex flex-col h-full w-full">
+    <div className="flex flex-col h-full w-full md:pb-20">
       {editMode ? <EditNav /> : <></>}
 
       {isMobile ? mobileLayout : desktopLayout}
