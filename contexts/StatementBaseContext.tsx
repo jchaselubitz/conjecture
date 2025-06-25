@@ -20,6 +20,7 @@ import { UserStatementRoles } from '@/lib/enums/permissions';
 
 interface StatementContextType {
   versionOptions: { versionNumber: number; createdAt: Date }[];
+  currentVersion: number;
   updatedStatement: StatementPackage;
   setUpdatedStatement: Dispatch<SetStateAction<StatementPackage>>;
   saveStatementDraft: () => Promise<void>;
@@ -34,7 +35,8 @@ interface StatementContextType {
   debouncedStatement: StatementPackage | undefined;
   parentStatement: StatementWithUser | undefined;
   thread: StatementWithUser[];
-  subscribers?: SubscriptionWithRecipient[];
+  subscribers: SubscriptionWithRecipient[];
+  isCreator: boolean;
 }
 
 const StatementContext = createContext<StatementContextType | undefined>(undefined);
@@ -47,7 +49,8 @@ export function StatementProvider({
   thread,
   currentUserRole,
   versionList,
-  subscribers
+  subscribers,
+  isCreator
 }: {
   children: ReactNode;
   statementPackage: StatementPackage;
@@ -56,7 +59,8 @@ export function StatementProvider({
   thread: StatementWithUser[] | [];
   currentUserRole: UserStatementRoles;
   versionList: { versionNumber: number; createdAt: Date }[];
-  subscribers?: SubscriptionWithRecipient[];
+  subscribers: SubscriptionWithRecipient[];
+  isCreator: boolean;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -83,10 +87,7 @@ export function StatementProvider({
   const nextVersionNumber = versionList.length + 1;
 
   const changeVersion = (newVersion: number) => {
-    router.push(
-      `/${writerUserSlug}/${statementPackage.slug}?version=${newVersion}&edit=${editMode}`
-    );
-    router.refresh();
+    router.push(`/${writerUserSlug}/${statementPackage.slug}/${newVersion}&edit=${editMode}`);
   };
 
   const saveStatementDraft = async () => {
@@ -124,6 +125,7 @@ export function StatementProvider({
     <StatementContext.Provider
       value={{
         versionOptions: versionList,
+        currentVersion: statementPackage.draft.versionNumber,
         updatedStatement,
         setUpdatedStatement,
         saveStatementDraft,
@@ -138,7 +140,8 @@ export function StatementProvider({
         debouncedStatement,
         parentStatement,
         thread,
-        subscribers
+        subscribers,
+        isCreator
       }}
     >
       {children}

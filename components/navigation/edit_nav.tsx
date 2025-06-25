@@ -10,8 +10,8 @@ import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-butto
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementUpdateContext } from '@/contexts/StatementUpdateProvider';
 import { useUserContext } from '@/contexts/userContext';
-import { formatDate } from '@/lib/helpers/helpersDate';
 import { sendNewsletterEmail } from '@/lib/actions/notificationActions';
+import { formatDate } from '@/lib/helpers/helpersDate';
 
 import { Button } from '../ui/button';
 import {
@@ -32,7 +32,8 @@ export default function EditNav() {
     saveStatementDraft,
     togglePublish,
     nextVersionNumber,
-    changeVersion
+    changeVersion,
+    currentVersion
   } = useStatementContext();
 
   const { updateStatementDraft, isUpdating } = useStatementUpdateContext();
@@ -162,9 +163,7 @@ export default function EditNav() {
             variant="ghost"
             size="icon"
             onClick={() =>
-              router.push(
-                `/${currentUserSlug}/${updatedStatement?.slug}?version=${updatedStatement?.draft.versionNumber}`
-              )
+              router.push(`/${currentUserSlug}/${updatedStatement?.slug}/${currentVersion}`)
             }
           >
             <ArrowLeft className="h-5 w-5" />
@@ -197,7 +196,7 @@ export default function EditNav() {
                 <LoadingButton
                   onClick={handlePublish}
                   buttonState={publishButtonState}
-                  text={isPublished ? `Hide` : `Publish v${updatedStatement.draft.versionNumber}`}
+                  text={isPublished ? `Hide` : `Publish v${currentVersion}`}
                   loadingText={isPublished ? 'Hiding...' : 'Publishing...'}
                   setButtonState={setPublishButtonState}
                   reset
@@ -207,7 +206,7 @@ export default function EditNav() {
 
                 <ViewModeButton
                   handleEditModeToggle={() =>
-                    router.push(`/${currentUserSlug}/${updatedStatement?.slug}`)
+                    router.push(`/${currentUserSlug}/${updatedStatement?.slug}/${currentVersion}`)
                   }
                   iconOnly={isMobile}
                   variant="default"

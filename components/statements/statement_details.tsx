@@ -1,8 +1,8 @@
 import { BaseStatementCitation, StatementWithUser } from 'kysely-codegen';
-import { ArrowLeftToLineIcon, ChevronLeft, Loader2, Sidebar, Upload } from 'lucide-react';
+import { ChevronLeft, Loader2, Upload } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { RefObject, useEffect, useMemo, useRef } from 'react';
 import { useState } from 'react';
 import { useFixedStyleWithIOsKeyboard } from 'react-ios-keyboard-viewport';
@@ -15,7 +15,6 @@ import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { useUserContext } from '@/contexts/userContext';
 import { updateStatementHeaderImageUrl } from '@/lib/actions/statementActions';
-import { getPanelState, setPanelState } from '@/lib/helpers/helpersLayout';
 import { headerImageChange } from '@/lib/helpers/helpersStatements';
 import { generateStatementId } from '@/lib/helpers/helpersStatements';
 import { cn } from '@/lib/utils';
@@ -66,13 +65,14 @@ export default function StatementDetails({
   setAnnotationMode
 }: StatementDetailsProps) {
   const { userId, currentUserSlug } = useUserContext();
-  const { editor, setUpdatedStatement, updatedStatement } = useStatementContext();
+  const { editor, setUpdatedStatement, updatedStatement, currentVersion } = useStatementContext();
   const { selectedAnnotationId, setSelectedAnnotationId } = useStatementAnnotationContext();
   const { initialImageData, setInitialImageData, setImageLightboxOpen, citations } =
     useStatementToolsContext();
 
   const router = useRouter();
-  const pathname = usePathname();
+  const params = useParams();
+  const isPublished = !!updatedStatement?.draft.publishedAt;
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [footnoteIds, setFootnoteIds] = useState<string[]>([]);
@@ -95,9 +95,9 @@ export default function StatementDetails({
   const handleEditModeToggle = () => {
     setSelectedAnnotationId(undefined);
     if (!editMode) {
-      router.push(`${pathname}?version=${updatedStatement.draft.versionNumber}&edit=true`);
+      router.push(`/${params.userSlug}/${params.statementSlug}/${currentVersion}?edit=true`);
     } else {
-      router.push(pathname);
+      router.push(`/${params.userSlug}/${params.statementSlug}/${currentVersion}`);
     }
   };
 
@@ -185,18 +185,13 @@ export default function StatementDetails({
 
   return (
     <div className="overflow-y-auto h-full">
-      {/* <div className="hidden md:flex justify-between items-center  sticky top-0">
-        {handleToggleStack && (
-          <Button variant="ghost" size="icon" className=" z-50 mt-1 " onClick={handleToggleStack}>
-            <Sidebar className="w-4 h-4" />
-          </Button>
+      <div className="flex justify-center">
+        {!isPublished && (
+          <div className="text-center bg-amber-100 bg-opacity-20 rounded-md py-1 text-lg uppercase text-amber-700 border border-amber-300 font-semibold md:max-w-3xl w-full  px-4 ">
+            Draft
+          </div>
         )}
-        {handleOpenComments && !editMode && (
-          <Button variant="ghost" size="icon" className="z-50 mt-1" onClick={handleOpenComments}>
-            <ArrowLeftToLineIcon className="w-4 h-4" />
-          </Button>
-        )}
-      </div> */}
+      </div>
       <div className="flex flex-col md:mt-12 md:mx-auto w-full max-w-screen md:max-w-3xl  ">
         {headerImg ? (
           <div className="relative group md:px-4">

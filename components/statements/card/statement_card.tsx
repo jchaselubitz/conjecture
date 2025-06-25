@@ -23,6 +23,7 @@ interface StatementCardProps {
 }
 
 export function StatementCard({ statement, isPublic, pathname }: StatementCardProps) {
+  console.log(statement);
   const formattedDate = statement.draft.publishedAt
     ? format(new Date(statement.draft.publishedAt), 'MMM d, yyyy')
     : format(new Date(statement.updatedAt), 'MMM d, yyyy');
@@ -37,7 +38,7 @@ export function StatementCard({ statement, isPublic, pathname }: StatementCardPr
 
   return (
     <Link
-      href={`/${pathname}/${statement.slug}`}
+      href={`/${pathname}/${statement.slug}/${statement.draft.versionNumber}`}
       className="block transition-transform hover:scale-[1.01]"
     >
       <Card className="relative h-full overflow-hidden pt-0 ">

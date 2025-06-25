@@ -67,6 +67,7 @@ export default function StatementOptions({
   const { setUpdatedStatement } = useStatementContext();
   const [calendarLoading, setCalendarLoading] = useState(false);
   const [calendarError, setCalendarError] = useState<string | null>(null);
+  const { currentVersion } = useStatementContext();
 
   const handleDelete = async () => {
     try {
@@ -106,7 +107,7 @@ export default function StatementOptions({
       });
       setButtonState('success');
       setSlugError(null);
-      router.push(`/${statement.creatorSlug}/${slug}`);
+      router.push(`/${statement.creatorSlug}/${slug}/${currentVersion}`);
     } catch (error) {
       if (error instanceof Error && error.message.includes('URL already exists')) {
         setSlugError('That URL is already taken');
@@ -172,7 +173,9 @@ export default function StatementOptions({
         <div className="flex items-center gap-3  justify-end">
           {editMode ? (
             <>
-              <Link href={`/${statement.creatorSlug}/${statement.slug}/newsletter`}>
+              <Link
+                href={`/${statement.creatorSlug}/${statement.slug}/${currentVersion}/newsletter`}
+              >
                 <Button variant="outline" size="sm">
                   Preview newsletter
                 </Button>

@@ -4,7 +4,7 @@ import './prose.css';
 
 import * as Sentry from '@sentry/nextjs';
 import { AnnotationWithComments } from 'kysely-codegen';
-import { ArrowLeftToLineIcon, Sidebar } from 'lucide-react';
+import { ArrowLeftToLineIcon, ArrowRightToLineIcon, Sidebar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
@@ -33,6 +33,7 @@ import { Button } from '../ui/button';
 
 import AnnotationDrawer from './annotation/annotation_drawer';
 import StatementDetails from './statement_details';
+import StatementTopControls from './statement_top_controls';
 
 interface StatementDetailsProps {
   authorCommentsEnabled: boolean;
@@ -47,8 +48,7 @@ export default function StatementLayout({
   editModeEnabled,
   startingPanelSizes
 }: StatementDetailsProps) {
-  const { userId } = useUserContext();
-  const { statement, parentStatement, thread } = useStatementContext();
+  const { statement, parentStatement, thread, isCreator } = useStatementContext();
 
   const familyTree = groupThreadsByParentId(thread, statement);
 
@@ -65,13 +65,12 @@ export default function StatementLayout({
 
   const router = useRouter();
   const isMobile = useWindowSize().width < 600;
-
+  const isPublished = !!statement.draft.publishedAt;
   const { editMode, setEditMode } = useEditModeContext();
   const { editor, updatedStatement } = useStatementContext();
   const { updateStatementDraft } = useStatementUpdateContext();
 
   const [showAnnotationDrawer, setShowAnnotationDrawer] = useState(false);
-  const isCreator = updatedStatement.creatorId === userId;
   const [showAuthorComments, setShowAuthorComments] = useState(authorCommentsEnabled);
   const [showReaderComments, setShowReaderComments] = useState(readerCommentsEnabled);
   const [annotationMode, setAnnotationMode] = useState<boolean>(!isMobile);
@@ -107,14 +106,14 @@ export default function StatementLayout({
   };
 
   useEffect(() => {
-    setEditMode(editModeEnabled);
-  }, [editModeEnabled, setEditMode]);
+    setEditMode(editModeEnabled && isCreator);
+  }, [editModeEnabled, setEditMode, isCreator]);
 
   useEffect(() => {
     if (!!editMode || !!annotationMode) {
       editor?.setEditable(true);
     }
-  }, [editMode, annotationMode, editor, isMobile]);
+  }, [editMode, annotationMode, editor]);
 
   useEffect(() => {
     if (selectedAnnotationId) {
@@ -291,28 +290,12 @@ export default function StatementLayout({
       <ResizableHandle />
       <ResizablePanel id="editor" defaultSize={startingPanelSizes[1]} minSize={minEditorPanelSize}>
         <div className=" flex flex-col overflow-y-auto h-full">
-          <div className="hidden md:flex justify-between items-center  sticky top-0">
-            {
-              <Button
-                variant="ghost"
-                size="icon"
-                className=" z-50 mt-1 "
-                onClick={handleToggleStack}
-              >
-                <Sidebar className="w-4 h-4" />
-              </Button>
-            }
-            {!editMode && showAnnotationsButton && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="z-50 mt-1"
-                onClick={handleOpenComments}
-              >
-                <ArrowLeftToLineIcon className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
+          <StatementTopControls
+            handleToggleStack={handleToggleStack}
+            handleOpenComments={handleOpenComments}
+            showAnnotationsButton={showAnnotationsButton}
+          />
+
           <StatementDetails
             parentStatement={parentStatement}
             editMode={editMode && isCreator}

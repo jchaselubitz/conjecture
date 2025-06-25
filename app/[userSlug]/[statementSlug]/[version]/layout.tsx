@@ -11,31 +11,35 @@ import {
   getPublishedOrLatest,
   getStatementPackage
 } from '@/lib/actions/statementActions';
+import { UserStatementRoles } from '@/lib/enums/permissions';
 
 type Props = {
-  params: Promise<{ statementSlug: string; userSlug: string }>;
+  params: Promise<{ statementSlug: string; userSlug: string; version: string }>;
   children: React.ReactNode;
 };
 
 export default async function UserStatementLayout({ children, params }: Props) {
   const user = await getUser();
   const userId = user?.id?.toString();
-  const { statementSlug, userSlug } = await params;
+  const { statementSlug, userSlug, version } = await params;
 
   const userRole = await getUserRole(userId, statementSlug);
+  const userIsCollaborator = userRole !== UserStatementRoles.Viewer;
+  const selection = await getPublishedOrLatest(statementSlug, userIsCollaborator);
 
-  const selection = await getPublishedOrLatest(statementSlug, false);
   const { version: selectedVersion, versionList } = selection ?? {};
 
-  if (!selectedVersion) {
-    redirect(
-      `/${userSlug}/${statementSlug}/${versionList?.[versionList.length - 1]?.versionNumber}`
-    );
+  const versionNumber = versionList?.find(
+    v => v.versionNumber === parseInt(version, 10)
+  )?.versionNumber;
+
+  if (!versionNumber) {
+    redirect(`/${userSlug}/${statementSlug}/${selectedVersion}`);
   }
 
   const statementPackage = await getStatementPackage({
     statementSlug,
-    version: selectedVersion
+    version: userIsCollaborator ? versionNumber : undefined
   });
 
   const thread = statementPackage.threadId ? await getFullThread(statementPackage.threadId) : [];

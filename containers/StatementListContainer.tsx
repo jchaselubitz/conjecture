@@ -28,8 +28,12 @@ export function StatementListContainer({
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {statements.length > 0 ? (
-          statements.map(statement => (
-            <StatementCard key={statement.statementId} statement={statement} pathname={pathname} />
+          statements.map((statement, i) => (
+            <StatementCard
+              key={statement.statementId + i}
+              statement={statement}
+              pathname={pathname}
+            />
           ))
         ) : (
           <div className="text-center py-12 col-span-full">

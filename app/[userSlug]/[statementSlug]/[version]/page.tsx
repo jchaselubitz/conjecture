@@ -29,6 +29,7 @@ export async function generateMetadata(
 
 export default async function StatementPage({ params, searchParams }: Props) {
   const { edit } = await searchParams;
+
   const editMode = edit === 'true';
   return <StatementContainer edit={editMode} />;
 }

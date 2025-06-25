@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import ViewModeButton from '@/components/view_mode_button';
+import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { cn } from '@/lib/utils';
 
 import { CitationButton } from './citation_button';
@@ -37,7 +38,7 @@ export function EditorMenu({
   statementSlug
 }: EditorMenuProps) {
   const router = useRouter();
-
+  const { currentVersion } = useStatementContext();
   const setLink = () => {
     const previousUrl = editor.getAttributes('link').href;
     const url = window.prompt('URL', previousUrl);
@@ -59,7 +60,9 @@ export function EditorMenu({
         <div className="flex items-center justify-center border-r md:border-zinc-500 h-full">
           <ViewModeButton
             className={cn('flex items-center justify-center ', buttonClassName)}
-            handleEditModeToggle={() => router.push(`/${userSlug}/${statementSlug}`)}
+            handleEditModeToggle={() =>
+              router.push(`/${userSlug}/${statementSlug}/${currentVersion}`)
+            }
             iconOnly={true}
             variant="ghost"
           />

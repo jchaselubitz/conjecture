@@ -18,7 +18,7 @@ import { Label } from '../ui/label';
 export default function NewsletterNav() {
   const { currentUserSlug } = useUserContext();
   const { editMode } = useEditModeContext();
-  const { updatedStatement } = useStatementContext();
+  const { updatedStatement, currentVersion } = useStatementContext();
 
   const [sendEmailState, setSendEmailState] = useState<'default' | 'loading' | 'success' | 'error'>(
     'default'
@@ -64,7 +64,7 @@ export default function NewsletterNav() {
             size="icon"
             onClick={() =>
               router.push(
-                `/${currentUserSlug}/${updatedStatement?.slug}?version=${updatedStatement?.draft.versionNumber}&edit=${editMode}`
+                `/${currentUserSlug}/${updatedStatement?.slug}/${currentVersion}&edit=${editMode}`
               )
             }
           >

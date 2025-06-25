@@ -17,7 +17,7 @@ export default function AppNav() {
   const { userId, currentUserSlug } = useUserContext();
   const { showNav } = useNavContext();
 
-  if (!showNav) return null;
+  if (!showNav) return <></>;
 
   return (
     <header className="border-b px-4 z-40 bg-background">

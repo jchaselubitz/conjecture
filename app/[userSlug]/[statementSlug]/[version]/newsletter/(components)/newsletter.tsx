@@ -13,9 +13,6 @@ export default function Newsletter({
   statement: StatementWithUser;
   subscriberEmail?: string;
 }) {
-  const { setShowNav } = useNavContext();
-  setShowNav(false);
-
   const newsletterHtml = getNewsletterHtml({
     statement,
     subscriberEmail,
