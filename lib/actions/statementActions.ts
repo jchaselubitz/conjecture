@@ -613,11 +613,13 @@ export async function updateStatementHeaderImageUrl({
 export async function updateDraft({
   id,
   content,
+  contentJson,
   versionNumber,
   creatorId,
 }: {
   id: string;
   content?: string;
+  contentJson?: string;
   versionNumber: number;
   creatorId?: string;
 }) {
@@ -631,6 +633,7 @@ export async function updateDraft({
     .updateTable("draft")
     .set({
       content,
+      contentJson,
     })
     .where("id", "=", id)
     .where("versionNumber", "=", versionNumber)

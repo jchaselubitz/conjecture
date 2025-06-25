@@ -1176,6 +1176,20 @@
           "maxLength": null
         },
         {
+          "id": "public.draft.content_json",
+          "name": "content_json",
+          "columnName": "content_json",
+          "type": "jsonb",
+          "isRequired": false,
+          "kind": "scalar",
+          "isList": false,
+          "isGenerated": false,
+          "sequence": false,
+          "hasDefaultValue": false,
+          "isId": false,
+          "maxLength": null
+        },
+        {
           "name": "profile",
           "type": "profile",
           "isRequired": false,
@@ -5841,6 +5855,23 @@
           "name": "subscription_pkey",
           "fields": [
             "id"
+          ],
+          "nullNotDistinct": false
+        },
+        {
+          "name": "unique_email_author",
+          "fields": [
+            "author_id",
+            "email",
+            "medium"
+          ],
+          "nullNotDistinct": false
+        },
+        {
+          "name": "unique_recipient_author",
+          "fields": [
+            "author_id",
+            "recipient_id"
           ],
           "nullNotDistinct": false
         }

@@ -40,7 +40,7 @@ export function StatementUpdateProvider({ children }: { children: ReactNode }) {
 
     let annotationsToKeep = [...annotations];
     let cleanedHtmlContent = debouncedStatement.draft.content;
-
+    let contentJson = debouncedStatement.draft.contentJson;
     try {
       const currentMarks = getMarks(editor, ['annotationHighlight']);
       const liveMarkIds = new Set(
@@ -74,6 +74,7 @@ export function StatementUpdateProvider({ children }: { children: ReactNode }) {
         }
 
         cleanedHtmlContent = editor.getHTML();
+        contentJson = editor.getJSON();
       }
     } catch (gcError) {
       console.error('[UpdateProvider] Error during annotation garbage collection:', gcError);
@@ -119,6 +120,7 @@ export function StatementUpdateProvider({ children }: { children: ReactNode }) {
       await updateDraft({
         id,
         content: cleanedHtmlContent ?? undefined,
+        contentJson: contentJson ? JSON.stringify(contentJson) : undefined,
         versionNumber: versionNumber,
         creatorId: creatorId
       });
