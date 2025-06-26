@@ -1,11 +1,24 @@
-import type { Metadata, ResolvingMetadata } from 'next';
+import { Metadata, ResolvingMetadata } from 'next';
 
 import { StatementContainer } from '@/containers/StatementContainer';
-import { getPublishedStatement } from '@/lib/actions/statementActions';
+import { StatementAnnotationProvider } from '@/contexts/StatementAnnotationContext';
+import { StatementProvider } from '@/contexts/StatementBaseContext';
+import { StatementToolsProvider } from '@/contexts/StatementToolsContext';
+import { StatementUpdateProvider } from '@/contexts/StatementUpdateProvider';
+import { getUser } from '@/lib/actions/baseActions';
+import { getUserRole } from '@/lib/actions/baseActions';
+import { getSubscribers } from '@/lib/actions/notificationActions';
+import {
+  getFullThread,
+  getPublishedOrLatest,
+  getPublishedStatement,
+  getStatementPackage
+} from '@/lib/actions/statementActions';
+import { UserStatementRoles } from '@/lib/enums/permissions';
 
 type Props = {
   params: Promise<{ statementSlug: string; userSlug: string }>;
-  searchParams: Promise<{ edit: string; version: string }>;
+  searchParams: Promise<{ edit: string }>;
 };
 
 export async function generateMetadata(
@@ -30,5 +43,49 @@ export async function generateMetadata(
 export default async function StatementPage({ params, searchParams }: Props) {
   const { edit } = await searchParams;
   const editMode = edit === 'true';
-  return <StatementContainer edit={editMode} />;
+
+  const user = await getUser();
+  const userId = user?.id?.toString();
+  const { statementSlug, userSlug } = await params;
+
+  const userRole = await getUserRole(userId, statementSlug);
+  const userIsCollaborator = userRole !== UserStatementRoles.Viewer;
+  const selection = await getPublishedOrLatest(statementSlug, userIsCollaborator);
+  const { version: selectedVersion, versionList } = selection ?? {};
+
+  if (!selectedVersion) {
+    return <div>No version found</div>;
+  }
+
+  const statementPackage = await getStatementPackage({
+    statementSlug,
+    version: selectedVersion ?? undefined
+  });
+
+  const thread = statementPackage.threadId ? await getFullThread(statementPackage.threadId) : [];
+
+  const creator = statementPackage.creatorId.toString();
+  const isCreator = creator === userId;
+  const subscribers = isCreator ? await getSubscribers(creator) : [];
+
+  return (
+    <StatementProvider
+      statementPackage={statementPackage}
+      userId={userId}
+      writerUserSlug={userSlug}
+      currentUserRole={userRole}
+      thread={thread}
+      versionList={versionList ?? []}
+      isCreator={isCreator}
+      subscribers={subscribers}
+    >
+      <StatementToolsProvider>
+        <StatementAnnotationProvider>
+          <StatementUpdateProvider>
+            <StatementContainer edit={editMode} />
+          </StatementUpdateProvider>
+        </StatementAnnotationProvider>
+      </StatementToolsProvider>
+    </StatementProvider>
+  );
 }

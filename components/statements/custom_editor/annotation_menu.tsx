@@ -1,4 +1,6 @@
-import { BubbleMenu, Editor } from '@tiptap/react';
+import { offset } from '@floating-ui/dom';
+import { Editor } from '@tiptap/react';
+import { BubbleMenu } from '@tiptap/react/menus';
 import Link from 'next/link';
 import { RefObject } from 'react';
 import { ImperativePanelGroupHandle } from 'react-resizable-panels';
@@ -62,7 +64,16 @@ export const AnnotationMenu = ({
   };
 
   return (
-    <BubbleMenu editor={editor} tippyOptions={{ duration: 100, zIndex: 90 }}>
+    <BubbleMenu
+      editor={editor}
+      shouldShow={() => {
+        return editor.isEditable;
+      }}
+      options={{
+        // middleware: [offset(6)],
+        placement: 'top'
+      }}
+    >
       {userId ? (
         <div
           className={cn(

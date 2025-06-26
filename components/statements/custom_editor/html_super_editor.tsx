@@ -1,6 +1,7 @@
 import 'katex/dist/katex.min.css';
 
-import { EditorContent, FloatingMenu } from '@tiptap/react';
+import { EditorContent } from '@tiptap/react';
+import { FloatingMenu } from '@tiptap/react/menus';
 import { AnnotationWithComments, StatementPackage } from 'kysely-codegen';
 import React, { RefObject } from 'react';
 import { ImperativePanelGroupHandle } from 'react-resizable-panels';
@@ -115,7 +116,16 @@ const HTMLSuperEditor = ({
 
       {editMode && !latexPopoverOpen && !imagePopoverOpen && !videoPopoverOpen && (
         <div>
-          <FloatingMenu editor={editor} tippyOptions={{ duration: 100 }}>
+          <FloatingMenu
+            editor={editor}
+            shouldShow={() => {
+              if (!editor?.isFocused) return false;
+              const { $from } = editor.state.selection;
+              const isEmptyParagraph =
+                $from.parent.type.name === 'paragraph' && $from.parent.content.size === 0;
+              return isEmptyParagraph;
+            }}
+          >
             <BlockTypeChooser statementId={statementId} editor={editor} />
           </FloatingMenu>
         </div>

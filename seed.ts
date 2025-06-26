@@ -1,114 +1,104 @@
-import { copycat } from "@snaplet/copycat";
-import { createSeedClient } from "@snaplet/seed";
-import { hash } from "bcryptjs";
-import { nanoid } from "nanoid";
+import { copycat } from '@snaplet/copycat';
+import { createSeedClient } from '@snaplet/seed';
+import { hash } from 'bcryptjs';
+import { nanoid } from 'nanoid';
 
 // Helper to convert plain text (with \n\n as paragraph breaks) to TipTap JSON
 function textToTipTapJson(text: string) {
-  const paragraphs = text.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
+  const paragraphs = text
+    .split(/\n\n+/)
+    .map(p => p.trim())
+    .filter(Boolean);
   return {
-    type: "doc",
-    content: paragraphs.map((paragraph) => ({
-      type: "paragraph",
-      content: [
-        { type: "text", text: paragraph },
-      ],
-    })),
+    type: 'doc',
+    content: paragraphs.map(paragraph => ({
+      type: 'paragraph',
+      content: [{ type: 'text', text: paragraph }]
+    }))
   };
 }
 
 const content = [
   {
-    title: "How We Got Here",
+    title: 'How We Got Here',
     subtitle:
       "The history of how the settlement movement dominated Israel's priorities, torpedoed peace, and drove the cycle of violence.",
-    text:
-      `"The Jewish people have an exclusive and indisputable right to all areas of the Land of Israel. The government will promote and develop settlement in all parts of the Land of Israel in the Galilee, the Negev, the Golan, Judea and Samaria." So reads the first among the list of guiding principles Israel's governing coalition formally announced upon taking power in late 2022 (source, translation).
+    text: `"The Jewish people have an exclusive and indisputable right to all areas of the Land of Israel. The government will promote and develop settlement in all parts of the Land of Israel in the Galilee, the Negev, the Golan, Judea and Samaria." So reads the first among the list of guiding principles Israel's governing coalition formally announced upon taking power in late 2022 (source, translation).
 
 This conviction that Jews have an exclusive claim to all the land between the Mediterranean Sea and the Jordan River is not new. It is both the cause and culmination of Israel's decades-long settlement movement and the accompanying military occupation, which has left Palestinians, who comprise half of the land's population, largely without rights. Palestinians have resisted this reality, but instead of recognizing this resistance as a result of its fundamental political contradiction—the desire to be both democratic and predominantly Jewish—Israel, a country with a liberal self-image, historical trauma, and diplomatic considerations, chose to frame it as a security problem.
 
-By accepting this security framing, the international community mistakenly believed that Israel would naturally gravitate towards peace if only given sufficient security guarantees. In reality, any meaningful peace agreement would have threatened Israel's greater priority: expanding settlements. Had the world recognized this dynamic, it could have forced Israel to cease construction and created the conditions under which sustainable peace might be possible. Failing to do so not only prevented the success of the peace process, but led inexorably to calamity.`,
+By accepting this security framing, the international community mistakenly believed that Israel would naturally gravitate towards peace if only given sufficient security guarantees. In reality, any meaningful peace agreement would have threatened Israel's greater priority: expanding settlements. Had the world recognized this dynamic, it could have forced Israel to cease construction and created the conditions under which sustainable peace might be possible. Failing to do so not only prevented the success of the peace process, but led inexorably to calamity.`
   },
   {
-    title: "International Perspectives on Peace",
+    title: 'International Perspectives on Peace',
     subtitle:
       "The history of how the settlement movement dominated Israel's priorities, torpedoed peace, and drove the cycle of violence.",
-    text:
-      `Response: While Israel's government asserts exclusive rights, many in the international community and among Israelis themselves believe that a just and lasting peace requires recognizing Palestinian rights and aspirations. The ongoing settlement expansion undermines prospects for a two-state solution and perpetuates conflict.`,
+    text: `Response: While Israel's government asserts exclusive rights, many in the international community and among Israelis themselves believe that a just and lasting peace requires recognizing Palestinian rights and aspirations. The ongoing settlement expansion undermines prospects for a two-state solution and perpetuates conflict.`
   },
   {
-    title: "Security vs. Grievance: The Palestinian View",
+    title: 'Security vs. Grievance: The Palestinian View',
     subtitle:
       "The history of how the settlement movement dominated Israel's priorities, torpedoed peace, and drove the cycle of violence.",
-    text:
-      `Response: The framing of resistance as merely a security issue ignores the legitimate grievances and aspirations of Palestinians. Sustainable peace will only be possible when both peoples' rights and histories are acknowledged and addressed in good faith negotiations.`,
+    text: `Response: The framing of resistance as merely a security issue ignores the legitimate grievances and aspirations of Palestinians. Sustainable peace will only be possible when both peoples' rights and histories are acknowledged and addressed in good faith negotiations.`
   },
   {
-    title: "Democracy, Security, and Expansion",
+    title: 'Democracy, Security, and Expansion',
     subtitle:
       "The history of how the settlement movement dominated Israel's priorities, torpedoed peace, and drove the cycle of violence.",
-    text:
-      `Response: Some argue that the current approach prioritizes territorial expansion over democratic values, risking Israel's international standing and long-term security. Others maintain that security concerns are paramount given the region's history of violence.`,
+    text: `Response: Some argue that the current approach prioritizes territorial expansion over democratic values, risking Israel's international standing and long-term security. Others maintain that security concerns are paramount given the region's history of violence.`
   },
   {
-    title: "Historical Context: Settlement Movement",
+    title: 'Historical Context: Settlement Movement',
     subtitle:
       "The history of how the settlement movement dominated Israel's priorities, torpedoed peace, and drove the cycle of violence.",
-    text:
-      `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam.`,
+    text: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam.`
   },
   {
-    title: "Societal Impacts of the Conflict",
+    title: 'Societal Impacts of the Conflict',
     subtitle:
       "The history of how the settlement movement dominated Israel's priorities, torpedoed peace, and drove the cycle of violence.",
-    text:
-      `Maecenas ligula massa, varius a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat.`,
+    text: `Maecenas ligula massa, varius a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat.`
   },
   {
-    title: "Expansion vs. Security: Ongoing Debate",
+    title: 'Expansion vs. Security: Ongoing Debate',
     subtitle:
       "The history of how the settlement movement dominated Israel's priorities, torpedoed peace, and drove the cycle of violence.",
-    text:
-      `Response: Some argue that the current approach prioritizes territorial expansion over democratic values, risking Israel's international standing and long-term security. Others maintain that security concerns are paramount given the region's history of violence.`,
+    text: `Response: Some argue that the current approach prioritizes territorial expansion over democratic values, risking Israel's international standing and long-term security. Others maintain that security concerns are paramount given the region's history of violence.`
   },
   {
-    title: "Acknowledging Both Histories",
+    title: 'Acknowledging Both Histories',
     subtitle:
       "The history of how the settlement movement dominated Israel's priorities, torpedoed peace, and drove the cycle of violence.",
-    text:
-      `Response: The framing of resistance as merely a security issue ignores the legitimate grievances and aspirations of Palestinians. Sustainable peace will only be possible when both peoples' rights and histories are acknowledged and addressed in good faith negotiations.`,
+    text: `Response: The framing of resistance as merely a security issue ignores the legitimate grievances and aspirations of Palestinians. Sustainable peace will only be possible when both peoples' rights and histories are acknowledged and addressed in good faith negotiations.`
   },
   {
-    title: "International Standing at Risk?",
+    title: 'International Standing at Risk?',
     subtitle:
       "The history of how the settlement movement dominated Israel's priorities, torpedoed peace, and drove the cycle of violence.",
-    text:
-      `Response: Some argue that the current approach prioritizes territorial expansion over democratic values, risking Israel's international standing and long-term security. Others maintain that security concerns are paramount given the region's history of violence.`,
+    text: `Response: Some argue that the current approach prioritizes territorial expansion over democratic values, risking Israel's international standing and long-term security. Others maintain that security concerns are paramount given the region's history of violence.`
   },
   {
-    title: "Security Concerns in Historical Context",
+    title: 'Security Concerns in Historical Context',
     subtitle:
       "The history of how the settlement movement dominated Israel's priorities, torpedoed peace, and drove the cycle of violence.",
-    text:
-      `Response: Some argue that the current approach prioritizes territorial expansion over democratic values, risking Israel's international standing and long-term security. Others maintain that security concerns are paramount given the region's history of violence.`,
+    text: `Response: Some argue that the current approach prioritizes territorial expansion over democratic values, risking Israel's international standing and long-term security. Others maintain that security concerns are paramount given the region's history of violence.`
   },
   {
-    title: "Balancing Values and Security",
+    title: 'Balancing Values and Security',
     subtitle:
       "The history of how the settlement movement dominated Israel's priorities, torpedoed peace, and drove the cycle of violence.",
-    text:
-      `Response: Some argue that the current approach prioritizes territorial expansion over democratic values, risking Israel's international standing and long-term security. Others maintain that security concerns are paramount given the region's history of violence.`,
-  },
-].map((item) => ({
+    text: `Response: Some argue that the current approach prioritizes territorial expansion over democratic values, risking Israel's international standing and long-term security. Others maintain that security concerns are paramount given the region's history of violence.`
+  }
+].map(item => ({
   ...item,
-  json: textToTipTapJson(item.text),
+  json: textToTipTapJson(item.text)
 }));
 
 async function main() {
   const seed = await createSeedClient({ dryRun: true });
 
-  const jakePassword = "bqz2bme.edk5dtz8JBW";
-  const plainPassword = "12345678*";
+  const jakePassword = 'bqz2bme.edk5dtz8JBW';
+  const plainPassword = '12345678*';
   const jakeHashedPassword = await hash(jakePassword, 10);
   const plainHashedPassword = await hash(plainPassword, 10);
 
@@ -117,81 +107,81 @@ async function main() {
   // --- Generate users (auth.users) ---
   const fixedUsers = await seed.users([
     {
-      instance_id: "00000000-0000-0000-0000-000000000000",
-      email: "jake@c.com",
+      instance_id: '00000000-0000-0000-0000-000000000000',
+      email: 'jake@c.com',
       encrypted_password: jakeHashedPassword,
-      role: "authenticated",
-      aud: "authenticated",
+      role: 'authenticated',
+      aud: 'authenticated',
       is_super_admin: false,
-      raw_app_meta_data: { provider: "email", providers: ["email"] },
+      raw_app_meta_data: { provider: 'email', providers: ['email'] },
       raw_user_meta_data: {
-        name: "Jake",
-        email: "jake@c.com",
-        username: "jchaselubitz",
-      },
+        name: 'Jake',
+        email: 'jake@c.com',
+        username: 'jchaselubitz'
+      }
     },
     {
-      instance_id: "00000000-0000-0000-0000-000000000000",
-      email: "tina@c.com",
+      instance_id: '00000000-0000-0000-0000-000000000000',
+      email: 'tina@c.com',
       encrypted_password: plainHashedPassword,
-      role: "authenticated",
-      aud: "authenticated",
+      role: 'authenticated',
+      aud: 'authenticated',
       is_super_admin: false,
-      raw_app_meta_data: { provider: "email", providers: ["email"] },
+      raw_app_meta_data: { provider: 'email', providers: ['email'] },
       raw_user_meta_data: {
-        name: "Tina",
-        email: "tina@c.com",
-        username: "tina",
-      },
+        name: 'Tina',
+        email: 'tina@c.com',
+        username: 'tina'
+      }
     },
     {
-      instance_id: "00000000-0000-0000-0000-000000000000",
-      email: "lucas@c.com",
+      instance_id: '00000000-0000-0000-0000-000000000000',
+      email: 'lucas@c.com',
       encrypted_password: plainHashedPassword,
-      role: "authenticated",
-      aud: "authenticated",
+      role: 'authenticated',
+      aud: 'authenticated',
       is_super_admin: false,
-      raw_app_meta_data: { provider: "email", providers: ["email"] },
+      raw_app_meta_data: { provider: 'email', providers: ['email'] },
       raw_user_meta_data: {
-        name: "Lucas",
-        email: "lucas@c.com",
-        username: "lucas",
-      },
+        name: 'Lucas',
+        email: 'lucas@c.com',
+        username: 'lucas'
+      }
     },
     {
-      instance_id: "00000000-0000-0000-0000-000000000000",
-      email: "simas@c.com",
+      instance_id: '00000000-0000-0000-0000-000000000000',
+      email: 'simas@c.com',
       encrypted_password: plainHashedPassword,
-      role: "authenticated",
-      aud: "authenticated",
+      role: 'authenticated',
+      aud: 'authenticated',
       is_super_admin: false,
-      raw_app_meta_data: { provider: "email", providers: ["email"] },
+      raw_app_meta_data: { provider: 'email', providers: ['email'] },
       raw_user_meta_data: {
-        name: "Simas",
-        email: "simas@c.com",
-        username: "simas",
-      },
-    },
+        name: 'Simas',
+        email: 'simas@c.com',
+        username: 'simas'
+      }
+    }
   ]);
   const generatedUsers = await seed.users(
     Array.from({ length: 6 }).map((_, i) => {
       const seedStr = `user-${i}`;
-      const email = copycat.email(seedStr, { domain: "acme.org" });
+      const email = copycat.email(seedStr, { domain: 'acme.org' });
       return {
-        instance_id: "00000000-0000-0000-0000-000000000000",
+        instance_id: '00000000-0000-0000-0000-000000000000',
         email,
         encrypted_password: plainHashedPassword,
-        role: "authenticated",
-        aud: "authenticated",
+        role: 'authenticated',
+        aud: 'authenticated',
         is_super_admin: false,
-        raw_app_meta_data: { provider: "email", providers: ["email"] },
+        raw_app_meta_data: { provider: 'email', providers: ['email'] },
         raw_user_meta_data: {
-          name: email.split("@")[0],
+          name: email.split('@')[0],
           email,
-          username: email.split("@")[0],
-        },
+          username: email.split('@')[0]
+        }
       };
-    }),
+    })
   );
   const users = [...fixedUsers.users, ...generatedUsers.users];
 
@@ -200,18 +190,18 @@ async function main() {
     {
       followed: fixedUsers.users[0].id,
       follower: fixedUsers.users[1].id,
-      created_at: new Date().toISOString(),
+      created_at: new Date().toISOString()
     },
     {
       followed: fixedUsers.users[0].id,
       follower: fixedUsers.users[2].id,
-      created_at: new Date().toISOString(),
+      created_at: new Date().toISOString()
     },
     {
       followed: fixedUsers.users[0].id,
       follower: fixedUsers.users[3].id,
-      created_at: new Date().toISOString(),
-    },
+      created_at: new Date().toISOString()
+    }
   ]);
 
   const fixedSubscriptions = await seed.public_subscription([
@@ -219,23 +209,23 @@ async function main() {
       author_id: fixedUsers.users[0].id,
       recipient_id: fixedUsers.users[1].id,
       email: fixedUsers.users[1].email ?? undefined,
-      medium: "email",
-      created_at: new Date().toISOString(),
+      medium: 'email',
+      created_at: new Date().toISOString()
     },
     {
       author_id: fixedUsers.users[0].id,
       recipient_id: fixedUsers.users[2].id,
       email: fixedUsers.users[2].email ?? undefined,
-      medium: "email",
-      created_at: new Date().toISOString(),
+      medium: 'email',
+      created_at: new Date().toISOString()
     },
     {
       author_id: fixedUsers.users[0].id,
       recipient_id: fixedUsers.users[3].id,
       email: fixedUsers.users[3].email ?? undefined,
-      medium: "email",
-      created_at: new Date().toISOString(),
-    },
+      medium: 'email',
+      created_at: new Date().toISOString()
+    }
   ]);
 
   // --- Generate draft ---
@@ -249,13 +239,13 @@ async function main() {
       statement_id: statementIds[0],
       parent_statement_id: null,
       header_img:
-        "https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75",
+        'https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75',
       title: content[0].title,
       subtitle: content[0].subtitle,
       creator_id: fixedUsers.users[0].id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      thread_id: "1",
+      thread_id: '1'
     },
     {
       slug: statementIds[1],
@@ -264,11 +254,11 @@ async function main() {
       title: content[1].title,
       subtitle: content[1].subtitle,
       header_img:
-        "https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75",
+        'https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75',
       creator_id: fixedUsers.users[1].id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      thread_id: "1",
+      thread_id: '1'
     },
     {
       slug: statementIds[2],
@@ -277,11 +267,11 @@ async function main() {
       title: content[2].title,
       subtitle: content[2].subtitle,
       header_img:
-        "https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75",
+        'https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75',
       creator_id: fixedUsers.users[2].id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      thread_id: "2",
+      thread_id: '2'
     },
     {
       slug: statementIds[3],
@@ -290,12 +280,12 @@ async function main() {
       title: content[3].title,
       subtitle: content[3].subtitle,
       header_img:
-        "https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75",
+        'https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75',
       creator_id: fixedUsers.users[3].id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      thread_id: "3",
-    },
+      thread_id: '3'
+    }
   ]);
 
   // const statement = await seed.statement(
@@ -323,38 +313,38 @@ async function main() {
     {
       statement_id: statementIds[0],
       user_id: fixedUsers.users[0].id,
-      role: "leadAuthor",
+      role: 'leadAuthor',
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     },
     {
       statement_id: statementIds[0],
       user_id: fixedUsers.users[3].id,
-      role: "author",
+      role: 'author',
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     },
     {
       statement_id: statementIds[1],
       user_id: fixedUsers.users[1].id,
-      role: "leadAuthor",
+      role: 'leadAuthor',
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     },
     {
       statement_id: statementIds[2],
       user_id: fixedUsers.users[2].id,
-      role: "author",
+      role: 'author',
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     },
     {
       statement_id: statementIds[3],
       user_id: fixedUsers.users[3].id,
-      role: "author",
+      role: 'author',
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
+      updated_at: new Date().toISOString()
+    }
   ]);
 
   // const collaborators = await seed.collaborator(
@@ -380,76 +370,63 @@ async function main() {
       statement_id: statementIds[1],
       version_number: 1,
       published_at: new Date().toISOString(),
-      creator_id: fixedUsers.users[0].id,
+      creator_id: fixedUsers.users[0].id
     },
     {
       id: 2, // identity column, so just use 1-based index
       content: content[0].text,
       content_json: content[0].json,
-      created_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 4)
-        .toISOString(),
-      updated_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 4)
-        .toISOString(),
+      created_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 4).toISOString(),
+      updated_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 4).toISOString(),
       statement_id: statementIds[0],
       version_number: 1,
-      published_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 4)
-        .toISOString(),
-      creator_id: fixedUsers.users[0].id,
+      published_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 4).toISOString(),
+      creator_id: fixedUsers.users[0].id
     },
     {
       id: 3, // identity column, so just use 1-based index
       content: content[0].text,
       content_json: content[0].json,
-      created_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 4)
-        .toISOString(),
-      updated_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 4)
-        .toISOString(),
+      created_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 4).toISOString(),
+      updated_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 4).toISOString(),
       statement_id: statementIds[0],
       version_number: 2,
       published_at: null,
-      creator_id: fixedUsers.users[0].id,
+      creator_id: fixedUsers.users[0].id
     },
     {
       id: 4, // identity column, so just use 1+based index
       content: content[2].text,
       content_json: content[2].json,
-      created_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 2)
-        .toISOString(),
-      updated_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 2)
-        .toISOString(),
+      created_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 2).toISOString(),
+      updated_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 2).toISOString(),
       statement_id: statementIds[2],
       version_number: 1,
-      published_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 2)
-        .toISOString(),
-      creator_id: fixedUsers.users[2].id,
+      published_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 2).toISOString(),
+      creator_id: fixedUsers.users[2].id
     },
     {
       id: 5, // identity column, so just use 1-based index
       content: content[3].text,
       content_json: content[3].json,
-      created_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1)
-        .toISOString(),
-      updated_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1)
-        .toISOString(),
+      created_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).toISOString(),
+      updated_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).toISOString(),
       statement_id: statementIds[3],
       version_number: 1,
-      published_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1)
-        .toISOString(),
-      creator_id: fixedUsers.users[3].id,
+      published_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).toISOString(),
+      creator_id: fixedUsers.users[3].id
     },
     {
       id: 6, // identity column, so just use 1-based index
       content: content[3].text,
       content_json: content[3].json,
-      created_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1)
-        .toISOString(),
-      updated_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1)
-        .toISOString(),
+      created_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).toISOString(),
+      updated_at: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).toISOString(),
       statement_id: statementIds[3],
       version_number: 2,
       published_at: null,
-      creator_id: fixedUsers.users[2].id,
-    },
+      creator_id: fixedUsers.users[2].id
+    }
   ]);
 
   // const generatedDrafts = await seed.draft(
@@ -484,9 +461,9 @@ async function main() {
         tag: copycat.word(seedStr),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        is_public: copycat.bool(seedStr),
+        is_public: copycat.bool(seedStr)
       };
-    }),
+    })
   );
 
   // --- Generate comments ---
@@ -496,13 +473,12 @@ async function main() {
       return {
         id: copycat.uuid(seedStr),
         user_id: users[Math.floor(Math.random() * users.length)].id,
-        annotation_id:
-          annotation[Math.floor(Math.random() * annotation.length)].id,
+        annotation_id: annotation[Math.floor(Math.random() * annotation.length)].id,
         content: copycat.sentence(seedStr),
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
-    }),
+    })
   );
 
   // --- Generate statement images ---
@@ -512,13 +488,12 @@ async function main() {
       return {
         id: copycat.uuid(seedStr),
         statement_id: statementIds[0],
-        src:
-          "https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75",
+        src: 'https://conject.io/_next/image?url=https%3A%2F%2Fbewgymyresxixvkkqbzl.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fstatement-images%2Fb66e1e24-0fbf-4b51-95cc-5093d7f2a04c%2Fe857d479be%2Fconflict.png&w=3840&q=75',
         alt: copycat.words(seedStr),
         caption: copycat.sentence(seedStr),
-        created_at: new Date().toISOString(),
+        created_at: new Date().toISOString()
       };
-    }),
+    })
   );
 
   // --- Generate statement citations ---
@@ -542,9 +517,9 @@ async function main() {
         page_end: copycat.int(`${seedStr}-page_end`, { min: 101, max: 200 }),
         url: copycat.url(seedStr),
         created_at: new Date().toISOString(),
-        page_type: copycat.word(seedStr),
+        page_type: copycat.word(seedStr)
       };
-    }),
+    })
   );
 
   process.exit();

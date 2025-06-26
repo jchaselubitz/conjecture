@@ -1,6 +1,7 @@
 import { Editor } from '@tiptap/react';
-import { Button } from '@/components/ui/button';
 import React from 'react';
+
+import { Button } from '@/components/ui/button';
 
 interface TableToolsProps {
   editor: Editor | null;

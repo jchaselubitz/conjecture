@@ -222,7 +222,7 @@
   text-align: center;
   padding: 0.75rem 0;
   margin: 1rem 0;
-  background-color: hsl(var(--muted) / 0.3);
+  background-color: hsl(var(--muted), 0.3);
   border-radius: 0.25rem;
 }
 
@@ -261,7 +261,7 @@
 }
 
 .ProseMirror img[data-type="block-image"]:hover {
-  box-shadow: 0 0 0 3px hsl(var(--muted) / 0.3);
+  box-shadow: 0 0 0 3px hsl(var(--muted), 0.3);
 }
 
 /* Annotation marker styles */

@@ -1,4 +1,4 @@
-import { StatementWithUser } from 'kysely-codegen';
+import { StatementWithUser } from "kysely-codegen";
 
 const mainStyles = ` * {
         box-sizing: border-box;
@@ -378,7 +378,7 @@ display: block;
 text-align: center;
 padding: 0.75rem 0;
 margin: 1rem 0;
-background-color: hsl(var(--muted) / 0.3);
+background-color: hsl(var(--muted), 0.3);
 border-radius: 0.25rem;
 }
 
@@ -551,7 +551,7 @@ text-align: center;
 }
 
 .ProseMirror img[data-type="block-image"]:hover {
-box-shadow: 0 0 0 3px hsl(var(--muted) / 0.3);
+box-shadow: 0 0 0 3px hsl(var(--muted), 0.3);
 }
 
 /* Annotation marker styles */
@@ -833,23 +833,26 @@ line-height: 0;
 export function getNewsletterHtml({
   statement,
   subscriberEmail,
-  previewMode = false
+  previewMode = false,
 }: {
   statement: StatementWithUser;
   subscriberEmail?: string;
   previewMode?: boolean;
 }): string {
-  const title = statement.title || '';
-  const subtitle = statement.subtitle || '';
-  const headerImg = statement.headerImg || '';
-  const htmlContent = statement.draft.content || '';
+  const title = statement.title || "";
+  const subtitle = statement.subtitle || "";
+  const headerImg = statement.headerImg || "";
+  const htmlContent = statement.draft.content || "";
   const authors = statement.authors || [];
-  const creatorSlug = statement.creatorSlug || '';
+  const creatorSlug = statement.creatorSlug || "";
   const postUrl = `/${statement.creatorSlug}/${statement.slug}`;
 
   // Create the full URL with UTM parameters
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://conject.io';
-  const fullPostUrl = `${baseUrl}${postUrl}?utm_source=newsletter&utm_medium=email&utm_campaign=statement_share`;
+  const baseUrl = typeof window !== "undefined"
+    ? window.location.origin
+    : "https://conject.io";
+  const fullPostUrl =
+    `${baseUrl}${postUrl}?utm_source=newsletter&utm_medium=email&utm_campaign=statement_share`;
 
   const manageSubscriptionUrl = subscriberEmail
     ? `${baseUrl}/${creatorSlug}/manage-subscription?email=${subscriberEmail}`
@@ -860,7 +863,7 @@ export function getNewsletterHtml({
     /<mark class="annotation"[^>]*data-annotation-id="([^"]*)"[^>]*>(.*?)<\/mark>/g,
     (match, annotationId, content) => {
       return `<a href="${fullPostUrl}&annotation-id=${annotationId}" target="_blank" class="annotation-link">${content}</a>`;
-    }
+    },
   );
 
   // Assign sequential numbers to citation references in order of appearance and link each to fullPostUrl
@@ -869,7 +872,7 @@ export function getNewsletterHtml({
     /(<sup[^>]*class="citation-reference"[^>]*>\s*<span class="citation-number">)(.*?)(<\/span>\s*<\/sup>)/g,
     (match, prefix, oldNumber, suffix) => {
       return `${prefix}<a href="${fullPostUrl}" class="citation-number-link" target="_blank" rel="noopener noreferrer">${citationCounter++}</a>${suffix}`;
-    }
+    },
   );
 
   const styles = `${proseStyles} ${mainStyles} ${latexStyles}`;
@@ -895,47 +898,53 @@ export function getNewsletterHtml({
         <td align="center">
           <div class="main-container">
             ${
-              headerImg
-                ? `
+    headerImg
+      ? `
               <a href="${fullPostUrl}" class="header-link">
                 <img src="${headerImg}" alt="Header Image" class="header-image">
               </a>
             `
-                : ''
-            }
+      : ""
+  }
             
             <div class="content-wrapper">
               <a href="${fullPostUrl}" class="title-link">
                 <div class="title-section">
                   <h1>${title}</h1>
-                  ${subtitle ? `<h2>${subtitle}</h2>` : ''}
+                  ${subtitle ? `<h2>${subtitle}</h2>` : ""}
                 </div>
               </a>
               
               ${
-                authors.length > 0
-                  ? `
+    authors.length > 0
+      ? `
                 <a href="${fullPostUrl}" class="byline">
                   <div class="avatar-group">
-                    ${authors
-                      .map(author =>
-                        author.imageUrl
-                          ? `<img src="${author.imageUrl}" alt="${
-                              author.name || author.username || ''
-                            }" class="avatar">`
-                          : `<div class="avatar">${(author.name || author.username || '')
-                              .slice(0, 2)
-                              .toUpperCase()}</div>`
-                      )
-                      .join('')}
+                    ${
+        authors
+          .map((author) =>
+            author.imageUrl
+              ? `<img src="${author.imageUrl}" alt="${
+                author.name || author.username || ""
+              }" class="avatar">`
+              : `<div class="avatar">${
+                (author.name || author.username || "")
+                  .slice(0, 2)
+                  .toUpperCase()
+              }</div>`
+          )
+          .join("")
+      }
                   </div>
                   <div class="authors">
-                    ${authors.map(author => author.name || author.username).join(', ')}
+                    ${
+        authors.map((author) => author.name || author.username).join(", ")
+      }
                   </div>
                 </a>
               `
-                  : ''
-              }
+      : ""
+  }
               
               <div class="content-area">
                 ${numberedHtmlContent}
@@ -947,9 +956,11 @@ export function getNewsletterHtml({
     </table>
     <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid #dde4ed; font-size: 12px; color: #6b7280; text-align: center;">
       <p style="margin-bottom: 0;">
-        ${authors
-          .map(author => author.name || author.username)
-          .join(', ')} © ${new Date().getFullYear()} |
+        ${
+    authors
+      .map((author) => author.name || author.username)
+      .join(", ")
+  } © ${new Date().getFullYear()} |
         <a href="${manageSubscriptionUrl}" style="color: #6b7280; text-decoration: underline;">
           Manage subscription
         </a>

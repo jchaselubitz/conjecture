@@ -290,7 +290,7 @@ export default function StatementLayout({
       </ResizablePanel>
       <ResizableHandle />
       <ResizablePanel id="editor" defaultSize={startingPanelSizes[1]} minSize={minEditorPanelSize}>
-        <div className=" flex flex-col overflow-y-auto h-full">
+        <div className=" flex flex-col overflow-y-auto h-full ">
           <StatementTopControls
             handleToggleStack={handleToggleStack}
             handleOpenComments={handleOpenComments}
