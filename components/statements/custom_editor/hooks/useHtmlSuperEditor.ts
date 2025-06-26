@@ -4,6 +4,9 @@ import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import Typography from "@tiptap/extension-typography";
 import Youtube from "@tiptap/extension-youtube";
+import TableCell from "@tiptap/extension-table-cell";
+import TableHeader from "@tiptap/extension-table-header";
+import TableRow from "@tiptap/extension-table-row";
 import { Node as ProsemirrorNode, Slice } from "@tiptap/pm/model";
 import { Step } from "@tiptap/pm/transform";
 import { EditorView } from "@tiptap/pm/view";
@@ -11,7 +14,6 @@ import { Editor, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import {
   AnnotationWithComments,
-  DraftWithAnnotations,
   NewStatementCitation,
   StatementPackage,
 } from "kysely-codegen";
@@ -45,6 +47,7 @@ import { Citation } from "../custom_extensions/citation";
 import { InlineLatex } from "../custom_extensions/inline_latex";
 import { handleCitationPaste } from "../custom_extensions/quote_paste_handler";
 import { QuotePasteHandler } from "../custom_extensions/quote_paste_handler";
+import { TableWithTools } from "../custom_extensions/table_with_tools";
 
 interface UseHtmlSuperEditorProps {
   statement: StatementPackage;
@@ -103,7 +106,6 @@ export const useHtmlSuperEditor = ({
     setCitations,
   } = useStatementToolsContext();
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const isMobile = useWindowSize().width < 600;
   const htmlContent = updatedStatement.draft.content;
@@ -121,6 +123,10 @@ export const useHtmlSuperEditor = ({
 
   const editor = useEditor({
     extensions: [
+      TrailingNode.configure({
+        node: "paragraph",
+        notAfter: ["paragraph", "heading"], // Optional: only add after certain types
+      }),
       StarterKit.configure({
         history: {},
         blockquote: {
@@ -137,6 +143,15 @@ export const useHtmlSuperEditor = ({
         nocookie: true,
       }),
       Typography,
+      TableWithTools.configure({
+        resizable: true,
+        HTMLAttributes: {
+          class: "w-full",
+        },
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
       Link.configure({
         openOnClick: true,
         HTMLAttributes: {
@@ -507,7 +522,6 @@ export const useHtmlSuperEditor = ({
   useEffect(() => {
     setEditor(editor);
   }, [editor, setEditor]);
-
   //Scrolls to the annotation when the url has an annotation-id
   useEffect(() => {
     if (!editor) return;

@@ -23,7 +23,6 @@ interface StatementCardProps {
 }
 
 export function StatementCard({ statement, isPublic, pathname }: StatementCardProps) {
-  console.log(statement);
   const formattedDate = statement.draft.publishedAt
     ? format(new Date(statement.draft.publishedAt), 'MMM d, yyyy')
     : format(new Date(statement.updatedAt), 'MMM d, yyyy');

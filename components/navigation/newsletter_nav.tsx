@@ -64,7 +64,7 @@ export default function NewsletterNav() {
             size="icon"
             onClick={() =>
               router.push(
-                `/${currentUserSlug}/${updatedStatement?.slug}/${currentVersion}&edit=${editMode}`
+                `/${currentUserSlug}/${updatedStatement?.slug}/${currentVersion}?edit=${editMode}`
               )
             }
           >

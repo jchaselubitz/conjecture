@@ -1,5 +1,13 @@
 import { Editor } from '@tiptap/react';
-import { Heading1, Heading2, Heading3, List, ListOrdered, Quote } from 'lucide-react';
+import {
+  Heading1,
+  Heading2,
+  Heading3,
+  List,
+  ListOrdered,
+  Quote,
+  Table as TableIcon
+} from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -67,8 +75,16 @@ export function BlockTypeChooser({ statementId, editor }: BlockTypeChooserProps)
       >
         <Quote className="h-4 w-4" />
       </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() =>
+          editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+        }
+      >
+        <TableIcon className="h-4 w-4" />
+      </Button>
       <LatexButton editor={editor} displayMode={true} />
-
       <VideoButton statementId={statementId} />
       <ImageButton statementId={statementId} />
     </div>

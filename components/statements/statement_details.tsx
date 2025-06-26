@@ -327,7 +327,7 @@ export default function StatementDetails({
 
           <Byline statement={updatedStatement} />
 
-          <div className="rounded-lg overflow-hidden bg-background ">
+          <div className="pb-6 overflow-hidden bg-background ">
             <HTMLSuperEditor
               key={`editor-content-${editMode}`}
               statement={updatedStatement}

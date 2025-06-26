@@ -1,6 +1,7 @@
 'use client';
 
 import './prose.css';
+import './table.css';
 
 import * as Sentry from '@sentry/nextjs';
 import { AnnotationWithComments } from 'kysely-codegen';

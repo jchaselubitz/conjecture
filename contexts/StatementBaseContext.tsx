@@ -87,7 +87,7 @@ export function StatementProvider({
   const nextVersionNumber = versionList.length + 1;
 
   const changeVersion = (newVersion: number) => {
-    router.push(`/${writerUserSlug}/${statementPackage.slug}/${newVersion}&edit=${editMode}`);
+    router.push(`/${writerUserSlug}/${statementPackage.slug}/${newVersion}?edit=${editMode}`);
   };
 
   const saveStatementDraft = async () => {

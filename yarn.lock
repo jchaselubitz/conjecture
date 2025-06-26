@@ -6482,6 +6482,43 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tiptap/extension-table-cell@npm:^2.22.3":
+  version: 2.22.3
+  resolution: "@tiptap/extension-table-cell@npm:2.22.3"
+  peerDependencies:
+    "@tiptap/core": ^2.7.0
+  checksum: 10c0/c7cfb0ae7788eeebb45b65f5b8d6ad936881a867ad9d4f3517786aaa4199f78e8f58abdcfcec60992f96acd65cd26853d804c095d1e0ab244c8d19a8e20a2837
+  languageName: node
+  linkType: hard
+
+"@tiptap/extension-table-header@npm:^2.22.3":
+  version: 2.22.3
+  resolution: "@tiptap/extension-table-header@npm:2.22.3"
+  peerDependencies:
+    "@tiptap/core": ^2.7.0
+  checksum: 10c0/37cc8ca8a9c5059d4b7044ca246c768935d6b47984f0c6b8715a490c1bd8d408f06fe8a7b9e9cee0454156f3af365e07ac93b926d7bba68d5b978144d47e73b5
+  languageName: node
+  linkType: hard
+
+"@tiptap/extension-table-row@npm:^2.22.3":
+  version: 2.22.3
+  resolution: "@tiptap/extension-table-row@npm:2.22.3"
+  peerDependencies:
+    "@tiptap/core": ^2.7.0
+  checksum: 10c0/bd97b9336177b8aecc9109bddb9af2956eebc825fc839c51df2dde61e35ab974c0a437e8b08460893ba4228b76a05e809e8db48e40f52c3e0313fa6fedd0e607
+  languageName: node
+  linkType: hard
+
+"@tiptap/extension-table@npm:^2.22.3":
+  version: 2.22.3
+  resolution: "@tiptap/extension-table@npm:2.22.3"
+  peerDependencies:
+    "@tiptap/core": ^2.7.0
+    "@tiptap/pm": ^2.7.0
+  checksum: 10c0/956d3b9fa23eb08c8bc15271350e3341fd24caf4ab681469728e28ab45a25fcc64b3d51672f9438a06b0e15c02b27735b92584fc91c830a0821d4a8b8d56f532
+  languageName: node
+  linkType: hard
+
 "@tiptap/extension-text-style@npm:^2.11.5":
   version: 2.11.5
   resolution: "@tiptap/extension-text-style@npm:2.11.5"
@@ -10067,6 +10104,10 @@ __metadata:
     "@tiptap/extension-highlight": "npm:^2.11.5"
     "@tiptap/extension-link": "npm:^2.11.5"
     "@tiptap/extension-placeholder": "npm:^2.11.5"
+    "@tiptap/extension-table": "npm:^2.22.3"
+    "@tiptap/extension-table-cell": "npm:^2.22.3"
+    "@tiptap/extension-table-header": "npm:^2.22.3"
+    "@tiptap/extension-table-row": "npm:^2.22.3"
     "@tiptap/extension-typography": "npm:^2.11.5"
     "@tiptap/extension-youtube": "npm:^2.14.0"
     "@tiptap/pm": "npm:^2.11.5"

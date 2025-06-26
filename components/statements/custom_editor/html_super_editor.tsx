@@ -83,7 +83,7 @@ const HTMLSuperEditor = ({
       <EditorContent
         editor={editor}
         className={cn(
-          'ProseMirror',
+          'ProseMirror ',
           annotatable && 'annotator-container' && 'min-h-[40px]',
           !editMode && 'pseudo-readonly'
         )}
