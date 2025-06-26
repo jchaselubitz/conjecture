@@ -1,3 +1,4 @@
+import { Metadata, ResolvingMetadata } from 'next';
 import { redirect } from 'next/navigation';
 
 import { StatementAnnotationProvider } from '@/contexts/StatementAnnotationContext';
@@ -9,6 +10,7 @@ import { getSubscribers } from '@/lib/actions/notificationActions';
 import {
   getFullThread,
   getPublishedOrLatest,
+  getPublishedStatement,
   getStatementPackage
 } from '@/lib/actions/statementActions';
 import { UserStatementRoles } from '@/lib/enums/permissions';
@@ -17,6 +19,25 @@ type Props = {
   params: Promise<{ statementSlug: string; userSlug: string; version: string }>;
   children: React.ReactNode;
 };
+
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const { statementSlug } = await params;
+  const statement = await getPublishedStatement(statementSlug);
+  const previousImages = (await parent).openGraph?.images || [];
+
+  return {
+    title: statement?.title,
+    description: statement?.subtitle,
+    creator: statement?.authors.map(author => author.name).join(', '),
+    // keywords: statement?.keywords,
+    openGraph: {
+      images: [`${statement?.headerImg}`, ...previousImages]
+    }
+  };
+}
 
 export default async function UserStatementLayout({ children, params }: Props) {
   const user = await getUser();
@@ -34,6 +55,9 @@ export default async function UserStatementLayout({ children, params }: Props) {
   )?.versionNumber;
 
   if (!versionNumber) {
+    if (!selectedVersion) {
+      return <div>No published version found</div>;
+    }
     redirect(`/${userSlug}/${statementSlug}/${selectedVersion}`);
   }
 

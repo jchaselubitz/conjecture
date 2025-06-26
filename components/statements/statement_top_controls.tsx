@@ -1,7 +1,9 @@
+import { ArrowLeftToLineIcon, Sidebar } from 'lucide-react';
 import React from 'react';
-import { Button } from '../ui/button';
-import { Sidebar, ArrowLeftToLineIcon } from 'lucide-react';
+
 import { useEditModeContext } from '@/contexts/EditModeContext';
+
+import { Button } from '../ui/button';
 
 export default function StatementTopControls({
   handleToggleStack,
