@@ -41,6 +41,26 @@ export async function generateMetadata(
 }
 
 export default async function StatementPage({ params, searchParams }: Props) {
+  const user = await getUser();
+  const userId = user?.id?.toString();
+  const { statementSlug, userSlug } = await params;
+
+  const userRole = await getUserRole(userId, statementSlug);
+  const userIsCollaborator = userRole !== UserStatementRoles.Viewer;
+  const selection = await getPublishedOrLatest(statementSlug, userIsCollaborator);
+  const { version: selectedVersion, versionList } = selection ?? {};
+
+  const statementPackage = await getStatementPackage({
+    statementSlug,
+    version: selectedVersion
+  });
+
+  const thread = statementPackage.threadId ? await getFullThread(statementPackage.threadId) : [];
+
+  const creator = statementPackage.creatorId.toString();
+  const isCreator = creator === userId;
+  const subscribers = isCreator ? await getSubscribers(creator) : [];
+
   const { edit } = await searchParams;
   const editMode = edit === 'true';
 

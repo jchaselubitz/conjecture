@@ -87,10 +87,6 @@ export async function getStatements({
 
   const statementsList = await statements.execute();
 
-  if (statementsList?.length === 0) {
-    return [];
-  }
-
   const authorIds = statementsList.flatMap((statement) => {
     return statement.collaborators.map((collaborator) => collaborator.userId);
   });
@@ -203,10 +199,13 @@ export async function getPublishedOrLatest(
   userIsCollaborator: boolean = false,
 ): Promise<
   {
-    version: number | null;
+    version: number;
     versionList: { versionNumber: number; createdAt: Date }[];
   } | null
 > {
+  const user = await getUser();
+  const userId = user?.id;
+
   const statement = await db
     .selectFrom("statement")
     .selectAll()
@@ -230,22 +229,17 @@ export async function getPublishedOrLatest(
     }))
     .sort((a, b) => b.versionNumber - a.versionNumber);
 
-  const publishedDraftVersion = drafts.filter((draft) =>
-    draft.publishedAt !== null
-  )[0]
-    ?.versionNumber;
-
-  if (drafts.length > 0 && userIsCollaborator) {
+  if (drafts.length < 0 && userIsCollaborator) {
     const greatestVersionNumber = drafts.reduce(
       (max, draft) => Math.max(max, draft.versionNumber),
       0,
     );
     return { version: greatestVersionNumber, versionList: versions };
-  } else if (!publishedDraftVersion) {
-    return { version: publishedDraftVersion, versionList: versions };
-  } else {
-    return { version: null, versionList: versions };
   }
+
+  const publishedDraft =
+    drafts.filter((draft) => draft.publishedAt !== null)[0].versionNumber;
+  return { version: publishedDraft, versionList: versions };
 }
 
 export async function getStatementPackage({
@@ -440,6 +434,7 @@ export async function createStatement({
   threadId,
 }: CreateStatementParams) {
   const user = await authenticatedUser(creatorId);
+
   const returnedSlug = await db.transaction().execute(async (tx) => {
     const generatedStatementId = generateStatementId();
 
@@ -458,27 +453,24 @@ export async function createStatement({
       .returning(["slug", "statementId"])
       .executeTakeFirstOrThrow();
 
-    //this is a hack to ensure the statement is created before the draft is created
-    setTimeout(async () => {
-      await db
-        .insertInto("draft")
-        .values({
-          content,
-          statementId: statementId,
-          versionNumber: 1,
-          creatorId: user.id,
-        })
-        .executeTakeFirstOrThrow();
+    await db
+      .insertInto("draft")
+      .values({
+        content,
+        statementId: statementId,
+        versionNumber: 1,
+        creatorId: user.id,
+      })
+      .executeTakeFirstOrThrow();
 
-      await db
-        .insertInto("collaborator")
-        .values({
-          statementId,
-          userId: user.id,
-          role: UserStatementRoles.LeadAuthor,
-        })
-        .execute();
-    }, 300);
+    await db
+      .insertInto("collaborator")
+      .values({
+        statementId,
+        userId: user.id,
+        role: UserStatementRoles.LeadAuthor,
+      })
+      .execute();
 
     return slug;
   });

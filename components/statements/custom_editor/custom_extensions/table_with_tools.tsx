@@ -49,7 +49,6 @@ const TableWithToolsComponent = (props: NodeViewProps & { editMode?: boolean }) 
         className={props.HTMLAttributes.class}
         style={props.HTMLAttributes.style}
       />
-      {/* </table> */}
     </NodeViewWrapper>
   );
 };
