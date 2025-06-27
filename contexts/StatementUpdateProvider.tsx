@@ -139,6 +139,7 @@ export function StatementUpdateProvider({ children }: { children: ReactNode }) {
     userId,
     annotations,
     setAnnotations,
+    isCreator,
     statement // Add original statement as dependency for comparison
     // No need for setIsUpdating/setError here as they are component state
   ]);

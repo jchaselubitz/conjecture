@@ -158,7 +158,9 @@ export default function StatementDetails({
     return (!isStatementCreator && showReaderComments) || !userId;
   }, [isStatementCreator, showReaderComments, userId]);
 
-  const annotatable = !!userId && !editMode && (authorCanAnnotate || readerCanAnnotate);
+  const annotatable = useMemo(() => {
+    !!userId && !editMode && (authorCanAnnotate || readerCanAnnotate);
+  }, [userId, editMode, authorCanAnnotate, readerCanAnnotate]);
 
   const prevEditModeRef = useRef(editMode);
 
@@ -334,7 +336,7 @@ export default function StatementDetails({
               userId={userId}
               onAnnotationClick={handleAnnotationClick}
               placeholder="Start typing or paste content here..."
-              annotatable={annotatable}
+              annotatable={annotatable ?? true}
               selectedAnnotationId={selectedAnnotationId}
               setSelectedAnnotationId={setSelectedAnnotationId}
               showAuthorComments={showAuthorComments}

@@ -1,6 +1,5 @@
 'use client';
 
-import Link from '@tiptap/extension-link';
 import { TableCell, TableHeader, TableRow } from '@tiptap/extension-table';
 import { TextStyleKit } from '@tiptap/extension-text-style';
 import Typography from '@tiptap/extension-typography';
@@ -132,6 +131,14 @@ export const useHtmlSuperEditor = ({
         trailingNode: {
           node: 'paragraph',
           notAfter: ['paragraph', 'heading'] // Optional: only add after certain types
+        },
+        link: {
+          openOnClick: true,
+          HTMLAttributes: {
+            class: 'prose-link',
+            target: '_blank',
+            rel: 'noopener noreferrer'
+          }
         }
         // placeholder: {
         //   placeholder,
@@ -153,14 +160,6 @@ export const useHtmlSuperEditor = ({
       TableRow,
       TableHeader,
       TableCell,
-      Link.configure({
-        openOnClick: true,
-        HTMLAttributes: {
-          class: 'prose-link',
-          target: '_blank',
-          rel: 'noopener noreferrer'
-        }
-      }),
 
       // Placeholder.configure({
       //   placeholder,
