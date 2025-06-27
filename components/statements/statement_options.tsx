@@ -152,7 +152,7 @@ export default function StatementOptions({
     <div className={cn('gap-3 flex flex-col', className)}>
       <Separator />
       <div className="flex justify-between items-center gap-3 px-1 md:max-w-3xl">
-        <div className="flex flex-col-reverse md:flex-row justify-between items-center gap-3 ">
+        <div className="flex  justify-between items-center gap-3 ">
           <CommentIndicatorButton
             showAuthorComments={showAuthorComments}
             showReaderComments={showReaderComments}
@@ -170,9 +170,9 @@ export default function StatementOptions({
             <VoteButton statementId={statement.statementId} upvotes={statement.upvotes || []} />
           )}
         </div>
-        <div className="flex flex-col-reverse md:flex-row items-center gap-3 justify-end w-full">
+        <div className="flex items-center gap-3 justify-end w-full">
           {editMode ? (
-            <div className="flex flex-col-reverse md:flex-row items-center gap-3 justify-end w-full md:w-auto">
+            <div className="flex items-center gap-3 justify-end w-full md:w-auto">
               <Link
                 href={`/${statement.creatorSlug}/${statement.slug}/${currentVersion}/newsletter`}
                 className="hidden md:flex w-full md:w-auto"
