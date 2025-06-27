@@ -35,6 +35,7 @@ import { Button } from '../ui/button';
 import AnnotationDrawer from './annotation/annotation_drawer';
 import StatementDetails from './statement_details';
 import StatementTopControls from './statement_top_controls';
+import { cn } from '@/lib/utils';
 
 interface StatementDetailsProps {
   authorCommentsEnabled: boolean;
@@ -276,8 +277,6 @@ export default function StatementLayout({
         className="hidden md:block relative bg-gray-50 "
       >
         <div className="relative w-full h-full">
-          {/* add a sidebar button that collapses this resizable panel */}
-
           <div className="absolute top-1/4 p-4 w-full">
             <VerticalCardStack
               familyTree={familyTree}
@@ -336,9 +335,8 @@ export default function StatementLayout({
   );
 
   return (
-    <div className="flex flex-col h-full w-full md:pb-20">
+    <div className={cn('flex flex-col h-full w-full ', editMode && 'bg-gray-50')}>
       {editMode ? <EditNav /> : <></>}
-
       {isMobile ? mobileLayout : desktopLayout}
     </div>
   );

@@ -184,7 +184,7 @@ export default function StatementDetails({
   };
 
   return (
-    <div className="overflow-y-auto h-full">
+    <div className={cn('h-full md:pb-2')}>
       <div className="flex justify-center">
         {!isPublished && (
           <div className="text-center bg-amber-100 bg-opacity-20 rounded-md py-1 text-lg uppercase text-amber-700 border border-amber-300 font-semibold md:max-w-3xl w-full  px-4 ">
@@ -192,7 +192,7 @@ export default function StatementDetails({
           </div>
         )}
       </div>
-      <div className="flex flex-col md:mt-12 md:mx-auto w-full max-w-screen md:max-w-3xl  ">
+      <div className="flex flex-col md:mt-12 md:mx-auto w-full max-w-screen md:max-w-3xl bg-white">
         {headerImg ? (
           <div className="relative group md:px-4">
             <AspectRatio ratio={16 / 9} className="bg-muted rounded-md">

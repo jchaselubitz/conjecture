@@ -74,7 +74,7 @@ const HTMLSuperEditor = ({
     <div
       className={cn(
         'relative',
-        editMode ? 'editMode-container' : 'annotator-container',
+        editMode ? 'editMode-container ' : 'annotator-container',
         showAuthorComments && 'show-author-comments',
         showReaderComments && 'show-reader-comments',
         className

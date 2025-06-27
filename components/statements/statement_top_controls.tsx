@@ -17,7 +17,7 @@ export default function StatementTopControls({
   const { editMode } = useEditModeContext();
 
   return (
-    <div className="hidden md:grid grid-cols-2 items-start sticky top-0 bg-opacity-0">
+    <div className="grid grid-cols-2 items-start sticky top-0 bg-transparent">
       <div className="col-span-1 flex justify-start">
         <Button variant="ghost" size="icon" className="z-50 mt-1" onClick={handleToggleStack}>
           <Sidebar className="w-4 h-4" />
