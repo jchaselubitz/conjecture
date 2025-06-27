@@ -53,6 +53,7 @@ export async function getStatements({
       "statement.title",
       "statement.subtitle",
       "statement.threadId",
+      "statement.distributedAt as distributedAt",
       "draft.publishedAt as publishedAt",
       "draft.content as content",
       "draft.versionNumber as versionNumber",
@@ -155,6 +156,7 @@ export async function getFullThread(
       "statement.title",
       "statement.subtitle",
       "statement.threadId",
+      "statement.distributedAt as distributedAt",
       "draft.publishedAt as publishedAt",
       "draft.versionNumber as versionNumber",
       "draft.content as content",
@@ -260,6 +262,7 @@ export async function getStatementPackage({
         "threadId",
         "title",
         "subtitle",
+        "distributedAt",
         jsonArrayFrom(
           eb
             .selectFrom("collaborator")
@@ -475,11 +478,10 @@ export async function createStatement({
       return { error: "Failed to create draft" };
     }
   } catch (error) {
-    await db.deleteFrom("statement").where(
-      "statementId",
-      "=",
-      generatedStatementId,
-    ).executeTakeFirst();
+    await db
+      .deleteFrom("statement")
+      .where("statementId", "=", generatedStatementId)
+      .executeTakeFirst();
     return { error: "Failed to create draft" };
   }
 }

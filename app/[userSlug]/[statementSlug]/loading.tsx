@@ -1,7 +1,8 @@
 'use client';
 
-import { Skeleton } from '@/components/ui/skeleton';
 import { useSelectedLayoutSegment } from 'next/navigation';
+
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function StatementLoading() {
   const segment = useSelectedLayoutSegment();

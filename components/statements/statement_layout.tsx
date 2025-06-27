@@ -27,6 +27,7 @@ import {
   setPanelState
 } from '@/lib/helpers/helpersLayout';
 import { groupThreadsByParentId } from '@/lib/helpers/helpersStatements';
+import { cn } from '@/lib/utils';
 
 import VerticalCardStack from '../card_stacks/vertical_card_stack';
 import EditNav from '../navigation/edit_nav';
@@ -35,7 +36,6 @@ import { Button } from '../ui/button';
 import AnnotationDrawer from './annotation/annotation_drawer';
 import StatementDetails from './statement_details';
 import StatementTopControls from './statement_top_controls';
-import { cn } from '@/lib/utils';
 
 interface StatementDetailsProps {
   authorCommentsEnabled: boolean;
