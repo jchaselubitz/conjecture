@@ -159,7 +159,7 @@ export default function StatementDetails({
   }, [isStatementCreator, showReaderComments, userId]);
 
   const annotatable = useMemo(() => {
-    !!userId && !editMode && (authorCanAnnotate || readerCanAnnotate);
+    return !!userId && !editMode && (authorCanAnnotate || readerCanAnnotate);
   }, [userId, editMode, authorCanAnnotate, readerCanAnnotate]);
 
   const prevEditModeRef = useRef(editMode);
