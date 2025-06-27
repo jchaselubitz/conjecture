@@ -1,7 +1,8 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, MoreVertical } from 'lucide-react';
 import { ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useWindowSize } from 'react-use';
@@ -23,6 +24,7 @@ import {
 } from '../ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import ViewModeButton from '../view_mode_button';
+
 export default function EditNav() {
   const { currentUserSlug } = useUserContext();
 
@@ -33,7 +35,8 @@ export default function EditNav() {
     togglePublish,
     nextVersionNumber,
     changeVersion,
-    currentVersion
+    currentVersion,
+    statement
   } = useStatementContext();
 
   const { updateStatementDraft, isUpdating } = useStatementUpdateContext();
@@ -116,6 +119,20 @@ export default function EditNav() {
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuGroup>
             <DropdownMenuItem>
+              <LoadingButton
+                className="w-full"
+                variant="outline"
+                onClick={handleSaveDraft}
+                buttonState={saveButtonState}
+                text={`Start v${nextVersionNumber}`}
+                loadingText="Saving..."
+                successText="Saved"
+                setButtonState={setSaveButtonState}
+                reset
+                errorText="Failed to save"
+              />
+            </DropdownMenuItem>
+            <DropdownMenuItem>
               <Select
                 value={updatedStatement?.draft.versionNumber.toString()}
                 onValueChange={value => changeVersion(parseInt(value, 10))}
@@ -135,18 +152,56 @@ export default function EditNav() {
                 </SelectContent>
               </Select>
             </DropdownMenuItem>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  };
+
+  const mobileMenu = () => {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm">
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuGroup>
+            <DropdownMenuItem>
+              <Link
+                href={`/${statement.creatorSlug}/${statement.slug}/${currentVersion}/newsletter`}
+                className="w-full"
+              >
+                <Button variant="outline" size="sm" className="w-full ">
+                  Preview newsletter
+                </Button>
+              </Link>
+            </DropdownMenuItem>
+            {isPublished && (
+              <DropdownMenuItem>
+                <LoadingButton
+                  onClick={handleSendToSubscribers}
+                  buttonState={sendToSubscribersButtonState}
+                  variant="outline"
+                  text="Send to subscribers"
+                  loadingText="Sending..."
+                  setButtonState={setSendToSubscribersButtonState}
+                  className="w-full"
+                />
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem>
               <LoadingButton
-                className="w-full"
-                variant="outline"
-                onClick={handleSaveDraft}
-                buttonState={saveButtonState}
-                text={`Start v${nextVersionNumber}`}
-                loadingText="Saving..."
-                successText="Saved"
-                setButtonState={setSaveButtonState}
+                onClick={handlePublish}
+                buttonState={publishButtonState}
+                text={isPublished ? `Hide Post` : `Publish v${currentVersion}`}
+                loadingText={isPublished ? 'Hiding...' : 'Publishing...'}
+                setButtonState={setPublishButtonState}
                 reset
-                errorText="Failed to save"
+                successText={isPublished ? 'Hidden' : 'Published'}
+                errorText="Failed to publish"
+                className="w-full"
               />
             </DropdownMenuItem>
           </DropdownMenuGroup>
@@ -183,26 +238,29 @@ export default function EditNav() {
                   reset
                   errorText="Failed to update"
                 />
-                {isPublished && (
+                {/* <div className="hidden md:flex gap-3">
+                  {isPublished && (
+                    <LoadingButton
+                      onClick={handleSendToSubscribers}
+                      buttonState={sendToSubscribersButtonState}
+                      variant="outline"
+                      text="Send to subscribers"
+                      loadingText="Sending..."
+                      setButtonState={setSendToSubscribersButtonState}
+                    />
+                  )}*/}
+                {!isPublished && (
                   <LoadingButton
-                    onClick={handleSendToSubscribers}
+                    onClick={handlePublish}
                     buttonState={publishButtonState}
-                    variant="outline"
-                    text="Send to subscribers"
-                    loadingText="Sending..."
+                    text={isPublished ? `Hide` : `Publish v${currentVersion}`}
+                    loadingText={isPublished ? 'Hiding...' : 'Publishing...'}
                     setButtonState={setPublishButtonState}
+                    reset
+                    successText={isPublished ? 'Hidden' : 'Published'}
+                    errorText="Failed to publish"
                   />
                 )}
-                <LoadingButton
-                  onClick={handlePublish}
-                  buttonState={publishButtonState}
-                  text={isPublished ? `Hide` : `Publish v${currentVersion}`}
-                  loadingText={isPublished ? 'Hiding...' : 'Publishing...'}
-                  setButtonState={setPublishButtonState}
-                  reset
-                  successText={isPublished ? 'Hidden' : 'Published'}
-                  errorText="Failed to publish"
-                />
 
                 <ViewModeButton
                   handleEditModeToggle={() =>
@@ -211,6 +269,7 @@ export default function EditNav() {
                   iconOnly={isMobile}
                   variant="default"
                 />
+                <div className="flex gap-3">{mobileMenu()}</div>
               </>
             )}
           </div>

@@ -3,7 +3,6 @@
 import { StatementWithUser } from 'kysely-codegen';
 import React from 'react';
 
-import { useNavContext } from '@/contexts/NavContext';
 import { getNewsletterHtml } from '@/lib/assets/newsletter_template';
 
 export default function Newsletter({

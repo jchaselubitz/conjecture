@@ -151,8 +151,8 @@ export default function StatementOptions({
   return (
     <div className={cn('gap-3 flex flex-col', className)}>
       <Separator />
-      <div className="flex justify-between items-center gap-3 px-1">
-        <div className="flex items-center gap-3">
+      <div className="flex justify-between items-center gap-3 px-1 md:max-w-3xl">
+        <div className="flex flex-col-reverse md:flex-row justify-between items-center gap-3 ">
           <CommentIndicatorButton
             showAuthorComments={showAuthorComments}
             showReaderComments={showReaderComments}
@@ -170,13 +170,14 @@ export default function StatementOptions({
             <VoteButton statementId={statement.statementId} upvotes={statement.upvotes || []} />
           )}
         </div>
-        <div className="flex items-center gap-3  justify-end">
+        <div className="flex flex-col-reverse md:flex-row items-center gap-3 justify-end w-full">
           {editMode ? (
-            <>
+            <div className="flex flex-col-reverse md:flex-row items-center gap-3 justify-end w-full md:w-auto">
               <Link
                 href={`/${statement.creatorSlug}/${statement.slug}/${currentVersion}/newsletter`}
+                className="hidden md:flex w-full md:w-auto"
               >
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="w-full ">
                   Preview newsletter
                 </Button>
               </Link>
@@ -185,7 +186,7 @@ export default function StatementOptions({
                 handleEditModeToggle={handleEditModeToggle}
                 className="w-full"
               />
-            </>
+            </div>
           ) : (
             <>
               <ShareButton updatedStatement={statement} />
@@ -205,7 +206,7 @@ export default function StatementOptions({
       </div>
       {editMode && (
         <div className="flex flex-col gap-2 bg-muted p-2 rounded-md">
-          <div className="flex justify-between items-center gap-1 ">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-1 ">
             <div className="text-sm text-muted-foreground">
               {`conject.com/${statement.creatorSlug}/`}
             </div>

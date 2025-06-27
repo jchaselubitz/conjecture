@@ -34,7 +34,12 @@ export default function NewsletterPage() {
         </ResizablePanel>
         <ResizableHandle />
         {isCreator && (
-          <ResizablePanel id="newsletter" defaultSize={30} minSize={0} className="flex flex-col">
+          <ResizablePanel
+            id="newsletter"
+            defaultSize={30}
+            minSize={0}
+            className="hidden md:flex flex-col"
+          >
             <NewsletterPanel subscribers={subscribers} />
           </ResizablePanel>
         )}
