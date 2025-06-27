@@ -15,6 +15,11 @@ import {
 } from '@/lib/actions/statementActions';
 import { UserStatementRoles } from '@/lib/enums/permissions';
 
+type Props = {
+  params: Promise<{ statementSlug: string; userSlug: string; version: string }>;
+  children: React.ReactNode;
+};
+
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
@@ -34,11 +39,6 @@ export async function generateMetadata(
   };
 }
 
-type Props = {
-  params: Promise<{ statementSlug: string; userSlug: string; version: string }>;
-  children: React.ReactNode;
-};
-
 export default async function UserStatementLayout({ children, params }: Props) {
   const user = await getUser();
   const userId = user?.id?.toString();
@@ -55,11 +55,10 @@ export default async function UserStatementLayout({ children, params }: Props) {
   )?.versionNumber;
 
   if (!versionNumber) {
-    if (selectedVersion) {
-      redirect(`/${userSlug}/${statementSlug}/${selectedVersion}`);
-    } else {
-      return <div>No version found</div>;
+    if (!selectedVersion) {
+      return <div>No published version found</div>;
     }
+    redirect(`/${userSlug}/${statementSlug}/${selectedVersion}`);
   }
 
   const statementPackage = await getStatementPackage({

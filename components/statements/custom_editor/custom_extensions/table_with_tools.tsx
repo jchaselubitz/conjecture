@@ -42,8 +42,9 @@ const TableWithToolsComponent = (props: NodeViewProps & { editMode?: boolean }) 
           </Popover>
         </div>
       )}
-      {/* <table className="w-full"> */}
+
       <NodeViewContent
+        // @ts-expect-error this is a valid attribute
         as="table"
         {...props.HTMLAttributes}
         className={props.HTMLAttributes.class}

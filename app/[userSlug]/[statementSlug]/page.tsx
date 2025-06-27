@@ -50,6 +50,10 @@ export default async function StatementPage({ params, searchParams }: Props) {
   const selection = await getPublishedOrLatest(statementSlug, userIsCollaborator);
   const { version: selectedVersion, versionList } = selection ?? {};
 
+  if (!selectedVersion) {
+    return <div>No version found</div>;
+  }
+
   const statementPackage = await getStatementPackage({
     statementSlug,
     version: selectedVersion
@@ -63,30 +67,6 @@ export default async function StatementPage({ params, searchParams }: Props) {
 
   const { edit } = await searchParams;
   const editMode = edit === 'true';
-
-  const user = await getUser();
-  const userId = user?.id?.toString();
-  const { statementSlug, userSlug } = await params;
-
-  const userRole = await getUserRole(userId, statementSlug);
-  const userIsCollaborator = userRole !== UserStatementRoles.Viewer;
-  const selection = await getPublishedOrLatest(statementSlug, userIsCollaborator);
-  const { version: selectedVersion, versionList } = selection ?? {};
-
-  if (!selectedVersion) {
-    return <div>No version found</div>;
-  }
-
-  const statementPackage = await getStatementPackage({
-    statementSlug,
-    version: selectedVersion ?? undefined
-  });
-
-  const thread = statementPackage.threadId ? await getFullThread(statementPackage.threadId) : [];
-
-  const creator = statementPackage.creatorId.toString();
-  const isCreator = creator === userId;
-  const subscribers = isCreator ? await getSubscribers(creator) : [];
 
   return (
     <StatementProvider
