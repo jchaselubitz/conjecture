@@ -27,7 +27,7 @@ interface StatementUpdateContextType {
 const StatementUpdateContext = createContext<StatementUpdateContextType | undefined>(undefined);
 
 export function StatementUpdateProvider({ children }: { children: ReactNode }) {
-  const { editor, debouncedStatement, userId, statement } = useStatementContext();
+  const { editor, debouncedStatement, userId, statement, isCreator } = useStatementContext();
   const { annotations, setAnnotations } = useStatementAnnotationContext();
 
   const [isUpdating, setIsUpdating] = useState(false);
@@ -103,17 +103,19 @@ export function StatementUpdateProvider({ children }: { children: ReactNode }) {
       subtitle !== statement.subtitle ||
       headerImg !== statement.headerImg
     ) {
-      try {
-        await updateStatement({
-          statementId: statementId,
-          creatorId: creatorId,
-          title: title ?? statement.title ?? '',
-          subtitle: subtitle ?? statement.subtitle ?? ''
-        });
-      } catch (err) {
-        console.error('[UpdateProvider] Error updating statement:', err);
-        setError('Error updating statement'); // Set error state here
-        Sentry.captureException(err, { tags: { context: 'UpdateStatement' } });
+      if (isCreator) {
+        try {
+          await updateStatement({
+            statementId: statementId,
+            creatorId: creatorId,
+            title: title ?? statement.title ?? '',
+            subtitle: subtitle ?? statement.subtitle ?? ''
+          });
+        } catch (err) {
+          console.error('[UpdateProvider] Error updating statement:', err);
+          setError('Error updating statement'); // Set error state here
+          Sentry.captureException(err, { tags: { context: 'UpdateStatement' } });
+        }
       }
     }
     try {

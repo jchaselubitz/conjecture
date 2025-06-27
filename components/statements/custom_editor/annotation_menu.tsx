@@ -20,7 +20,7 @@ interface AnnotationMenuProps {
   statementCreatorId: string;
   showAuthorComments: boolean;
   showReaderComments: boolean;
-  canAnnotate?: boolean;
+  canAnnotate: boolean;
   editMode: boolean;
   statementId: string;
   editor: Editor | null;
@@ -34,7 +34,7 @@ export const AnnotationMenu = ({
   showReaderComments,
   editMode,
   statementId,
-  canAnnotate = false,
+  canAnnotate,
   editor,
   panelGroupRef
 }: AnnotationMenuProps) => {

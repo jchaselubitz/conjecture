@@ -25,6 +25,7 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { statementSlug } = await params;
+
   const statement = await getPublishedStatement(statementSlug);
   const previousImages = (await parent).openGraph?.images || [];
 

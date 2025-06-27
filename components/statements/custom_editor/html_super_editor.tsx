@@ -23,7 +23,7 @@ interface HTMLSuperEditorProps {
   style?: React.CSSProperties;
   className?: string;
   placeholder?: string;
-  annotatable?: boolean;
+  annotatable: boolean;
   editMode: boolean;
   selectedAnnotationId: string | undefined;
   setSelectedAnnotationId: (id: string | undefined) => void;

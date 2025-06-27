@@ -1,8 +1,7 @@
-import 'katex/dist/katex.min.css';
+'use client';
 
 import Link from '@tiptap/extension-link';
 import { TableCell, TableHeader, TableRow } from '@tiptap/extension-table';
-// import { Placeholder } from "@tiptap/extension-placeholder";
 import { TextStyleKit } from '@tiptap/extension-text-style';
 import Typography from '@tiptap/extension-typography';
 import Youtube from '@tiptap/extension-youtube';
@@ -12,7 +11,7 @@ import { EditorView } from '@tiptap/pm/view';
 import { Editor, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { AnnotationWithComments, NewStatementCitation, StatementPackage } from 'kysely-codegen';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { RefObject, startTransition, useEffect } from 'react';
 import { ImperativePanelGroupHandle } from 'react-resizable-panels';
 import { useWindowSize } from 'react-use';
@@ -247,6 +246,8 @@ export const useHtmlSuperEditor = ({
           if (!annotationId) return false;
           return mark.type.name === 'annotationHighlight';
         });
+
+        console.log('hasAnnotationChanges', hasAnnotationChanges);
 
         if (!editMode && !hasAnnotationChanges) {
           const previousContent = transaction.before.content.toJSON();
@@ -702,6 +703,14 @@ export const useHtmlSuperEditor = ({
   //   }
   //  }
   // }, [editor, editMode]);
+
+  useEffect(() => {
+    return () => {
+      if (editor) {
+        editor.destroy();
+      }
+    };
+  }, [editor]);
 
   return editor;
 };
