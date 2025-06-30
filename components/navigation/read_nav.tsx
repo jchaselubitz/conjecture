@@ -41,7 +41,7 @@ export default function ReadNav({
   };
 
   return (
-    <div className="sticky z-50 bottom-2 w-full flex gap-1 justify-end">
+    <div className="sticky z-50 bottom-6 w-full flex gap-1 justify-end">
       {(isMobile || !editor?.isEditable) && (
         <AnnotationModeButton
           annotationMode={annotationMode}
