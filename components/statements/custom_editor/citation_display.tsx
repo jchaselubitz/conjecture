@@ -71,6 +71,7 @@ export function CitationDisplay() {
             fill
             className="object-cover"
             priority={false}
+            placeholder="blur"
           />
         </AspectRatio>
       )}

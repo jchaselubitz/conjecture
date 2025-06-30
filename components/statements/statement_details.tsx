@@ -201,7 +201,8 @@ export default function StatementDetails({
                 alt="Statement cover image"
                 fill
                 className="h-full w-full md:rounded-md object-cover"
-                priority
+                priority={false}
+                placeholder="blur"
               />
               {updatedStatement.creatorId === userId && editMode && (
                 <div

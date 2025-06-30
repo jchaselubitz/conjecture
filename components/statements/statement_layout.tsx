@@ -15,7 +15,6 @@ import { useEditModeContext } from '@/contexts/EditModeContext';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementUpdateContext } from '@/contexts/StatementUpdateProvider';
-
 import { deleteAnnotation } from '@/lib/actions/annotationActions';
 import {
   getPanelState,

@@ -49,6 +49,7 @@ export function StatementCard({ statement, isPublic, pathname }: StatementCardPr
               fill
               className="object-cover"
               priority={false}
+              placeholder="blur"
             />
           ) : (
             <div className="rounded-b-md h-4" />

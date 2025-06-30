@@ -14,7 +14,10 @@ import { createClient } from '@/supabase/server';
 import ProfileSettingsDialog from './settings/(components)/profile_settings_dialog';
 const inter = Inter({ subsets: ['latin'] });
 
+const siteURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteURL),
   title: 'Conject',
   description: 'Conjecture and Critique',
   icons: {

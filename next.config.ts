@@ -7,10 +7,15 @@ import withPWA from 'next-pwa';
 const pwaConfig = withPWA({
   dest: 'public',
   register: true,
-  disable: process.env.NEXT_PUBLIC_CONTEXT === 'development'
-  // skipWaiting: false,
+  disable: process.env.NEXT_PUBLIC_CONTEXT === 'development',
+  skipWaiting: false,
+  buildExcludes: [/middleware-manifest\.json$/]
   // cacheOnFrontEndNav: true,
 });
+
+const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
+  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
+  : 'bewgymyresxixvkkqbzl.supabase.co';
 
 const config: NextConfig = {
   ...pwaConfig,
@@ -18,15 +23,21 @@ const config: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'bewgymyresxixvkkqbzl.supabase.co',
+        hostname: supabaseHostname,
         pathname: '/storage/v1/object/public/**'
+      },
+      {
+        protocol: 'https',
+        hostname: 'conject.io'
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1'
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost'
       }
-    ],
-    domains: [
-      'conject.io',
-      '127.0.0.1',
-      'localhost',
-      process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'bewgymyresxixvkkqbzl.supabase.co'
     ]
   },
   async headers() {
