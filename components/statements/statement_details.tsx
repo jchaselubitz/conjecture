@@ -336,7 +336,7 @@ export default function StatementDetails({
               userId={userId}
               onAnnotationClick={handleAnnotationClick}
               placeholder="Start typing or paste content here..."
-              annotatable={annotatable ?? true}
+              annotatable={annotatable}
               selectedAnnotationId={selectedAnnotationId}
               setSelectedAnnotationId={setSelectedAnnotationId}
               showAuthorComments={showAuthorComments}

@@ -5,7 +5,6 @@ import './table.css';
 
 import * as Sentry from '@sentry/nextjs';
 import { AnnotationWithComments } from 'kysely-codegen';
-import { ArrowLeftToLineIcon, ArrowRightToLineIcon, Sidebar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
@@ -31,7 +30,6 @@ import { cn } from '@/lib/utils';
 
 import VerticalCardStack from '../card_stacks/vertical_card_stack';
 import EditNav from '../navigation/edit_nav';
-import { Button } from '../ui/button';
 
 import AnnotationDrawer from './annotation/annotation_drawer';
 import StatementDetails from './statement_details';
@@ -66,8 +64,8 @@ export default function StatementLayout({
   } = useStatementAnnotationContext();
 
   const router = useRouter();
-  const isMobile = useWindowSize().width < 600;
-  const isPublished = !!statement.draft.publishedAt;
+  const [isMobile, setIsMobile] = useState(useWindowSize().width < 600);
+  const [hasMounted, setHasMounted] = useState(false);
   const { editMode, setEditMode } = useEditModeContext();
   const { editor, updatedStatement } = useStatementContext();
   const { updateStatementDraft } = useStatementUpdateContext();
@@ -75,10 +73,19 @@ export default function StatementLayout({
   const [showAnnotationDrawer, setShowAnnotationDrawer] = useState(false);
   const [showAuthorComments, setShowAuthorComments] = useState(authorCommentsEnabled);
   const [showReaderComments, setShowReaderComments] = useState(readerCommentsEnabled);
-  const [annotationMode, setAnnotationMode] = useState<boolean>(!isMobile);
+  const [annotationMode, setAnnotationMode] = useState<boolean>(true);
   const [showAnnotationsButton, setShowAnnotationsButton] = useState(
     !getPanelState('annotation_panel_size').isOpen
   );
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 600);
+    setHasMounted(true);
+  }, []);
+
+  useEffect(() => {
+    setAnnotationMode(!isMobile);
+  }, [isMobile]);
 
   const handleDeleteAnnotation = async (annotation: AnnotationWithComments) => {
     if (!annotation) return;
@@ -334,10 +341,20 @@ export default function StatementLayout({
     </ResizablePanelGroup>
   );
 
+  if (!hasMounted) {
+    // Always render the desktop layout on the server and during hydration
+    return (
+      <div className={cn('flex flex-col h-full w-full ', editMode && 'bg-gray-50')}>
+        {editMode ? <EditNav /> : <></>}
+        {desktopLayout}
+      </div>
+    );
+  }
+
   return (
     <div className={cn('flex flex-col h-full w-full ', editMode && 'bg-gray-50')}>
       {editMode ? <EditNav /> : <></>}
-      {isMobile ? mobileLayout : desktopLayout}
+      {!isMobile ? desktopLayout : mobileLayout}
     </div>
   );
 }

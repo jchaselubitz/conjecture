@@ -1,5 +1,4 @@
 'use client';
-
 import { TableCell, TableHeader, TableRow } from '@tiptap/extension-table';
 import { TextStyleKit } from '@tiptap/extension-text-style';
 import Typography from '@tiptap/extension-typography';
@@ -11,6 +10,7 @@ import { Editor, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { AnnotationWithComments, NewStatementCitation, StatementPackage } from 'kysely-codegen';
 import { useRouter, useSearchParams } from 'next/navigation';
+import React from 'react';
 import { RefObject, startTransition, useEffect } from 'react';
 import { ImperativePanelGroupHandle } from 'react-resizable-panels';
 import { useWindowSize } from 'react-use';
@@ -115,10 +115,6 @@ export const useHtmlSuperEditor = ({
 
   const editor = useEditor({
     extensions: [
-      // TrailingNode.configure({
-      //   node: "paragraph",
-      //   notAfter: ["paragraph", "heading"], // Optional: only add after certain types
-      // }),
       StarterKit.configure({
         blockquote: {
           HTMLAttributes: {
@@ -246,11 +242,9 @@ export const useHtmlSuperEditor = ({
           return mark.type.name === 'annotationHighlight';
         });
 
-        console.log('hasAnnotationChanges', hasAnnotationChanges);
-
         if (!editMode && !hasAnnotationChanges) {
-          const previousContent = transaction.before.content.toJSON();
-          editor.commands.setContent(previousContent);
+          // const previousContent = transaction.before.content.toJSON();
+          // editor.commands.setContent(previousContent);
           return;
         }
 

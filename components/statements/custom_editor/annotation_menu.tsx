@@ -86,8 +86,7 @@ export const AnnotationMenu = ({
               <QuoteLinkButton editor={editor} statementId={statementId} />
             </div>
           )}
-
-          {canAnnotate && <AnnotationButton editor={editor} onAnnotate={handleAnnotationCreate} />}
+          <AnnotationButton editor={editor} onAnnotate={handleAnnotationCreate} />
         </div>
       ) : (
         <div className="flex items-center gap-2 bg-background border shadow-sm p-2 rounded-lg">
