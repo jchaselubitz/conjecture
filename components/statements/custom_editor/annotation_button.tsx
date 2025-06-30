@@ -10,9 +10,8 @@ interface AnnotationButtonProps {
 }
 
 export const AnnotationButton = ({ editor, onAnnotate }: AnnotationButtonProps) => {
-  // Only enable if there's a text selection
   const isSelection = !editor.state.selection.empty;
-  if (!isSelection) return <></>;
+
   return (
     <Button
       variant="ghost"
