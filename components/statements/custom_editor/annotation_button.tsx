@@ -10,17 +10,10 @@ interface AnnotationButtonProps {
 }
 
 export const AnnotationButton = ({ editor, onAnnotate }: AnnotationButtonProps) => {
-  const isSelection = !editor.state.selection.empty;
+  // const isSelection = !editor.state.selection.empty;
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={onAnnotate}
-      disabled={!isSelection}
-      title="Create annotation"
-      className={cn(!isSelection && 'opacity-50')}
-    >
+    <Button variant="ghost" size="sm" onClick={onAnnotate} title="Create annotation">
       <MessageCircle className="h-4 w-4" /> Comment
     </Button>
   );

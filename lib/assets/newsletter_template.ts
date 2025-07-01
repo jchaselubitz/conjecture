@@ -1,7 +1,7 @@
 import { StatementWithUser } from "kysely-codegen";
 
 const mainStyles = ` * {
-        box-sizing: border-box;
+        .newsletter-email box-sizing: border-box;
       }
       
       body {
@@ -11,155 +11,20 @@ const mainStyles = ` * {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         line-height: 1.6;
         color: #222;
-      }
-      
-      /* Typography matching statement_details.tsx */
-      h1 {
-        font-size: 3rem;
-        font-weight: 700;
-        line-height: 1.1;
-        margin: 0 0 8px 0;
-        color: #222;
-      }
-      
-      h2 {
-        font-size: 1.25rem;
-        font-weight: 500;
-        line-height: 1.3;
-        margin: 0 0 24px 0;
-        color: #6b7280;
-      }
-      
-      h3 {
-        font-size: 1.5em;
-        font-weight: 600;
-        line-height: 1.3;
-        margin-top: 1.6em;
-        margin-bottom: 0.6em;
-        color: #222;
-      }
-      
-      h4 {
-        font-size: 1.2em;
-        font-weight: 500;
-        line-height: 1.3;
-        margin-top: 1em;
-        margin-bottom: 0.6em;
-        color: #222;
-      }
-      
-      p {
-        font-size: 1.1em;
-        line-height: 1.6;
-        margin-bottom: 1.2em;
-        color: #222;
-      }
-      
-      /* List styles */
-      ul, ol {
-        padding-left: 1.5em;
-        margin-bottom: 1.2em;
-      }
-      
-      ul {
-        list-style-type: disc;
-      }
-      
-      ul ul {
-        list-style-type: circle;
-      }
-      
-      ul ul ul {
-        list-style-type: square;
-      }
-      
-      ol {
-        list-style-type: decimal;
-      }
-      
-      ol ol {
-        list-style-type: lower-alpha;
-      }
-      
-      ol ol ol {
-        list-style-type: lower-roman;
-      }
-      
-      li {
-        margin-bottom: 0.5em;
-        line-height: 1.6;
-      }
-      
-      li p {
-        margin: 0;
-      }
-      
-      /* Link styles */
-      a {
-        color: #6b7280;
-        text-decoration: underline;
-        transition: color 0.2s ease;
-      }
-      
-      a:hover {
-        color: #000;
-        text-decoration: underline;
-      }
-      
-      /* Blockquote styles */
-      blockquote {
-        border-left: 3px solid #dde4ed;
-        padding-left: 1.5em;
-        margin-left: 0;
-        margin-right: 0;
-        margin-top: 1.6em;
-        margin-bottom: 1.6em;
-        font-style: italic;
-        color: #4a5568;
-        background-color: #f1f4f8;
-        padding: 1em 1.5em;
-        border-radius: 0.25rem;
-      }
-      
-      blockquote p {
-        margin-bottom: 0.5em;
-      }
-      
-      blockquote p:last-child {
-        margin-bottom: 0;
-      }
+}
       
       /* Image styles */
-      img {
+      .newsletter-email img {
         max-width: 100%;
         height: auto;
         display: block;
         margin: 1rem 0;
-        border-radius: 4px;
+        border-radius: 6px;
       }
       
-      // /* Citation styles */
-      // .citation-reference {
-      //   text-decoration: none;
-      // }
-      
-      // .citation-number {
-      //   display: inline-flex;
-      //   align-items: center;
-      //   justify-content: center;
-      //   background-color: #dde4ed;
-      //   color: #4b5563;
-      //   border-radius: 50%;
-      //   width: 20px;
-      //   height: 20px;
-      //   font-size: 12px;
-      //   font-style: normal;
-      //   margin-left: 0.25rem;
-      //   vertical-align: middle;
-      // }
       
       /* Container styles matching statement layout */
-      .main-container {
+     .newsletter-email .main-container {
         max-width: 768px;
         margin: 0 auto;
         background: #fff;
@@ -167,60 +32,54 @@ const mainStyles = ` * {
    
       }
       
-      .header-image {
-        width: 100%;
-        height: 432px;
-        object-fit: cover;
-        display: block;
-      }
-      
-      .header-link {
+
+      .newsletter-email .header-link {
         text-decoration: none;
         display: block;
       }
       
-      .header-link:hover {
+      .newsletter-email .header-link:hover {
         opacity: 0.95;
       }
       
-      .content-wrapper {
+      .newsletter-email .content-wrapper {
         padding: 24px 0; 
       }
       
-      .title-section {
+      .newsletter-email .title-section {
         margin-bottom: 24px;
         text-align: left;
       }
       
-      .title-link {
+      .newsletter-email .title-link {
         text-decoration: none;
         color: inherit;
         display: block;
       }
       
-      .title-link:hover {
+      .newsletter-email .title-link:hover {
         opacity: 0.9;
       }
       
-      .content-area {
+      .newsletter-email .content-area {
         font-size: 1rem;
         line-height: 1.6;
         color: #222;
         text-align: left;
       }
       
-      .content-link {
+      .newsletter-email .content-link {
         text-decoration: none;
         color: inherit;
         display: block;
       }
       
-      .content-link:hover {
+      .newsletter-email .content-link:hover {
         opacity: 0.95;
       }
       
       /* Annotation link styles */
-      .annotation-link {
+      .newsletter-email .annotation-link {
         background-color: #dde4ed;
         color: #4b5563;
         padding: 2px 4px;
@@ -230,13 +89,13 @@ const mainStyles = ` * {
         transition: all 0.2s ease;
       }
       
-      .annotation-link:hover {
+      .newsletter-email .annotation-link:hover {
         background-color: #c9d6e3;
         color: #374151;
       }
 
       
-      .byline {
+      .newsletter-email .byline {
         margin-bottom: 24px;
         padding-bottom: 16px;
         border-bottom: 1px solid #dde4ed;
@@ -248,16 +107,16 @@ const mainStyles = ` * {
         transition: opacity 0.2s ease;
       }
       
-      .byline:hover {
+      .newsletter-email .byline:hover {
         opacity: 0.8;
       }
       
-      .avatar-group {
+      .newsletter-email .avatar-group {
         display: flex;
         align-items: center;
       }
       
-      .avatar {
+      .newsletter-email .avatar {
         width: 32px;
         height: 32px;
         border-radius: 50%;
@@ -272,11 +131,11 @@ const mainStyles = ` * {
         color: #4b5563;
       }
       
-      .avatar:not(:first-child) {
+      .newsletter-email .avatar:not(:first-child) {
         margin-left: -16px;
       }
       
-      .authors {
+      .newsletter-email .authors {
         font-weight: 600;
         color: #222;
         font-size: 1rem;
@@ -284,24 +143,24 @@ const mainStyles = ` * {
       
       /* Mobile responsiveness */
       @media (max-width: 768px) {
-        h1 {
+        .newsletter-email h1 {
           font-size: 2rem;
         }
         
-        h2 {
+        .newsletter-email h2 {
           font-size: 1.125rem;
         }
         
-        .content-wrapper {
+        .newsletter-email .content-wrapper {
           padding: 24px 16px;
         }
         
-        .header-image {
+        .newsletter-email .header-image {
           height: 240px;
         }
       }`;
 
-const latexStyles = `.latex-error {
+const latexStyles = `.newsletter-email latex-error {
 color: red;
 font-style: italic;
 background-color: #ffeeee;
@@ -310,10 +169,10 @@ border-radius: 2px;
 }
 
 /* Base styles for all LaTeX elements */
-[data-type="latex-block"],
-.latex-block,
-[data-type="latex"],
-.inline-latex {
+.newsletter-email [data-type="latex-block"],
+.newsletter-email .latex-block,
+.newsletter-email [data-type="latex"],
+.newsletter-email .inline-latex {
 cursor: pointer;
 border-radius: 4px;
 transition: background-color 0.2s ease;
@@ -397,7 +256,8 @@ padding: 0 2px;
 }`;
 
 const proseStyles = `
-.ProseMirror p.is-editor-empty:first-child::before {
+
+.newsletter-email p.is-editor-empty:first-child::before {
 color: var(--tw-prose-captions);
 opacity: 0.5;
 content: attr(data-placeholder);
@@ -406,35 +266,42 @@ height: 0;
 pointer-events: none;
 }
 
-.ProseMirror:focus p.is-editor-empty:first-child::before {
+.newsletter-email:focus p.is-editor-empty:first-child::before {
 display: none;
 }
 
-.ProseMirror h1 {
+    .newsletter-email .header-image {
+        width: 100%;
+        height: 432px;
+        object-fit: cover;
+        display: block;
+      }
+
+.newsletter-email h1 {
 font-size: 3em;
 font-weight: 800;
 line-height: 1;
-margin-top: 1.6em;
-margin-bottom: 0.8em;
+
+margin-bottom: 0.4em;
 }
 
-.ProseMirror h2 {
-font-size: 1.9em;
+.newsletter-email h2 {
+        font-size: 1.5rem;
+        font-weight: 500;
+        line-height: 1.3;
+        margin: 0 0 24px 0;
+        color: #6b7280;
+}
+
+.newsletter-email h3 {
+font-size: 1.25em;
 font-weight: 600;
 line-height: 1.3;
 margin-top: 1.6em;
 margin-bottom: 0.6em;
 }
 
-.ProseMirror h3 {
-font-size: 1.5em;
-font-weight: 600;
-line-height: 1.3;
-margin-top: 1.6em;
-margin-bottom: 0.6em;
-}
-
-.ProseMirror h4 {
+.newsletter-email h4 {
 font-size: 1.2em;
 font-weight: 500;
 line-height: 1.3;
@@ -442,67 +309,66 @@ margin-top: 1em;
 margin-bottom: 0.6em;
 }
 
-.ProseMirror p {
-font-size: 1.1em;
+.newsletter-email p {
+font-size: 1.3em;
 line-height: 1.6;
 margin-bottom: 1.2em;
 }
 
-.ProseMirror p .citation-reference {
+.newsletter-email p .citation-reference {
 display: inline-block;
-vertical-align: baseline;
+vertical-align: top;
 }
 
-.ProseMirror p .citation-number {
-vertical-align:middle;
-
+.newsletter-email p .citation-number {
+vertical-align: top;
 }
 
 /* List styles */
-.ProseMirror ul,
-.ProseMirror ol {
+.newsletter-email ul,
+.newsletter-email ol {
 padding-left: 1.5em;
 margin-bottom: 1.2em;
 }
 
-.ProseMirror ul {
+.newsletter-email ul {
 list-style-type: disc;
 }
 
-.ProseMirror ul ul {
+.newsletter-email ul ul {
 list-style-type: circle;
 }
 
-.ProseMirror ul ul ul {
+.newsletter-email ul ul ul {
 list-style-type: square;
 }
 
-.ProseMirror ol {
+.newsletter-email ol {
 list-style-type: decimal;
 }
 
-.ProseMirror ol ol {
+.newsletter-email ol ol {
 list-style-type: lower-alpha;
 }
 
-.ProseMirror ol ol ol {
+.newsletter-email ol ol ol {
 list-style-type: lower-roman;
 }
 
-.ProseMirror li {
+.newsletter-email li {
 margin-bottom: 0.5em;
 line-height: 1.6;
 }
 
-.ProseMirror li p {
+.newsletter-email li p {
 margin: 0;
 }
 
-.citation-reference {
+.newsletter-email .citation-reference {
 text-decoration: none;
 cursor: pointer;
 }
-.citation-number {
+.newsletter-email .citation-number {
 display: inline-flex;
 align-items: center;
 justify-content: center;
@@ -518,47 +384,40 @@ font-style:normal !important;
 margin-left: 0.25rem;
 }
 
-.citation-number:hover {
+.newsletter-email .citation-number:hover {
 box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 background-color: #f1f5f9;
 }
-.citation-number:focus {
+.newsletter-email .citation-number:focus {
 border: 1px solid #1454a8;
 }
 
-
-/* Error display */
-
-
-/* Block Image styles */
-.ProseMirror img[data-type="block-image"] {
+.newsletter-email img[data-type="block-image"] {
 display: block;
 max-width: 100%;
 height: auto;
-/* margin: 1rem auto; */
-
 margin-top: 2rem;
 cursor: pointer;
 border-radius: 4px;
 transition: all 0.2s ease;
 }
 
-.ProseMirror img[data-type="block-image"] .caption {
+.newsletter-email img[data-type="block-image"] .caption {
 font-size: 0.75rem;
 color: hsl(var(--muted-foreground));
 margin-bottom: 3rem;
 text-align: center;
 }
 
-.ProseMirror img[data-type="block-image"]:hover {
+.newsletter-email img[data-type="block-image"]:hover {
 box-shadow: 0 0 0 3px hsl(var(--muted), 0.3);
 }
 
 /* Annotation marker styles */
-.ProseMirror .annotation-marker {
-display: none !important; /* Always hide markers */
-user-select: none !important; /* Prevent selection */
-pointer-events: none !important; /* Prevent interaction */
+.newsletter-email .annotation-marker {
+display: none !important;
+user-select: none !important;
+pointer-events: none !important;
 width: 0 !important;
 height: 0 !important;
 margin: 0 !important;
@@ -566,56 +425,52 @@ padding: 0 !important;
 }
 
 /* Base annotation styles - no highlight by default */
-.ProseMirror mark.annotation {
+.newsletter-email mark.annotation {
 cursor: default;
 border-radius: 0.125rem;
 transition: all 0.2s ease;
-/* Remove highlight styling by default */
 border-bottom: none;
 background-color: transparent;
 text-decoration: none;
-pointer-events: none; /* Disable interaction when not visible */
+pointer-events: none;
 }
 
 /* Show author comments when enabled */
-.show-author-comments .ProseMirror mark.annotation[data-is-author="true"] {
+.show-author-comments .newsletter-email mark.annotation[data-is-author="true"] {
 cursor: pointer;
-/* border-bottom: 2px solid var(--border-color); */
 background-color: var(--bg-color);
-pointer-events: auto; /* Re-enable interaction */
+pointer-events: auto;
 }
 
 /* Show reader comments when enabled */
-.show-reader-comments .ProseMirror mark.annotation[data-is-author="false"] {
+.show-reader-comments .newsletter-email mark.annotation[data-is-author="false"] {
 cursor: pointer;
-/* border-bottom: 2px solid var(--border-color); */
 background-color: var(--bg-color);
-pointer-events: auto; /* Re-enable interaction */
+pointer-events: auto;
 }
 
 /* Annotation hover and selection styles - without !important */
-.ProseMirror mark.annotation:hover:not([data-type="latex"]):not([data-type="latex-block"]):not(.latex-block):not(.inline-latex) {
+.newsletter-email mark.annotation:hover:not([data-type="latex"]):not([data-type="latex-block"]):not(.latex-block):not(.inline-latex) {
 background-color: var(--hover-bg-color);
 }
 
-.ProseMirror mark.annotation.selected:not([data-type="latex"]):not([data-type="latex-block"]):not(.latex-block):not(.inline-latex) {
+.newsletter-email mark.annotation.selected:not([data-type="latex"]):not([data-type="latex-block"]):not(.latex-block):not(.inline-latex) {
 background-color: var(--hover-bg-color);
-/* box-shadow: 0 0 0 2px var(--border-color); */
 border-bottom: 2px solid var(--border-color);
 }
 
 /* LaTeX compatibility with annotations - with higher specificity */
-.ProseMirror mark.annotation[data-type="latex"],
-.ProseMirror mark.annotation[data-type="latex-block"],
-.ProseMirror mark.annotation .latex-block,
-.ProseMirror mark.annotation .inline-latex {
+.newsletter-email mark.annotation[data-type="latex"],
+.newsletter-email mark.annotation[data-type="latex-block"],
+.newsletter-email mark.annotation .latex-block,
+.newsletter-email mark.annotation .inline-latex {
 background-color: inherit;
 border-color: inherit;
 }
 
 /* Preserve LaTeX styling within annotations */
-.ProseMirror mark.annotation[data-type="latex-block"],
-.ProseMirror mark.annotation .latex-block {
+.newsletter-email mark.annotation[data-type="latex-block"],
+.newsletter-email mark.annotation .latex-block {
 display: block;
 text-align: center;
 margin: 1rem 0;
@@ -625,8 +480,8 @@ background: #f4e7d661;
 }
 
 /* Ensure inline LaTeX maintains its styling when annotated */
-.ProseMirror mark.annotation[data-type="latex"],
-.ProseMirror mark.annotation .inline-latex {
+.newsletter-email mark.annotation[data-type="latex"],
+.newsletter-email mark.annotation .inline-latex {
 display: inline-block;
 padding: 0 2px;
 line-height: inherit;
@@ -635,27 +490,27 @@ background-color: rgba(0, 102, 204, 0.05);
 }
 
 /* Preserve hover effects for LaTeX elements within annotations */
-.ProseMirror mark.annotation[data-type="latex"]:hover,
-.ProseMirror mark.annotation .inline-latex:hover,
-.ProseMirror mark.annotation[data-type="latex-block"]:hover,
-.ProseMirror mark.annotation .latex-block:hover {
+.newsletter-email mark.annotation[data-type="latex"]:hover,
+.newsletter-email mark.annotation .inline-latex:hover,
+.newsletter-email mark.annotation[data-type="latex-block"]:hover,
+.newsletter-email mark.annotation .latex-block:hover {
 background-color: hsl(var(--muted) / 0.5);
 }
 
 /* Ensure KaTeX rendering is preserved within annotations */
-.ProseMirror mark.annotation .katex {
+.newsletter-email mark.annotation .katex {
 font-size: 1.1em;
 line-height: 1.2;
 }
 
 /* Style for the container when used as an annotator */
-.ProseMirror.annotator-container {
+.newsletter-email.annotator-container {
 position: relative;
 caret-color: transparent;
 }
 
 /* Add a subtle indicator when the text is annotatable */
-.ProseMirror.annotator-container::after {
+.newsletter-email.annotator-container::after {
 content: "";
 position: absolute;
 top: 0.5rem;
@@ -670,13 +525,13 @@ opacity: 0.5;
 /* Add LaTeX-specific styles for annotator */
 .annotator-container .latex-block,
 .annotator-container .inline-latex {
-pointer-events: none; /* Prevent LaTeX elements from interfering with annotation selection */
+pointer-events: none;
 }
 
 /* Allow pointer events on LaTeX elements in editable mode */
 .editable-container .latex-block,
 .editable-container .inline-latex {
-pointer-events: auto; /* Enable interactions in edit mode */
+pointer-events: auto;
 }
 
 .annotator-container .latex-block {
@@ -690,54 +545,54 @@ font-size: 1.1em;
 }
 
 /* Remove outlines */
-.ProseMirror:focus, 
-.ProseMirror *:focus {
+.newsletter-email:focus, 
+.newsletter-email *:focus {
 outline: none !important;
 }
 
-/* .ProseMirror {
+/* .newsletter-email {
 outline: none !important;
 } */
 
 /* Basic editor styles */
-/* .ProseMirror {
+/* .newsletter-email {
 outline: none !important;
 box-shadow: none !important;
 } */
 
 /* Remove outlines on all nodes */
-/* .ProseMirror *:focus,
-.ProseMirror *:hover,
-.ProseMirror *:active {
+/* .newsletter-email *:focus,
+.newsletter-email *:hover,
+.newsletter-email *:active {
 outline: none !important;
 box-shadow: none !important;
 } */
 
 /* Remove node selection indicators */
-/* .ProseMirror .ProseMirror-selectednode {
+/* .newsletter-email .newsletter-email-selectednode {
 outline: none !important;
 border: none !important;
 } */
 
 /* Remove cursor outline when editor is focused */
-/* .ProseMirror.ProseMirror-focused {
+/* .newsletter-email.newsletter-email-focused {
 outline: none !important;
 box-shadow: none !important;
 } */
 
 /* Customize text selection appearance */
-/* .ProseMirror ::selection {
+/* .newsletter-email ::selection {
 background-color: rgba(66, 153, 225, 0.3); 
 color: inherit;
 } */
 
 /* Style for the selection when selecting across nodes */
-/* .ProseMirror-selectednode {
+/* .newsletter-email-selectednode {
 background-color: rgba(66, 153, 225, 0.1) !important;
 } */
 
 /* Style for node selections and drag handles */
-/* .ProseMirror-gapcursor:after {
+/* .newsletter-email-gapcursor:after {
 border-top: 1px solid rgba(66, 153, 225, 0.5) !important;
 } */
 
@@ -748,7 +603,7 @@ overflow: hidden;
 white-space: nowrap;
 } */
 
-.quoted-text {
+.newsletter-email .quoted-text {
 animation: highlight-fade 7s ease-out;
 border-radius: 10px;
 padding: 2px 5px;
@@ -780,23 +635,21 @@ padding: 2px 5px;
 }
 
 /* Link styles */
-.ProseMirror .prose-link {
+.newsletter-email .prose-link {
 color: var(--muted-foreground);
 text-decoration: underline;
 cursor: pointer;
-
 transition: all 0.2s ease;
 }
 
-.ProseMirror .prose-link:hover {
+.newsletter-email .prose-link:hover {
 text-decoration: underline;
 text-decoration-color: var(--muted-foreground);
 color: black
-/* color: var(--primary); */
 }
 
 /* Blockquote styles */
-.ProseMirror blockquote {
+.newsletter-email blockquote {
 border-left: 3px solid #e2e8f0;
 padding-left: 1.5em;
 margin-left: 0;
@@ -810,38 +663,38 @@ padding: 1em 1.5em;
 border-radius: 0.25rem;
 }
 
-.ProseMirror blockquote p {
+.newsletter-email blockquote p {
 margin-bottom: 0.5em;
 }
 
-.ProseMirror blockquote p:last-child {
+.newsletter-email blockquote p:last-child {
 margin-bottom: 0;
 }
 
-.ProseMirror blockquote .citation-reference {
+.newsletter-email blockquote .citation-reference {
 display: inline-block;
-vertical-align: baseline;
+vertical-align: top;
 }
 
-.ProseMirror blockquote .citation-number {
+.newsletter-email blockquote .citation-number {
 vertical-align:middle;
 margin-left: 0.25rem;
 line-height: 0;
 }
 
 /* Table styles for email compatibility */
-table {
+.newsletter-email table {
   border-collapse: collapse;
   width: 100%;
   margin: 1.5em 0;
 }
-th, td {
+.newsletter-email th, .newsletter-email td {
   border: 1px solid #e2e8f0;
   padding: 6px 8px;
   text-align: left;
   vertical-align: top;
 }
-th {
+.newsletter-email th {
   background: #f1f5f9;
   font-weight: bold;
 }
@@ -902,42 +755,40 @@ export function getNewsletterHtml({
     <style>${styles}</style>
   </head>
   <body>
-    <!-- Browser view invitation -->
-    <div style="text-align: center; padding: 12px; font-size: 11px; color: #9ca3af; background: #f9fafb;">
-      Having trouble viewing this email? 
-      <a href="${fullPostUrl}" style="color: #6b7280; text-decoration: underline;">
-        View in browser
-      </a>
-    </div>
-    
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;padding:24px 0;">
-      <tr>
-        <td align="center">
-          <div class="main-container">
-            ${
+    <div class="newsletter-email">
+      <!-- Browser view invitation -->
+      <div style="text-align: center; padding: 12px; font-size: 11px; color: #9ca3af; background: #f9fafb;">
+        Having trouble viewing this email? 
+        <a href="${fullPostUrl}" style="color: #6b7280; text-decoration: underline;">
+          View in browser
+        </a>
+      </div>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;padding:24px 0;">
+        <tr>
+          <td align="center">
+            <div class="main-container">
+              ${
     headerImg
       ? `
-              <a href="${fullPostUrl}" class="header-link">
-                <img src="${headerImg}" alt="Header Image" class="header-image">
-              </a>
-            `
+                <a href="${fullPostUrl}" class="header-link">
+                  <img src="${headerImg}" alt="Header Image" class="header-image">
+                </a>
+              `
       : ""
   }
-            
-            <div class="content-wrapper">
-              <a href="${fullPostUrl}" class="title-link">
-                <div class="title-section">
-                  <h1>${title}</h1>
-                  ${subtitle ? `<h2>${subtitle}</h2>` : ""}
-                </div>
-              </a>
-              
-              ${
+              <div class="content-wrapper">
+                <a href="${fullPostUrl}" class="title-link">
+                  <div class="title-section">
+                    <h1>${title}</h1>
+                    ${subtitle ? `<h2>${subtitle}</h2>` : ""}
+                  </div>
+                </a>
+                ${
     authors.length > 0
       ? `
-                <a href="${fullPostUrl}" class="byline">
-                  <div class="avatar-group">
-                    ${
+                  <a href="${fullPostUrl}" class="byline">
+                    <div class="avatar-group">
+                      ${
         authors
           .map((author) =>
             author.imageUrl
@@ -952,44 +803,43 @@ export function getNewsletterHtml({
           )
           .join("")
       }
-                  </div>
-                  <div class="authors">
-                    ${
+                    </div>
+                    <div class="authors">
+                      ${
         authors.map((author) => author.name || author.username).join(", ")
       }
-                  </div>
-                </a>
-              `
+                    </div>
+                  </a>
+                `
       : ""
   }
-              
-              <div class="content-area">
-                ${numberedHtmlContent}
+                <div class="content-area">
+                  ${numberedHtmlContent}
+                </div>
               </div>
             </div>
-          </div>
-        </td>
-      </tr>
-    </table>
-    <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid #dde4ed; font-size: 12px; color: #6b7280; text-align: center;">
-      <p style="margin-bottom: 0;">
-        ${
+          </td>
+        </tr>
+      </table>
+      <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid #dde4ed; font-size: 12px; color: #6b7280; text-align: center;">
+        <p style="margin-bottom: 0;">
+          ${
     authors
       .map((author) => author.name || author.username)
       .join(", ")
   } © ${new Date().getFullYear()} |
-        <a href="${manageSubscriptionUrl}" style="color: #6b7280; text-decoration: underline;">
-          Manage subscription
-        </a>
-      </p>
-      <div class="footer">
-        
-        <p>
-          Published with
-          <a href="https://conject.io" class="footer-link">
-            Conject
+          <a href="${manageSubscriptionUrl}" style="color: #6b7280; text-decoration: underline;">
+            Manage subscription
           </a>
         </p>
+        <div class="footer">
+          <p>
+            Published with
+            <a href="https://conject.io" class="footer-link">
+              Conject
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   </body>`;

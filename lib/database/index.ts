@@ -4,8 +4,8 @@ import {
   Kysely,
   PostgresDialect,
   Selectable,
-  Updateable
-} from 'kysely';
+  Updateable,
+} from "kysely";
 import {
   Annotation,
   Collaborator,
@@ -19,24 +19,24 @@ import {
   StatementCitation,
   StatementImage,
   StatementVote,
-  Subscription
-} from 'kysely-codegen';
-import { Pool } from 'pg';
+  Subscription,
+} from "kysely-codegen";
+import { Pool } from "pg";
 
 const db = new Kysely<DB>({
   plugins: [new CamelCasePlugin()],
   dialect: new PostgresDialect({
     pool: new Pool({
       connectionString: process.env.DATABASE_URL,
-      max: 10
-    })
-  })
+      max: 10,
+    }),
+  }),
 });
 
-declare module 'kysely-codegen' {
+declare module "kysely-codegen" {
   export type RevalidationPath = {
     path: string;
-    type?: 'page' | 'layout' | undefined;
+    type?: "page" | "layout" | undefined;
   };
 
   export type BaseProfile = Selectable<Profile>;
@@ -50,7 +50,7 @@ declare module 'kysely-codegen' {
   export type NewCollaborator = Insertable<Collaborator>;
   export type EditedCollaborator = Updateable<Collaborator>;
 
-  export type NotificationMedium = 'email';
+  export type NotificationMedium = "email";
 
   export type BaseSubscription = Selectable<Subscription>;
   export type SubscriptionWithRecipient = BaseSubscription & {
@@ -150,6 +150,7 @@ declare module 'kysely-codegen' {
       publishedAt?: Date | null | undefined;
       versionNumber: number;
       content?: string | null | undefined;
+      contentPlainText?: string | null | undefined;
     };
   };
 

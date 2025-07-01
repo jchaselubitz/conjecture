@@ -20,7 +20,12 @@ export default function Newsletter({
 
   return (
     <div className="h-full overflow-y-auto pb-20">
-      <div dangerouslySetInnerHTML={{ __html: newsletterHtml }} />
+      <iframe
+        title="Newsletter Preview"
+        style={{ width: '100%', height: '100%', border: 'none', minHeight: 600 }}
+        sandbox="allow-same-origin"
+        srcDoc={newsletterHtml}
+      />
     </div>
   );
 }
