@@ -81,7 +81,7 @@ export const useHtmlSuperEditor = ({
   setFootnoteIds,
   panelGroupRef
 }: UseHtmlSuperEditorProps): Editor | null => {
-  const { setEditor, setUpdatedStatement, updatedStatement } = useStatementContext();
+  const { setEditor, setUpdatedDraft, updatedDraft } = useStatementContext();
   const { annotations, setAnnotations } = useStatementAnnotationContext();
   const {
     setSelectedNodePosition,
@@ -99,12 +99,12 @@ export const useHtmlSuperEditor = ({
   const router = useRouter();
   const searchParams = useSearchParams();
   const isMobile = useWindowSize().width < 600;
-  const htmlContent = updatedStatement.draft.content;
-  const jsonContent = updatedStatement.draft.contentJson;
-  const draftId = updatedStatement.draft.id;
-  const statementId = updatedStatement.statementId;
-  const statementCreatorId = updatedStatement.creatorId;
-  const citations = updatedStatement.citations;
+  const htmlContent = updatedDraft.draft.content;
+  const jsonContent = updatedDraft.draft.contentJson;
+  const draftId = updatedDraft.draft.id;
+  const statementId = statement.statementId;
+  const statementCreatorId = statement.creatorId;
+  const citations = updatedDraft.citations;
 
   useEffect(() => {
     setAnnotations(existingAnnotations);
@@ -256,15 +256,15 @@ export const useHtmlSuperEditor = ({
         const newContentJson = editor.getJSON();
 
         const newStatement = {
-          ...updatedStatement,
+          ...updatedDraft,
           draft: {
-            ...updatedStatement.draft,
+            ...updatedDraft.draft,
             content: newContent,
             contentJson: newContentJson
           }
         };
         startTransition(() => {
-          setUpdatedStatement(newStatement);
+          setUpdatedDraft(newStatement);
         });
       }
     },

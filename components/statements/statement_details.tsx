@@ -14,7 +14,11 @@ import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationCon
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { useUserContext } from '@/contexts/userContext';
-import { updateStatementHeaderImageUrl } from '@/lib/actions/statementActions';
+import {
+  updateStatementHeaderImageUrl,
+  updateStatementSubtitle,
+  updateStatementTitle
+} from '@/lib/actions/statementActions';
 import { headerImageChange } from '@/lib/helpers/helpersStatements';
 import { generateStatementId } from '@/lib/helpers/helpersStatements';
 import { cn } from '@/lib/utils';
@@ -65,18 +69,22 @@ export default function StatementDetails({
   setAnnotationMode
 }: StatementDetailsProps) {
   const { userId, currentUserSlug } = useUserContext();
-  const { editor, setUpdatedStatement, updatedStatement, currentVersion } = useStatementContext();
+  const { editor, setUpdatedDraft, updatedDraft, currentVersion, statement } =
+    useStatementContext();
   const { selectedAnnotationId, setSelectedAnnotationId } = useStatementAnnotationContext();
   const { initialImageData, setInitialImageData, setImageLightboxOpen, citations } =
     useStatementToolsContext();
 
   const router = useRouter();
   const params = useParams();
-  const isPublished = !!updatedStatement?.draft.publishedAt;
+  const isPublished = !!statement?.draft.publishedAt;
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [footnoteIds, setFootnoteIds] = useState<string[]>([]);
-  const { statementId, title, subtitle, headerImg, draft } = updatedStatement;
+
+  const { statementId, title, subtitle, headerImg } = statement;
+
+  const { draft } = updatedDraft;
   const annotations = draft.annotations;
 
   const orderedFootnotes = useMemo(() => {
@@ -126,13 +134,13 @@ export default function StatementDetails({
         headerImg: headerImg ?? '',
         updateStatementHeaderImageUrl
       });
-      if (imageUrl) {
-        setUpdatedStatement({
-          ...updatedStatement,
-          headerImg: imageUrl
-        });
-        setIsUploading(false);
-      }
+      // if (imageUrl) {
+      //   setUpdatedDraft({
+      //     ...updatedDraft,
+      //     headerImg: imageUrl
+      //   });
+      //   setIsUploading(false);
+      // }
       toast('Success', {
         description: 'Profile picture updated successfully!'
       });
@@ -147,8 +155,8 @@ export default function StatementDetails({
   };
 
   const isStatementCreator = useMemo(() => {
-    return userId === updatedStatement?.creatorId;
-  }, [userId, updatedStatement]);
+    return userId === statement?.creatorId;
+  }, [userId, statement]);
 
   const authorCanAnnotate = useMemo(() => {
     return (isStatementCreator && showAuthorComments) || !userId;
@@ -174,7 +182,7 @@ export default function StatementDetails({
     prevEditModeRef.current = editMode;
   }, [editMode]);
 
-  if (!updatedStatement) return null;
+  if (!updatedDraft) return null;
 
   const displayStyle = {
     ...fixedBottom,
@@ -203,7 +211,7 @@ export default function StatementDetails({
                 className="h-full w-full md:rounded-md object-cover"
                 priority={false}
               />
-              {updatedStatement.creatorId === userId && editMode && (
+              {isStatementCreator && editMode && (
                 <div
                   className={cn(
                     'absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center',
@@ -252,7 +260,7 @@ export default function StatementDetails({
             disabled={isUploading || !editMode}
           />
           <div className="flex flex-col gap-1 mt-6 md:mt-10 md:mb-5 ">
-            {updatedStatement.parentStatementId && (
+            {statement.parentStatementId && (
               <Link href={`/${parentStatement?.creatorSlug}/${parentStatement?.slug}`}>
                 <p className="bg-yellow-50 text-lg text-yellow-900 px-2 py-1 rounded-md flex items-center gap-2 w-fit hover:bg-yellow-100 transition-colors">
                   <ChevronLeft className="w-4 h-4" />
@@ -267,21 +275,20 @@ export default function StatementDetails({
                   disabled={!editMode}
                   placeholder="Give it a title..."
                   className="shadow-none rounded-none border-0 border-b py-4 md:text-5xl text-3xl font-bold h-fit focus:outline-none focus:border-zinc-500 focus-visible:ring-0 w-full resize-none bg-transparent"
-                  defaultValue={updatedStatement?.title || ''}
+                  defaultValue={statement?.title || ''}
                   minRows={1}
                   maxRows={2}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                    setUpdatedStatement({
-                      ...updatedStatement,
+                    updateStatementTitle({
                       title: e.target.value,
-                      statementId: prepStatementId
+                      statementId: prepStatementId,
+                      creatorId: statement.creatorId,
+                      statementSlug: statement.slug
                     })
                   }
                 />
               ) : (
-                <h1 className="md:text-5xl text-3xl font-bold py-1">
-                  {updatedStatement?.title ?? title}
-                </h1>
+                <h1 className="md:text-5xl text-3xl font-bold py-1">{statement?.title ?? title}</h1>
               )}
             </div>
             <div className="flex justify-between items-center">
@@ -291,31 +298,32 @@ export default function StatementDetails({
                   disabled={!editMode}
                   placeholder="Give it a subtitle..."
                   className="shadow-none rounded-none border-0 border-b py-4 font-medium focus:outline-none focus:border-zinc-500 focus-visible:ring-0 w-full text-zinc-700 md:text-xl resize-none bg-transparent"
-                  defaultValue={updatedStatement?.subtitle || ''}
+                  defaultValue={statement?.subtitle || ''}
                   minRows={1}
                   maxRows={2}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                    setUpdatedStatement({
-                      ...updatedStatement,
+                    updateStatementSubtitle({
                       subtitle: e.target.value,
-                      statementId: prepStatementId
+                      statementId: prepStatementId,
+                      creatorId: statement.creatorId,
+                      statementSlug: statement.slug
                     })
                   }
                 />
               ) : (
                 <h2 className="font-medium py-1 md:text-xl text-zinc-500">
-                  {updatedStatement?.subtitle ?? subtitle}
+                  {statement?.subtitle ?? subtitle}
                 </h2>
               )}
             </div>
           </div>
           <div className="md:hidden">
-            <InlineCardStack familyTree={familyTree} currentTitle={updatedStatement?.title || ''} />
+            <InlineCardStack familyTree={familyTree} currentTitle={statement?.title || ''} />
           </div>
           <div className="flex items-center justify-between mb-5">
             <StatementOptions
               className="mb-0 w-full"
-              statement={updatedStatement}
+              statement={statement}
               editMode={editMode}
               showAuthorComments={showAuthorComments}
               showReaderComments={showReaderComments}
@@ -325,12 +333,12 @@ export default function StatementDetails({
             />
           </div>
 
-          <Byline statement={updatedStatement} />
+          <Byline statement={statement} />
 
           <div className="pb-6 overflow-hidden bg-background ">
             <HTMLSuperEditor
               key={`editor-content-${editMode}`}
-              statement={updatedStatement}
+              statement={updatedDraft}
               style={{ minHeight: '40px' }}
               existingAnnotations={annotations}
               userId={userId}
@@ -360,7 +368,7 @@ export default function StatementDetails({
               <LatexNodeEditor />
               <ImageNodeEditor
                 statementId={statementId}
-                statementCreatorId={updatedStatement.creatorId}
+                statementCreatorId={updatedDraft.creatorId}
               />
             </>
           )}
@@ -374,7 +382,7 @@ export default function StatementDetails({
                 editor={editor}
                 editMode={editMode}
                 userSlug={currentUserSlug ?? ''}
-                statementSlug={updatedStatement.slug ?? ''}
+                statementSlug={updatedDraft.slug ?? ''}
               />
             </div>
           )}

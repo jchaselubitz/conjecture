@@ -64,7 +64,6 @@ export default function StatementOptions({
   const [calendarDate, setCalendarDate] = useState<Date | null>(
     statement.draft.publishedAt ? new Date(statement.draft.publishedAt) : null
   );
-  const { setUpdatedStatement } = useStatementContext();
   const [calendarLoading, setCalendarLoading] = useState(false);
   const [calendarError, setCalendarError] = useState<string | null>(null);
   const { currentVersion } = useStatementContext();
@@ -134,10 +133,10 @@ export default function StatementOptions({
         publishedAt: date,
         creatorSlug: statement.creatorSlug
       });
-      setUpdatedStatement(prev => ({
-        ...prev,
-        publishedAt: date
-      }));
+      // setUpdatedStatement(prev => ({
+      //   ...prev,
+      //   publishedAt: date
+      // }));
       setCalendarDate(date);
       setDialogOpen(false);
       // Optionally, refresh or revalidate here
@@ -167,7 +166,12 @@ export default function StatementOptions({
             />
           )}
           {!editMode && statement.statementId && (
-            <VoteButton statementId={statement.statementId} upvotes={statement.upvotes || []} />
+            <VoteButton
+              statementId={statement.statementId}
+              upvotes={statement.upvotes || []}
+              creatorSlug={statement.creatorSlug || ''}
+              statementSlug={statement.slug || ''}
+            />
           )}
         </div>
         <div className="flex items-center gap-3 justify-end w-full">

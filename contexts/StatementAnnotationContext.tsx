@@ -37,10 +37,10 @@ const StatementAnnotationContext = createContext<StatementAnnotationContextType 
 );
 
 export function StatementAnnotationProvider({ children }: { children: ReactNode }) {
-  const { updatedStatement, setUpdatedStatement } = useStatementContext();
+  const { statement, updatedDraft, setUpdatedDraft } = useStatementContext();
 
   const [annotations, setAnnotations] = useState<AnnotationWithComments[]>(
-    updatedStatement.draft.annotations
+    updatedDraft.draft.annotations
   );
 
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | undefined>(undefined);
@@ -77,10 +77,10 @@ export function StatementAnnotationProvider({ children }: { children: ReactNode 
           }
         : a
     );
-    setUpdatedStatement({
-      ...updatedStatement,
+    setUpdatedDraft({
+      ...statement,
       draft: {
-        ...updatedStatement.draft,
+        ...updatedDraft.draft,
         annotations: newAnnotations as AnnotationWithComments[]
       }
     });
@@ -98,10 +98,10 @@ export function StatementAnnotationProvider({ children }: { children: ReactNode 
           }
         : a
     );
-    setUpdatedStatement({
-      ...updatedStatement,
+    setUpdatedDraft({
+      ...statement,
       draft: {
-        ...updatedStatement.draft,
+        ...updatedDraft.draft,
         annotations: newAnnotations as AnnotationWithComments[]
       }
     });

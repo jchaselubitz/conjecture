@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation';
 import { useWindowSize } from 'react-use';
 
 import { useStatementContext } from '@/contexts/StatementBaseContext';
-import { useUserContext } from '@/contexts/userContext';
 import { cn } from '@/lib/utils';
 
 import AnnotationModeButton from '../annotation_mode_button';
@@ -19,12 +18,9 @@ export default function ReadNav({
   annotationMode: boolean;
   setAnnotationMode: (annotationMode: boolean) => void;
 }) {
-  const { editor, updatedStatement } = useStatementContext();
-  const { userId } = useUserContext();
+  const { editor, isCreator } = useStatementContext();
   const isMobile = useWindowSize().width < 600;
   const pathname = usePathname();
-
-  const isCreator = userId === updatedStatement.creatorId;
 
   if (!editor) {
     return null;

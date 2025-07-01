@@ -72,7 +72,6 @@ export function CitationForm({
   editor
 }: CitationFormProps) {
   const { userId } = useUserContext();
-  const { updatedStatement } = useStatementContext();
   const { updateStatementDraft } = useStatementUpdateContext();
   const { citationData, setCitationData, citations, setCitations } = useStatementToolsContext();
   const pathname = usePathname();

@@ -21,8 +21,8 @@ import { UserStatementRoles } from '@/lib/enums/permissions';
 interface StatementContextType {
   versionOptions: { versionNumber: number; createdAt: Date }[];
   currentVersion: number;
-  updatedStatement: StatementPackage;
-  setUpdatedStatement: Dispatch<SetStateAction<StatementPackage>>;
+  updatedDraft: StatementPackage;
+  setUpdatedDraft: Dispatch<SetStateAction<StatementPackage>>;
   saveStatementDraft: () => Promise<void>;
   nextVersionNumber: number;
   changeVersion: (version: number) => void;
@@ -69,18 +69,18 @@ export function StatementProvider({
     draft => draft.statementId === statementPackage.parentStatementId
   );
 
-  //Need to do some silliness here to make sure preserve the state of updatedStatement while statement updates in the background. Without it, some changes to the HTMLcontent will be lost.
+  //Need to do some silliness here to make sure preserve the state of updatedDraft while statement updates in the background. Without it, some changes to the HTMLcontent will be lost.
 
-  const [updatedStatement, setUpdatedStatement] = useState<StatementPackage>(statementPackage);
+  const [updatedDraft, setUpdatedDraft] = useState<StatementPackage>(statementPackage);
 
   const [debouncedStatement, setDebouncedStatement] = useDebounce<StatementPackage | undefined>(
-    updatedStatement,
+    updatedDraft,
     500
   );
 
   useEffect(() => {
-    setDebouncedStatement(updatedStatement);
-  }, [updatedStatement, setDebouncedStatement]);
+    setDebouncedStatement(updatedDraft);
+  }, [updatedDraft, setDebouncedStatement]);
 
   const [editor, setEditor] = useState<Editor | null>(null);
 
@@ -91,16 +91,16 @@ export function StatementProvider({
   };
 
   const saveStatementDraft = async () => {
-    const { title, draft, statementId } = updatedStatement;
+    const { draft } = updatedDraft;
     const { content, annotations } = draft;
 
-    if (!title || !content) {
+    if (!content) {
       return;
     }
     try {
       await createDraft({
         content,
-        statementId: statementId || undefined,
+        statementId: statementPackage.statementId || undefined,
         versionNumber: nextVersionNumber,
         annotations: annotations || undefined
       });
@@ -110,8 +110,9 @@ export function StatementProvider({
   };
 
   const togglePublish = async () => {
-    if (!updatedStatement) return;
-    const { statementId, draft, creatorId } = updatedStatement;
+    if (!updatedDraft) return;
+    const { statementId, creatorId } = statementPackage;
+    const { draft } = updatedDraft;
     const { publishedAt } = draft;
     await publishDraft({
       statementId,
@@ -126,8 +127,8 @@ export function StatementProvider({
       value={{
         versionOptions: versionList,
         currentVersion: statementPackage.draft.versionNumber,
-        updatedStatement,
-        setUpdatedStatement,
+        updatedDraft,
+        setUpdatedDraft,
         saveStatementDraft,
         nextVersionNumber,
         changeVersion,

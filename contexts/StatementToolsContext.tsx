@@ -53,8 +53,8 @@ interface StatementToolsContextType {
 const StatementToolsContext = createContext<StatementToolsContextType | undefined>(undefined);
 
 export function StatementToolsProvider({ children }: { children: ReactNode }) {
-  const { updatedStatement } = useStatementContext();
-  const [citations, setCitations] = useState<BaseStatementCitation[]>(updatedStatement.citations);
+  const { statement, updatedDraft } = useStatementContext();
+  const [citations, setCitations] = useState<BaseStatementCitation[]>(updatedDraft.citations);
   const [isBlock, setIsBlock] = useState(true);
   const [selectedLatexId, setSelectedLatexId] = useState<string | null>(null);
   const [selectedNodePosition, setSelectedNodePosition] = useState<PositionParams | null>(null);
@@ -62,12 +62,12 @@ export function StatementToolsProvider({ children }: { children: ReactNode }) {
   const [initialImageData, setInitialImageData] = useState<UpsertImageDataType>({
     src: '',
     alt: '',
-    statementId: updatedStatement.statementId,
+    statementId: statement.statementId,
     id: '',
     caption: ''
   });
   const [citationData, setCitationData] = useState<NewStatementCitation>({
-    statementId: updatedStatement.statementId,
+    statementId: statement.statementId,
     title: '',
     url: '',
     year: null,
@@ -87,8 +87,8 @@ export function StatementToolsProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    setCitations(updatedStatement.citations);
-  }, [updatedStatement.citations]);
+    setCitations(updatedDraft.citations);
+  }, [updatedDraft.citations]);
 
   const [popoverState, setPopoverState] = useState({
     latex: false,

@@ -47,8 +47,7 @@ export default function StatementLayout({
   editModeEnabled,
   startingPanelSizes
 }: StatementDetailsProps) {
-  const { statement, parentStatement, thread, isCreator } = useStatementContext();
-
+  const { statement, parentStatement, thread, isCreator, editor } = useStatementContext();
   const familyTree = groupThreadsByParentId(thread, statement);
 
   const {
@@ -66,7 +65,6 @@ export default function StatementLayout({
   const [isMobile, setIsMobile] = useState(useWindowSize().width < 600);
   const [hasMounted, setHasMounted] = useState(false);
   const { editMode, setEditMode } = useEditModeContext();
-  const { editor, updatedStatement } = useStatementContext();
   const { updateStatementDraft } = useStatementUpdateContext();
 
   const [showAnnotationDrawer, setShowAnnotationDrawer] = useState(false);
@@ -93,9 +91,9 @@ export default function StatementLayout({
       if (editor) {
         await deleteAnnotation({
           annotationId: annotation.id,
-          statementCreatorId: updatedStatement?.creatorId,
+          statementCreatorId: statement?.creatorId,
           annotationCreatorId: annotation?.userId,
-          statementId: updatedStatement.statementId
+          statementId: statement.statementId
         });
 
         editor.commands.deleteAnnotationHighlight(annotation.id);
@@ -222,9 +220,9 @@ export default function StatementLayout({
     if (showAuthorComments && showReaderComments) {
       return true;
     } else if (showAuthorComments) {
-      return annotation.userId === updatedStatement.creatorId;
+      return annotation.userId === statement.creatorId;
     } else if (showReaderComments) {
-      return annotation.userId !== updatedStatement.creatorId;
+      return annotation.userId !== statement.creatorId;
     }
   }) as AnnotationWithComments[];
 
@@ -263,8 +261,8 @@ export default function StatementLayout({
         handleAnnotationSelection={handleAnnotationSelection}
         annotations={annotations}
         statement={{
-          statementId: updatedStatement.statementId,
-          creatorId: updatedStatement.creatorId
+          statementId: statement.statementId,
+          creatorId: statement.creatorId
         }}
         selectedAnnotation={selectedAnnotation}
         handleDeleteAnnotation={handleDeleteAnnotation}
@@ -286,9 +284,9 @@ export default function StatementLayout({
           <div className="absolute top-1/4 p-4 w-full">
             <VerticalCardStack
               familyTree={familyTree}
-              currentTitle={updatedStatement?.title || ''}
-              currentStatementId={updatedStatement.statementId}
-              currentThreadId={updatedStatement.threadId}
+              currentTitle={statement?.title || ''}
+              currentStatementId={statement.statementId}
+              currentThreadId={statement.threadId}
             />
           </div>
         </div>
@@ -327,8 +325,8 @@ export default function StatementLayout({
         <div className="overflow-y-auto h-full  ">
           {annotations && (
             <AnnotationPanel
-              statementId={updatedStatement.statementId}
-              statementCreatorId={updatedStatement.creatorId}
+              statementId={statement.statementId}
+              statementCreatorId={statement.creatorId}
               handleCloseAnnotationPanel={handleCloseAnnotationPanel}
               filteredAnnotations={filteredAnnotations}
               handleAnnotationSelection={handleAnnotationSelection}

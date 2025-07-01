@@ -45,6 +45,11 @@ export const AnnotationMenu = ({
   if (!editor) return null;
 
   const handleAnnotationCreate = async () => {
+    setPanelState({
+      target: 'annotation_panel_size',
+      isOpen: true,
+      panelGroupRef
+    });
     await createStatementAnnotation({
       userId,
       editor,
@@ -55,11 +60,6 @@ export const AnnotationMenu = ({
       showReaderComments,
       setSelectedAnnotationId,
       setAnnotations
-    });
-    setPanelState({
-      target: 'annotation_panel_size',
-      isOpen: true,
-      panelGroupRef
     });
   };
 

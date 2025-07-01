@@ -30,7 +30,6 @@ export default function EditNav() {
 
   const {
     versionOptions,
-    updatedStatement,
     saveStatementDraft,
     togglePublish,
     nextVersionNumber,
@@ -95,8 +94,8 @@ export default function EditNav() {
     try {
       setSendToSubscribersButtonState('loading');
       await sendNewsletterEmail({
-        statement: updatedStatement,
-        authorNames: updatedStatement.authors.map(author => author.name || author.username || '')
+        statement: statement,
+        authorNames: statement.authors.map(author => author.name || author.username || '')
       });
       setSendToSubscribersButtonState('success');
     } catch (error) {
@@ -105,15 +104,15 @@ export default function EditNav() {
     }
   };
 
-  const isPublished = updatedStatement?.draft.publishedAt;
+  const isPublished = statement?.draft.publishedAt;
 
   const versionMenu = () => {
-    if (!updatedStatement) return null;
+    if (!statement) return null;
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm">
-            {`v${updatedStatement.draft.versionNumber}`} <ChevronDown className="h-4 w-4" />
+            {`v${statement.draft.versionNumber}`} <ChevronDown className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -134,7 +133,7 @@ export default function EditNav() {
             </DropdownMenuItem>
             <DropdownMenuItem>
               <Select
-                value={updatedStatement?.draft.versionNumber.toString()}
+                value={statement?.draft.versionNumber.toString()}
                 onValueChange={value => changeVersion(parseInt(value, 10))}
               >
                 <SelectTrigger className="w-full">
@@ -217,14 +216,12 @@ export default function EditNav() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() =>
-              router.push(`/${currentUserSlug}/${updatedStatement?.slug}/${currentVersion}`)
-            }
+            onClick={() => router.push(`/${currentUserSlug}/${statement?.slug}/${currentVersion}`)}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-3">
-            {updatedStatement && (
+            {statement && (
               <>
                 {versionMenu()}
                 <LoadingButton
@@ -264,7 +261,7 @@ export default function EditNav() {
 
                 <ViewModeButton
                   handleEditModeToggle={() =>
-                    router.push(`/${currentUserSlug}/${updatedStatement?.slug}/${currentVersion}`)
+                    router.push(`/${currentUserSlug}/${statement?.slug}/${currentVersion}`)
                   }
                   iconOnly={isMobile}
                   variant="default"

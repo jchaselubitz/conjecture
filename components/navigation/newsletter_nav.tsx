@@ -20,8 +20,8 @@ import UserButton from './user_button';
 export default function NewsletterNav() {
   const { currentUserSlug } = useUserContext();
   const { editMode } = useEditModeContext();
-  const { updatedStatement, currentVersion } = useStatementContext();
-  const isPublished = !!updatedStatement?.draft.publishedAt;
+  const { statement, currentVersion } = useStatementContext();
+  const isPublished = !!statement?.draft.publishedAt;
 
   const [sendEmailState, setSendEmailState] = useState<'default' | 'loading' | 'success' | 'error'>(
     'default'
@@ -44,8 +44,8 @@ export default function NewsletterNav() {
     try {
       const validEmails = testEmails.filter(email => email.trim() !== '');
       await sendNewsletterEmail({
-        statement: updatedStatement,
-        authorNames: updatedStatement.authors.map(author => author.name || author.username || ''),
+        statement: statement,
+        authorNames: statement.authors.map(author => author.name || author.username || ''),
         testEmails: [...validEmails, 'delivered@resend.dev']
       });
       setSendEmailState('success');
@@ -64,8 +64,8 @@ export default function NewsletterNav() {
     try {
       setSendToSubscribersButtonState('loading');
       await sendNewsletterEmail({
-        statement: updatedStatement,
-        authorNames: updatedStatement.authors.map(author => author.name || author.username || '')
+        statement: statement,
+        authorNames: statement.authors.map(author => author.name || author.username || '')
       });
       setSendToSubscribersButtonState('success');
     } catch (error) {
@@ -83,7 +83,7 @@ export default function NewsletterNav() {
             size="icon"
             onClick={() =>
               router.push(
-                `/${currentUserSlug}/${updatedStatement?.slug}/${currentVersion}?edit=${editMode}`
+                `/${currentUserSlug}/${statement?.slug}/${currentVersion}?edit=${editMode}`
               )
             }
           >

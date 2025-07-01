@@ -12,14 +12,23 @@ interface VoteButtonProps {
   statementId: string;
   upvotes: BaseStatementVote[];
   className?: string;
+  creatorSlug: string;
+  statementSlug: string;
 }
 
-export default function VoteButton({ statementId, upvotes, className }: VoteButtonProps) {
+export default function VoteButton({
+  statementId,
+  upvotes,
+  className,
+  creatorSlug,
+  statementSlug
+}: VoteButtonProps) {
   const { userId } = useUserContext();
 
   const [optVotes, setOptVotes] = useOptimistic<BaseStatementVote[], BaseStatementVote[]>(
     upvotes,
     (current, updated) => {
+      console.log('current', current);
       return updated;
     }
   );
@@ -47,7 +56,8 @@ export default function VoteButton({ statementId, upvotes, className }: VoteButt
 
       await toggleStatementUpvote({
         statementId,
-        isUpvoted: hasUpvoted
+        isUpvoted: hasUpvoted,
+        revalidationPath: { path: `/${creatorSlug}/${statementSlug}`, type: 'layout' }
       });
     } catch (error) {
       console.error('Error upvoting comment:', error);

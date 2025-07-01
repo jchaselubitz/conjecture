@@ -12,7 +12,7 @@ import {
 } from 'react';
 
 import { deleteAnnotationsBatch } from '@/lib/actions/annotationActions';
-import { updateDraft, updateStatement } from '@/lib/actions/statementActions';
+import { updateDraft } from '@/lib/actions/statementActions';
 import { getMarks } from '@/lib/helpers/helpersStatements';
 
 import { useStatementAnnotationContext } from './StatementAnnotationContext';
@@ -27,7 +27,7 @@ interface StatementUpdateContextType {
 const StatementUpdateContext = createContext<StatementUpdateContextType | undefined>(undefined);
 
 export function StatementUpdateProvider({ children }: { children: ReactNode }) {
-  const { editor, debouncedStatement, userId, statement, isCreator } = useStatementContext();
+  const { editor, debouncedStatement, userId, statement } = useStatementContext();
   const { annotations, setAnnotations } = useStatementAnnotationContext();
 
   const [isUpdating, setIsUpdating] = useState(false);
@@ -82,14 +82,10 @@ export function StatementUpdateProvider({ children }: { children: ReactNode }) {
       setError('Error cleaning up annotations during save.');
     }
 
-    const { title, subtitle, headerImg, statementId, draft, creatorId } = debouncedStatement;
+    const { draft, creatorId } = debouncedStatement;
     const { id, versionNumber } = draft;
 
-    const isStale =
-      cleanedHtmlContent === statement.draft.content &&
-      title === statement.title &&
-      subtitle === statement.subtitle &&
-      headerImg === statement.headerImg;
+    const isStale = cleanedHtmlContent === statement.draft.content;
 
     if (isStale && annotationsToKeep.length === annotations.length) {
       return;
@@ -98,26 +94,6 @@ export function StatementUpdateProvider({ children }: { children: ReactNode }) {
     setIsUpdating(true);
     setError(null);
 
-    if (
-      title !== statement.title ||
-      subtitle !== statement.subtitle ||
-      headerImg !== statement.headerImg
-    ) {
-      if (isCreator) {
-        try {
-          await updateStatement({
-            statementId: statementId,
-            creatorId: creatorId,
-            title: title ?? statement.title ?? '',
-            subtitle: subtitle ?? statement.subtitle ?? ''
-          });
-        } catch (err) {
-          console.error('[UpdateProvider] Error updating statement:', err);
-          setError('Error updating statement'); // Set error state here
-          Sentry.captureException(err, { tags: { context: 'UpdateStatement' } });
-        }
-      }
-    }
     try {
       await updateDraft({
         id,
@@ -139,7 +115,6 @@ export function StatementUpdateProvider({ children }: { children: ReactNode }) {
     userId,
     annotations,
     setAnnotations,
-    isCreator,
     statement // Add original statement as dependency for comparison
     // No need for setIsUpdating/setError here as they are component state
   ]);
