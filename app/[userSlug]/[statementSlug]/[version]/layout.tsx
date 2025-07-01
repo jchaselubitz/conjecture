@@ -1,6 +1,7 @@
 import { Metadata, ResolvingMetadata } from 'next';
 import { redirect } from 'next/navigation';
 
+import NotFound from '@/components/ui/not_found';
 import { StatementAnnotationProvider } from '@/contexts/StatementAnnotationContext';
 import { StatementProvider } from '@/contexts/StatementBaseContext';
 import { StatementToolsProvider } from '@/contexts/StatementToolsContext';
@@ -14,7 +15,6 @@ import {
   getStatementPackage
 } from '@/lib/actions/statementActions';
 import { UserStatementRoles } from '@/lib/enums/permissions';
-import NotFound from '@/components/ui/not_found';
 
 type Props = {
   params: Promise<{ statementSlug: string; userSlug: string; version: string }>;
@@ -63,9 +63,9 @@ export default async function UserStatementLayout({ children, params }: Props) {
           title="Conjecture Not Found"
           message={
             <>
-              Sorry, the conjecture version you are looking for doesn't exist or has been moved.
+              {`Sorry, the conjecture version you are looking for doesn't exist or has been moved.`}
               <br />
-              You can return to the main conjecture page to explore other versions.
+              {`You can return to the main conjecture page to explore other versions.`}
             </>
           }
           actions={[

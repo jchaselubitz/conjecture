@@ -1,20 +1,15 @@
-"use server";
+'use server';
 
-import * as Sentry from "@sentry/nextjs";
-import { revalidatePath } from "next/cache";
+import * as Sentry from '@sentry/nextjs';
+import { revalidatePath } from 'next/cache';
 
-import { createClient } from "@/supabase/server";
+import { createClient } from '@/supabase/server';
 
-import { authenticatedUser } from "./baseActions";
+import { authenticatedUser } from './baseActions';
 
-async function uploadFile(
-  { bucket, file, path }: { bucket: string; file: File; path: string },
-) {
+async function uploadFile({ bucket, file, path }: { bucket: string; file: File; path: string }) {
   const supabase = await createClient();
-  const { data, error } = await supabase.storage.from(bucket).upload(
-    `${path}`,
-    file,
-  );
+  const { data, error } = await supabase.storage.from(bucket).upload(`${path}`, file);
   return { data, error };
 }
 
@@ -29,27 +24,25 @@ export type StorageObject = {
 export async function deleteFile({
   bucket,
   url,
-  folderPath,
+  folderPath
 }: {
   bucket: string;
   url: string;
   folderPath: string;
 }) {
-  const fileName = url.split("/").pop();
+  const fileName = url.split('/').pop();
   const path = `${folderPath}/${fileName}`;
 
   const supabase = await createClient();
   const { data, error } = await supabase.storage.from(bucket).remove([path]);
   if (error) {
     Sentry.captureException(error);
-    throw new Error("Failed to delete image");
+    throw new Error('Failed to delete image');
   }
   return data;
 }
 
-async function getPublicFile(
-  { bucket, path }: { bucket: string; path: string },
-) {
+async function getPublicFile({ bucket, path }: { bucket: string; path: string }) {
   const supabase = await createClient();
   const { data: image } = supabase.storage.from(bucket).getPublicUrl(`${path}`);
   return image.publicUrl;
@@ -60,7 +53,7 @@ export async function uploadStatementImage({
   file,
   fileName,
   creatorId,
-  statementId,
+  statementId
 }: {
   oldImageUrl: string | undefined;
   file: FormData;
@@ -69,32 +62,32 @@ export async function uploadStatementImage({
   fileName: string;
 }) {
   await authenticatedUser(creatorId);
-  const bucket = "statement-images";
+  const bucket = 'statement-images';
   try {
     if (oldImageUrl) {
       await deleteFile({
         bucket,
         url: oldImageUrl,
-        folderPath: `${statementId}`,
+        folderPath: `${statementId}`
       });
     }
-    const fileForUpload = file.get("image") as File;
+    const fileForUpload = file.get('image') as File;
 
     const { data, error } = await uploadFile({
       bucket,
       file: fileForUpload,
-      path: `${statementId}/${fileName}`,
+      path: `${statementId}/${fileName}`
     });
 
     if (error) {
-      if (error.message === "The resource already exists") {
+      if (error.message === 'The resource already exists') {
         const publicUrl = getPublicFile({
           bucket,
-          path: `/${statementId}/${fileName}`,
+          path: `/${statementId}/${fileName}`
         });
         return publicUrl;
       }
-      throw new Error("Failed to upload image", { cause: error });
+      throw new Error('Failed to upload image', { cause: error });
     }
 
     if (!data) {
@@ -111,7 +104,7 @@ export async function uploadStatementImage({
 export async function deleteStoredStatementImage({
   url,
   creatorId,
-  statementId,
+  statementId
 }: {
   url: string;
   creatorId: string;
@@ -119,7 +112,7 @@ export async function deleteStoredStatementImage({
 }) {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   const userId = user?.id;
   if (!userId) {
@@ -127,7 +120,7 @@ export async function deleteStoredStatementImage({
   }
 
   if (userId !== creatorId) {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized');
   }
 
   // we should keep these images because there may be different ones across drafts
@@ -140,7 +133,7 @@ export async function uploadProfileImage({
   oldImageUrl,
   file,
   profileId,
-  fileName,
+  fileName
 }: {
   oldImageUrl: string | null;
   file: FormData;
@@ -149,7 +142,7 @@ export async function uploadProfileImage({
 }) {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   const userId = user?.id;
@@ -159,24 +152,24 @@ export async function uploadProfileImage({
   }
 
   if (userId !== profileId) {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized');
   }
 
-  const bucket = "user-images";
+  const bucket = 'user-images';
   if (oldImageUrl) {
     await deleteFile({ bucket, url: oldImageUrl, folderPath: profileId });
   }
-  const fileForUpload = file.get("image") as File;
+  const fileForUpload = file.get('image') as File;
 
   const { data, error } = await uploadFile({
     bucket,
     file: fileForUpload,
-    path: `${profileId}/${fileName}`,
+    path: `${profileId}/${fileName}`
   });
 
   if (error) {
     Sentry.captureException(error);
-    console.log("error", error);
+    console.log('error', error);
   }
 
   if (!data) return null;
@@ -184,12 +177,10 @@ export async function uploadProfileImage({
   return getPublicFile({ bucket, path: data?.path });
 }
 
-export async function deleteProfileImage(
-  { profileId, url }: { profileId: string; url: string },
-) {
+export async function deleteProfileImage({ profileId, url }: { profileId: string; url: string }) {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   const userId = user?.id;
   if (!userId) {
@@ -197,24 +188,24 @@ export async function deleteProfileImage(
   }
 
   if (userId !== profileId) {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized');
   }
 
-  const bucket = "user-images";
+  const bucket = 'user-images';
   await deleteFile({ bucket, url, folderPath: profileId });
-  revalidatePath("/", "page");
+  revalidatePath('/', 'page');
 }
 
 export async function getStatementImages({
   statementId,
-  creatorId,
+  creatorId
 }: {
   statementId: string;
   creatorId: string;
 }) {
   const supabase = await createClient();
   const statementImages = await supabase.storage
-    .from("statement-images")
+    .from('statement-images')
     .createSignedUrls([`${creatorId}/${statementId}/`], 3600);
 
   return statementImages;

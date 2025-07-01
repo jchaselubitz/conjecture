@@ -1,5 +1,6 @@
 import { Metadata, ResolvingMetadata } from 'next';
 
+import NotFound from '@/components/ui/not_found';
 import { StatementContainer } from '@/containers/StatementContainer';
 import { StatementAnnotationProvider } from '@/contexts/StatementAnnotationContext';
 import { StatementProvider } from '@/contexts/StatementBaseContext';
@@ -15,7 +16,6 @@ import {
   getStatementPackage
 } from '@/lib/actions/statementActions';
 import { UserStatementRoles } from '@/lib/enums/permissions';
-import NotFound from '@/components/ui/not_found';
 
 type Props = {
   params: Promise<{ statementSlug: string; userSlug: string }>;
@@ -57,9 +57,9 @@ export default async function StatementPage({ params, searchParams }: Props) {
         title="Conjecture Not Found"
         message={
           <>
-            Sorry, the conjecture you are looking for doesn't exist or has been moved.
+            {`Sorry, the conjecture you are looking for doesn't exist or has been moved.`}
             <br />
-            You can return to the user's page to explore more conjectures.
+            {`You can return to the user's page to explore more conjectures.`}
           </>
         }
         actions={[{ label: 'Back to User', href: `/${userSlug}`, variant: 'default' }]}

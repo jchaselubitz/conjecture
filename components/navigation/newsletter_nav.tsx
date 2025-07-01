@@ -9,6 +9,7 @@ import { useEditModeContext } from '@/contexts/EditModeContext';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
 import { sendNewsletterEmail } from '@/lib/actions/notificationActions';
+import { formatDate } from '@/lib/helpers/helpersDate';
 
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
@@ -61,6 +62,11 @@ export default function NewsletterNav() {
   };
 
   const handleSendToSubscribers = async () => {
+    if (statement.distributedAt) {
+      confirm(
+        'This newsletter has already been distributed. Are you sure you want to send another email to subscribers?'
+      );
+    }
     try {
       setSendToSubscribersButtonState('loading');
       await sendNewsletterEmail({
@@ -138,9 +144,14 @@ export default function NewsletterNav() {
                 onClick={handleSendToSubscribers}
                 buttonState={sendToSubscribersButtonState}
                 variant="outline"
-                text="Send to subscribers"
+                text={
+                  statement.distributedAt
+                    ? `Sent on ${formatDate({ date: new Date(statement.distributedAt) })}`
+                    : 'Send to subscribers'
+                }
                 loadingText="Sending..."
                 setButtonState={setSendToSubscribersButtonState}
+                disabled={!!statement.distributedAt}
               />
             )}
             <UserButton />

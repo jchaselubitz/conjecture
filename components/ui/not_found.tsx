@@ -1,7 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Button } from './button';
 import React from 'react';
+
+import { Button } from './button';
 
 interface NotFoundAction {
   label: string;

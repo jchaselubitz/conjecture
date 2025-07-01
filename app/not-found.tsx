@@ -9,9 +9,9 @@ export default function NotFoundPage() {
         title="404"
         message={
           <>
-            Sorry, the page you are looking for doesn't exist or has been moved.
+            {`Sorry, the page you are looking for doesn't exist or has been moved.`}
             <br />
-            Explore more conjectures or return to the feed.
+            {`Explore more conjectures or return to the feed.`}
           </>
         }
         actions={[

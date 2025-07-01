@@ -1,10 +1,10 @@
 import { Metadata, ResolvingMetadata } from 'next';
 
+import NotFound from '@/components/ui/not_found';
 import { StatementListContainer } from '@/containers/StatementListContainer';
 import { getStatements } from '@/lib/actions/statementActions';
 import { getUserProfile } from '@/lib/actions/userActions';
 import { createClient } from '@/supabase/server';
-import NotFound from '@/components/ui/not_found';
 
 type UserPageProps = {
   params: Promise<{
@@ -47,9 +47,9 @@ export default async function UserPage({ params }: UserPageProps) {
         title="Writer Not Found"
         message={
           <>
-            Sorry, the writer you are looking for doesn't exist or has been moved.
+            {` Sorry, the writer you are looking for doesn't exist or has been moved. `}
             <br />
-            You can return to the feed to explore more conjectures.
+            {`You can return to the feed to explore more conjectures.`}
           </>
         }
         actions={[{ label: 'Back to Feed', href: '/feed', variant: 'default' }]}
