@@ -202,7 +202,6 @@ export default function StatementDetails({
                 fill
                 className="h-full w-full md:rounded-md object-cover"
                 priority={false}
-            
               />
               {updatedStatement.creatorId === userId && editMode && (
                 <div

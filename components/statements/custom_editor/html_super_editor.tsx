@@ -116,7 +116,7 @@ const HTMLSuperEditor = ({
 
       {editMode && !latexPopoverOpen && !imagePopoverOpen && !videoPopoverOpen && (
         <div>
-          <FloatingMenu
+          {/* <FloatingMenu
             editor={editor}
             shouldShow={() => {
               if (!editor?.isFocused) return false;
@@ -127,7 +127,7 @@ const HTMLSuperEditor = ({
             }}
           >
             <BlockTypeChooser statementId={statementId} editor={editor} />
-          </FloatingMenu>
+          </FloatingMenu> */}
         </div>
       )}
     </div>

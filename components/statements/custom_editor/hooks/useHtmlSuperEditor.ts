@@ -10,7 +10,6 @@ import { Editor, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { AnnotationWithComments, NewStatementCitation, StatementPackage } from 'kysely-codegen';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React from 'react';
 import { RefObject, startTransition, useEffect } from 'react';
 import { ImperativePanelGroupHandle } from 'react-resizable-panels';
 import { useWindowSize } from 'react-use';
@@ -148,6 +147,7 @@ export const useHtmlSuperEditor = ({
       }),
       Typography,
       TableWithTools.configure({
+        editMode,
         resizable: true,
         HTMLAttributes: {
           class: 'w-full'

@@ -1,48 +1,41 @@
-import { Table } from '@tiptap/extension-table';
+import { Table, TableOptions } from '@tiptap/extension-table';
 import {
   NodeViewContent,
   NodeViewProps,
   NodeViewWrapper,
   ReactNodeViewRenderer
 } from '@tiptap/react';
-import { Wrench } from 'lucide-react';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Switch } from '@/components/ui/switch';
+import { cn } from '@/lib/utils';
 
 import { TableTools } from '../table_tools';
 
-const TableWithToolsComponent = (props: NodeViewProps & { editMode?: boolean }) => {
-  const [open, setOpen] = useState(false);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const showButton = props.editMode;
+const TableWithToolsComponent = (props: NodeViewProps & { editMode: boolean }) => {
+  const [showTools, setShowTools] = useState(false);
+  const showSwitch = props.editMode;
 
   return (
     <NodeViewWrapper className="relative group flex flex-col mb-4">
-      {showButton && (
-        <div className="absolute left-0 top-0 z-10">
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <button
-                ref={buttonRef}
-                className="table-tools-btn opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border rounded shadow p-1 m-1 flex items-center"
-                tabIndex={-1}
-                aria-label="Table tools"
-                onClick={e => {
-                  e.stopPropagation();
-                  setOpen(!open);
-                }}
-              >
-                <Wrench className="w-4 h-4" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" side="bottom" align="start">
-              <TableTools editor={props.editor} />
-            </PopoverContent>
-          </Popover>
-        </div>
-      )}
-
+      <div
+        className={cn(
+          'flex flex-col items-center gap-1 bg-muted/60  shadow-sm w-full overflow-x-auto',
+          showSwitch && 'rounded-md px-2 py-1 pb-2 border border-muted'
+        )}
+      >
+        {showSwitch && (
+          <div className=" left-0 -top-8 z-20 flex w-full m-1 gap-2">
+            <Switch checked={showTools} onCheckedChange={setShowTools} />
+            <span className="text-xs text-muted-foreground">Table tools</span>
+          </div>
+        )}
+        {showSwitch && showTools && (
+          <div className="z-20 w-full">
+            <TableTools editor={props.editor} />
+          </div>
+        )}
+      </div>
       <NodeViewContent
         // @ts-expect-error this is a valid attribute
         as="table"
@@ -54,11 +47,21 @@ const TableWithToolsComponent = (props: NodeViewProps & { editMode?: boolean }) 
   );
 };
 
-export const TableWithTools = Table.extend({
+export interface TableWithToolsOptions extends TableOptions {
+  editMode?: boolean;
+}
+
+export const TableWithTools = Table.extend<TableWithToolsOptions>({
   addNodeView() {
+    // Use a key to force re-render when editMode changes
+    const editMode = (this.options as any).editMode;
     return ReactNodeViewRenderer(
-      props => <TableWithToolsComponent {...props} editMode={props.editor.isEditable} />,
-      { contentDOMElementTag: 'tBody' }
+      props => (
+        <TableWithToolsComponent {...props} editMode={editMode} key={editMode ? 'edit' : 'view'} />
+      ),
+      {
+        contentDOMElementTag: 'tBody'
+      }
     );
   }
 });

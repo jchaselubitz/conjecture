@@ -55,13 +55,11 @@
 }
 
 .ProseMirror p .citation-reference {
-  display: inline-block;
   vertical-align: baseline;
 }
 
 .ProseMirror p .citation-number {
   vertical-align:middle;
-
 }
 
 /* List styles */
@@ -531,7 +529,6 @@
 }
 
 .ProseMirror blockquote .citation-reference {
-  display: inline-block;
   vertical-align: baseline;
 }
 
@@ -539,4 +536,11 @@
   vertical-align:middle;
   margin-left: 0.25rem;
   line-height: 0;
+}
+
+.selectedCell {
+  background: rgba(0, 123, 255, 0.15) !important;
+  outline: 2px solid #007bff !important;
+  /* Optional: add a subtle box-shadow for extra visibility */
+  box-shadow: 0 0 0 2px #007bff33;
 }
