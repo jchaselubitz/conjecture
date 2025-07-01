@@ -1,6 +1,6 @@
-'use server';
+"use server";
 
-import { jsonArrayFrom } from 'kysely/helpers/postgres';
+import { jsonArrayFrom } from "kysely/helpers/postgres";
 import {
   AnnotationWithComments,
   BaseComment,
@@ -9,26 +9,29 @@ import {
   DraftWithAnnotations,
   NewAnnotation,
   StatementPackage,
-  StatementWithUser
-} from 'kysely-codegen';
-import { RevalidationPath } from 'kysely-codegen';
-import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
+  StatementWithUser,
+} from "kysely-codegen";
+import { RevalidationPath } from "kysely-codegen";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
-import db from '@/lib/database';
+import db from "@/lib/database";
 
-import { AuthorGroup, UserStatementRoles } from '../enums/permissions';
-import { checkValidStatementSlug, generateStatementId } from '../helpers/helpersStatements';
-import { createStatementImageUrl } from '../helpers/helpersStorage';
+import { AuthorGroup, UserStatementRoles } from "../enums/permissions";
+import {
+  checkValidStatementSlug,
+  generateStatementId,
+} from "../helpers/helpersStatements";
+import { createStatementImageUrl } from "../helpers/helpersStorage";
 
-import { authenticatedUser, getUser, isAuthor } from './baseActions';
-import { deleteStoredStatementImage } from './storageActions';
+import { authenticatedUser, getUser, isAuthor } from "./baseActions";
+import { deleteStoredStatementImage } from "./storageActions";
 
 export async function getStatements({
   forCurrentUser,
   publishedOnly = true,
   creatorId,
-  statementSlug
+  statementSlug,
 }: {
   forCurrentUser?: boolean;
   publishedOnly?: boolean;
@@ -37,50 +40,50 @@ export async function getStatements({
 }): Promise<StatementWithUser[]> {
   const user = await getUser();
   let statements = db
-    .selectFrom('statement')
-    .innerJoin('draft', 'statement.statementId', 'draft.statementId')
+    .selectFrom("statement")
+    .innerJoin("draft", "statement.statementId", "draft.statementId")
     .select(({ eb }) => [
-      'statement.statementId',
-      'statement.slug',
-      'statement.creatorId',
-      'statement.createdAt',
-      'statement.updatedAt',
-      'statement.parentStatementId',
-      'statement.headerImg as headerImg',
-      'statement.title',
-      'statement.subtitle',
-      'statement.threadId',
-      'statement.distributedAt as distributedAt',
-      'draft.publishedAt as publishedAt',
-      'draft.content as content',
-      'draft.versionNumber as versionNumber',
+      "statement.statementId",
+      "statement.slug",
+      "statement.creatorId",
+      "statement.createdAt",
+      "statement.updatedAt",
+      "statement.parentStatementId",
+      "statement.headerImg as headerImg",
+      "statement.title",
+      "statement.subtitle",
+      "statement.threadId",
+      "statement.distributedAt as distributedAt",
+      "draft.publishedAt as publishedAt",
+      "draft.content as content",
+      "draft.versionNumber as versionNumber",
       jsonArrayFrom(
         eb
-          .selectFrom('collaborator')
+          .selectFrom("collaborator")
           .selectAll()
-          .whereRef('collaborator.statementId', '=', 'statement.statementId')
-          .where('collaborator.role', 'in', AuthorGroup)
-      ).as('collaborators'),
+          .whereRef("collaborator.statementId", "=", "statement.statementId")
+          .where("collaborator.role", "in", AuthorGroup),
+      ).as("collaborators"),
       jsonArrayFrom(
         eb
-          .selectFrom('statementVote')
+          .selectFrom("statementVote")
           .selectAll()
-          .whereRef('statementVote.statementId', '=', 'statement.statementId')
-      ).as('upvotes')
+          .whereRef("statementVote.statementId", "=", "statement.statementId"),
+      ).as("upvotes"),
     ])
-    .orderBy('versionNumber', 'desc');
+    .orderBy("versionNumber", "desc");
 
   if (publishedOnly) {
-    statements = statements.where('draft.publishedAt', 'is not', null);
+    statements = statements.where("draft.publishedAt", "is not", null);
   }
   if (forCurrentUser && user) {
-    statements = statements.where('statement.creatorId', '=', user.id);
+    statements = statements.where("statement.creatorId", "=", user.id);
   }
   if (creatorId) {
-    statements = statements.where('statement.creatorId', '=', creatorId);
+    statements = statements.where("statement.creatorId", "=", creatorId);
   }
   if (statementSlug) {
-    statements = statements.where('statement.slug', '=', statementSlug);
+    statements = statements.where("statement.slug", "=", statementSlug);
   }
 
   const statementsList = await statements.execute();
@@ -89,255 +92,280 @@ export async function getStatements({
     return [];
   }
 
-  const authorIds = statementsList.flatMap(statement => {
-    return statement.collaborators.map(collaborator => collaborator.userId);
+  const authorIds = statementsList.flatMap((statement) => {
+    return statement.collaborators.map((collaborator) => collaborator.userId);
   });
 
   const profiles = await db
-    .selectFrom('profile')
+    .selectFrom("profile")
     .selectAll()
-    .where('id', 'in', authorIds)
+    .where("id", "in", authorIds)
     .execute();
 
   const getStatementAuthors = (
     statement: {
       collaborators: { userId: string }[];
     },
-    profiles: BaseProfile[]
+    profiles: BaseProfile[],
   ) => {
     return statement.collaborators
-      .map(collaborator => profiles.find(profile => profile.id === collaborator.userId))
+      .map((collaborator) =>
+        profiles.find((profile) => profile.id === collaborator.userId)
+      )
       .filter((profile): profile is BaseProfile => !!profile);
   };
 
-  return statementsList.map(statement => ({
+  return statementsList.map((statement) => ({
     ...statement,
-    creatorSlug: profiles.find(profile => profile.id === statement.creatorId)?.username,
+    creatorSlug: profiles.find((profile) => profile.id === statement.creatorId)
+      ?.username,
     authors: getStatementAuthors(statement, profiles),
     draft: {
       publishedAt: statement.publishedAt,
       versionNumber: statement.versionNumber,
-      content: statement.content
-    }
+      content: statement.content,
+    },
   }));
 }
 
 export async function getPublishedStatement(
-  statementSlug: string
+  statementSlug: string,
 ): Promise<StatementWithUser | null> {
   const statements = await getStatements({
     statementSlug,
-    publishedOnly: true
+    publishedOnly: true,
   });
   return statements[0] ?? null;
 }
 
-export async function getFullThread(threadId: string): Promise<StatementWithUser[]> {
+export async function getFullThread(
+  threadId: string,
+): Promise<StatementWithUser[]> {
   const statementsList = await db
-    .selectFrom('statement')
-    .innerJoin('draft', 'statement.statementId', 'draft.statementId')
-    .innerJoin('profile', 'statement.creatorId', 'profile.id')
+    .selectFrom("statement")
+    .innerJoin("draft", "statement.statementId", "draft.statementId")
+    .innerJoin("profile", "statement.creatorId", "profile.id")
     .select(({ eb }) => [
-      'statement.statementId',
-      'statement.slug',
-      'statement.creatorId',
-      'statement.createdAt',
-      'statement.updatedAt',
-      'statement.parentStatementId',
-      'statement.headerImg as headerImg',
-      'statement.title',
-      'statement.subtitle',
-      'statement.threadId',
-      'statement.distributedAt as distributedAt',
-      'draft.publishedAt as publishedAt',
-      'draft.versionNumber as versionNumber',
-      'draft.content as content',
+      "statement.statementId",
+      "statement.slug",
+      "statement.creatorId",
+      "statement.createdAt",
+      "statement.updatedAt",
+      "statement.parentStatementId",
+      "statement.headerImg as headerImg",
+      "statement.title",
+      "statement.subtitle",
+      "statement.threadId",
+      "statement.distributedAt as distributedAt",
+      "draft.publishedAt as publishedAt",
+      "draft.versionNumber as versionNumber",
+      "draft.content as content",
       jsonArrayFrom(
         eb
-          .selectFrom('collaborator')
+          .selectFrom("collaborator")
           .selectAll()
-          .whereRef('collaborator.statementId', '=', 'statement.statementId')
-          .where('collaborator.role', 'in', AuthorGroup)
-      ).as('collaborators'),
-      'profile.username as creatorSlug'
+          .whereRef("collaborator.statementId", "=", "statement.statementId")
+          .where("collaborator.role", "in", AuthorGroup),
+      ).as("collaborators"),
+      "profile.username as creatorSlug",
     ])
-    .where('threadId', '=', threadId)
-    .where('draft.publishedAt', 'is not', null)
-    .orderBy('draft.publishedAt', 'asc')
+    .where("threadId", "=", threadId)
+    .where("draft.publishedAt", "is not", null)
+    .orderBy("draft.publishedAt", "asc")
     .execute();
 
-  const authorIds = statementsList.flatMap(statement => {
-    return statement.collaborators.map(collaborator => collaborator.userId);
+  const authorIds = statementsList.flatMap((statement) => {
+    return statement.collaborators.map((collaborator) => collaborator.userId);
   });
 
   const profiles = await db
-    .selectFrom('profile')
+    .selectFrom("profile")
     .selectAll()
-    .where('id', 'in', authorIds)
+    .where("id", "in", authorIds)
     .execute();
 
-  const profileMap = new Map(profiles.map(profile => [profile.id, profile]));
+  const profileMap = new Map(profiles.map((profile) => [profile.id, profile]));
 
-  return statementsList.map(statement => ({
+  return statementsList.map((statement) => ({
     ...statement,
     authors: statement.collaborators
-      .map(collaborator => profileMap.get(collaborator.userId))
+      .map((collaborator) => profileMap.get(collaborator.userId))
       .filter((profile): profile is BaseProfile => !!profile),
     creatorSlug: statement.creatorSlug,
     draft: {
       publishedAt: statement.publishedAt,
       versionNumber: statement.versionNumber,
-      content: statement.content
-    }
+      content: statement.content,
+    },
   }));
 }
 
 export async function getPublishedOrLatest(
   statementSlug: string,
-  userIsCollaborator: boolean = false
-): Promise<{
-  version: number;
-  versionList: { versionNumber: number; createdAt: Date }[];
-} | null> {
-  if (statementSlug === 'appspecific') {
+  userIsCollaborator: boolean = false,
+): Promise<
+  {
+    version: number;
+    versionList: { versionNumber: number; createdAt: Date }[];
+  } | null
+> {
+  if (statementSlug === "appspecific") {
     return null;
   }
-  const statement = await db
-    .selectFrom('statement')
-    .selectAll()
-    .where('slug', '=', statementSlug)
-    .executeTakeFirstOrThrow();
+  try {
+    const statement = await db
+      .selectFrom("statement")
+      .selectAll()
+      .where("slug", "=", statementSlug)
+      .executeTakeFirstOrThrow();
 
-  const drafts = await db
-    .selectFrom('draft')
-    .selectAll()
-    .where('statementId', '=', statement.statementId)
-    .execute();
+    const drafts = await db
+      .selectFrom("draft")
+      .selectAll()
+      .where("statementId", "=", statement.statementId)
+      .execute();
 
-  const versions = drafts
-    .map(draft => ({
-      versionNumber: draft.versionNumber,
-      createdAt: draft.createdAt
-    }))
-    .sort((a, b) => b.versionNumber - a.versionNumber);
+    const versions = drafts
+      .map((draft) => ({
+        versionNumber: draft.versionNumber,
+        createdAt: draft.createdAt,
+      }))
+      .sort((a, b) => b.versionNumber - a.versionNumber);
 
-  if (drafts.length > 0 && userIsCollaborator) {
-    const greatestVersionNumber = drafts.reduce(
-      (max, draft) => Math.max(max, draft.versionNumber),
-      0
-    );
-    return { version: greatestVersionNumber, versionList: versions };
+    if (drafts.length > 0 && userIsCollaborator) {
+      const greatestVersionNumber = drafts.reduce(
+        (max, draft) => Math.max(max, draft.versionNumber),
+        0,
+      );
+      return { version: greatestVersionNumber, versionList: versions };
+    }
+    const publishedDraft = drafts.filter((draft) =>
+      draft.publishedAt !== null
+    )[0]?.versionNumber;
+
+    return { version: publishedDraft ?? undefined, versionList: versions };
+  } catch (error) {
+    return null;
   }
-  const publishedDraft = drafts.filter(draft => draft.publishedAt !== null)[0]?.versionNumber;
-
-  return { version: publishedDraft ?? undefined, versionList: versions };
 }
 
 export async function getStatementPackage({
   statementSlug,
-  version
+  version,
 }: {
   statementSlug: string;
   version?: number;
 }): Promise<StatementPackage> {
-  const statPackage = await db.transaction().execute(async tx => {
+  const statPackage = await db.transaction().execute(async (tx) => {
     const statement = await tx
-      .selectFrom('statement')
+      .selectFrom("statement")
       .select(({ eb }) => [
-        'statementId',
-        'slug',
-        'creatorId',
-        'createdAt',
-        'updatedAt',
-        'parentStatementId',
-        'headerImg',
-        'threadId',
-        'title',
-        'subtitle',
-        'distributedAt',
+        "statementId",
+        "slug",
+        "creatorId",
+        "createdAt",
+        "updatedAt",
+        "parentStatementId",
+        "headerImg",
+        "threadId",
+        "title",
+        "subtitle",
+        "distributedAt",
         jsonArrayFrom(
           eb
-            .selectFrom('collaborator')
+            .selectFrom("collaborator")
             .selectAll()
-            .whereRef('collaborator.statementId', '=', 'statement.statementId')
-        ).as('collaborators'),
+            .whereRef("collaborator.statementId", "=", "statement.statementId"),
+        ).as("collaborators"),
         jsonArrayFrom(
           eb
-            .selectFrom('statementImage')
+            .selectFrom("statementImage")
             .selectAll()
-            .whereRef('statementImage.statementId', '=', 'statement.statementId')
-        ).as('images'),
+            .whereRef(
+              "statementImage.statementId",
+              "=",
+              "statement.statementId",
+            ),
+        ).as("images"),
         jsonArrayFrom(
           eb
-            .selectFrom('statementCitation')
+            .selectFrom("statementCitation")
             .selectAll()
-            .whereRef('statementCitation.statementId', '=', 'statement.statementId')
-        ).as('citations'),
+            .whereRef(
+              "statementCitation.statementId",
+              "=",
+              "statement.statementId",
+            ),
+        ).as("citations"),
         jsonArrayFrom(
           eb
-            .selectFrom('statementVote')
+            .selectFrom("statementVote")
             .selectAll()
-            .whereRef('statementVote.statementId', '=', 'statement.statementId')
-        ).as('upvotes')
+            .whereRef(
+              "statementVote.statementId",
+              "=",
+              "statement.statementId",
+            ),
+        ).as("upvotes"),
       ])
-      .where('slug', '=', statementSlug)
+      .where("slug", "=", statementSlug)
       .executeTakeFirstOrThrow();
 
     let draftQuery = tx
-      .selectFrom('draft')
+      .selectFrom("draft")
       .selectAll()
-      .where('draft.statementId', '=', statement.statementId);
+      .where("draft.statementId", "=", statement.statementId);
     if (version) {
-      draftQuery = draftQuery.where('versionNumber', '=', version);
+      draftQuery = draftQuery.where("versionNumber", "=", version);
     } else {
-      draftQuery = draftQuery.where('publishedAt', 'is not', null);
+      draftQuery = draftQuery.where("publishedAt", "is not", null);
     }
 
     const draft = await draftQuery.executeTakeFirstOrThrow();
 
     const annotations = await tx
-      .selectFrom('annotation')
+      .selectFrom("annotation")
       .selectAll()
-      .where('annotation.draftId', '=', draft.id)
-      .orderBy('annotation.createdAt', 'desc')
+      .where("annotation.draftId", "=", draft.id)
+      .orderBy("annotation.createdAt", "desc")
       .execute();
 
-    const annotationIds = annotations.map(annotation => annotation.id);
+    const annotationIds = annotations.map((annotation) => annotation.id);
 
     let comments: BaseComment[] = [];
     if (annotationIds.length > 0) {
       comments = await tx
-        .selectFrom('comment')
+        .selectFrom("comment")
         .select(({ eb }) => [
-          'comment.id',
-          'comment.content',
-          'comment.createdAt',
-          'comment.updatedAt',
-          'comment.userId',
-          'comment.annotationId',
-          'comment.parentId',
+          "comment.id",
+          "comment.content",
+          "comment.createdAt",
+          "comment.updatedAt",
+          "comment.userId",
+          "comment.annotationId",
+          "comment.parentId",
           jsonArrayFrom(
             eb
-              .selectFrom('commentVote')
+              .selectFrom("commentVote")
               .selectAll()
-              .whereRef('commentVote.commentId', '=', 'comment.id')
-          ).as('votes')
+              .whereRef("commentVote.commentId", "=", "comment.id"),
+          ).as("votes"),
         ])
-        .where('comment.annotationId', 'in', annotationIds)
-        .orderBy('comment.createdAt', 'desc')
+        .where("comment.annotationId", "in", annotationIds)
+        .orderBy("comment.createdAt", "desc")
         .execute();
     }
 
     const profileIds = new Set([
-      ...statement.collaborators.map(collaborator => collaborator.userId),
-      ...comments.map(comment => comment.userId),
-      ...annotations.map(annotation => annotation.userId)
+      ...statement.collaborators.map((collaborator) => collaborator.userId),
+      ...comments.map((comment) => comment.userId),
+      ...annotations.map((annotation) => annotation.userId),
     ]);
 
     const profiles = await tx
-      .selectFrom('profile')
+      .selectFrom("profile")
       .selectAll()
-      .where('profile.id', 'in', Array.from(profileIds))
+      .where("profile.id", "in", Array.from(profileIds))
       .execute();
 
     return {
@@ -345,27 +373,27 @@ export async function getStatementPackage({
       draft,
       annotations,
       comments,
-      profiles
+      profiles,
     };
   });
 
   const { statement, draft, annotations, comments, profiles } = statPackage;
 
   const authors = statement.collaborators
-    .map(collaborator =>
+    .map((collaborator) =>
       AuthorGroup.includes(collaborator.role as UserStatementRoles)
-        ? profiles.find(p => p.id === collaborator.userId)
+        ? profiles.find((p) => p.id === collaborator.userId)
         : undefined
     )
-    .filter(author => author !== undefined);
+    .filter((author) => author !== undefined);
 
   const statementPackage = {
     ...statement,
     authors,
-    creatorSlug: profiles.find(p => p.id === statement.creatorId)?.username,
-    citations: statement.citations.map(c => ({
+    creatorSlug: profiles.find((p) => p.id === statement.creatorId)?.username,
+    citations: statement.citations.map((c) => ({
       ...c,
-      title: c.title ?? ''
+      title: c.title ?? "",
     })),
     images: statement.images,
     upvotes: statement.upvotes,
@@ -373,20 +401,20 @@ export async function getStatementPackage({
     draft: {
       ...draft,
       annotations: annotations
-        .filter(a => a.draftId === draft.id)
-        .map(a => ({
+        .filter((a) => a.draftId === draft.id)
+        .map((a) => ({
           ...a,
-          userName: profiles.find(p => p.id === a.userId)?.name,
-          userImageUrl: profiles.find(p => p.id === a.userId)?.imageUrl,
+          userName: profiles.find((p) => p.id === a.userId)?.name,
+          userImageUrl: profiles.find((p) => p.id === a.userId)?.imageUrl,
           comments: comments
-            .filter(c => c.annotationId === a.id)
-            .map(c => ({
+            .filter((c) => c.annotationId === a.id)
+            .map((c) => ({
               ...c,
-              userName: profiles.find(p => p.id === c.userId)?.name,
-              userImageUrl: profiles.find(p => p.id === c.userId)?.imageUrl
-            })) as BaseCommentWithUser[]
-        })) as AnnotationWithComments[]
-    } as DraftWithAnnotations
+              userName: profiles.find((p) => p.id === c.userId)?.name,
+              userImageUrl: profiles.find((p) => p.id === c.userId)?.imageUrl,
+            })) as BaseCommentWithUser[],
+        })) as AnnotationWithComments[],
+    } as DraftWithAnnotations,
   };
 
   return statementPackage;
@@ -411,7 +439,7 @@ export async function createStatement({
   content,
   headerImg,
   parentId,
-  threadId
+  threadId,
 }: CreateStatementParams) {
   const user = await authenticatedUser(creatorId);
 
@@ -419,7 +447,7 @@ export async function createStatement({
 
   try {
     const { slug, statementId } = await db
-      .insertInto('statement')
+      .insertInto("statement")
       .values({
         statementId: generatedStatementId,
         slug: generatedStatementId,
@@ -428,41 +456,41 @@ export async function createStatement({
         subtitle,
         headerImg,
         parentStatementId: parentId,
-        threadId: threadId ?? null
+        threadId: threadId ?? null,
       })
-      .returning(['slug', 'statementId'])
+      .returning(["slug", "statementId"])
       .executeTakeFirstOrThrow();
 
     await db
-      .insertInto('draft')
+      .insertInto("draft")
       .values({
         content,
         statementId: statementId,
         versionNumber: 1,
-        creatorId: user.id
+        creatorId: user.id,
       })
       .executeTakeFirstOrThrow();
 
     await db
-      .insertInto('collaborator')
+      .insertInto("collaborator")
       .values({
         statementId,
         userId: user.id,
-        role: UserStatementRoles.LeadAuthor
+        role: UserStatementRoles.LeadAuthor,
       })
       .execute();
 
     if (slug) {
       redirect(`/${creatorSlug}/${slug}/1?edit=true`);
     } else {
-      return { error: 'Failed to create draft' };
+      return { error: "Failed to create draft" };
     }
   } catch (error) {
     await db
-      .deleteFrom('statement')
-      .where('statementId', '=', generatedStatementId)
+      .deleteFrom("statement")
+      .where("statementId", "=", generatedStatementId)
       .executeTakeFirst();
-    return { error: 'Failed to create draft' };
+    return { error: "Failed to create draft" };
   }
 }
 
@@ -471,7 +499,7 @@ export async function createDraft({
   slug,
   content,
   versionNumber,
-  annotations
+  annotations,
 }: {
   statementId?: string;
   slug?: string;
@@ -482,37 +510,38 @@ export async function createDraft({
   const user = await authenticatedUser();
 
   try {
-    await db.transaction().execute(async tx => {
+    await db.transaction().execute(async (tx) => {
       const { id: draftId } = await db
-        .insertInto('draft')
+        .insertInto("draft")
         .values({
           content,
           statementId,
           versionNumber,
-          creatorId: user.id
+          creatorId: user.id,
         })
-        .returning(['id'])
+        .returning(["id"])
         .executeTakeFirstOrThrow();
 
       if (annotations && annotations.length > 0) {
-        const annotationsWithDraftId = annotations.map(annotation => ({
+        const annotationsWithDraftId = annotations.map((annotation) => ({
           ...annotation,
-          draftId
+          draftId,
         }));
-        await tx.insertInto('annotation').values(annotationsWithDraftId).execute();
+        await tx.insertInto("annotation").values(annotationsWithDraftId)
+          .execute();
       }
     });
 
     redirect(`/[userSlug]/${slug}/${versionNumber}?edit=true`);
   } catch (error) {
-    return { error: 'Failed to create draft' };
+    return { error: "Failed to create draft" };
   }
 }
 
 export async function updateStatementUrl({
   statementId,
   slug,
-  creatorId
+  creatorId,
 }: {
   statementId: string;
   slug: string;
@@ -521,24 +550,24 @@ export async function updateStatementUrl({
   await authenticatedUser(creatorId);
 
   if (!checkValidStatementSlug(slug)) {
-    return { error: 'Invalid slug' };
+    return { error: "Invalid slug" };
   }
   try {
     await db
-      .updateTable('statement')
+      .updateTable("statement")
       .set({
-        slug
+        slug,
       })
-      .where('statementId', '=', statementId)
+      .where("statementId", "=", statementId)
       .execute();
   } catch (error) {
     if (
       error instanceof Error &&
-      error.message.includes('duplicate key value violates unique constraint')
+      error.message.includes("duplicate key value violates unique constraint")
     ) {
-      return { error: 'URL already exists' };
+      return { error: "URL already exists" };
     }
-    return { error: 'Failed to update statement URL' };
+    return { error: "Failed to update statement URL" };
   }
 }
 
@@ -546,7 +575,7 @@ export async function updateStatementTitle({
   statementId,
   title,
   creatorId,
-  statementSlug
+  statementSlug,
 }: {
   statementId: string;
   title: string;
@@ -555,15 +584,19 @@ export async function updateStatementTitle({
 }) {
   await authenticatedUser(creatorId);
 
-  await db.updateTable('statement').set({ title }).where('statementId', '=', statementId).execute();
-  revalidatePath(`/[userSlug]/${statementSlug}`, 'layout');
+  await db.updateTable("statement").set({ title }).where(
+    "statementId",
+    "=",
+    statementId,
+  ).execute();
+  revalidatePath(`/[userSlug]/${statementSlug}`, "layout");
 }
 
 export async function updateStatementSubtitle({
   statementId,
   subtitle,
   creatorId,
-  statementSlug
+  statementSlug,
 }: {
   statementId: string;
   subtitle: string;
@@ -573,32 +606,32 @@ export async function updateStatementSubtitle({
   await authenticatedUser(creatorId);
 
   await db
-    .updateTable('statement')
+    .updateTable("statement")
     .set({ subtitle })
-    .where('statementId', '=', statementId)
+    .where("statementId", "=", statementId)
     .execute();
-  revalidatePath(`/[userSlug]/${statementSlug}`, 'layout');
+  revalidatePath(`/[userSlug]/${statementSlug}`, "layout");
 }
 
 export async function updateStatementThreadId({
   statementId,
-  threadId
+  threadId,
 }: {
   statementId: string;
   threadId: string;
 }) {
   await authenticatedUser();
   await db
-    .updateTable('statement')
+    .updateTable("statement")
     .set({ threadId })
-    .where('statementId', '=', statementId)
+    .where("statementId", "=", statementId)
     .execute();
 }
 
 export async function updateStatementHeaderImageUrl({
   statementId,
   creatorId,
-  imageUrl
+  imageUrl,
 }: {
   statementId: string;
   creatorId: string;
@@ -606,9 +639,9 @@ export async function updateStatementHeaderImageUrl({
 }) {
   await authenticatedUser(creatorId);
   await db
-    .updateTable('statement')
+    .updateTable("statement")
     .set({ headerImg: imageUrl })
-    .where('statementId', '=', statementId)
+    .where("statementId", "=", statementId)
     .execute();
 }
 
@@ -617,7 +650,7 @@ export async function updateDraft({
   content,
   contentJson,
   versionNumber,
-  creatorId
+  creatorId,
 }: {
   id: string;
   content?: string;
@@ -632,13 +665,13 @@ export async function updateDraft({
   }
 
   await db
-    .updateTable('draft')
+    .updateTable("draft")
     .set({
       content,
-      contentJson
+      contentJson,
     })
-    .where('id', '=', id)
-    .where('versionNumber', '=', versionNumber)
+    .where("id", "=", id)
+    .where("versionNumber", "=", versionNumber)
     .execute();
 }
 
@@ -646,7 +679,7 @@ export async function publishDraft({
   statementId,
   id,
   publish,
-  creatorId
+  creatorId,
 }: {
   statementId: string;
   id: string;
@@ -656,40 +689,48 @@ export async function publishDraft({
   await authenticatedUser(creatorId);
 
   const now = new Date();
-  await db.transaction().execute(async tx => {
+  await db.transaction().execute(async (tx) => {
     await tx
-      .updateTable('draft')
+      .updateTable("draft")
       .set({ publishedAt: null })
-      .where('statementId', '=', statementId)
+      .where("statementId", "=", statementId)
       .execute();
 
     if (publish) {
-      await tx.updateTable('draft').set({ publishedAt: now }).where('id', '=', id).execute();
+      await tx.updateTable("draft").set({ publishedAt: now }).where(
+        "id",
+        "=",
+        id,
+      ).execute();
     }
   });
 }
 
-export async function deleteDraft(id: string, creatorId: string, statementSlug: string) {
+export async function deleteDraft(
+  id: string,
+  creatorId: string,
+  statementSlug: string,
+) {
   await authenticatedUser(creatorId);
-  await db.deleteFrom('draft').where('id', '=', id).execute();
-  revalidatePath(`/[userSlug]/${statementSlug}`, 'layout');
+  await db.deleteFrom("draft").where("id", "=", id).execute();
+  revalidatePath(`/[userSlug]/${statementSlug}`, "layout");
 }
 
 export async function deleteStatement(
   statementId: string,
   creatorId: string,
   headerImg: string,
-  revalidationPath?: RevalidationPath
+  revalidationPath?: RevalidationPath,
 ) {
   await authenticatedUser(creatorId);
   await deleteStoredStatementImage({
     url: headerImg,
     creatorId,
-    statementId
+    statementId,
   });
-  await db.deleteFrom('draft').where('statementId', '=', statementId).execute();
+  await db.deleteFrom("draft").where("statementId", "=", statementId).execute();
 
-  revalidatePath(revalidationPath?.path ?? `/[userSlug]`, 'layout');
+  revalidatePath(revalidationPath?.path ?? `/[userSlug]`, "layout");
 }
 
 export type UpsertImageDataType = {
@@ -706,13 +747,13 @@ export async function upsertStatementImage({
   statementId,
   id,
   caption,
-  revalidationPath
+  revalidationPath,
 }: {
-  alt: UpsertImageDataType['alt'];
-  src: UpsertImageDataType['src'];
+  alt: UpsertImageDataType["alt"];
+  src: UpsertImageDataType["src"];
   statementId: string;
-  id: UpsertImageDataType['id'];
-  caption?: UpsertImageDataType['caption'];
+  id: UpsertImageDataType["id"];
+  caption?: UpsertImageDataType["caption"];
   revalidationPath?: RevalidationPath;
 }) {
   //this needs permissions
@@ -720,38 +761,47 @@ export async function upsertStatementImage({
     const user = await authenticatedUser();
     await isAuthor(user.id, statementId);
     await db
-      .insertInto('statementImage')
+      .insertInto("statementImage")
       .values({
         id,
         src,
         alt,
         statementId,
-        caption
+        caption,
       })
-      .onConflict(oc =>
+      .onConflict((oc) =>
         oc
-          .column('id')
+          .column("id")
           .doUpdateSet({
             src,
             alt,
             statementId,
             caption,
-            id
+            id,
           })
-          .where('statementImage.id', '=', id)
-          .where('statementImage.statementId', '=', statementId)
+          .where("statementImage.id", "=", id)
+          .where("statementImage.statementId", "=", statementId)
       )
       .execute();
-    revalidatePath(revalidationPath?.path ?? `/[userSlug]`, revalidationPath?.type ?? 'layout');
+    revalidatePath(
+      revalidationPath?.path ?? `/[userSlug]`,
+      revalidationPath?.type ?? "layout",
+    );
   } catch (error) {
-    if (error instanceof Error && error.message.includes('User not authorized')) {
-      return { error: 'User not authorized' };
+    if (
+      error instanceof Error && error.message.includes("User not authorized")
+    ) {
+      return { error: "User not authorized" };
     }
-    return { error: 'Failed to upsert statement image' };
+    return { error: "Failed to upsert statement image" };
   }
 }
 
-export async function deleteStatementImage(id: string, statementId: string, creatorId: string) {
+export async function deleteStatementImage(
+  id: string,
+  statementId: string,
+  creatorId: string,
+) {
   try {
     const user = await authenticatedUser();
     await isAuthor(user.id, statementId);
@@ -759,31 +809,33 @@ export async function deleteStatementImage(id: string, statementId: string, crea
     const imageUrl = createStatementImageUrl({
       userId: creatorId,
       statementId,
-      imageId: id
+      imageId: id,
     });
     await deleteStoredStatementImage({
       url: imageUrl,
       creatorId: user.id,
-      statementId
+      statementId,
     });
 
     await db
-      .deleteFrom('statementImage')
-      .where('id', '=', id)
-      .where('statementId', '=', statementId)
+      .deleteFrom("statementImage")
+      .where("id", "=", id)
+      .where("statementId", "=", statementId)
       .execute();
   } catch (error) {
-    if (error instanceof Error && error.message.includes('User not authorized')) {
-      return { error: 'User not authorized' };
+    if (
+      error instanceof Error && error.message.includes("User not authorized")
+    ) {
+      return { error: "User not authorized" };
     }
-    return { error: 'Failed to delete statement image' };
+    return { error: "Failed to delete statement image" };
   }
 }
 
 export async function toggleStatementUpvote({
   statementId,
   isUpvoted,
-  revalidationPath
+  revalidationPath,
 }: {
   statementId: string;
   isUpvoted: boolean;
@@ -793,21 +845,24 @@ export async function toggleStatementUpvote({
 
   if (isUpvoted) {
     await db
-      .deleteFrom('statementVote')
-      .where('statementId', '=', statementId)
-      .where('userId', '=', user.id)
+      .deleteFrom("statementVote")
+      .where("statementId", "=", statementId)
+      .where("userId", "=", user.id)
       .execute();
   } else {
     await db
-      .insertInto('statementVote')
+      .insertInto("statementVote")
       .values({
         statementId,
-        userId: user.id
+        userId: user.id,
       })
       .execute();
   }
 
-  revalidatePath(revalidationPath?.path ?? '/', revalidationPath?.type ?? 'layout');
+  revalidatePath(
+    revalidationPath?.path ?? "/",
+    revalidationPath?.type ?? "layout",
+  );
 }
 
 export async function updateDraftPublicationDate({
@@ -815,7 +870,7 @@ export async function updateDraftPublicationDate({
   statementSlug,
   creatorId,
   publishedAt,
-  creatorSlug
+  creatorSlug,
 }: {
   id: string;
   statementSlug: string;
@@ -824,10 +879,11 @@ export async function updateDraftPublicationDate({
   creatorSlug?: string | null | undefined;
 }) {
   await authenticatedUser(creatorId);
-  await db.updateTable('draft').set({ publishedAt }).where('id', '=', id).execute();
+  await db.updateTable("draft").set({ publishedAt }).where("id", "=", id)
+    .execute();
   if (creatorSlug) {
-    revalidatePath(`/${creatorSlug}/${statementSlug}`, 'layout');
+    revalidatePath(`/${creatorSlug}/${statementSlug}`, "layout");
   } else {
-    revalidatePath(`/[userSlug]/${statementSlug}`, 'layout');
+    revalidatePath(`/[userSlug]/${statementSlug}`, "layout");
   }
 }

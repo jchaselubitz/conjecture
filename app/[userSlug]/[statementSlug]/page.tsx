@@ -15,6 +15,7 @@ import {
   getStatementPackage
 } from '@/lib/actions/statementActions';
 import { UserStatementRoles } from '@/lib/enums/permissions';
+import NotFound from '@/components/ui/not_found';
 
 type Props = {
   params: Promise<{ statementSlug: string; userSlug: string }>;
@@ -51,7 +52,19 @@ export default async function StatementPage({ params, searchParams }: Props) {
   const { version: selectedVersion, versionList } = selection ?? {};
 
   if (!selectedVersion) {
-    return <div>No version found</div>;
+    return (
+      <NotFound
+        title="Conjecture Not Found"
+        message={
+          <>
+            Sorry, the conjecture you are looking for doesn't exist or has been moved.
+            <br />
+            You can return to the user's page to explore more conjectures.
+          </>
+        }
+        actions={[{ label: 'Back to User', href: `/${userSlug}`, variant: 'default' }]}
+      />
+    );
   }
 
   const statementPackage = await getStatementPackage({

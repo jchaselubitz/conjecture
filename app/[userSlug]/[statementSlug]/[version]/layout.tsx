@@ -14,6 +14,7 @@ import {
   getStatementPackage
 } from '@/lib/actions/statementActions';
 import { UserStatementRoles } from '@/lib/enums/permissions';
+import NotFound from '@/components/ui/not_found';
 
 type Props = {
   params: Promise<{ statementSlug: string; userSlug: string; version: string }>;
@@ -57,7 +58,25 @@ export default async function UserStatementLayout({ children, params }: Props) {
 
   if (!versionNumber) {
     if (!selectedVersion) {
-      return <div>No published version found</div>;
+      return (
+        <NotFound
+          title="Conjecture Not Found"
+          message={
+            <>
+              Sorry, the conjecture version you are looking for doesn't exist or has been moved.
+              <br />
+              You can return to the main conjecture page to explore other versions.
+            </>
+          }
+          actions={[
+            {
+              label: 'Back to Conjecture',
+              href: `/${userSlug}/${statementSlug}`,
+              variant: 'default'
+            }
+          ]}
+        />
+      );
     }
     redirect(`/${userSlug}/${statementSlug}/${selectedVersion}`);
   }
