@@ -186,7 +186,7 @@ async function main() {
   const users = [...fixedUsers.users, ...generatedUsers.users];
 
   // --- Generate follows ---
-  const fixedFollow = await seed.follow([
+  await seed.follow([
     {
       followed: fixedUsers.users[0].id,
       follower: fixedUsers.users[1].id,
@@ -204,7 +204,7 @@ async function main() {
     }
   ]);
 
-  const fixedSubscriptions = await seed.public_subscription([
+  await seed.public_subscription([
     {
       author_id: fixedUsers.users[0].id,
       recipient_id: fixedUsers.users[1].id,
@@ -233,7 +233,7 @@ async function main() {
     return nanoid();
   });
 
-  const fixedStatements = await seed.statement([
+  await seed.statement([
     {
       slug: statementIds[0],
       statement_id: statementIds[0],
@@ -309,7 +309,7 @@ async function main() {
 
   // const statements = [...fixedStatements.statement, ...statement.statement];
 
-  const fixedCollaborators = await seed.collaborator([
+  await seed.collaborator([
     {
       statement_id: statementIds[0],
       user_id: fixedUsers.users[0].id,
@@ -482,7 +482,7 @@ async function main() {
   );
 
   // --- Generate statement images ---
-  const statementImages = await seed.statement_image(
+  await seed.statement_image(
     Array.from({ length: 10 }).map((_, i) => {
       const seedStr = `statement_image-${i}`;
       return {
@@ -497,7 +497,7 @@ async function main() {
   );
 
   // --- Generate statement citations ---
-  const statementCitations = await seed.statement_citation(
+  await seed.statement_citation(
     Array.from({ length: 10 }).map((_, i) => {
       const seedStr = `statement_citation-${i}`;
 

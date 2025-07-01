@@ -217,9 +217,7 @@ export const useHtmlSuperEditor = ({
 
       ensureAnnotationMarks({
         marks: annotationMarks, // Pass the correctly typed marks
-        editor,
-        annotations,
-        draftId
+        annotations
       });
 
       const citationIds = citationNodes.map(nodeInfo => nodeInfo.node.attrs.citationId);

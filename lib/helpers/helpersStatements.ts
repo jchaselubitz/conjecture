@@ -66,7 +66,7 @@ export const getMarks = (editor: Editor, markTypes: string[]): MarkInfo[] => {
 
 export const getNodes = (editor: Editor, nodeTypes: string[]) => {
   const nodes: { node: any }[] = [];
-  editor.state.doc.descendants((node, pos) => {
+  editor.state.doc.descendants(node => {
     if (nodeTypes.includes(node.type.name)) {
       nodes.push({ node });
     }
@@ -76,23 +76,15 @@ export const getNodes = (editor: Editor, nodeTypes: string[]) => {
 
 // Update the type definition for marks parameter in ensureAnnotationMarks
 type EnsureAnnotationMarksProps = {
-  editor: Editor;
-  annotations: AnnotationWithComments[]; // Use the initial annotations from props
-  draftId: string;
-  // setAnnotations: Dispatch<SetStateAction<AnnotationWithComments[]>>; // REMOVE
+  annotations: AnnotationWithComments[];
   marks: MarkInfo[];
 };
 
 // This function now primarily serves to check consistency on load, not modify state.
 export const ensureAnnotationMarks = async ({
-  editor,
   annotations, // The initial annotations from props
-  draftId,
-  // setAnnotations, // REMOVE
   marks
 }: EnsureAnnotationMarksProps) => {
-  // No batching logic needed anymore
-
   marks.forEach(markInfo => {
     const { node, pos } = markInfo;
     const annotationMark = node.marks.find((mark: any) => mark.type.name === 'annotationHighlight');
@@ -418,7 +410,6 @@ export const createStatementAnnotation = async ({
       userName: '',
       userImageUrl: ''
     };
-    console.log('newAnnotation', [...annotations, newAnnotation]);
     setAnnotations([...annotations, newAnnotation]);
 
     await createAnnotation({

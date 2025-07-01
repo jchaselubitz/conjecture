@@ -28,7 +28,6 @@ export default function VoteButton({
   const [optVotes, setOptVotes] = useOptimistic<BaseStatementVote[], BaseStatementVote[]>(
     upvotes,
     (current, updated) => {
-      console.log('current', current);
       return updated;
     }
   );
