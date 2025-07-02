@@ -1,8 +1,8 @@
 'use client';
 
 import { VariantProps } from 'class-variance-authority';
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 import { useUserContext } from '@/contexts/userContext';
 import { createStatement } from '@/lib/actions/statementActions';

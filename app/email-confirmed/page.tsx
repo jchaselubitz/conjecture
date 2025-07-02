@@ -1,8 +1,9 @@
 'use client';
-import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { confirmEmailUpdate } from '@/lib/actions/userActions';
+import React, { useEffect, useState } from 'react';
+
 import { getUser } from '@/lib/actions/baseActions';
+import { confirmEmailUpdate } from '@/lib/actions/userActions';
 
 export default function ConfirmedEmailPage() {
   const router = useRouter();
@@ -15,7 +16,6 @@ export default function ConfirmedEmailPage() {
       try {
         const user = await getUser();
         const newEmail = user?.new_email;
-        console.log(newEmail);
         if (newEmail) {
           setStatus('first_confirmation');
           return;
