@@ -130,20 +130,35 @@ export default function ProfileForm() {
       }
 
       if (data.email !== email) {
-        await updateEmail(data.email);
-        toast('Email Update', {
-          description: 'Email update request sent. Please check your inbox.'
-        });
+        const res = await updateEmail(data.email);
+        if (res === 'failed') {
+          toast('Error', {
+            description: 'Failed to update email. Please try again.'
+          });
+        } else {
+          toast('Email Update', {
+            description: 'Email update request sent. Please check your inbox.'
+          });
+        }
       }
 
-      await updateProfile({
-        name: data.name,
-        imageUrl: imageUrl
-      });
-
-      toast('Success', {
-        description: 'Profile updated successfully!'
-      });
+      if (data.name !== name) {
+        console.log('data.name', data.name);
+        console.log('name', name);
+        const res = await updateProfile({
+          name: data.name,
+          imageUrl: imageUrl
+        });
+        if (res) {
+          toast('Success', {
+            description: 'Profile updated successfully!'
+          });
+        } else {
+          toast('Error', {
+            description: 'Failed to update profile. Please try again.'
+          });
+        }
+      }
     } catch (error) {
       toast('Error', {
         description: 'Failed to update profile. Please try again.'

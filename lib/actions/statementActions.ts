@@ -482,11 +482,12 @@ export async function createStatement({
       .execute();
 
     if (slug) {
-      redirect(`/${creatorSlug}/${slug}/1?edit=true`);
+      return { url: `/${creatorSlug}/${slug}/1?edit=true` };
     } else {
       return { error: "Failed to create draft" };
     }
   } catch (error) {
+    console.error(error);
     await db
       .deleteFrom("statement")
       .where("statementId", "=", generatedStatementId)

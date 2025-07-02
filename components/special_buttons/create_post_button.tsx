@@ -2,6 +2,7 @@
 
 import { VariantProps } from 'class-variance-authority';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { useUserContext } from '@/contexts/userContext';
 import { createStatement } from '@/lib/actions/statementActions';
@@ -27,19 +28,25 @@ export default function CreatePostButton({
 }) {
   const [buttonState, setButtonState] = useState<ButtonLoadingState>('default');
   const { currentUserSlug, userId } = useUserContext();
+  const router = useRouter();
   const handleClick = async () => {
     setButtonState('loading');
     try {
       if (!currentUserSlug || !userId) {
         throw new Error('User not found');
       }
-      await createStatement({
+      const result = await createStatement({
         creatorSlug: currentUserSlug,
         creatorId: userId
       });
+      if (result?.url) {
+        router.push(result.url);
+        return;
+      }
       setButtonState('success');
     } catch (error) {
       console.error(error);
+      setButtonState('error');
     }
   };
   return (

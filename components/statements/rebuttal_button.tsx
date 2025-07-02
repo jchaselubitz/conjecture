@@ -23,6 +23,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '../ui/input';
 import { ButtonLoadingState, LoadingButton } from '../ui/loading-button';
 import { Textarea } from '../ui/textarea';
+import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -49,7 +50,7 @@ export default function RebuttalButton({
   const [open, setOpen] = useState(false);
   const [buttonState, setButtonState] = useState<ButtonLoadingState>('default');
   const { userId, currentUserSlug } = useUserContext();
-
+  const router = useRouter();
   const threadId = existingThreadId ?? nanoid();
 
   const form = useForm<FormValues>({
@@ -74,7 +75,7 @@ export default function RebuttalButton({
           threadId
         });
       }
-      await createStatement({
+      const result = await createStatement({
         creatorSlug: currentUserSlug,
         creatorId: userId,
         title: data.title,
@@ -82,6 +83,10 @@ export default function RebuttalButton({
         parentId: existingStatementId,
         threadId
       });
+      if (result?.url) {
+        router.push(result.url);
+        return;
+      }
       setButtonState('success');
       // Dialog will close automatically due to navigation in createDraft
     } catch (error) {

@@ -71,7 +71,7 @@ export default function StatementOptions({
   const handleDelete = async () => {
     try {
       await deleteStatement(statement.statementId, statement.creatorId, statement.headerImg || '');
-      router.push('/statements');
+      router.push(`/${statement.creatorSlug}`);
     } catch (error) {
       console.error(error);
     }
