@@ -2,7 +2,7 @@ import { offset } from '@floating-ui/dom';
 import { Editor } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
 import Link from 'next/link';
-import { RefObject } from 'react';
+import { RefObject, useEffect, useState } from 'react';
 import { ImperativePanelGroupHandle } from 'react-resizable-panels';
 
 import { Button } from '@/components/ui/button';
@@ -42,7 +42,21 @@ export const AnnotationMenu = ({
   const { annotations, setAnnotations, setSelectedAnnotationId } = useStatementAnnotationContext();
   const { copy, copied } = useCopyToClipboard(editor?.state.selection.toString() ?? '');
 
-  if (!editor) return null;
+  const [isSelectionEmpty, setIsSelectionEmpty] = useState<boolean | undefined>(
+    editor?.state.selection.empty
+  );
+  useEffect(() => {
+    if (!editor) return;
+    const handler = () => {
+      setIsSelectionEmpty(editor.state.selection.empty);
+    };
+    editor.on('selectionUpdate', handler);
+    // Call once initially
+    handler();
+    return () => {
+      editor.off('selectionUpdate', handler);
+    };
+  }, [editor]);
 
   const handleAnnotationCreate = async () => {
     setPanelState({
@@ -63,6 +77,8 @@ export const AnnotationMenu = ({
     });
   };
 
+  if (!editor) return <></>;
+
   return (
     <BubbleMenu
       editor={editor}
@@ -74,33 +90,39 @@ export const AnnotationMenu = ({
         placement: 'top'
       }}
     >
-      {userId ? (
-        <div
-          className={cn(
-            'flex flex-wrap w-fit gap-2 p-2 rounded-lg bg-background border shadow-sm',
-            editMode && !canAnnotate && 'hidden'
-          )}
-        >
-          {!editMode && canAnnotate && (
-            <div>
-              <QuoteLinkButton editor={editor} statementId={statementId} />
+      {isSelectionEmpty ? (
+        <></>
+      ) : (
+        <>
+          {userId ? (
+            <div
+              className={cn(
+                'flex flex-wrap w-fit gap-2 p-2 rounded-lg bg-background border shadow-sm',
+                editMode && !canAnnotate && 'hidden'
+              )}
+            >
+              {!editMode && canAnnotate && (
+                <div>
+                  <QuoteLinkButton editor={editor} statementId={statementId} />
+                </div>
+              )}
+              <AnnotationButton onAnnotate={handleAnnotationCreate} />
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 bg-background border shadow-sm p-2 rounded-lg">
+              <Link href="/login">
+                <Button variant="default" size="sm">
+                  Login
+                </Button>
+              </Link>
+              <Link href="/sign-up">
+                <Button variant="outline" size="sm">
+                  Create Account
+                </Button>
+              </Link>
             </div>
           )}
-          <AnnotationButton editor={editor} onAnnotate={handleAnnotationCreate} />
-        </div>
-      ) : (
-        <div className="flex items-center gap-2 bg-background border shadow-sm p-2 rounded-lg">
-          <Link href="/login">
-            <Button variant="default" size="sm">
-              Login
-            </Button>
-          </Link>
-          <Link href="/sign-up">
-            <Button variant="outline" size="sm">
-              Create Account
-            </Button>
-          </Link>
-        </div>
+        </>
       )}
     </BubbleMenu>
   );

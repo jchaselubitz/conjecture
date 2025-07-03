@@ -3,15 +3,13 @@ import { MessageCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useEffect, useState } from 'react';
 
 interface AnnotationButtonProps {
-  editor: Editor;
   onAnnotate: () => void;
 }
 
-export const AnnotationButton = ({ editor, onAnnotate }: AnnotationButtonProps) => {
-  // const isSelection = !editor.state.selection.empty;
-
+export const AnnotationButton = ({ onAnnotate }: AnnotationButtonProps) => {
   return (
     <Button variant="ghost" size="sm" onClick={onAnnotate} title="Create annotation">
       <MessageCircle className="h-4 w-4" /> Comment

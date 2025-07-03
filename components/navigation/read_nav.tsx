@@ -8,7 +8,7 @@ import { useWindowSize } from 'react-use';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { cn } from '@/lib/utils';
 
-import AnnotationModeButton from '../annotation_mode_button';
+import AnnotationModeSwitch from '../annotation_mode_button';
 import { Button } from '../ui/button';
 
 export default function ReadNav({
@@ -39,11 +39,13 @@ export default function ReadNav({
   return (
     <div className="sticky z-50 bottom-6 w-full flex gap-1 justify-end">
       {(isMobile || !editor?.isEditable) && (
-        <AnnotationModeButton
-          annotationMode={annotationMode}
-          handleAnnotationModeToggle={handleAnnotationModeToggle}
-          variant={annotationMode ? 'default' : 'outline'}
-          className={cn('rounded-full shadow-md')}
+        <AnnotationModeSwitch
+          checked={annotationMode}
+          onChange={checked => {
+            setAnnotationMode(checked);
+            editor?.setEditable(checked);
+          }}
+          className={cn('bg-white rounded-full shadow-md border border-zinc-200')}
         />
       )}
 

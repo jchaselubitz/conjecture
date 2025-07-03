@@ -10,15 +10,16 @@ DROP FUNCTION IF EXISTS public.handle_update_user();
 -- 2. Create the new upsert function
 CREATE OR REPLACE FUNCTION public.handle_upsert_user()
  RETURNS trigger
+ SECURITY definer
  LANGUAGE plpgsql
 AS $$
 begin
   insert into public.profile (id, username, image_url, email)
   values (
     new.id,
-    new.raw_user_meta_data ->> 'username',
-    new.raw_user_meta_data ->> 'picture',
-    new.raw_user_meta_data ->> 'email'
+    (new.raw_user_meta_data::jsonb) ->> 'username',
+    (new.raw_user_meta_data::jsonb) ->> 'picture',
+    new.email
   )
   on conflict (id) do update set
     username = excluded.username,
