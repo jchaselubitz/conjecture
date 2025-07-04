@@ -35,13 +35,15 @@ export default function ReadNav() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </div>
-          <nav className="hidden md:flex items-center gap-3">
-            <Link href="/feed">Feed</Link>
-            <Link href={`/${currentUserSlug}`}>My Conjectures</Link>
-          </nav>
-          <nav className="flex items-center gap-3">
-            {statement && isCreator && <ViewModeButton iconOnly={isMobile} variant="default" />}
-            <UserButton />
+          <nav>
+            <div className="hidden md:flex items-center gap-3">
+              <Link href="/feed">Feed</Link>
+              <Link href={`/${currentUserSlug}`}>My Conjectures</Link>
+            </div>
+            <div className="flex items-center gap-3">
+              {statement && isCreator && <ViewModeButton iconOnly={isMobile} variant="default" />}
+              <UserButton />
+            </div>
           </nav>
         </div>
       </div>
