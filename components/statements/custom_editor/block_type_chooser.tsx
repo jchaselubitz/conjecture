@@ -5,14 +5,14 @@ import {
   Heading3,
   List,
   ListOrdered,
+  Plus,
   Quote,
-  Table as TableIcon,
-  Plus
+  Table as TableIcon
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 
 import { ImageButton } from './image_button';
 import { LatexButton } from './latex_button';

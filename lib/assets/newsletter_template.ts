@@ -364,6 +364,11 @@ line-height: 1.6;
 margin: 0;
 }
 
+.newsletter-email hr {
+  border: 1px solid #e2e8f0;
+  margin: 1.6em 0;
+}
+
 .newsletter-email .citation-reference {
 text-decoration: none;
 cursor: pointer;
