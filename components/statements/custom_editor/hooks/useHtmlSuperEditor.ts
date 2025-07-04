@@ -140,10 +140,6 @@ export const useHtmlSuperEditor = ({
             rel: "noopener noreferrer",
           },
         },
-        // placeholder: {
-        //   placeholder,
-        //   emptyEditorClass: "is-editor-empty",
-        // },
       }),
       TextStyleKit,
       Youtube.configure({

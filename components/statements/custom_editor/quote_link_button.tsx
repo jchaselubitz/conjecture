@@ -2,8 +2,8 @@ import { Editor } from '@tiptap/react';
 import { Check, Quote } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { useCopyToClipboard } from '@/lib/hooks/useCopyToClipboard';
 import { cn } from '@/lib/utils';
+import { useCallback, useState } from 'react';
 
 interface QuoteLinkButtonProps {
   editor: Editor;
@@ -11,26 +11,31 @@ interface QuoteLinkButtonProps {
 }
 
 export const QuoteLinkButton = ({ editor, statementId }: QuoteLinkButtonProps) => {
+  const [copied, setCopied] = useState(false);
+  const path = window.location.href;
+
   const generateQuoteLink = () => {
     const { from, to } = editor.state.selection;
-    if (from === to) return;
-
-    // Get the selected text content
     const selectedText = editor.state.doc.textBetween(from, to);
-
-    // Get the base URL without any parameters
-    const url = new URL(window.location.href);
-    url.search = ''; // Clear all existing parameters
-
-    // Add both location and content parameters
+    const location = `${from}-${to}`;
+    const url = new URL(path);
+    url.search = '';
     url.searchParams.set('statementId', statementId);
-    url.searchParams.set('location', `${from}-${to}`);
-    url.searchParams.set('content', selectedText);
-
-    return url.toString();
+    url.searchParams.set('location', location ?? '');
+    url.searchParams.set('content', selectedText ?? '');
+    return url.href;
   };
 
-  const { copy, copied } = useCopyToClipboard(generateQuoteLink() ?? '');
+  const copy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(generateQuoteLink());
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text:', err);
+      setCopied(false);
+    }
+  }, [generateQuoteLink]);
 
   return (
     <Button variant="ghost" size="sm" onClick={copy} className={cn('gap-2')}>
