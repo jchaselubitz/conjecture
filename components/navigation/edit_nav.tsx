@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { useWindowSize } from 'react-use';
 
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
+import { useEditModeContext } from '@/contexts/EditModeContext';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementUpdateContext } from '@/contexts/StatementUpdateProvider';
 import { useUserContext } from '@/contexts/userContext';
@@ -26,8 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import ViewModeButton from '../view_mode_button';
 
 export default function EditNav() {
-  const { currentUserSlug } = useUserContext();
-
+  const { setEditMode } = useEditModeContext();
   const {
     versionOptions,
     saveStatementDraft,
@@ -213,11 +213,7 @@ export default function EditNav() {
     <header className="h-14">
       <div className="fixed z-50 top-0 left-0 right-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex h-14 items-center justify-between px-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push(`/${currentUserSlug}/${statement?.slug}/${currentVersion}`)}
-          >
+          <Button variant="ghost" size="icon" onClick={() => setEditMode(false)}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-3">
@@ -259,13 +255,7 @@ export default function EditNav() {
                   />
                 )}
 
-                <ViewModeButton
-                  handleEditModeToggle={() =>
-                    router.push(`/${currentUserSlug}/${statement?.slug}/${currentVersion}`)
-                  }
-                  iconOnly={isMobile}
-                  variant="default"
-                />
+                <ViewModeButton iconOnly={isMobile} variant="default" />
                 <div className="flex gap-3">{mobileMenu()}</div>
               </>
             )}

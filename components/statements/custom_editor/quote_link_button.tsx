@@ -26,7 +26,7 @@ export const QuoteLinkButton = ({ editor, statementId }: QuoteLinkButtonProps) =
     return url.href;
   };
 
-  const copy = useCallback(async () => {
+  const copy = async () => {
     try {
       await navigator.clipboard.writeText(generateQuoteLink());
       setCopied(true);
@@ -35,7 +35,7 @@ export const QuoteLinkButton = ({ editor, statementId }: QuoteLinkButtonProps) =
       console.error('Failed to copy text:', err);
       setCopied(false);
     }
-  }, [generateQuoteLink]);
+  };
 
   return (
     <Button variant="ghost" size="sm" onClick={copy} className={cn('gap-2')}>

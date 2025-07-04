@@ -73,7 +73,7 @@ export default async function StatementPage({ params, searchParams }: Props) {
   });
 
   const thread = statementPackage.threadId ? await getFullThread(statementPackage.threadId) : [];
-
+  const statementId = statementPackage.statementId;
   const creator = statementPackage.creatorId.toString();
   const isCreator = creator === userId;
   const subscribers = isCreator ? await getSubscribers(creator) : [];
@@ -95,7 +95,7 @@ export default async function StatementPage({ params, searchParams }: Props) {
       <StatementToolsProvider>
         <StatementAnnotationProvider>
           <StatementUpdateProvider>
-            <StatementContainer edit={editMode} />
+            <StatementContainer statementId={statementId} />
           </StatementUpdateProvider>
         </StatementAnnotationProvider>
       </StatementToolsProvider>

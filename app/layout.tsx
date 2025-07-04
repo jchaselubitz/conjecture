@@ -3,10 +3,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
-import AppNav from '@/components/navigation/app_nav';
 import { Toaster } from '@/components/ui/sonner';
-import { EditModeProvider } from '@/contexts/EditModeContext';
-import { NavProvider } from '@/contexts/NavContext';
 import { UserProvider } from '@/contexts/userContext';
 import { getUserProfile } from '@/lib/actions/userActions';
 import { createClient } from '@/supabase/server';
@@ -42,12 +39,8 @@ export default async function RootLayout({
       <body>
         <div className="min-h-screen">
           <UserProvider userProfile={profile} userEmail={user?.email} userSlug={profile?.username}>
-            <NavProvider>
-              <EditModeProvider>
-                <AppNav />
-                {children}
-              </EditModeProvider>
-            </NavProvider>
+            {children}
+
             <Toaster />
             <ProfileSettingsDialog />
           </UserProvider>

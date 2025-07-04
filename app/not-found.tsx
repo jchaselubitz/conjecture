@@ -1,4 +1,4 @@
-import AppNav from '@/components/navigation/app_nav';
+import AppNav from '@/components/navigation/site_nav';
 import NotFound from '@/components/ui/not_found';
 
 export default function NotFoundPage() {

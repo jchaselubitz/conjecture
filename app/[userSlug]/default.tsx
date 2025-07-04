@@ -1,4 +1,4 @@
-import AppNav from '@/components/navigation/app_nav';
+import AppNav from '@/components/navigation/site_nav';
 import { StatementListContainer } from '@/containers/StatementListContainer';
 import { getStatements } from '@/lib/actions/statementActions';
 import { getUserProfile } from '@/lib/actions/userActions';

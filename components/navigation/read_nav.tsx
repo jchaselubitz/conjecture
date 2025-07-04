@@ -1,62 +1,50 @@
 'use client';
 
-import { Pencil } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useWindowSize } from 'react-use';
 
 import { useStatementContext } from '@/contexts/StatementBaseContext';
-import { cn } from '@/lib/utils';
+import { useUserContext } from '@/contexts/userContext';
 
-import AnnotationModeSwitch from '../annotation_mode_button';
 import { Button } from '../ui/button';
+import ViewModeButton from '../view_mode_button';
 
-export default function ReadNav({
-  annotationMode,
-  setAnnotationMode
-}: {
-  annotationMode: boolean;
-  setAnnotationMode: (annotationMode: boolean) => void;
-}) {
-  const { editor, isCreator } = useStatementContext();
+import MobileNav from './mobile_nav';
+import UserButton from './user_button';
+
+export default function ReadNav() {
+  const params = useParams();
+  const userSlug = params.userSlug;
+  const { currentUserSlug } = useUserContext();
+  const { statement, isCreator } = useStatementContext();
+
+  const router = useRouter();
   const isMobile = useWindowSize().width < 600;
-  const pathname = usePathname();
 
-  if (!editor) {
-    return null;
-  }
-
-  const handleAnnotationModeToggle = () => {
-    if (annotationMode) {
-      setAnnotationMode(false);
-      editor?.setEditable(false);
-    } else {
-      setAnnotationMode(true);
-      editor?.setEditable(true);
-    }
-  };
+  const isPublished = statement?.draft.publishedAt;
 
   return (
-    <div className="sticky z-50 bottom-6 w-full flex gap-1 justify-end">
-      {(isMobile || !editor?.isEditable) && (
-        <AnnotationModeSwitch
-          checked={annotationMode}
-          onChange={checked => {
-            setAnnotationMode(checked);
-            editor?.setEditable(checked);
-          }}
-          className={cn('bg-white rounded-full shadow-md border border-zinc-200')}
-        />
-      )}
-
-      {isCreator && (
-        <Button variant={'outline'} className="rounded-full shadow-md">
-          <Link href={`${pathname}?edit=true`}>
-            <span className="sr-only">Edit</span>
-            <Pencil className="h-4 w-4" />
-          </Link>
-        </Button>
-      )}
-    </div>
+    <header className="h-14">
+      <div className="fixed z-50 top-0 left-0 right-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="flex h-14 items-center justify-between px-4">
+          <div className="flex items-center gap-3">
+            <MobileNav />
+            <Button variant="ghost" size="icon" onClick={() => router.push(`/${userSlug}/`)}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </div>
+          <nav className="hidden md:flex items-center gap-3">
+            <Link href="/feed">Feed</Link>
+            <Link href={`/${currentUserSlug}`}>My Conjectures</Link>
+          </nav>
+          <nav className="flex items-center gap-3">
+            {statement && isCreator && <ViewModeButton iconOnly={isMobile} variant="default" />}
+            <UserButton />
+          </nav>
+        </div>
+      </div>
+    </header>
   );
 }

@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils';
 
 import VerticalCardStack from '../card_stacks/vertical_card_stack';
 import EditNav from '../navigation/edit_nav';
+import ReadNav from '../navigation/read_nav';
 
 import AnnotationDrawer from './annotation/annotation_drawer';
 import StatementDetails from './statement_details';
@@ -37,14 +38,12 @@ import StatementTopControls from './statement_top_controls';
 interface StatementDetailsProps {
   authorCommentsEnabled: boolean;
   readerCommentsEnabled: boolean;
-  editModeEnabled: boolean;
   startingPanelSizes: number[];
 }
 
 export default function StatementLayout({
   authorCommentsEnabled,
   readerCommentsEnabled,
-  editModeEnabled,
   startingPanelSizes
 }: StatementDetailsProps) {
   const { statement, parentStatement, thread, isCreator, editor } = useStatementContext();
@@ -64,7 +63,7 @@ export default function StatementLayout({
   const router = useRouter();
   const [isMobile, setIsMobile] = useState(useWindowSize().width < 600);
   const [hasMounted, setHasMounted] = useState(false);
-  const { editMode, setEditMode } = useEditModeContext();
+  const { editMode } = useEditModeContext();
   const { updateStatementDraft } = useStatementUpdateContext();
 
   const [showAnnotationDrawer, setShowAnnotationDrawer] = useState(false);
@@ -110,10 +109,6 @@ export default function StatementLayout({
       Sentry.captureException(error);
     }
   };
-
-  useEffect(() => {
-    setEditMode(editModeEnabled && isCreator);
-  }, [editModeEnabled, setEditMode, isCreator]);
 
   useEffect(() => {
     if (!!editMode || !!annotationMode) {
@@ -350,7 +345,7 @@ export default function StatementLayout({
 
   return (
     <div className={cn('flex flex-col h-full w-full ', editMode && 'bg-gray-50')}>
-      {editMode ? <EditNav /> : <></>}
+      {editMode ? <EditNav /> : <ReadNav />}
       {!isMobile ? desktopLayout : mobileLayout}
     </div>
   );

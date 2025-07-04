@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { useEditModeContext } from '@/contexts/EditModeContext';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
 import {
@@ -36,10 +37,8 @@ import VoteButton from './vote_button';
 
 interface StatementOptionsProps {
   statement: StatementPackage;
-  editMode: boolean;
   showAuthorComments: boolean;
   showReaderComments: boolean;
-  handleEditModeToggle: () => void;
   onShowAuthorCommentsChange: (checked: boolean) => void;
   onShowReaderCommentsChange: (checked: boolean) => void;
   className?: string;
@@ -47,15 +46,14 @@ interface StatementOptionsProps {
 
 export default function StatementOptions({
   statement,
-  editMode,
   showAuthorComments,
   showReaderComments,
-  handleEditModeToggle,
   onShowAuthorCommentsChange,
   onShowReaderCommentsChange,
   className
 }: StatementOptionsProps) {
   const { userId } = useUserContext();
+  const { editMode, setEditMode } = useEditModeContext();
   const router = useRouter();
   const [buttonState, setButtonState] = useState<ButtonLoadingState>('default');
   const [slugError, setSlugError] = useState<string | null>(null);
@@ -67,6 +65,10 @@ export default function StatementOptions({
   const [calendarLoading, setCalendarLoading] = useState(false);
   const [calendarError, setCalendarError] = useState<string | null>(null);
   const { currentVersion } = useStatementContext();
+
+  const handleEditModeToggle = () => {
+    setEditMode(!editMode);
+  };
 
   const handleDelete = async () => {
     try {
@@ -185,11 +187,7 @@ export default function StatementOptions({
                   Preview newsletter
                 </Button>
               </Link>
-              <ViewModeButton
-                size="sm"
-                handleEditModeToggle={handleEditModeToggle}
-                className="w-full"
-              />
+              <ViewModeButton size="sm" className="w-full" />
             </div>
           ) : (
             <>

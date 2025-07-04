@@ -1,7 +1,10 @@
 'use client';
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { createContext, ReactNode, useContext, useState } from 'react';
 
-import { useNavContext } from './NavContext';
+import { setEditModeCookie } from '@/lib/helpers/helpersLayout';
+
+import { useStatementAnnotationContext } from './StatementAnnotationContext';
+import { useStatementContext } from './StatementBaseContext';
 
 interface EditModeContextType {
   editMode: boolean;
@@ -10,20 +13,30 @@ interface EditModeContextType {
 
 const EditModeContext = createContext<EditModeContextType | undefined>(undefined);
 
-export function EditModeProvider({ children }: { children: ReactNode }) {
-  const { setShowNav } = useNavContext();
-  const [editMode, setEditMode] = useState(false);
+export function EditModeProvider({
+  children,
+  editModeEnabled
+}: {
+  children: ReactNode;
+  editModeEnabled: boolean;
+}) {
+  const { statement } = useStatementContext();
+  const { setSelectedAnnotationId } = useStatementAnnotationContext();
 
-  useEffect(() => {
-    if (editMode) {
-      setShowNav(false);
+  const [editMode, setEditMode] = useState(editModeEnabled);
+
+  const handleEditMode = (edit: boolean) => {
+    setSelectedAnnotationId(undefined);
+    setEditModeCookie(edit, statement?.statementId);
+    if (edit) {
+      setEditMode(true);
     } else {
-      setShowNav(true);
+      setEditMode(false);
     }
-  }, [editMode, setShowNav]);
+  };
 
   return (
-    <EditModeContext.Provider value={{ editMode, setEditMode }}>
+    <EditModeContext.Provider value={{ editMode, setEditMode: handleEditMode }}>
       {children}
     </EditModeContext.Provider>
   );

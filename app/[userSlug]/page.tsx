@@ -1,5 +1,6 @@
 import { Metadata, ResolvingMetadata } from 'next';
 
+import SiteNav from '@/components/navigation/site_nav';
 import NotFound from '@/components/ui/not_found';
 import { StatementListContainer } from '@/containers/StatementListContainer';
 import { getStatements } from '@/lib/actions/statementActions';
@@ -61,15 +62,16 @@ export default async function UserPage({ params }: UserPageProps) {
 
   const statements = await getStatements({ creatorId: id, publishedOnly: !userIsCreator });
 
+  const title = userIsCreator
+    ? 'My conjectures'
+    : `${profile.name ?? profile.username}'s conjectures`;
+
   return (
-    <div>
+    <>
+      <SiteNav />
       <main className="flex-1 mx-auto bg-background container py-8 px-4 md:px-0">
-        <StatementListContainer
-          statements={statements}
-          title={`My conjectures`}
-          pathname={`${userSlug}`}
-        />
+        <StatementListContainer statements={statements} title={title} pathname={`${userSlug}`} />
       </main>
-    </div>
+    </>
   );
 }

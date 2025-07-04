@@ -1,28 +1,37 @@
-import { Eye } from 'lucide-react';
+import { Eye, Pencil } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { useEditModeContext } from '@/contexts/EditModeContext';
 
 const ViewModeButton = ({
-  handleEditModeToggle,
   className,
   iconOnly,
   variant = 'outline',
   size
 }: {
-  handleEditModeToggle: () => void;
   className?: string;
   iconOnly?: boolean;
   variant?: 'outline' | 'default' | 'ghost';
   size?: 'sm' | 'default';
 }) => {
+  const { editMode, setEditMode } = useEditModeContext();
+
+  const handleEditModeToggle = () => {
+    setEditMode(!editMode);
+  };
+
   return (
     <Button variant={variant} size={size} onClick={handleEditModeToggle} className={className}>
       {iconOnly ? (
-        <Eye className="h-4 w-4" />
+        editMode ? (
+          <Eye className="h-4 w-4" />
+        ) : (
+          <Pencil className="h-4 w-4" />
+        )
       ) : (
         <div className="flex items-center gap-2">
-          <Eye className="h-4 w-4" />
-          Switch back to view
+          {editMode ? <Eye className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+          {editMode ? 'Switch back to view' : 'Switch to edit'}
         </div>
       )}
     </Button>

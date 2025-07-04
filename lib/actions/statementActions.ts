@@ -24,6 +24,15 @@ import { createStatementImageUrl } from '../helpers/helpersStorage';
 import { authenticatedUser, getUser, isAuthor } from './baseActions';
 import { deleteStoredStatementImage } from './storageActions';
 
+export async function getStatementId(statementSlug: string) {
+  const statement = await db
+    .selectFrom('statement')
+    .select('statementId')
+    .where('slug', '=', statementSlug)
+    .executeTakeFirstOrThrow();
+  return statement.statementId;
+}
+
 export async function getStatements({
   forCurrentUser,
   publishedOnly = true,

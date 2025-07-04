@@ -101,3 +101,33 @@ export const setPanelSizes = (panelGroupRef: RefObject<ImperativePanelGroupHandl
   if (!panelGroupRef?.current || !panelSizes) return;
   panelGroupRef.current?.setLayout(panelSizes);
 };
+
+export const getEditModeCookie = (statementId: string) => {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+  const current = document.cookie
+    .split('; ')
+    .find(row => row.startsWith(`${encodeURIComponent('edit_' + statementId)}=`))
+    ?.split('=')[1];
+  return current ? JSON.parse(current) : false;
+};
+
+export const setEditModeCookie = (value: boolean, statementId: string) => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  const current = document.cookie
+    .split('; ')
+    .find(row => row.startsWith(`${encodeURIComponent('edit_' + statementId)}=`))
+    ?.split('=')[1];
+  const newValue = JSON.stringify(value);
+  if (current === newValue) {
+    return;
+  }
+  const expires = new Date();
+  expires.setFullYear(expires.getFullYear() + 1);
+  document.cookie = `${encodeURIComponent(
+    'edit_' + statementId
+  )}=${newValue}; expires=${expires.toUTCString()}; path=/`;
+};

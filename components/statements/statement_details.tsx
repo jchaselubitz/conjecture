@@ -2,7 +2,6 @@ import { BaseStatementCitation, StatementWithUser } from 'kysely-codegen';
 import { ChevronLeft, Loader2, Upload } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
 import { RefObject, useEffect, useMemo, useRef } from 'react';
 import { useState } from 'react';
 import { useFixedStyleWithIOsKeyboard } from 'react-ios-keyboard-viewport';
@@ -24,7 +23,7 @@ import { generateStatementId } from '@/lib/helpers/helpersStatements';
 import { cn } from '@/lib/utils';
 
 import InlineCardStack from '../card_stacks/inline_card_stack';
-import ReadNav from '../navigation/read_nav';
+import CommentSwitch from '../navigation/comment_switch';
 import { AspectRatio } from '../ui/aspect-ratio';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -69,14 +68,11 @@ export default function StatementDetails({
   setAnnotationMode
 }: StatementDetailsProps) {
   const { userId, currentUserSlug } = useUserContext();
-  const { editor, setUpdatedDraft, updatedDraft, currentVersion, statement } =
-    useStatementContext();
+  const { editor, updatedDraft, statement } = useStatementContext();
   const { selectedAnnotationId, setSelectedAnnotationId } = useStatementAnnotationContext();
   const { initialImageData, setInitialImageData, setImageLightboxOpen, citations } =
     useStatementToolsContext();
 
-  const router = useRouter();
-  const params = useParams();
   const isPublished = !!statement?.draft.publishedAt;
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -99,15 +95,6 @@ export default function StatementDetails({
   }, [citations, footnoteIds]);
 
   const prepStatementId = statementId ? statementId : generateStatementId();
-
-  const handleEditModeToggle = () => {
-    setSelectedAnnotationId(undefined);
-    if (!editMode) {
-      router.push(`/${params.userSlug}/${params.statementSlug}/${currentVersion}?edit=true`);
-    } else {
-      router.push(`/${params.userSlug}/${params.statementSlug}/${currentVersion}`);
-    }
-  };
 
   const handleAnnotationClick = async (annotationId: string) => {
     setSelectedAnnotationId(annotationId);
@@ -324,10 +311,8 @@ export default function StatementDetails({
             <StatementOptions
               className="mb-0 w-full"
               statement={statement}
-              editMode={editMode}
               showAuthorComments={showAuthorComments}
               showReaderComments={showReaderComments}
-              handleEditModeToggle={handleEditModeToggle}
               onShowAuthorCommentsChange={onShowAuthorCommentsChange}
               onShowReaderCommentsChange={onShowReaderCommentsChange}
             />
@@ -389,7 +374,7 @@ export default function StatementDetails({
 
           <FootnoteList citations={orderedFootnotes} />
           {!editMode && (
-            <ReadNav annotationMode={annotationMode} setAnnotationMode={setAnnotationMode} />
+            <CommentSwitch annotationMode={annotationMode} setAnnotationMode={setAnnotationMode} />
           )}
           <div className="h-14" />
         </div>

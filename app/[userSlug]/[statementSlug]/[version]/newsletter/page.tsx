@@ -1,7 +1,6 @@
 'use client';
 import NewsletterNav from '@/components/navigation/newsletter_nav';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import { useNavContext } from '@/contexts/NavContext';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 
 import Newsletter from './(components)/newsletter';
@@ -9,8 +8,6 @@ import NewsletterPanel from './(components)/newsletter_panel';
 
 export default function NewsletterPage() {
   const { isCreator, statement, subscribers } = useStatementContext();
-  const { setShowNav } = useNavContext();
-  setShowNav(false);
 
   return (
     <>
