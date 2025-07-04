@@ -1,9 +1,9 @@
 import { Editor } from '@tiptap/react';
 import { Check, Quote } from 'lucide-react';
+import { useCallback, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useCallback, useState } from 'react';
 
 interface QuoteLinkButtonProps {
   editor: Editor;
