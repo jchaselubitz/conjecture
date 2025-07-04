@@ -60,9 +60,6 @@ export function EditorMenu({
         <div className="flex items-center justify-center border-r md:border-zinc-500 h-full">
           <ViewModeButton
             className={cn('flex items-center justify-center ', buttonClassName)}
-            handleEditModeToggle={() =>
-              router.push(`/${userSlug}/${statementSlug}/${currentVersion}`)
-            }
             iconOnly={true}
             variant="ghost"
           />
