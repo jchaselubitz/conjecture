@@ -35,7 +35,7 @@ export default function ReadNav() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </div>
-          <nav>
+          <nav className="flex items-center gap-6">
             <div className="hidden md:flex items-center gap-3">
               <Link href="/feed">Feed</Link>
               <Link href={`/${currentUserSlug}`}>My Conjectures</Link>
