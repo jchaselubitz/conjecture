@@ -412,7 +412,8 @@ export const useHtmlSuperEditor = ({
               publisher: selectedCitation.publisher,
               titlePublication: selectedCitation.titlePublication,
               volume: selectedCitation.volume,
-              pageType: selectedCitation.pageType
+              pageType: selectedCitation.pageType,
+              text: selectedCitation.text
             };
             openCitationPopover({
               citationData,

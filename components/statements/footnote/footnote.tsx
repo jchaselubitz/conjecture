@@ -22,6 +22,11 @@ export function Footnote({ order, citation, className, anchorId }: FootnoteProps
   const generateMLACitation = () => {
     const parts = [];
     // Author names
+
+    if (citation.text) {
+      parts.push(citation.text);
+    }
+
     if (citation.authorNames) {
       parts.push(citation.authorNames + '.');
     }

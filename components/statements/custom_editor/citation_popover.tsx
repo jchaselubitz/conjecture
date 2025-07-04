@@ -44,7 +44,13 @@ export function CitationPopover({
       month: null,
       day: null,
       issue: null,
-      volume: null
+      volume: null,
+      pageStart: null,
+      pageEnd: null,
+      publisher: null,
+      titlePublication: null,
+      url: null,
+      text: null
     });
   };
 

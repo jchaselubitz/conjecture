@@ -83,7 +83,8 @@ export function StatementToolsProvider({ children }: { children: ReactNode }) {
     id: '',
     createdAt: new Date(),
     date: null,
-    pageType: ''
+    pageType: '',
+    text: ''
   });
 
   useEffect(() => {

@@ -60,7 +60,7 @@ export function CitationDisplay() {
     <Card
       className={cn(
         'w-full border-none overflow-hidden shadow-none pt-0',
-        !conjecture?.headerImg && 'pt-4'
+        !conjecture?.headerImg && 'pt-2'
       )}
     >
       {conjecture?.headerImg && (
@@ -81,6 +81,12 @@ export function CitationDisplay() {
         )}
       </CardHeader>
       <CardContent className="space-y-4 pb-2">
+        {citation.text && (
+          <div className="flex items-start gap-2">
+            <FileTextIcon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+            <span className="text-sm">{citation.text}</span>
+          </div>
+        )}
         {citation.authorNames && (
           <div className="flex items-start gap-2">
             <UsersIcon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
