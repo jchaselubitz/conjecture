@@ -37,7 +37,7 @@ export default async function Feed() {
         <div className="flex items-center justify-between my-8">
           <h1 className="text-3xl font-bold">Feed</h1>
         </div>
-        <div className="flex gap-6 ">
+        <div className="flex flex-col md:flex-row gap-6 ">
           <div className="flex flex-col gap-6 max-w-xl mx-auto">
             {statements.length > 0 ? (
               statements.map(statement => (
