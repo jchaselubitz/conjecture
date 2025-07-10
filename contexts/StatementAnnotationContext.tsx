@@ -1,6 +1,6 @@
 'use client';
 
-import { AnnotationWithComments, CommentWithUser } from 'kysely-codegen';
+import { AnnotationWithComments, CommentWithReplies, CommentWithUser } from 'kysely-codegen';
 import {
   createContext,
   Dispatch,
@@ -11,7 +11,6 @@ import {
   useState
 } from 'react';
 
-import { CommentWithReplies } from '@/components/statements/comment';
 import { nestComments } from '@/lib/helpers/helpersComments';
 
 import { useStatementContext } from './StatementBaseContext';

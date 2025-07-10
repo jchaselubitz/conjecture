@@ -1,3 +1,4 @@
+import { Editor } from '@tiptap/react';
 import { AnnotationWithComments } from 'kysely-codegen';
 import { RefreshCw, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -5,29 +6,31 @@ import { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { formatDate } from '@/lib/helpers/helpersDate';
 interface AnnotationHeaderProps {
   annotation: AnnotationWithComments;
   isCreator: boolean;
   isMobile: boolean;
-  handleDeleteAnnotation: (annotation: AnnotationWithComments) => Promise<void>;
+  editor?: Editor | null;
+  handleDeleteAnnotation?: (annotation: AnnotationWithComments) => Promise<void>;
 }
 
 export default function AnnotationHeader({
   annotation,
   isCreator,
   isMobile,
+  editor,
   handleDeleteAnnotation
 }: AnnotationHeaderProps) {
-  const { editor } = useStatementContext();
-  const editable = editor?.isEditable;
+  const editable = editor?.isEditable || false;
 
   const [deletingButtonState, setDeletingButtonState] = useState<ButtonLoadingState>('default');
 
   const handleDelete = async () => {
     setDeletingButtonState('loading');
-    await handleDeleteAnnotation(annotation);
+    if (handleDeleteAnnotation) {
+      await handleDeleteAnnotation(annotation);
+    }
     setDeletingButtonState('success');
   };
 
@@ -55,7 +58,7 @@ export default function AnnotationHeader({
           </div>
         </div>
 
-        {isCreator && editable && isMobile && (
+        {isCreator && editable && isMobile && handleDeleteAnnotation && (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

@@ -1,4 +1,4 @@
-import { AnnotationWithComments, CommentWithUser } from 'kysely-codegen';
+import { AnnotationWithComments, CommentWithReplies, CommentWithUser } from 'kysely-codegen';
 import { RefreshCw, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -12,7 +12,6 @@ import { useUserContext } from '@/contexts/userContext';
 import { cn } from '@/lib/utils';
 
 import AnnotationHeader from '../annotation_header';
-import { CommentWithReplies } from '../comment';
 import Comment from '../comment';
 
 import CommentInput from './comment_input';
@@ -90,6 +89,7 @@ export default function AnnotationDetailDesktop({
             annotation={annotation}
             isCreator={isCreator}
             isMobile={false}
+            editor={editor}
             handleDeleteAnnotation={handleDeleteAnnotation}
           />
         </AccordionTrigger>

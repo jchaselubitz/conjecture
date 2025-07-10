@@ -1,29 +1,23 @@
-import { CommentWithStatement } from 'kysely-codegen';
-
 import { StatementCard } from '@/components/statements/card';
-import { CommentWithReplies } from '@/components/statements/comment';
-import { getUser } from '@/lib/actions/baseActions';
-import { getPublicComments } from '@/lib/actions/commentActions';
+import { getAnnotations } from '@/lib/actions/commentActions';
 import { getStatements } from '@/lib/actions/statementActions';
-import { nestComments } from '@/lib/helpers/helpersComments';
 
-import CommentFeed from './(components)/comment_feed';
+import AnnotationFeed from './(components)/annotation_feed';
 
 export default async function Feed() {
   const statements = await getStatements({
     forCurrentUser: false,
     publishedOnly: true
   });
-  const user = await getUser();
-  const draftIds = statements.map(statement => statement.draft?.id);
-  const comments = user && (await getPublicComments(draftIds));
-  const commentsWithStatement = comments?.map(comment => ({
-    ...comment,
-    statement: statements.find(statement => statement.draft.id === comment.draftId)
-  })) as CommentWithStatement[];
 
-  ///SHOULD THIS ACTUALLY BE ANNOTATIONS?
-  const commentWithReplies = nestComments(commentsWithStatement || []) as CommentWithReplies[];
+  const statementAndDraftIds = statements.map(statement => ({
+    draftId: statement.draft?.id,
+    statementId: statement.statementId,
+    statementSlug: statement.slug ?? '',
+    creatorSlug: statement.creatorSlug ?? '',
+    versionNumber: statement.draft?.versionNumber ?? 1
+  }));
+  const annotations = await getAnnotations(statementAndDraftIds);
 
   if ('error' in statements) {
     return (
@@ -64,7 +58,7 @@ export default async function Feed() {
             )}
           </div>
           <div className="flex flex-col  max-w-md mx-auto">
-            {comments && <CommentFeed nestedComments={commentWithReplies} />}
+            {annotations && <AnnotationFeed annotations={annotations} />}
           </div>
         </div>
       </main>

@@ -1,9 +1,9 @@
-import { AnnotationWithComments, CommentWithUser } from 'kysely-codegen';
+import { AnnotationWithComments, CommentWithReplies, CommentWithUser } from 'kysely-codegen';
 import { Dispatch, SetStateAction, useRef } from 'react';
 
 import Comment from '@/components/statements/comment';
-import { CommentWithReplies } from '@/components/statements/comment';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
+import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
 
 import AnnotationHeader from '../annotation_header';
@@ -24,6 +24,7 @@ export default function AnnotationDetailMobile({
   nestedComments,
   handleDeleteAnnotation
 }: AnnotationDetailMobileProps) {
+  const { editor } = useStatementContext();
   const { setReplyToComment, handleCommentDeleted, comments } = useStatementAnnotationContext();
 
   const { userId } = useUserContext();
@@ -55,6 +56,7 @@ export default function AnnotationDetailMobile({
           annotation={annotation}
           isCreator={isCreator}
           isMobile={true}
+          editor={editor}
           handleDeleteAnnotation={handleDeleteAnnotation}
         />
         {comments.length > 0 && (

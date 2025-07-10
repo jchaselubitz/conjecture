@@ -1,7 +1,11 @@
 'use client';
 
-import { BaseCommentVote, CommentWithUser, StatementWithUser } from 'kysely-codegen';
-import { CommentWithStatement } from 'kysely-codegen';
+import {
+  BaseCommentVote,
+  CommentWithReplies,
+  CommentWithUser,
+  StatementWithUser
+} from 'kysely-codegen';
 import { DotIcon } from 'lucide-react';
 import React, { useOptimistic, useState } from 'react';
 
@@ -16,10 +20,6 @@ import { ButtonLoadingState, LoadingButton } from '../ui/loading-button';
 import { Textarea } from '../ui/textarea';
 
 import CommentControls from './comment_controls';
-type CommentType = CommentWithStatement;
-export type CommentWithReplies = CommentType & {
-  children: CommentType[];
-};
 
 interface CommentProps {
   comment: CommentWithReplies;

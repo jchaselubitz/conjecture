@@ -1,12 +1,21 @@
 'use server';
 
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
-import { CommentWithUser, NewCommentVote, RevalidationPath } from 'kysely-codegen';
+import {
+  AnnotationWithStatement,
+  BaseComment,
+  BaseCommentVote,
+  CommentWithReplies,
+  CommentWithUser,
+  NewCommentVote,
+  RevalidationPath
+} from 'kysely-codegen';
 import { revalidatePath } from 'next/cache';
 
 import { createClient } from '@/supabase/server';
 
 import db from '../database';
+import { nestComments } from '../helpers/helpersComments';
 
 import { authenticatedUser } from './baseActions';
 
@@ -104,6 +113,99 @@ export async function getCommentsByAnnotationId(annotationId: string) {
     return [];
   }
 }
+
+export const getAnnotations = async (
+  statementAndDraftIds: {
+    draftId: string;
+    statementId: string;
+    statementSlug: string;
+    creatorSlug: string;
+    versionNumber: number;
+  }[]
+): Promise<AnnotationWithStatement[]> => {
+  const annotationPackage = await db.transaction().execute(async tx => {
+    const annotations = await tx
+      .selectFrom('annotation')
+      .selectAll()
+      .where(
+        'draftId',
+        'in',
+        statementAndDraftIds.map(statementAndDraftId => statementAndDraftId.draftId)
+      )
+      .orderBy('annotation.createdAt', 'desc')
+      .execute();
+
+    const annotationsWithStatement = annotations.map(annotation => ({
+      ...annotation,
+      statement: statementAndDraftIds.find(
+        statementAndDraftId => statementAndDraftId.draftId === annotation.draftId
+      )
+    }));
+
+    const annotationIds = annotationsWithStatement.map(annotation => annotation.id);
+
+    let comments: (BaseComment & { votes: BaseCommentVote[] })[] = [];
+    if (annotationIds.length > 0) {
+      comments = await tx
+        .selectFrom('comment')
+        .select(({ eb }) => [
+          'comment.id',
+          'comment.content',
+          'comment.createdAt',
+          'comment.updatedAt',
+          'comment.userId',
+          'comment.annotationId',
+          'comment.parentId',
+          'comment.isPublic',
+          jsonArrayFrom(
+            eb
+              .selectFrom('commentVote')
+              .selectAll()
+              .whereRef('commentVote.commentId', '=', 'comment.id')
+          ).as('votes')
+        ])
+        .where('comment.annotationId', 'in', annotationIds)
+        .orderBy('comment.createdAt', 'desc')
+        .execute();
+    }
+
+    const profileIds = new Set([
+      ...comments.map(comment => comment.userId),
+      ...annotations.map(annotation => annotation.userId)
+    ]);
+
+    const profiles = await tx
+      .selectFrom('profile')
+      .selectAll()
+      .where('profile.id', 'in', Array.from(profileIds))
+      .execute();
+
+    const commentsWithProfiles = comments.map(comment => ({
+      ...comment,
+      userName: profiles.find(p => p.id === comment.userId)?.name,
+      userImageUrl: profiles.find(p => p.id === comment.userId)?.imageUrl,
+      draftId: comment.annotationId,
+      votes: comment.votes
+    })) as CommentWithUser[];
+
+    const nestedComments = nestComments(commentsWithProfiles);
+
+    return {
+      annotations: annotationsWithStatement,
+      comments: nestedComments as CommentWithReplies[],
+      profiles
+    };
+  });
+
+  const annotationsWithComments = annotationPackage.annotations.map(annotation => ({
+    ...annotation,
+    userName: annotationPackage.profiles.find(p => p.id === annotation.userId)?.name,
+    userImageUrl: annotationPackage.profiles.find(p => p.id === annotation.userId)?.imageUrl,
+    comments: annotationPackage.comments.filter(comment => comment.annotationId === annotation.id)
+  })) as AnnotationWithStatement[];
+
+  return annotationsWithComments;
+};
 
 export async function createComment({
   comment,

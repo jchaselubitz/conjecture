@@ -99,6 +99,14 @@ declare module 'kysely-codegen' {
     userImageUrl: string;
     id: string;
   };
+  export type AnnotationWithStatement = AnnotationWithComments & {
+    statement: {
+      statementId: string;
+      statementSlug: string;
+      creatorSlug: string;
+      versionNumber: number;
+    };
+  };
   export type NewAnnotation = Insertable<Annotation> & {
     id: string;
   };
@@ -114,6 +122,10 @@ declare module 'kysely-codegen' {
 
   export type CommentWithStatement = CommentWithUser & {
     statement?: StatementWithUser;
+  };
+
+  export type CommentWithReplies = CommentWithStatement & {
+    children: CommentWithReplies[];
   };
 
   export type NewComment = Insertable<Comment>;
