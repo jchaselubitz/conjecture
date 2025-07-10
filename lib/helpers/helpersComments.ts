@@ -1,17 +1,17 @@
-import { BaseCommentWithUser } from 'kysely-codegen';
+import { CommentWithStatement } from 'kysely-codegen';
 
 import { CommentWithReplies } from '@/components/statements/comment';
 
 export const nestComments = (
-  objects: BaseCommentWithUser[],
+  objects: CommentWithStatement[],
   rootParentId = null
 ): CommentWithReplies[] => {
-  const objectMap = new Map<string, BaseCommentWithUser & { children: any[] }>();
+  const objectMap = new Map<string, CommentWithStatement & { children: any[] }>();
   objects.forEach(object => {
     objectMap.set(object.id, { ...object, children: [] });
   });
 
-  const rootItems: (BaseCommentWithUser & { children: any[] })[] = [];
+  const rootItems: (CommentWithStatement & { children: any[] })[] = [];
   objectMap.forEach(object => {
     if (object.parentId === rootParentId) {
       rootItems.push(object);

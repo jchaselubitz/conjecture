@@ -1,4 +1,4 @@
-import { AnnotationWithComments, BaseCommentWithUser } from 'kysely-codegen';
+import { AnnotationWithComments, CommentWithUser } from 'kysely-codegen';
 import { RefreshCw, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -41,7 +41,7 @@ export default function AnnotationDetailDesktop({
   const [deletingButtonState, setDeletingButtonState] = useState<ButtonLoadingState>('default');
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleReplyClick = (comment: BaseCommentWithUser) => {
+  const handleReplyClick = (comment: CommentWithUser) => {
     setReplyToComment(comment);
     // Focus the textarea and scroll to it
     setTimeout(() => {

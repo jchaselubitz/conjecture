@@ -1,6 +1,7 @@
 'use client';
 
-import { BaseCommentVote, BaseCommentWithUser } from 'kysely-codegen';
+import { BaseCommentVote, CommentWithUser, StatementWithUser } from 'kysely-codegen';
+import { CommentWithStatement } from 'kysely-codegen';
 import { DotIcon } from 'lucide-react';
 import React, { useOptimistic, useState } from 'react';
 
@@ -15,8 +16,9 @@ import { ButtonLoadingState, LoadingButton } from '../ui/loading-button';
 import { Textarea } from '../ui/textarea';
 
 import CommentControls from './comment_controls';
-export type CommentWithReplies = BaseCommentWithUser & {
-  children: BaseCommentWithUser[];
+type CommentType = CommentWithStatement;
+export type CommentWithReplies = CommentType & {
+  children: CommentType[];
 };
 
 interface CommentProps {
@@ -25,10 +27,11 @@ interface CommentProps {
   statementId: string;
   statementCreatorId: string;
   annotationId: string;
-  onReplyClick: (comment: BaseCommentWithUser) => void;
+  onReplyClick: (comment: CommentWithUser) => void;
   onCommentDeleted: (commentId: string) => void;
   level?: number;
   isRootComment?: boolean;
+  statement?: StatementWithUser;
 }
 
 const Comment: React.FC<CommentProps> = ({

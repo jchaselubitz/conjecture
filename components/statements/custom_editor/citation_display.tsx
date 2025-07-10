@@ -7,7 +7,7 @@ import { useAsyncFn } from 'react-use';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
-import { getPublishedStatement } from '@/lib/actions/statementActions';
+import { getStatements } from '@/lib/actions/statementActions';
 import { formatDateForCitation } from '@/lib/helpers/helpersDate';
 import { cn } from '@/lib/utils';
 export function CitationDisplay() {
@@ -40,7 +40,7 @@ export function CitationDisplay() {
         const statementSlug = url.searchParams.get('statementSlug');
         if (!statementSlug) return;
         try {
-          const statement = await getPublishedStatement(statementSlug);
+          const statement = (await getStatements({ statementSlug, publishedOnly: true }))[0];
           if (statement) {
             setConjecture(statement);
           }

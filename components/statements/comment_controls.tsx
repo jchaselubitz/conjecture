@@ -1,7 +1,7 @@
 'use client';
 
 import * as Sentry from '@sentry/nextjs';
-import { BaseCommentWithUser } from 'kysely-codegen';
+import { CommentWithUser } from 'kysely-codegen';
 import { ArrowUp, Edit2, RefreshCw, Reply, Trash2 } from 'lucide-react';
 import { startTransition, useState } from 'react';
 
@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { deleteComment, toggleCommentUpvote } from '@/lib/actions/commentActions';
 interface CommentControlsProps {
   userId?: string | null;
-  comment: BaseCommentWithUser;
+  comment: CommentWithUser;
   isRootComment: boolean;
   isHovered: boolean;
   editingComment: boolean;
@@ -32,7 +32,7 @@ interface CommentControlsProps {
       commentId: string;
     }[]
   ) => void;
-  onReplyClick: (comment: BaseCommentWithUser) => void;
+  onReplyClick: (comment: CommentWithUser) => void;
   onEditClick: () => void;
   onCommentDeleted: (commentId: string) => void;
   statementCreatorId: string;

@@ -1,6 +1,6 @@
 'use client';
 
-import { AnnotationWithComments, BaseCommentWithUser } from 'kysely-codegen';
+import { AnnotationWithComments, CommentWithUser } from 'kysely-codegen';
 import {
   createContext,
   Dispatch,
@@ -12,7 +12,7 @@ import {
 } from 'react';
 
 import { CommentWithReplies } from '@/components/statements/comment';
-import { nestComments } from '@/lib/helpers/helpersGeneral';
+import { nestComments } from '@/lib/helpers/helpersComments';
 
 import { useStatementContext } from './StatementBaseContext';
 
@@ -26,8 +26,8 @@ interface StatementAnnotationContextType {
   comments: CommentWithReplies[];
   setComments: Dispatch<SetStateAction<CommentWithReplies[]>>;
   addComment: (comment: CommentWithReplies) => void;
-  replyToComment: BaseCommentWithUser | null;
-  setReplyToComment: Dispatch<SetStateAction<BaseCommentWithUser | null>>;
+  replyToComment: CommentWithUser | null;
+  setReplyToComment: Dispatch<SetStateAction<CommentWithUser | null>>;
   cancelReply: () => void;
   handleCommentDeleted: (commentId: string) => void;
 }
@@ -50,7 +50,7 @@ export function StatementAnnotationProvider({ children }: { children: ReactNode 
     nestComments(selectedAnnotation?.comments || [])
   );
 
-  const [replyToComment, setReplyToComment] = useState<BaseCommentWithUser | null>(null);
+  const [replyToComment, setReplyToComment] = useState<CommentWithUser | null>(null);
 
   useEffect(() => {
     setComments(nestComments(selectedAnnotation?.comments || []));

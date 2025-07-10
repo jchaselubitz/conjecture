@@ -12,8 +12,8 @@ import { getSubscribers } from '@/lib/actions/notificationActions';
 import {
   getFullThread,
   getPublishedOrLatest,
-  getPublishedStatement,
-  getStatementPackage
+  getStatementPackage,
+  getStatements
 } from '@/lib/actions/statementActions';
 import { UserStatementRoles } from '@/lib/enums/permissions';
 
@@ -27,7 +27,7 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { statementSlug } = await params;
-  const statement = await getPublishedStatement(statementSlug);
+  const statement = (await getStatements({ statementSlug, publishedOnly: true }))[0];
   const previousImages = (await parent).openGraph?.images || [];
 
   return {

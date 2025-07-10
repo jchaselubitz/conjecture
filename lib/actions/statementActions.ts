@@ -4,8 +4,8 @@ import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import {
   AnnotationWithComments,
   BaseComment,
-  BaseCommentWithUser,
   BaseProfile,
+  CommentWithUser,
   DraftWithAnnotations,
   NewAnnotation,
   StatementPackage,
@@ -35,7 +35,7 @@ export async function getStatementId(statementSlug: string) {
 
 export async function getStatements({
   forCurrentUser,
-  publishedOnly = true,
+  publishedOnly,
   creatorId,
   statementSlug,
   statementId
@@ -49,7 +49,7 @@ export async function getStatements({
   const user = await getUser();
   let statements = db
     .selectFrom('statement')
-    .innerJoin('draft', 'statement.statementId', 'draft.statementId')
+    .leftJoin('draft', 'statement.statementId', 'draft.statementId')
     .select(({ eb }) => [
       'statement.statementId',
       'statement.slug',
@@ -65,6 +65,7 @@ export async function getStatements({
       'draft.publishedAt as publishedAt',
       'draft.content as content',
       'draft.versionNumber as versionNumber',
+      'draft.id as draftId',
       jsonArrayFrom(
         eb
           .selectFrom('collaborator')
@@ -78,12 +79,8 @@ export async function getStatements({
           .selectAll()
           .whereRef('statementVote.statementId', '=', 'statement.statementId')
       ).as('upvotes')
-    ])
-    .orderBy('versionNumber', 'desc');
+    ]);
 
-  if (publishedOnly) {
-    statements = statements.where('draft.publishedAt', 'is not', null);
-  }
   if (forCurrentUser && user) {
     statements = statements.where('statement.creatorId', '=', user.id);
   }
@@ -95,6 +92,13 @@ export async function getStatements({
   }
   if (statementId) {
     statements = statements.where('statement.statementId', '=', statementId);
+  }
+  if (publishedOnly) {
+    statements = statements
+      .where('draft.publishedAt', 'is not', null)
+      .orderBy('draft.publishedAt', 'desc');
+  } else {
+    statements = statements.orderBy('draft.createdAt', 'desc');
   }
 
   const statementsList = await statements.execute();
@@ -129,31 +133,12 @@ export async function getStatements({
     creatorSlug: profiles.find(profile => profile.id === statement.creatorId)?.username,
     authors: getStatementAuthors(statement, profiles),
     draft: {
+      id: statement.draftId,
       publishedAt: statement.publishedAt,
       versionNumber: statement.versionNumber,
       content: statement.content
     }
-  }));
-}
-
-export async function getPublishedStatement(
-  statementSlug: string
-): Promise<StatementWithUser | null> {
-  const statements = await getStatements({
-    statementSlug,
-    publishedOnly: true
-  });
-  return statements[0] ?? null;
-}
-
-export async function getStatementReference(
-  statementId: string
-): Promise<StatementWithUser | null> {
-  const statements = await getStatements({
-    statementId,
-    publishedOnly: true
-  });
-  return statements[0] ?? null;
+  })) as StatementWithUser[];
 }
 
 export async function getFullThread(threadId: string): Promise<StatementWithUser[]> {
@@ -177,6 +162,7 @@ export async function getFullThread(threadId: string): Promise<StatementWithUser
       'draft.versionNumber as versionNumber',
       'draft.content as content',
       'draft.contentPlainText as contentPlainText',
+      'draft.id as draftId',
       jsonArrayFrom(
         eb
           .selectFrom('collaborator')
@@ -210,6 +196,7 @@ export async function getFullThread(threadId: string): Promise<StatementWithUser
       .filter((profile): profile is BaseProfile => !!profile),
     creatorSlug: statement.creatorSlug,
     draft: {
+      id: statement.draftId,
       publishedAt: statement.publishedAt,
       versionNumber: statement.versionNumber,
       content: statement.content
@@ -345,6 +332,7 @@ export async function getStatementPackage({
           'comment.userId',
           'comment.annotationId',
           'comment.parentId',
+          'comment.isPublic',
           jsonArrayFrom(
             eb
               .selectFrom('commentVote')
@@ -413,7 +401,7 @@ export async function getStatementPackage({
               ...c,
               userName: profiles.find(p => p.id === c.userId)?.name,
               userImageUrl: profiles.find(p => p.id === c.userId)?.imageUrl
-            })) as BaseCommentWithUser[]
+            })) as CommentWithUser[]
         })) as AnnotationWithComments[]
     } as DraftWithAnnotations
   };
@@ -861,3 +849,11 @@ export async function updateDraftPublicationDate({
     revalidatePath(`/[userSlug]/${statementSlug}`, 'layout');
   }
 }
+
+// .innerJoin("draft", (join) =>
+//   join
+//     .onRef("statement.statementId", "=", "draft.statementId")
+//     .on("draft.versionNumber", "=", (eb) =>
+//       eb.selectFrom("draft as d2")
+//         .select(eb.fn.max("versionNumber").as("maxVersion"))
+//         .whereRef("d2.statementId", "=", "statement.statementId")))

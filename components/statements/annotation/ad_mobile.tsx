@@ -1,4 +1,4 @@
-import { AnnotationWithComments, BaseCommentWithUser } from 'kysely-codegen';
+import { AnnotationWithComments, CommentWithUser } from 'kysely-codegen';
 import { Dispatch, SetStateAction, useRef } from 'react';
 
 import Comment from '@/components/statements/comment';
@@ -12,7 +12,7 @@ interface AnnotationDetailMobileProps {
   annotation: AnnotationWithComments;
   statementCreatorId: string;
   statementId: string;
-  setReplyToComment: Dispatch<SetStateAction<BaseCommentWithUser | null>>;
+  setReplyToComment: Dispatch<SetStateAction<CommentWithUser | null>>;
   nestedComments: CommentWithReplies[];
   handleDeleteAnnotation: (annotation: AnnotationWithComments) => Promise<void>;
 }
@@ -30,7 +30,7 @@ export default function AnnotationDetailMobile({
   const isCreator = userId === statementCreatorId;
 
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
-  const handleReplyClick = (comment: BaseCommentWithUser) => {
+  const handleReplyClick = (comment: CommentWithUser) => {
     setReplyToComment(comment);
     // Focus the textarea and scroll to it
     setTimeout(() => {

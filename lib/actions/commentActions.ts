@@ -1,7 +1,7 @@
 'use server';
 
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
-import { BaseCommentWithUser, NewCommentVote, RevalidationPath } from 'kysely-codegen';
+import { CommentWithUser, NewCommentVote, RevalidationPath } from 'kysely-codegen';
 import { revalidatePath } from 'next/cache';
 
 import { createClient } from '@/supabase/server';
@@ -9,6 +9,53 @@ import { createClient } from '@/supabase/server';
 import db from '../database';
 
 import { authenticatedUser } from './baseActions';
+
+export async function getPublicComments(draftIds: string[]) {
+  try {
+    const comments = await db
+      .selectFrom('comment')
+      .innerJoin('annotation', 'comment.annotationId', 'annotation.id')
+      .select(({ eb }) => [
+        'comment.id',
+        'comment.content',
+        'comment.createdAt',
+        'comment.updatedAt',
+        'comment.userId',
+        'comment.annotationId',
+        'comment.parentId',
+        'annotation.isPublic',
+        'annotation.draftId as draftId',
+        jsonArrayFrom(
+          eb
+            .selectFrom('commentVote')
+            .selectAll()
+            .whereRef('commentVote.commentId', '=', 'comment.id')
+        ).as('votes')
+      ])
+      .where('comment.isPublic', '=', true)
+      .where('annotation.draftId', 'in', draftIds)
+      .orderBy('createdAt', 'desc')
+      .execute();
+
+    const profileIds = new Set([...comments.map(comment => comment.userId)]);
+
+    const profiles = await db
+      .selectFrom('profile')
+      .selectAll()
+      .where('profile.id', 'in', Array.from(profileIds))
+      .execute();
+
+    const commentsWithProfiles = comments.map(comment => ({
+      ...comment,
+      userName: profiles.find(p => p.id === comment.userId)?.name,
+      userImageUrl: profiles.find(p => p.id === comment.userId)?.imageUrl
+    })) as CommentWithUser[];
+    return commentsWithProfiles;
+  } catch (error) {
+    console.error('Error getting comments by annotation id:', error);
+    return [];
+  }
+}
 
 export async function getCommentsByAnnotationId(annotationId: string) {
   try {
@@ -23,6 +70,7 @@ export async function getCommentsByAnnotationId(annotationId: string) {
           'comment.userId',
           'comment.annotationId',
           'comment.parentId',
+          'comment.isPublic',
           jsonArrayFrom(
             eb
               .selectFrom('commentVote')
@@ -45,8 +93,9 @@ export async function getCommentsByAnnotationId(annotationId: string) {
       const commentsWithProfiles = comments.map(comment => ({
         ...comment,
         userName: profiles.find(p => p.id === comment.userId)?.name,
-        userImageUrl: profiles.find(p => p.id === comment.userId)?.imageUrl
-      })) as BaseCommentWithUser[];
+        userImageUrl: profiles.find(p => p.id === comment.userId)?.imageUrl,
+        draftId: comment.annotationId
+      })) as CommentWithUser[];
       return commentsWithProfiles;
     });
     return commentsWithProfiles;

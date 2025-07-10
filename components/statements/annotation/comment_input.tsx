@@ -14,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { useUserContext } from '@/contexts/userContext';
 import { createComment } from '@/lib/actions/commentActions';
-import { nestComments } from '@/lib/helpers/helpersGeneral';
+import { nestComments } from '@/lib/helpers/helpersComments';
 
 interface CommentInputProps {
   annotation: AnnotationWithComments;
@@ -59,7 +59,9 @@ export default function CommentInput({
         updatedAt: new Date(),
         userImageUrl: imageUrl || '',
         userName: name || '',
-        children: []
+        children: [],
+        isPublic: true,
+        draftId: annotation.draftId
       });
 
       setCommentText('');

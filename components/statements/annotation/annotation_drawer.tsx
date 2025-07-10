@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
-import { nestComments } from '@/lib/helpers/helpersGeneral';
+import { nestComments } from '@/lib/helpers/helpersComments';
 
 import AnnotationDetailMobile from './ad_mobile';
 import CommentInput from './comment_input';

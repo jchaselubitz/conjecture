@@ -94,7 +94,7 @@ declare module 'kysely-codegen' {
 
   export type BaseAnnotation = Selectable<Annotation>;
   export type AnnotationWithComments = BaseAnnotation & {
-    comments: BaseCommentWithUser[];
+    comments: CommentWithUser[];
     userName: string;
     userImageUrl: string;
     id: string;
@@ -105,11 +105,17 @@ declare module 'kysely-codegen' {
   export type EditedAnnotation = Updateable<Annotation>;
 
   export type BaseComment = Selectable<Comment>;
-  export type BaseCommentWithUser = BaseComment & {
+  export type CommentWithUser = BaseComment & {
     userName: string;
     userImageUrl: string;
     votes?: BaseCommentVote[];
+    draftId: string;
   };
+
+  export type CommentWithStatement = CommentWithUser & {
+    statement?: StatementWithUser;
+  };
+
   export type NewComment = Insertable<Comment>;
   export type EditedComment = Updateable<Comment>;
 
@@ -147,6 +153,7 @@ declare module 'kysely-codegen' {
     creatorSlug: string | null | undefined;
     upvotes?: BaseStatementVote[];
     draft: {
+      id: string;
       publishedAt?: Date | null | undefined;
       versionNumber: number;
       content?: string | null | undefined;
