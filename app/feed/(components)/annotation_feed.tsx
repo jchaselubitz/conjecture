@@ -21,7 +21,7 @@ export default function AnnotationFeed({ annotations }: AnnotationFeedProps) {
       value={selectedAnnotationId}
       onValueChange={value => setSelectedAnnotationId(value)}
     >
-      <div className="flex md:flex-col gap-2 mx-auto max-w-11/12 ">
+      <div className="flex flex-col gap-2 mx-auto w-full md:max-w-11/12 ">
         {annotations.map(annotation => (
           <AccordionItem key={annotation.id} value={annotation.id} className="border-none">
             <AnnotationItem

@@ -119,15 +119,16 @@ export default function StatementDetails({
         userId,
         statementId: prepStatementId,
         headerImg: headerImg ?? '',
-        updateStatementHeaderImageUrl
+        updateStatementHeaderImageUrl,
+        statementSlug: statement.slug ?? ''
       });
-      // if (imageUrl) {
-      //   setUpdatedDraft({
-      //     ...updatedDraft,
-      //     headerImg: imageUrl
-      //   });
-      //   setIsUploading(false);
-      // }
+      if (imageUrl) {
+        // setUpdatedDraft({
+        //   ...updatedDraft,
+        //   headerImg: imageUrl
+        // });
+        setIsUploading(false);
+      }
       toast('Success', {
         description: 'Profile picture updated successfully!'
       });
