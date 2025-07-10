@@ -164,8 +164,8 @@ export default function CommentControls({
                   onClick={handleVote}
                   className="text-xs opacity-70 hover:opacity-100 hover:cursor-pointer"
                 >
-                  <ArrowUp className="w-3 h-3" />
-                  {isHovered && voteCount > 0 && voteCount}
+                  {isHovered && <ArrowUp className="w-3 h-3" />}
+                  {voteCount > 0 && voteCount}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
