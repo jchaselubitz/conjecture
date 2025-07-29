@@ -41,7 +41,8 @@ export default async function UserStatementLayout({ children, params }: Props) {
   const { statementSlug, userSlug, version } = await params;
   const { userRole, selection, statementPackage } = await getStatementPageData({
     statementSlug,
-    userId
+    userId,
+    version: parseInt(version, 10)
   });
 
   const { version: selectedVersion, versionList } = selection ?? {};

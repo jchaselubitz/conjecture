@@ -1,5 +1,5 @@
 import { BaseProfile } from 'kysely-codegen';
-import { Metadata, ResolvingMetadata } from 'next';
+
 import { cache } from 'react';
 
 import SiteNav from '@/components/navigation/site_nav';
@@ -8,7 +8,6 @@ import { StatementListContainer } from '@/containers/StatementListContainer';
 import { getUser } from '@/lib/actions/baseActions';
 import { getStatements } from '@/lib/actions/statementActions';
 import { getUserProfileBySlug } from '@/lib/actions/userActions';
-import { createClient } from '@/supabase/server';
 
 type UserPageProps = {
   params: Promise<{

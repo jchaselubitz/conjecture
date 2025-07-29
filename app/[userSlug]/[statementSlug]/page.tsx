@@ -9,7 +9,6 @@ import { StatementUpdateProvider } from '@/contexts/StatementUpdateProvider';
 import { getUser } from '@/lib/actions/baseActions';
 import { getSubscribers } from '@/lib/actions/notificationActions';
 import { getFullThread, getStatementPageData, getStatements } from '@/lib/actions/statementActions';
-import { UserStatementRoles } from '@/lib/enums/permissions';
 
 type Props = {
   params: Promise<{ statementSlug: string; userSlug: string }>;

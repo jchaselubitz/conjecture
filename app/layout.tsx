@@ -51,6 +51,11 @@ export default async function RootLayout({
         rel="dns-prefetch"
         href={`//${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '')}`}
       />
+      <link
+        rel="dns-prefetch"
+        href={`//${process.env.NEXT_PUBLIC_SITE_URL?.replace('https://', '')}`}
+      />
+
       <body>
         <div className="min-h-screen">
           <UserProvider userProfile={profile} userEmail={user?.email} userSlug={profile?.username}>
