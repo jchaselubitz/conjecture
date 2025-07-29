@@ -34,7 +34,6 @@ export default function CommentSwitch({
             setAnnotationMode(checked);
             editor?.setEditable(checked);
           }}
-          className={cn('bg-white rounded-full shadow-md border border-zinc-200')}
         />
       )}
 

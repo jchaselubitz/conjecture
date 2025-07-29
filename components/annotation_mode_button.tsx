@@ -4,16 +4,16 @@ import { Switch } from '@/components/ui/switch';
 const AnnotationModeSwitch = ({
   checked,
   onChange,
-  className,
-  label = 'Comment mode'
+  className
 }: {
   checked: boolean;
   onChange: (checked: boolean) => void;
   className?: string;
-  label?: string;
 }) => {
   return (
-    <div className={`flex items-center px-2 pr-3 ${className ?? ''}`}>
+    <div
+      className={`flex items-center px-2 py-1 pr-3 bg-white rounded-full shadow-md border border-zinc-200 ${className ?? ''}`}
+    >
       <Label className="flex items-center gap-1 cursor-pointer">
         <Switch
           checked={checked}
