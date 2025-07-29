@@ -81,3 +81,13 @@ Based on the code in `components/statements/custom_editor`, the editor includes 
 *   **State Management:** Uses React Context API extensively for managing editor state, tool status, and shared data across components.
 *   **Backend Integration:** Leverages server-side functions/actions for data persistence (saving/deleting citations, images, updating content).
 *   **Loading Indicators:** Provides visual feedback for asynchronous operations (e.g., saving images) using specialized buttons (`LoadingButton`).
+
+## Bundle Analysis
+
+To inspect the production bundle size, run:
+
+```bash
+ANALYZE=true next build
+```
+
+This generates static HTML reports in the `analyze/` directory. Open `analyze/client.html` in your browser and look for large modules such as Tiptap or Sentry that might need optimization.
