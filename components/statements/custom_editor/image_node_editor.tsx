@@ -1,6 +1,11 @@
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 
-import { ImagePopoverEditor } from './image_popover_editor';
+import dynamic from 'next/dynamic';
+
+const ImagePopoverEditor = dynamic(
+  () => import('./image_popover_editor').then(mod => mod.ImagePopoverEditor),
+  { ssr: false }
+);
 export type NewImageData = {
   file?: File | undefined;
   src?: string;

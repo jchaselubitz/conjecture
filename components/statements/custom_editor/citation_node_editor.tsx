@@ -4,7 +4,12 @@ import { Editor } from '@tiptap/react';
 
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 
-import { CitationPopover } from './citation_popover';
+import dynamic from 'next/dynamic';
+
+const CitationPopover = dynamic(
+  () => import('./citation_popover').then(mod => mod.CitationPopover),
+  { ssr: false }
+);
 interface CitationNodeEditorProps {
   statementId: string;
   creatorId: string;
