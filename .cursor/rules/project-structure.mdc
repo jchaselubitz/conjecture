@@ -1,0 +1,34 @@
+---
+description: How to structure a project and organize new files
+globs:
+alwaysApply: false
+---
+
+# Your rule content
+
+follow this when setting up a project or organizing new files:
+
+root/
+  - app/
+    - api/ (here we put api routes in accordance with NextJS app router, names are dash-case)
+    - auth/ (here we put auth routes, names are dash-case)
+    - site routes/pages in accordance with NextJS app router
+    - not-found.tsx 
+  - components/
+    - ui/ (here we put atomic components that are used in multiple places. Names are dash-case. Start each with its component type, such as button-loading, or date-picker-input.)
+    - features/ (here we put features in folders by section of the website, for example: `features/login`, `features/dashboard`, `features/settings`, names are dash-case)
+    - layouts/ (here we put layouts, names are dash-case)
+    - modals/ (here we put modals, names are dash-case, they are used in the pages)
+  - contexts/ (here we put context provider, names are camelCase)
+  - lib/
+    - enums/
+    - hooks/
+    - actions/
+    - database/
+  - types/
+  - utils/
+    - supabase/
+    - helpers/ (here we put group helper functions into files with the pattern `helpers<Name>.ts`)
+ - other root files
+
+

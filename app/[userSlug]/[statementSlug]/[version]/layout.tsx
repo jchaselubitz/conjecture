@@ -8,13 +8,7 @@ import { StatementToolsProvider } from '@/contexts/StatementToolsContext';
 import { StatementUpdateProvider } from '@/contexts/StatementUpdateProvider';
 import { getUser, getUserRole } from '@/lib/actions/baseActions';
 import { getSubscribers } from '@/lib/actions/notificationActions';
-import {
-  getFullThread,
-  getPublishedOrLatest,
-  getStatementPackage,
-  getStatements
-} from '@/lib/actions/statementActions';
-import { UserStatementRoles } from '@/lib/enums/permissions';
+import { getFullThread, getStatementPageData, getStatements } from '@/lib/actions/statementActions';
 
 type Props = {
   params: Promise<{ statementSlug: string; userSlug: string; version: string }>;
@@ -45,10 +39,10 @@ export default async function UserStatementLayout({ children, params }: Props) {
   const user = await getUser();
   const userId = user?.id?.toString();
   const { statementSlug, userSlug, version } = await params;
-
-  const userRole = await getUserRole(userId, statementSlug);
-  const userIsCollaborator = userRole !== UserStatementRoles.Viewer;
-  const selection = await getPublishedOrLatest(statementSlug, userIsCollaborator);
+  const { userRole, selection, statementPackage } = await getStatementPageData({
+    statementSlug,
+    userId
+  });
 
   const { version: selectedVersion, versionList } = selection ?? {};
 
@@ -81,10 +75,15 @@ export default async function UserStatementLayout({ children, params }: Props) {
     redirect(`/${userSlug}/${statementSlug}/${selectedVersion}`);
   }
 
-  const statementPackage = await getStatementPackage({
-    statementSlug,
-    version: userIsCollaborator ? versionNumber : undefined
-  });
+  if (!statementPackage) {
+    return (
+      <NotFound
+        title="Conjecture Not Found"
+        message={`Sorry, the conjecture you are looking for doesn't exist or has been moved.`}
+        actions={[{ label: 'Back to User', href: `/${userSlug}`, variant: 'default' }]}
+      />
+    );
+  }
 
   const thread = statementPackage.threadId ? await getFullThread(statementPackage.threadId) : [];
 

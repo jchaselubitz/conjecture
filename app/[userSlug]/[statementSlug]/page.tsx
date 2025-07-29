@@ -7,14 +7,8 @@ import { StatementProvider } from '@/contexts/StatementBaseContext';
 import { StatementToolsProvider } from '@/contexts/StatementToolsContext';
 import { StatementUpdateProvider } from '@/contexts/StatementUpdateProvider';
 import { getUser } from '@/lib/actions/baseActions';
-import { getUserRole } from '@/lib/actions/baseActions';
 import { getSubscribers } from '@/lib/actions/notificationActions';
-import {
-  getFullThread,
-  getPublishedOrLatest,
-  getStatementPackage,
-  getStatements
-} from '@/lib/actions/statementActions';
+import { getFullThread, getStatementPageData, getStatements } from '@/lib/actions/statementActions';
 import { UserStatementRoles } from '@/lib/enums/permissions';
 
 type Props = {
@@ -33,7 +27,7 @@ export async function generateMetadata(
   return {
     title: statement?.title,
     description: statement?.subtitle,
-    creator: statement?.authors.map(author => author.name).join(', '),
+    creator: statement?.authors.map((author: any) => author.name).join(', '),
     // keywords: statement?.keywords,
     openGraph: {
       images: [`${statement?.headerImg}`, ...previousImages]
@@ -46,12 +40,13 @@ export default async function StatementPage({ params, searchParams }: Props) {
   const userId = user?.id?.toString();
   const { statementSlug, userSlug } = await params;
 
-  const userRole = await getUserRole(userId, statementSlug);
-  const userIsCollaborator = userRole !== UserStatementRoles.Viewer;
-  const selection = await getPublishedOrLatest(statementSlug, userIsCollaborator);
-  const { version: selectedVersion, versionList } = selection ?? {};
+  // Use the optimized function that combines multiple operations
+  const { userRole, selection, statementPackage } = await getStatementPageData({
+    statementSlug,
+    userId
+  });
 
-  if (!selectedVersion) {
+  if (!selection || !statementPackage) {
     return (
       <NotFound
         title="Conjecture Not Found"
@@ -67,19 +62,13 @@ export default async function StatementPage({ params, searchParams }: Props) {
     );
   }
 
-  const statementPackage = await getStatementPackage({
-    statementSlug,
-    version: selectedVersion
-  });
+  const { version: selectedVersion, versionList } = selection;
 
   const thread = statementPackage.threadId ? await getFullThread(statementPackage.threadId) : [];
   const statementId = statementPackage.statementId;
   const creator = statementPackage.creatorId.toString();
   const isCreator = creator === userId;
   const subscribers = isCreator ? await getSubscribers(creator) : [];
-
-  const { edit } = await searchParams;
-  const editMode = edit === 'true';
 
   return (
     <StatementProvider

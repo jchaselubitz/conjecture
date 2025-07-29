@@ -24,6 +24,14 @@ export const getUserProfile = async (slug?: string): Promise<BaseProfile | null 
     data: { user }
   } = await supabase.auth.getUser();
 
+  return await getUserProfileBySlug(slug, user);
+};
+
+// Overloaded version that accepts an existing user to avoid duplicate auth calls
+export const getUserProfileBySlug = async (
+  slug: string | undefined,
+  existingUser?: any
+): Promise<BaseProfile | null | undefined> => {
   let profile = db
     .selectFrom('profile')
     .leftJoin('follow', 'profile.id', 'follow.followed')
@@ -50,8 +58,8 @@ export const getUserProfile = async (slug?: string): Promise<BaseProfile | null 
 
   if (slug) {
     profile = profile.where('profile.username', '=', slug);
-  } else if (user) {
-    profile = profile.where('profile.id', '=', user.id);
+  } else if (existingUser) {
+    profile = profile.where('profile.id', '=', existingUser.id);
   } else {
     return null;
   }

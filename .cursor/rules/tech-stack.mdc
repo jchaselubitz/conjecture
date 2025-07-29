@@ -1,0 +1,17 @@
+---
+description: Preferred tech stack and patterns
+globs:
+alwaysApply: false
+---
+
+# Your rule content
+
+- Use TypeScript for all new files
+- use [shadcn/ui](https://ui.shadcn.com/) for components
+- use [lucide-react](https://lucide.dev/) for icons
+- use [tailwindcss](https://tailwindcss.com/) for styling
+- extend the [shadcn/ui](https://ui.shadcn.com/) component library with new components
+- Prefer Yarn over npm for package management
+- Default to Next.js for frontend (unless specified otherwise)
+- Use Supabase for backend/database/auth needs
+- Target Netlify deployment patterns

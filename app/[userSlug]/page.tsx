@@ -1,10 +1,13 @@
+import { BaseProfile } from 'kysely-codegen';
 import { Metadata, ResolvingMetadata } from 'next';
+import { cache } from 'react';
 
 import SiteNav from '@/components/navigation/site_nav';
 import NotFound from '@/components/ui/not_found';
 import { StatementListContainer } from '@/containers/StatementListContainer';
+import { getUser } from '@/lib/actions/baseActions';
 import { getStatements } from '@/lib/actions/statementActions';
-import { getUserProfile } from '@/lib/actions/userActions';
+import { getUserProfileBySlug } from '@/lib/actions/userActions';
 import { createClient } from '@/supabase/server';
 
 type UserPageProps = {
@@ -13,34 +16,38 @@ type UserPageProps = {
   }>;
 };
 
-export async function generateMetadata(
-  { params }: UserPageProps,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
-  const { userSlug } = await params;
+const userProfileCache = cache(
+  async (userSlug: string, user?: any): Promise<BaseProfile | null | undefined> => {
+    return await getUserProfileBySlug(userSlug, user);
+  }
+);
 
-  const profile = await getUserProfile(userSlug);
-  const previousImages = (await parent).openGraph?.images || [];
+// export async function generateMetadata(
+//   { params }: UserPageProps,
+//   parent: ResolvingMetadata
+// ): Promise<Metadata> {
+//   const { userSlug } = await params;
 
-  return {
-    title: profile?.name,
-    creator: profile?.name,
-    openGraph: {
-      images: [profile?.imageUrl ?? '', ...previousImages]
-    }
-  };
-}
+//   const profile = await userProfileCache(userSlug);
+//   const previousImages = (await parent).openGraph?.images || [];
+
+//   return {
+//     title: profile?.name,
+//     creator: profile?.name,
+//     openGraph: {
+//       images: [profile?.imageUrl ?? '', ...previousImages]
+//     }
+//   };
+// }
 
 export default async function UserPage({ params }: UserPageProps) {
   const { userSlug } = await params;
 
-  const supabase = await createClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
+  // Get user first, then use it to get profile efficiently
+  const user = await getUser();
+  const profile = await userProfileCache(userSlug, user);
 
   const userIsCreator = user?.user_metadata.username === userSlug;
-  const profile = await getUserProfile(userSlug);
 
   if (!profile) {
     return (

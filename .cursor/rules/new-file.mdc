@@ -1,0 +1,22 @@
+---
+description: How to create a new component or file
+globs:
+alwaysApply: false
+---
+
+# Your rule content
+
+### Consider whether it is a component, page, layout, api route, or auth route
+- If it is component, organize and name it according to [project-structure.mdc](@project-structure.mdc)
+- If it is a page, name should be `page.tsx`
+- If it is a layout, name should be `layout.tsx`
+- If it is an api route, put it in the `app/api` folder
+- If it is an auth route, put it in the `app/auth` folder
+
+### consider whether it is server or client component
+ - if it is not clear, refer to [this article](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions)
+ - if it is a server component, it should begin with `use server`
+ - if it is a client component, it should  begin with `use client`
+
+### Other considerations
+- pages should include metadata as defined in [this article](https://nextjs.org/docs/app/api-reference/functions/generate-metadata)  
