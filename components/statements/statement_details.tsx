@@ -28,11 +28,24 @@ import { AspectRatio } from '../ui/aspect-ratio';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 
-import { EditorMenu } from './custom_editor/editor_menu';
-import HTMLSuperEditor from './custom_editor/html_super_editor';
+import dynamic from 'next/dynamic';
+
+const EditorMenu = dynamic(() =>
+  import('./custom_editor/editor_menu').then(mod => mod.EditorMenu),
+  { ssr: false }
+);
+const HTMLSuperEditor = dynamic(() => import('./custom_editor/html_super_editor'), {
+  ssr: false
+});
 import { ImageLightbox } from './custom_editor/image_lightbox';
-import { ImageNodeEditor } from './custom_editor/image_node_editor';
-import { LatexNodeEditor } from './custom_editor/latex_node_editor';
+const ImageNodeEditor = dynamic(
+  () => import('./custom_editor/image_node_editor').then(mod => mod.ImageNodeEditor),
+  { ssr: false }
+);
+const LatexNodeEditor = dynamic(
+  () => import('./custom_editor/latex_node_editor').then(mod => mod.LatexNodeEditor),
+  { ssr: false }
+);
 import { FootnoteList } from './footnote/footnote_list';
 import Byline from './byline';
 import StatementOptions from './statement_options';
