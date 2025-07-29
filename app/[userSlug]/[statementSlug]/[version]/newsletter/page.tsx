@@ -7,7 +7,7 @@ import Newsletter from './(components)/newsletter';
 import NewsletterPanel from './(components)/newsletter_panel';
 
 export default function NewsletterPage() {
-  const { isCreator, statement, subscribers } = useStatementContext();
+  const { isCreator } = useStatementContext();
 
   return (
     <>
@@ -23,11 +23,7 @@ export default function NewsletterPage() {
           )}
 
           {/* Newsletter Preview (iframe) */}
-          {isCreator ? (
-            <Newsletter statement={statement} subscriberEmail={subscribers[0]?.email} />
-          ) : (
-            <Newsletter statement={statement} />
-          )}
+          <Newsletter />
         </ResizablePanel>
         <ResizableHandle />
         {isCreator && (
@@ -37,7 +33,7 @@ export default function NewsletterPage() {
             minSize={0}
             className="hidden md:flex flex-col"
           >
-            <NewsletterPanel subscribers={subscribers} />
+            <NewsletterPanel />
           </ResizablePanel>
         )}
       </ResizablePanelGroup>

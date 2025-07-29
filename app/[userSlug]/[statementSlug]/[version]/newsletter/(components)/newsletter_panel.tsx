@@ -1,27 +1,19 @@
 'use client';
 
-import { SubscriptionWithRecipient } from 'kysely-codegen';
-import { ArrowRightToLineIcon } from 'lucide-react';
-import { useState } from 'react';
-
-import { Button } from '@/components/ui/button';
+import { LazySubscriberData } from '@/components/user/lazy_subscriber_data';
 import { SubscriberTable } from '@/components/user/subscriber_table';
+import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
-import { getSubscribers, unsubscribeBulk } from '@/lib/actions/notificationActions';
+import { unsubscribeBulk } from '@/lib/actions/notificationActions';
 
-interface NewsletterPanelProps {
-  subscribers: SubscriptionWithRecipient[];
-}
-
-export default function NewsletterPanel({ subscribers }: NewsletterPanelProps) {
-  const [subscriptions, setSubscriptions] = useState<SubscriptionWithRecipient[]>(subscribers);
+export default function NewsletterPanel() {
   const { userId } = useUserContext();
-
+  const { statement } = useStatementContext();
+  const authorId = statement.creatorId;
   const handleSubscriptionsChange = async (subscriberIds: string[]) => {
     if (!userId) return;
     await unsubscribeBulk(userId, subscriberIds);
-    const updatedSubscriptions = await getSubscribers(userId);
-    setSubscriptions(updatedSubscriptions);
+    // The LazySubscriberData component will handle refreshing the data
   };
 
   return (
@@ -34,12 +26,16 @@ export default function NewsletterPanel({ subscribers }: NewsletterPanelProps) {
       </div>
 
       <div className="flex flex-col gap-2 h-full overflow-hidden">
-        <SubscriberTable
-          subscriptions={subscriptions}
-          onSubscriptionsChange={handleSubscriptionsChange}
-          authorId={userId}
-          columns={['recipientEmail', 'recipientImageUrl', 'paused']}
-        />
+        <LazySubscriberData authorId={authorId} fallback={<div>Loading subscribers...</div>}>
+          {subscribers => (
+            <SubscriberTable
+              subscriptions={subscribers}
+              onSubscriptionsChange={handleSubscriptionsChange}
+              authorId={userId}
+              columns={['recipientEmail', 'recipientImageUrl', 'paused']}
+            />
+          )}
+        </LazySubscriberData>
       </div>
     </div>
   );

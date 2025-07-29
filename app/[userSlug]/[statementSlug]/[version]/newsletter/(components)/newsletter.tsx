@@ -3,15 +3,12 @@
 import { StatementWithUser } from 'kysely-codegen';
 import React from 'react';
 
+import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { getNewsletterHtml } from '@/lib/assets/newsletter_template';
 
-export default function Newsletter({
-  statement,
-  subscriberEmail
-}: {
-  statement: StatementWithUser;
-  subscriberEmail?: string;
-}) {
+export default function Newsletter() {
+  const { isCreator, subscribers, statement } = useStatementContext();
+  const subscriberEmail = isCreator ? subscribers[0]?.email : undefined;
   const newsletterHtml = getNewsletterHtml({
     statement,
     subscriberEmail,

@@ -1,5 +1,4 @@
 import { BaseProfile } from 'kysely-codegen';
-
 import { cache } from 'react';
 
 import SiteNav from '@/components/navigation/site_nav';
