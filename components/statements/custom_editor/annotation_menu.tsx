@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { RefObject, useEffect, useState } from 'react';
 import { ImperativePanelGroupHandle } from 'react-resizable-panels';
 
+import { AuthButtons } from '@/components/navigation/auth_buttons';
 import { Button } from '@/components/ui/button';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { useUserContext } from '@/contexts/userContext';
@@ -109,17 +110,8 @@ export const AnnotationMenu = ({
               <AnnotationButton onAnnotate={handleAnnotationCreate} />
             </div>
           ) : (
-            <div className="flex items-center gap-2 bg-background border shadow-sm p-2 rounded-lg">
-              <Link href="/login">
-                <Button variant="default" size="sm">
-                  Login
-                </Button>
-              </Link>
-              <Link href="/sign-up">
-                <Button variant="outline" size="sm">
-                  Create Account
-                </Button>
-              </Link>
+            <div className="flex items-center gap-2 bg-white border shadow-sm p-2 rounded-lg">
+              <AuthButtons />
             </div>
           )}
         </>

@@ -1,6 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -26,6 +27,10 @@ export function LoginForm({
   message?: string;
 }) {
   const [buttonState, setButtonState] = useState<ButtonLoadingState>('default');
+
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect');
+
   const zObject = {
     email: z.string().email(),
     password: z.string().min(8)
@@ -70,12 +75,14 @@ export function LoginForm({
           email: data.email,
           password: data.password,
           username: data.username,
-          token: null
+          token: null,
+          redirectTo: redirectTo ?? 'feed'
         });
       } else {
         await signIn({
           email: data.email,
-          password: data.password
+          password: data.password,
+          redirectTo: redirectTo ?? 'feed'
         });
       }
       setButtonState('success');

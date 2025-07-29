@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { useUserContext } from '@/contexts/userContext';
 import { createStatement, updateStatementThreadId } from '@/lib/actions/statementActions';
 
+import { AuthButtons } from '../navigation/auth_buttons';
 import { Button } from '../ui/button';
 import {
   Dialog,
@@ -155,16 +156,7 @@ export default function RebuttalButton({
           </Form>
         ) : (
           <div className="flex items-center gap-2">
-            <Link href="/login">
-              <Button variant="default" size="sm">
-                Login
-              </Button>
-            </Link>
-            <Link href="/sign-up">
-              <Button variant="outline" size="sm">
-                Create Account
-              </Button>
-            </Link>
+            <AuthButtons />
           </div>
         )}
       </DialogContent>

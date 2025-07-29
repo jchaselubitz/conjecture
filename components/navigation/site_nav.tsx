@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { getUser } from '@/lib/actions/baseActions';
 
 import CreatePostButton from '../special_buttons/create_post_button';
-import { Button } from '../ui/button';
 
+import { AuthButtons } from './auth_buttons';
 import MobileNav from './mobile_nav';
 import UserButton from './user_button';
 
@@ -37,18 +37,7 @@ export default async function SiteNav() {
               <UserButton />
             </>
           ) : (
-            <div className="flex items-center gap-2">
-              <Link href="/login">
-                <Button variant="default" size="sm">
-                  Login
-                </Button>
-              </Link>
-              <Link href="/sign-up">
-                <Button variant="outline" size="sm">
-                  Create Account
-                </Button>
-              </Link>
-            </div>
+            <AuthButtons />
           )}
         </div>
       </div>

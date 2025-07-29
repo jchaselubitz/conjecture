@@ -137,7 +137,15 @@ export async function signInWithEmail({
   }
 }
 
-export const signIn = async ({ email, password }: { email: string; password: string }) => {
+export const signIn = async ({
+  email,
+  password,
+  redirectTo
+}: {
+  email: string;
+  password: string;
+  redirectTo: string;
+}) => {
   const headersList = await headers();
   const origin = headersList.get('origin');
 
@@ -153,10 +161,7 @@ export const signIn = async ({ email, password }: { email: string; password: str
     return redirect(`/login?message=${error.message}`);
   }
 
-  const redirectUrl =
-    process.env.NEXT_PUBLIC_CONTEXT === 'development'
-      ? `http://localhost:3000/feed`
-      : `${origin}/feed`;
+  const redirectUrl = `${origin}${redirectTo}`;
 
   if (data) {
     return redirect(redirectUrl);
@@ -168,13 +173,15 @@ export const signUp = async ({
   password,
   username,
   token,
-  inviteEmail
+  inviteEmail,
+  redirectTo
 }: {
   email: string;
   password: string;
   username: string;
   token: string | null | undefined;
   inviteEmail?: string;
+  redirectTo?: string;
 }) => {
   const supabase = await createClient();
   const headersList = await headers();
@@ -186,7 +193,7 @@ export const signUp = async ({
     email: inviteEmail ?? (email as string),
     password,
     options: {
-      emailRedirectTo: `${origin}/feed`,
+      emailRedirectTo: `${origin}${redirectTo ?? '/feed'}`,
       data: {
         has_password: true,
         username
