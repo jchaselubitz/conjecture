@@ -1,7 +1,7 @@
+import dynamic from 'next/dynamic';
+
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
-
-import dynamic from 'next/dynamic';
 
 const LatexPopoverEditor = dynamic(
   () => import('./latex_popover_editor').then(mod => mod.LatexPopoverEditor),

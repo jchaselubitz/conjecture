@@ -14,7 +14,7 @@ import { createAnnotation } from '../actions/annotationActions';
 import { UpsertImageDataType } from '../actions/statementActions';
 import { uploadStatementImage } from '../actions/storageActions';
 
-import { handleImageCompression } from './helpersImages';
+import { handleHeaderImageCompression, handleImageCompression } from './helpersImages';
 export type PositionParams = {
   x: number;
   y: number;
@@ -159,7 +159,7 @@ export const headerImageChange = async ({
     if (files && files.length > 0) {
       const imageUrl = await Promise.all(
         files.map(async file => {
-          const compressedFile = await handleImageCompression(file);
+          const compressedFile = await handleHeaderImageCompression(file);
           if (!compressedFile) return;
 
           const fileFormData = new FormData();

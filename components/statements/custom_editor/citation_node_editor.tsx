@@ -1,10 +1,9 @@
 'use client';
 
 import { Editor } from '@tiptap/react';
+import dynamic from 'next/dynamic';
 
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
-
-import dynamic from 'next/dynamic';
 
 const CitationPopover = dynamic(
   () => import('./citation_popover').then(mod => mod.CitationPopover),

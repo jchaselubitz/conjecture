@@ -1,6 +1,6 @@
-import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
-
 import dynamic from 'next/dynamic';
+
+import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 
 const ImagePopoverEditor = dynamic(
   () => import('./image_popover_editor').then(mod => mod.ImagePopoverEditor),

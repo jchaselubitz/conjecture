@@ -30,6 +30,11 @@ export async function generateMetadata(
     // keywords: statement?.keywords,
     openGraph: {
       images: [`${statement?.headerImg}`, ...previousImages]
+    },
+    other: {
+      ...(statement?.headerImg && {
+        'link[rel="preload"][as="image"]': statement.headerImg
+      })
     }
   };
 }

@@ -1,5 +1,6 @@
 import { BaseStatementCitation, StatementWithUser } from 'kysely-codegen';
 import { ChevronLeft, Loader2, Upload } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { RefObject, useEffect, useMemo, useRef } from 'react';
@@ -28,10 +29,8 @@ import { AspectRatio } from '../ui/aspect-ratio';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 
-import dynamic from 'next/dynamic';
-
-const EditorMenu = dynamic(() =>
-  import('./custom_editor/editor_menu').then(mod => mod.EditorMenu),
+const EditorMenu = dynamic(
+  () => import('./custom_editor/editor_menu').then(mod => mod.EditorMenu),
   { ssr: false }
 );
 const HTMLSuperEditor = dynamic(() => import('./custom_editor/html_super_editor'), {
@@ -210,7 +209,11 @@ export default function StatementDetails({
                 alt="Statement cover image"
                 fill
                 className="h-full w-full md:rounded-md object-cover"
-                priority={false}
+                priority={true}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 768px, 1200px"
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                quality={85}
               />
               {isStatementCreator && editMode && (
                 <div
