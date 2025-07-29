@@ -1,6 +1,5 @@
 'use client';
 
-import { StatementWithUser } from 'kysely-codegen';
 import React from 'react';
 
 import { useStatementContext } from '@/contexts/StatementBaseContext';

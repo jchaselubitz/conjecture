@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 
 import StatementLayout from '@/components/statements/statement_layout';
 import { EditModeProvider } from '@/contexts/EditModeContext';
-import { balancePanelSizes, getEditModeCookie } from '@/lib/helpers/helpersLayout';
+import { balancePanelSizes } from '@/lib/helpers/helpersLayout';
 
 export async function StatementContainer({ statementId }: { statementId: string }) {
   const cookieStore = await cookies();
