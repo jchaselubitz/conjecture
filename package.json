@@ -33,7 +33,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "seed": "npx tsx seed.ts > supabase/seed.sql",
-    "seedsync": "npx @snaplet/seed sync"
+    "seedsync": "npx @snaplet/seed sync",
+    "generate-sitemap": "npx tsx scripts/generate-sitemap.ts"
   },
   "dependencies": {
     "@floating-ui/dom": "^1.6.0",
