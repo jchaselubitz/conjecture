@@ -16,10 +16,11 @@
     "functions-deploy": "supabase functions deploy --project-ref bewgymyresxixvkkqbzl",
     "functions-set-secret": "supabase secrets set --env-file ./supabase/.env.prod --project-ref bewgymyresxixvkkqbzl",
     "dev": "next dev",
-    "build-dev": "netlify build --context=development",
-    "build-branch": "netlify build --context=branch-deploy",
-    "build-staging": "netlify build --context=staging",
-    "build-prod": "netlify build --context=production",
+    "build": "yarn generate-sitemap && next build",
+    "build-dev": "yarn generate-sitemap && netlify build --context=development",
+    "build-branch": "yarn generate-sitemap && netlify build --context=branch-deploy",
+    "build-staging": "yarn generate-sitemap && netlify build --context=staging",
+    "build-prod": "yarn generate-sitemap && netlify build --context=production",
     "lint": "yarn run js-lint && yarn run style-lint && yarn run type-check",
     "fix": "yarn run fix-js-lint && yarn run fix-style-lint",
     "fix-js-lint": "eslint -c eslint.config.mjs --fix './app/**/*.{ts,tsx}' './components/**/*.{ts,tsx}' './lib/**/*.{ts,tsx}' './containers/**/*.{ts,tsx}' './contexts/**/*.{ts,tsx}' './*.{ts,tsx}' -f table",
@@ -34,7 +35,7 @@
     "test:watch": "jest --watch",
     "seed": "npx tsx seed.ts > supabase/seed.sql",
     "seedsync": "npx @snaplet/seed sync",
-    "generate-sitemap": "npx tsx scripts/generate-sitemap.ts"
+    "generate-sitemap": "npx tsx -r dotenv/config scripts/generate-sitemap.ts"
   },
   "dependencies": {
     "@floating-ui/dom": "^1.6.0",

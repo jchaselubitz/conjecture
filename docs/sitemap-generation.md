@@ -1,11 +1,11 @@
 # Automatic Sitemap Generation
 
-This project includes an automatic sitemap generation system that creates and updates your sitemap.xml file on every commit.
+This project includes an automatic sitemap generation system that creates your sitemap.xml file during the build process for production deployments.
 
 ## How It Works
 
-### 1. Pre-commit Hook
-A Git pre-commit hook automatically runs the sitemap generation script before each commit. This ensures your sitemap is always up-to-date with the latest content.
+### 1. Build-Time Generation
+The sitemap is automatically generated during the build process (when running `yarn build`, `yarn build-prod`, etc.). This ensures your sitemap is always up-to-date with the latest content when deployed.
 
 ### 2. Static Generation Script
 The `scripts/generate-sitemap.ts` script:
@@ -16,6 +16,10 @@ The `scripts/generate-sitemap.ts` script:
 
 ### 3. Dynamic API Route (Backup)
 As a backup, there's also a dynamic sitemap route at `/sitemap.xml` that generates the sitemap on-demand.
+
+### 4. Environment-Aware
+- **Local Development**: Uses `.env.local` for database connection
+- **Production**: Uses production environment variables from Netlify
 
 ## What's Included in the Sitemap
 
@@ -37,6 +41,15 @@ You can manually generate the sitemap at any time:
 yarn generate-sitemap
 ```
 
+## Build Process Integration
+
+The sitemap is automatically generated during these build commands:
+- `yarn build` - Standard Next.js build
+- `yarn build-prod` - Production Netlify build
+- `yarn build-dev` - Development Netlify build
+- `yarn build-branch` - Branch deployment build
+- `yarn build-staging` - Staging build
+
 ## Configuration
 
 ### Environment Variables
@@ -50,14 +63,15 @@ To add more pages or modify priorities, edit the `scripts/generate-sitemap.ts` f
 - **Search Engine Discovery**: Helps search engines find and index all your content
 - **Crawl Efficiency**: Provides change frequency hints to search engines
 - **Priority Indication**: Tells search engines which pages are most important
-- **Automatic Updates**: Ensures sitemap stays current without manual intervention
+- **Automatic Updates**: Ensures sitemap stays current with every deployment
+- **Production-Ready**: Generated fresh for each production build with latest content
 
 ## Troubleshooting
 
-### Pre-commit Hook Not Working
-1. Ensure the hook is executable: `chmod +x .git/hooks/pre-commit`
-2. Check that the `yarn generate-sitemap` command works manually
-3. Verify your database connection is working
+### Build Process Issues
+1. Check that the `yarn generate-sitemap` command works manually
+2. Verify your database connection is working
+3. Ensure environment variables are properly set in your deployment platform
 
 ### Sitemap Generation Fails
 1. Check your database connection string

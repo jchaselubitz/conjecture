@@ -45,3 +45,7 @@ next-env.d.ts
 
 # Local Netlify folder
 .netlify
+
+# Generated sitemap (generated during build)
+public/sitemap.xml
+public/robots.txt
