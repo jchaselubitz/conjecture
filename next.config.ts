@@ -2,6 +2,7 @@ import { withSentryConfig } from '@sentry/nextjs';
 // Import the necessary modules
 import { NextConfig } from 'next';
 import withPWA from 'next-pwa';
+import withBundleAnalyzer from '@next/bundle-analyzer';
 /** @type {NextConfig} */
 
 const pwaConfig = withPWA({
@@ -11,6 +12,10 @@ const pwaConfig = withPWA({
   skipWaiting: false,
   buildExcludes: [/middleware-manifest\.json$/]
   // cacheOnFrontEndNav: true,
+});
+
+const withAnalyze = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true'
 });
 
 const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -65,7 +70,7 @@ const config: NextConfig = {
   // },
 };
 
-export default withSentryConfig(config, {
+export default withAnalyze(withSentryConfig(config, {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
@@ -100,4 +105,4 @@ export default withSentryConfig(config, {
   // https://docs.sentry.io/product/crons/
   // https://vercel.com/docs/cron-jobs
   automaticVercelMonitors: true
-});
+}));
