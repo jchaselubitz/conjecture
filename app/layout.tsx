@@ -61,6 +61,24 @@ export default async function RootLayout({
         rel="dns-prefetch"
         href={`//${process.env.NEXT_PUBLIC_SITE_URL?.replace('https://', '')}`}
       />
+      <link rel="manifest" href="/manifest.json" />
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                  .then(function(registration) {
+                    console.log('SW registered: ', registration);
+                  })
+                  .catch(function(registrationError) {
+                    console.log('SW registration failed: ', registrationError);
+                  });
+              });
+            }
+          `
+        }}
+      />
 
       <body>
         <div className="min-h-screen">

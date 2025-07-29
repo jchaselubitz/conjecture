@@ -1,7 +1,5 @@
-import { offset } from '@floating-ui/dom';
 import { Editor } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
-import Link from 'next/link';
 import { RefObject, useEffect, useState } from 'react';
 import { ImperativePanelGroupHandle } from 'react-resizable-panels';
 

@@ -8,9 +8,22 @@ import withPWA from 'next-pwa';
 const pwaConfig = withPWA({
   dest: 'public',
   register: true,
-  disable: process.env.NEXT_PUBLIC_CONTEXT === 'development',
-  skipWaiting: false,
-  buildExcludes: [/middleware-manifest\.json$/]
+  disable: process.env.NODE_ENV === 'development',
+  skipWaiting: true,
+  buildExcludes: [/middleware-manifest\.json$/],
+  sw: '/sw.js',
+  runtimeCaching: [
+    {
+      urlPattern: /^https?.*/,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'offlineCache',
+        expiration: {
+          maxEntries: 200
+        }
+      }
+    }
+  ]
   // cacheOnFrontEndNav: true,
 });
 
