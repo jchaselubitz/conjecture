@@ -76,13 +76,13 @@ export function LoginForm({
           password: data.password,
           username: data.username,
           token: null,
-          redirectTo: redirectTo ?? 'feed'
+          redirectTo: redirectTo ?? undefined
         });
       } else {
         await signIn({
           email: data.email,
           password: data.password,
-          redirectTo: redirectTo ?? 'feed'
+          redirectTo: redirectTo ?? undefined
         });
       }
       setButtonState('success');
