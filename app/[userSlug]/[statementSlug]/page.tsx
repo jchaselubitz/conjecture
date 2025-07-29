@@ -7,8 +7,12 @@ import { StatementProvider } from '@/contexts/StatementBaseContext';
 import { StatementToolsProvider } from '@/contexts/StatementToolsContext';
 import { StatementUpdateProvider } from '@/contexts/StatementUpdateProvider';
 import { getUser } from '@/lib/actions/baseActions';
-import { getSubscribers } from '@/lib/actions/notificationActions';
-import { getFullThread, getStatementPageData, getStatements } from '@/lib/actions/statementActions';
+import { getSubscribersCached } from '@/lib/actions/notificationActions';
+import {
+  getFullThreadCached,
+  getStatementPageDataCached,
+  getStatements
+} from '@/lib/actions/statementActions';
 
 type Props = {
   params: Promise<{ statementSlug: string; userSlug: string }>;
@@ -44,8 +48,8 @@ export default async function StatementPage({ params, searchParams }: Props) {
   const userId = user?.id?.toString();
   const { statementSlug, userSlug } = await params;
 
-  // Use the optimized function that combines multiple operations
-  const { userRole, selection, statementPackage } = await getStatementPageData({
+  // Use the cached version for better performance
+  const { userRole, selection, statementPackage } = await getStatementPageDataCached({
     statementSlug,
     userId
   });
@@ -68,11 +72,21 @@ export default async function StatementPage({ params, searchParams }: Props) {
 
   const { version: selectedVersion, versionList } = selection;
 
-  const thread = statementPackage.threadId ? await getFullThread(statementPackage.threadId) : [];
+  // Parallelize independent data fetching operations
+  const [thread, subscribers] = await Promise.all([
+    statementPackage.threadId
+      ? getFullThreadCached(statementPackage.threadId)
+      : Promise.resolve([]),
+    (() => {
+      const creator = statementPackage.creatorId.toString();
+      const isCreator = creator === userId;
+      return isCreator ? getSubscribersCached(creator) : Promise.resolve([]);
+    })()
+  ]);
+
   const statementId = statementPackage.statementId;
   const creator = statementPackage.creatorId.toString();
   const isCreator = creator === userId;
-  const subscribers = isCreator ? await getSubscribers(creator) : [];
 
   return (
     <StatementProvider

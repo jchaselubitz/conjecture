@@ -8,7 +8,11 @@ import { StatementToolsProvider } from '@/contexts/StatementToolsContext';
 import { StatementUpdateProvider } from '@/contexts/StatementUpdateProvider';
 import { getUser, getUserRole } from '@/lib/actions/baseActions';
 import { getSubscribers } from '@/lib/actions/notificationActions';
-import { getFullThread, getStatementPageData, getStatements } from '@/lib/actions/statementActions';
+import {
+  getFullThread,
+  getStatementPageDataCached,
+  getStatements
+} from '@/lib/actions/statementActions';
 
 type Props = {
   params: Promise<{ statementSlug: string; userSlug: string; version: string }>;
@@ -39,7 +43,7 @@ export default async function UserStatementLayout({ children, params }: Props) {
   const user = await getUser();
   const userId = user?.id?.toString();
   const { statementSlug, userSlug, version } = await params;
-  const { userRole, selection, statementPackage } = await getStatementPageData({
+  const { userRole, selection, statementPackage } = await getStatementPageDataCached({
     statementSlug,
     userId,
     version: parseInt(version, 10)

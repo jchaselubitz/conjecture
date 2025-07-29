@@ -21,6 +21,12 @@ export const metadata: Metadata = {
   description: 'Conjecture and Critique',
   icons: {
     icon: '/favicon.ico'
+  },
+  applicationName: 'Conject',
+  appleWebApp: {
+    title: 'Conject',
+    statusBarStyle: 'black-translucent',
+    startupImage: '/favicon.ico'
   }
 };
 

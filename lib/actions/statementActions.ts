@@ -205,6 +205,10 @@ export async function getFullThread(threadId: string): Promise<StatementWithUser
   }));
 }
 
+export const getFullThreadCached = cache(async (threadId: string): Promise<StatementWithUser[]> => {
+  return getFullThread(threadId);
+});
+
 export async function getPublishedOrLatest(
   statementSlug: string,
   userIsCollaborator: boolean = false
@@ -650,10 +654,12 @@ export async function getStatementPageData({
 export const getStatementPageDataCached = cache(
   async ({
     statementSlug,
-    userId
+    userId,
+    version
   }: {
     statementSlug: string;
     userId?: string;
+    version?: number;
   }): Promise<{
     userRole: UserStatementRoles;
     userIsCollaborator: boolean;
@@ -663,7 +669,7 @@ export const getStatementPageDataCached = cache(
     } | null;
     statementPackage: StatementPackage | null;
   }> => {
-    return getStatementPageData({ statementSlug, userId });
+    return getStatementPageData({ statementSlug, userId, version });
   }
 );
 

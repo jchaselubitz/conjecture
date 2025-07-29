@@ -1,6 +1,7 @@
 'use server';
 import { NotificationMedium, StatementWithUser, SubscriptionWithRecipient } from 'kysely-codegen';
 import { revalidatePath } from 'next/cache';
+import { cache } from 'react';
 import { Resend } from 'resend';
 
 import { getNewsletterHtml } from '../assets/newsletter_template';
@@ -165,6 +166,12 @@ export const getSubscribers = async (authorId: string): Promise<SubscriptionWith
 
   return subscribers;
 };
+
+export const getSubscribersCached = cache(
+  async (authorId: string): Promise<SubscriptionWithRecipient[]> => {
+    return getSubscribers(authorId);
+  }
+);
 
 export const unsubscribe = async (authorId: string, recipientId: string) => {
   await db
