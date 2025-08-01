@@ -1,11 +1,13 @@
 import { BaseProfile } from 'kysely-codegen';
 import { cache } from 'react';
+import { Suspense } from 'react';
 
 import SiteNav from '@/components/navigation/site_nav';
 import NotFound from '@/components/ui/not_found';
+import { Skeleton } from '@/components/ui/skeleton';
 import { StatementListContainer } from '@/containers/StatementListContainer';
 import { getUser } from '@/lib/actions/baseActions';
-import { getStatements } from '@/lib/actions/statementActions';
+import { getStatementsCached } from '@/lib/actions/statementActions';
 import { getUserProfileBySlug } from '@/lib/actions/userActions';
 
 type UserPageProps = {
@@ -20,30 +22,39 @@ const userProfileCache = cache(
   }
 );
 
-// export async function generateMetadata(
-//   { params }: UserPageProps,
-//   parent: ResolvingMetadata
-// ): Promise<Metadata> {
-//   const { userSlug } = await params;
+// Async component for loading statements
+async function StatementsListLoader({
+  creatorId,
+  publishedOnly,
+  userSlug
+}: {
+  creatorId: string;
+  publishedOnly: boolean;
+  userSlug: string;
+}) {
+  const statements = await getStatementsCached({ creatorId, publishedOnly });
+  return <StatementListContainer statements={statements} pathname={userSlug} />;
+}
 
-//   const profile = await userProfileCache(userSlug);
-//   const previousImages = (await parent).openGraph?.images || [];
-
-//   return {
-//     title: profile?.name,
-//     creator: profile?.name,
-//     openGraph: {
-//       images: [profile?.imageUrl ?? '', ...previousImages]
-//     }
-//   };
-// }
+// Loading component for statements
+function StatementsLoading() {
+  return (
+    <div className="space-y-4">
+      <div className="h-8 bg-muted rounded animate-pulse" />
+      <div className="space-y-3">
+        {[...Array(3)].map((_, i) => (
+          <Skeleton key={i} className="h-24 bg-muted rounded" />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default async function UserPage({ params }: UserPageProps) {
   const { userSlug } = await params;
 
-  // Get user first, then use it to get profile efficiently
-  const user = await getUser();
-  const profile = await userProfileCache(userSlug, user);
+  // Parallel data fetching for better performance
+  const [user, profile] = await Promise.all([getUser(), userProfileCache(userSlug)]);
 
   const userIsCreator = user?.user_metadata.username === userSlug;
 
@@ -63,10 +74,6 @@ export default async function UserPage({ params }: UserPageProps) {
     );
   }
 
-  const { id } = profile;
-
-  const statements = await getStatements({ creatorId: id, publishedOnly: !userIsCreator });
-
   const title = userIsCreator
     ? 'My conjectures'
     : `${profile.name ?? profile.username}'s conjectures`;
@@ -75,7 +82,14 @@ export default async function UserPage({ params }: UserPageProps) {
     <>
       <SiteNav />
       <main className="flex-1 mx-auto bg-background container py-8 px-4 md:px-0">
-        <StatementListContainer statements={statements} title={title} pathname={`${userSlug}`} />
+        <h1 className="text-3xl font-bold mb-6">{title}</h1>
+        <Suspense fallback={<StatementsLoading />}>
+          <StatementsListLoader
+            creatorId={profile.id}
+            publishedOnly={!userIsCreator}
+            userSlug={userSlug}
+          />
+        </Suspense>
       </main>
     </>
   );

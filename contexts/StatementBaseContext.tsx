@@ -35,7 +35,6 @@ interface StatementContextType {
   debouncedStatement: StatementPackage | undefined;
   parentStatement: StatementWithUser | undefined;
   thread: StatementWithUser[];
-  subscribers: SubscriptionWithRecipient[];
   isCreator: boolean;
 }
 
@@ -49,7 +48,6 @@ export function StatementProvider({
   thread,
   currentUserRole,
   versionList,
-  subscribers,
   isCreator
 }: {
   children: ReactNode;
@@ -59,7 +57,6 @@ export function StatementProvider({
   thread: StatementWithUser[] | [];
   currentUserRole: UserStatementRoles;
   versionList: { versionNumber: number; createdAt: Date }[];
-  subscribers: SubscriptionWithRecipient[];
   isCreator: boolean;
 }) {
   const router = useRouter();
@@ -141,7 +138,6 @@ export function StatementProvider({
         debouncedStatement,
         parentStatement,
         thread,
-        subscribers,
         isCreator
       }}
     >

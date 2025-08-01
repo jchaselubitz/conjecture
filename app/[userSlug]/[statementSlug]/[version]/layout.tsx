@@ -6,10 +6,9 @@ import { StatementAnnotationProvider } from '@/contexts/StatementAnnotationConte
 import { StatementProvider } from '@/contexts/StatementBaseContext';
 import { StatementToolsProvider } from '@/contexts/StatementToolsContext';
 import { StatementUpdateProvider } from '@/contexts/StatementUpdateProvider';
-import { getUser, getUserRole } from '@/lib/actions/baseActions';
-import { getSubscribers } from '@/lib/actions/notificationActions';
+import { getUser } from '@/lib/actions/baseActions';
 import {
-  getFullThread,
+  getFullThreadCached,
   getStatementPageDataCached,
   getStatements
 } from '@/lib/actions/statementActions';
@@ -90,11 +89,12 @@ export default async function UserStatementLayout({ children, params }: Props) {
     );
   }
 
-  const thread = statementPackage.threadId ? await getFullThread(statementPackage.threadId) : [];
+  const thread = statementPackage.threadId
+    ? await getFullThreadCached(statementPackage.threadId)
+    : [];
 
   const creator = statementPackage.creatorId.toString();
   const isCreator = creator === userId;
-  const subscribers = isCreator ? await getSubscribers(creator) : [];
 
   return (
     <StatementProvider
@@ -105,7 +105,6 @@ export default async function UserStatementLayout({ children, params }: Props) {
       thread={thread}
       versionList={versionList ?? []}
       isCreator={isCreator}
-      subscribers={subscribers}
     >
       <StatementToolsProvider>
         <StatementAnnotationProvider>

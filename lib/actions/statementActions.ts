@@ -39,13 +39,17 @@ export async function getStatements({
   publishedOnly,
   creatorId,
   statementSlug,
-  statementId
+  statementId,
+  limit = 20,
+  offset = 0
 }: {
   forCurrentUser?: boolean;
   publishedOnly?: boolean;
   creatorId?: string;
   statementSlug?: string;
   statementId?: string;
+  limit?: number;
+  offset?: number;
 }): Promise<StatementWithUser[]> {
   const user = await getUser();
   let statements = db
@@ -102,6 +106,9 @@ export async function getStatements({
     statements = statements.orderBy('draft.createdAt', 'desc');
   }
 
+  // Add pagination
+  statements = statements.limit(limit).offset(offset);
+
   const statementsList = await statements.execute();
 
   if (statementsList.length === 0) {
@@ -141,6 +148,37 @@ export async function getStatements({
     }
   })) as StatementWithUser[];
 }
+
+// Cached version for better performance
+export const getStatementsCached = cache(
+  async ({
+    forCurrentUser,
+    publishedOnly,
+    creatorId,
+    statementSlug,
+    statementId,
+    limit = 20,
+    offset = 0
+  }: {
+    forCurrentUser?: boolean;
+    publishedOnly?: boolean;
+    creatorId?: string;
+    statementSlug?: string;
+    statementId?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<StatementWithUser[]> => {
+    return getStatements({
+      forCurrentUser,
+      publishedOnly,
+      creatorId,
+      statementSlug,
+      statementId,
+      limit,
+      offset
+    });
+  }
+);
 
 export async function getFullThread(threadId: string): Promise<StatementWithUser[]> {
   const statementsList = await db

@@ -1,5 +1,6 @@
 import './globals.css';
 
+import { lt } from 'date-fns/locale';
 import type { Metadata, Viewport } from 'next';
 
 import { Toaster } from '@/components/ui/sonner';
@@ -49,7 +50,15 @@ export default async function RootLayout({
     data: { user }
   } = await supabase.auth.getUser();
 
-  const profile = await getUserProfile();
+  let profile = null;
+  let email = null;
+  let slug = null;
+
+  if (user) {
+    profile = await getUserProfile();
+    email = user.email;
+    slug = profile?.username;
+  }
 
   return (
     <html lang="en" className={` ${fontSans.variable}`}>
@@ -62,23 +71,6 @@ export default async function RootLayout({
         href={`//${process.env.NEXT_PUBLIC_SITE_URL?.replace('https://', '')}`}
       />
       <link rel="manifest" href="/manifest.json" />
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            if ('serviceWorker' in navigator) {
-              window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js')
-                  .then(function(registration) {
-                    console.log('SW registered: ', registration);
-                  })
-                  .catch(function(registrationError) {
-                    console.log('SW registration failed: ', registrationError);
-                  });
-              });
-            }
-          `
-        }}
-      />
 
       <body>
         <div className="min-h-screen">

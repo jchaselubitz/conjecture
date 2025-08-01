@@ -2,11 +2,14 @@
 
 import React from 'react';
 
+import { useNewsletterContext } from '@/contexts/NewsletterContext';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { getNewsletterHtml } from '@/lib/assets/newsletter_template';
 
 export default function Newsletter() {
-  const { isCreator, subscribers, statement } = useStatementContext();
+  const { isCreator, statement } = useStatementContext();
+  const { subscribers } = useNewsletterContext();
+
   const subscriberEmail = isCreator ? subscribers[0]?.email : undefined;
   const newsletterHtml = getNewsletterHtml({
     statement,
