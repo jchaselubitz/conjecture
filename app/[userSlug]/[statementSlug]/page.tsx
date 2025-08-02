@@ -12,6 +12,7 @@ import {
   getStatementPageDataCached,
   getStatementsCached
 } from '@/lib/actions/statementActions';
+import { StatementVote } from 'kysely-codegen';
 
 type Props = {
   params: Promise<{ statementSlug: string; userSlug: string }>;
@@ -46,6 +47,24 @@ export async function generateMetadata(
 export default async function StatementPage({ params, searchParams }: Props) {
   const { statementSlug, userSlug } = await params;
 
+  const { userRole, userIsCollaborator, versionList, statement } = await getStatementSkeleton(
+    statementSlug,
+    userId,
+    version
+  );
+
+  let annotations: AnnotationWithComments[] = [];
+  let comments: CommentWithUser[] = [];
+  let votes: StatementVote[] = [];
+  let profiles: Profile[] = [];
+
+  if (statement) {
+  const { annotations, comments, votes, profiles } = await getStatementExtras(
+    statementId,
+    draftId
+  );
+  }
+}
   // Parallel data fetching for better performance
   const [user, { userRole, selection, statementPackage }] = await Promise.all([
     getUser(),
