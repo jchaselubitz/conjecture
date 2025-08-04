@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 import db from "../../lib/database";
 
-export const runtime = "edge";
-
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://conject.io";
 
 interface SitemapUrl {

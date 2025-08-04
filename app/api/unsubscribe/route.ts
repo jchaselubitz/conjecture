@@ -3,8 +3,6 @@ import { type NextRequest, NextResponse } from "next/server";
 import { unsubscribe } from "@/lib/actions/notificationActions";
 import { getUserByEmail, getUserProfile } from "@/lib/actions/userActions";
 
-export const runtime = "edge";
-
 export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
