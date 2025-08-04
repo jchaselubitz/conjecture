@@ -47,8 +47,8 @@ const config: NextConfig = {
       "@radix-ui/react-icons",
       "lucide-react",
       "date-fns",
-      // "@tiptap/react", // Add your heavy dependencies
-      // "@tiptap/starter-kit",
+      "@tiptap/react", // Add your heavy dependencies
+      "@tiptap/starter-kit",
       "@supabase/supabase-js",
     ],
   },
