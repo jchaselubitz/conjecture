@@ -37,20 +37,20 @@ const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
 
 const config: NextConfig = {
   ...pwaConfig,
-  // Optimize for modern browsers to reduce polyfills
+  serverExternalPackages: ["@sentry/nextjs"],
+  turbo: {
+    resolveExtensions: [".ts", ".tsx", ".js", ".jsx", ".json", ".md", ".mdx"],
+  },
   experimental: {
-    turbo: {
-      resolveExtensions: [".ts", ".tsx", ".js", ".jsx", ".json", ".md", ".mdx"],
-    },
+    // Optimize for modern browsers to reduce polyfills
     optimizePackageImports: [
       "@radix-ui/react-icons",
       "lucide-react",
       "date-fns",
-      "@tiptap/react", // Add your heavy dependencies
-      "@tiptap/starter-kit",
+      // "@tiptap/react", // Add your heavy dependencies
+      // "@tiptap/starter-kit",
       "@supabase/supabase-js",
     ],
-    serverComponentsExternalPackages: ["@sentry/nextjs"],
   },
   webpack: (config, { dev, isServer }) => {
     // Only apply optimizations for production builds
