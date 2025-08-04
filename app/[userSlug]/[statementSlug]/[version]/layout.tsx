@@ -23,8 +23,9 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { statementSlug } = await params;
-
+  console.time('generateMetadata');
   const statement = (await getStatements({ statementSlug, publishedOnly: true }))[0];
+  console.timeEnd('generateMetadata');
   const previousImages = (await parent).openGraph?.images || [];
 
   return {
@@ -42,12 +43,13 @@ export default async function UserStatementLayout({ children, params }: Props) {
   const user = await getUser();
   const userId = user?.id?.toString();
   const { statementSlug, userSlug, version } = await params;
+  console.time('getStatementPageDataCached');
   const { userRole, selection, statementPackage } = await getStatementPageDataCached({
     statementSlug,
     userId,
     version: parseInt(version, 10)
   });
-
+  console.timeEnd('getStatementPageDataCached');
   const { version: selectedVersion, versionList } = selection ?? {};
 
   const versionNumber = versionList?.find(
@@ -101,7 +103,6 @@ export default async function UserStatementLayout({ children, params }: Props) {
       statementPackage={statementPackage}
       userId={userId}
       writerUserSlug={userSlug}
-      currentUserRole={userRole}
       thread={thread}
       versionList={versionList ?? []}
       isCreator={isCreator}

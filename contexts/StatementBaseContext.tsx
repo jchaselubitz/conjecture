@@ -46,7 +46,6 @@ export function StatementProvider({
   userId,
   writerUserSlug,
   thread,
-  currentUserRole,
   versionList,
   isCreator
 }: {
@@ -55,7 +54,6 @@ export function StatementProvider({
   userId: string | undefined;
   writerUserSlug: string | undefined | null;
   thread: StatementWithUser[] | [];
-  currentUserRole: UserStatementRoles;
   versionList: { versionNumber: number; createdAt: Date }[];
   isCreator: boolean;
 }) {

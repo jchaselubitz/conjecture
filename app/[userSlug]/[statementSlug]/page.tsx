@@ -26,9 +26,10 @@ export async function generateMetadata(
   const { statementSlug } = await params;
 
   // Use cached version for better performance
+  console.time('generateMetadataBasePage');
   const statement = (await getStatementsCached({ statementSlug, publishedOnly: true }))[0];
   const previousImages = (await parent).openGraph?.images || [];
-
+  console.timeEnd('generateMetadataBasePage');
   return {
     title: statement?.title,
     description: statement?.subtitle,
@@ -73,7 +74,7 @@ export default async function StatementPage({ params, searchParams }: Props) {
       userId: undefined // We'll get this from user.id below
     })
   ]);
-
+  console.timeEnd('StatementPage');
   const userId = user?.id?.toString();
 
   if (!selection || !statementPackage) {
@@ -107,7 +108,6 @@ export default async function StatementPage({ params, searchParams }: Props) {
       statementPackage={statementPackage}
       userId={userId}
       writerUserSlug={userSlug}
-      currentUserRole={userRole}
       thread={thread}
       versionList={versionList ?? []}
       isCreator={isCreator}

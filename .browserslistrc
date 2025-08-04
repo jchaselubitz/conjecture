@@ -1,4 +1,17 @@
-last 2 Chrome versions
-last 2 Firefox versions
-last 2 Safari versions
-last 2 Edge versions
+# Modern browsers - supports ES2022 features
+last 2 versions
+not dead
+not ie 11
+not ie_mob 11
+
+# Target browsers that support modern JavaScript features
+# This helps reduce polyfills for features like:
+# - Array.prototype.at
+# - Array.prototype.flat
+# - Array.prototype.flatMap
+# - Object.fromEntries
+# - Object.hasOwn
+# - String.prototype.trimEnd
+# - String.prototype.trimStart
+# - Class fields and methods
+# - Spread operator

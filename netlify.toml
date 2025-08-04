@@ -1,5 +1,5 @@
 [context.production]
-command = "yarn generate-deploy && next build"
+command = "yarn generate-deploy && next build --turbo"
 publish = ".next"
 [context.production.environment]
 NEXT_PUBLIC_SUPABASE_URL = 'https://bewgymyresxixvkkqbzl.supabase.co'
@@ -8,13 +8,19 @@ NEXT_PUBLIC_SITE_URL = 'https://conject.io'
 NEXT_PUBLIC_CONTEXT = "prod"
 NEXT_PUBLIC_LANGFUSE_HOST="https://cloud.langfuse.com"
 
+[context.staging]
+command = "yarn generate-deploy && next build --turbo"
+publish = ".next"
+[context.staging.environment]
+NEXT_PUBLIC_SUPABASE_URL = 'https://bewgymyresxixvkkqbzl.supabase.co'
+NEXT_PUBLIC_SUPABASE_PROJECT_ID = "bewgymyresxixvkkqbzl"
+NEXT_PUBLIC_SITE_URL = 'https://conject.io'
+NEXT_PUBLIC_CONTEXT = "staging"
+NEXT_PUBLIC_LANGFUSE_HOST="https://cloud.langfuse.com"
 
-
-[functions]
-  directory = "netlify/functions"
 
 [context.branch-deploy]
-command = "yarn generate-deploy && next build"
+command = "yarn generate-deploy && next build --turbo"
 publish = ".next"
 [context.branch-deploy.environment]
 NEXT_PUBLIC_SUPABASE_URL = 'https://bewgymyresxixvkkqbzl.supabase.co'
@@ -24,7 +30,7 @@ NEXT_PUBLIC_CONTEXT = "branch-deploy"
 NEXT_PUBLIC_LANGFUSE_HOST="https://cloud.langfuse.com"
 
 [context.development]
-command = "yarn generate && next build"
+command = "yarn generate && next build --turbo"
 publish = ".next"
 [context.development.environment]
 NEXT_PUBLIC_SUPABASE_URL = 'https://bewgymyresxixvkkqbzl.supabase.co'
@@ -33,9 +39,14 @@ NEXT_PUBLIC_SITE_URL = 'https://conject.io'
 NEXT_PUBLIC_CONTEXT = "development"
 NEXT_PUBLIC_LANGFUSE_HOST="https://cloud.langfuse.com"
 
+
+[functions]
+  directory = "netlify/functions"
+
+
 [dev]
-command = "next dev"
-port = 8888
+command = "yarn dev"
+port = 3000
 targetPort = 3000
 context = "dev"
 
