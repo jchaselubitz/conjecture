@@ -45,6 +45,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  console.time('RootLayout');
   const supabase = await createClient();
   const {
     data: { user }
@@ -59,7 +60,7 @@ export default async function RootLayout({
     email = user.email;
     slug = profile?.username;
   }
-
+  console.timeEnd('RootLayout');
   return (
     <html lang="en" className={` ${fontSans.variable}`}>
       <link
