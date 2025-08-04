@@ -1,6 +1,6 @@
 [context.production]
-command = "yarn generate-deploy && next build"
-publish = ".next"
+command = "yarn generate-deploy && npx @open-next/cli build"
+publish = ".open-next"
 [context.production.environment]
 NEXT_PUBLIC_SUPABASE_URL = 'https://bewgymyresxixvkkqbzl.supabase.co'
 NEXT_PUBLIC_SUPABASE_PROJECT_ID = "bewgymyresxixvkkqbzl"
@@ -14,8 +14,8 @@ NEXT_PUBLIC_LANGFUSE_HOST="https://cloud.langfuse.com"
   directory = "netlify/functions"
 
 [context.branch-deploy]
-command = "yarn generate-deploy && next build"
-publish = ".next"
+command = "yarn generate-deploy && npx @open-next/cli build"
+publish = ".open-next"
 [context.branch-deploy.environment]
 NEXT_PUBLIC_SUPABASE_URL = 'https://bewgymyresxixvkkqbzl.supabase.co'
 NEXT_PUBLIC_SUPABASE_PROJECT_ID = "bewgymyresxixvkkqbzl"
@@ -24,8 +24,8 @@ NEXT_PUBLIC_CONTEXT = "branch-deploy"
 NEXT_PUBLIC_LANGFUSE_HOST="https://cloud.langfuse.com"
 
 [context.development]
-command = "yarn generate && next build"
-publish = ".next"
+command = "yarn generate && npx @open-next/cli build"
+publish = ".open-next"
 [context.development.environment]
 NEXT_PUBLIC_SUPABASE_URL = 'https://bewgymyresxixvkkqbzl.supabase.co'
 NEXT_PUBLIC_SUPABASE_PROJECT_ID = "bewgymyresxixvkkqbzl"
