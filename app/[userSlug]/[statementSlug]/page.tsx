@@ -88,7 +88,6 @@ export default async function StatementPage({ params, searchParams }: Props) {
       statementPackage={statementPackage}
       userId={userId}
       writerUserSlug={userSlug}
-      currentUserRole={userRole}
       thread={thread}
       versionList={versionList ?? []}
       isCreator={isCreator}

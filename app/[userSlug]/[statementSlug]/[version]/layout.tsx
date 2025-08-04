@@ -101,7 +101,6 @@ export default async function UserStatementLayout({ children, params }: Props) {
       statementPackage={statementPackage}
       userId={userId}
       writerUserSlug={userSlug}
-      currentUserRole={userRole}
       thread={thread}
       versionList={versionList ?? []}
       isCreator={isCreator}

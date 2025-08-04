@@ -35,7 +35,8 @@
     "test:watch": "jest --watch",
     "seed": "npx tsx seed.ts > supabase/seed.sql",
     "seedsync": "npx @snaplet/seed sync",
-    "generate-sitemap": "npx tsx -r dotenv/config scripts/generate-sitemap.ts"
+    "generate-sitemap": "npx tsx -r dotenv/config scripts/generate-sitemap.ts",
+    "analyze-bundles": "node scripts/analyze-bundles.js"
   },
   "dependencies": {
     "@floating-ui/dom": "^1.6.0",
