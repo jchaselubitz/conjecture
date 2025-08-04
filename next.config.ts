@@ -39,11 +39,18 @@ const config: NextConfig = {
   ...pwaConfig,
   // Optimize for modern browsers to reduce polyfills
   experimental: {
+    turbo: {
+      resolveExtensions: [".ts", ".tsx", ".js", ".jsx", ".json", ".md", ".mdx"],
+    },
     optimizePackageImports: [
       "@radix-ui/react-icons",
       "lucide-react",
       "date-fns",
+      "@tiptap/react", // Add your heavy dependencies
+      "@tiptap/starter-kit",
+      "@supabase/supabase-js",
     ],
+    serverComponentsExternalPackages: ["@sentry/nextjs"],
   },
   webpack: (config, { dev, isServer }) => {
     // Only apply optimizations for production builds
