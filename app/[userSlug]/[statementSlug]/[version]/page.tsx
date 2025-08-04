@@ -8,6 +8,8 @@ type Props = {
 
 export default async function StatementPage({ params }: Props) {
   const { statementSlug } = await params;
+  console.time('getStatementId');
   const statementId = await getStatementId(statementSlug);
+  console.timeEnd('getStatementId');
   return <StatementContainer statementId={statementId} />;
 }
