@@ -52,7 +52,8 @@ export default async function StatementPage({ params, searchParams }: Props) {
     getUser(),
     getStatementPageDataCached({
       statementSlug,
-      userId: undefined // We'll get this from user.id below
+      userId: undefined, // We'll get this from user.id below
+      publishedOnly: true
     })
   ]);
   console.timeEnd('StatementPage');
@@ -75,7 +76,6 @@ export default async function StatementPage({ params, searchParams }: Props) {
   }
 
   const { version: selectedVersion, versionList } = selection;
-  const statementId = statementPackage.statementId;
   const creator = statementPackage.creatorId.toString();
   const isCreator = creator === userId;
 
@@ -96,7 +96,7 @@ export default async function StatementPage({ params, searchParams }: Props) {
       <StatementToolsProvider>
         <StatementAnnotationProvider>
           <StatementUpdateProvider>
-            <StatementContainer statementId={statementId} />
+            <StatementContainer statementSlug={statementSlug} />
           </StatementUpdateProvider>
         </StatementAnnotationProvider>
       </StatementToolsProvider>

@@ -1,56 +1,54 @@
-import withBundleAnalyzer from "@next/bundle-analyzer";
-import { withSentryConfig } from "@sentry/nextjs";
+import withBundleAnalyzer from '@next/bundle-analyzer';
+import { withSentryConfig } from '@sentry/nextjs';
 // Import the necessary modules
-import { NextConfig } from "next";
-import withPWA from "next-pwa";
+import { NextConfig } from 'next';
+import withPWA from 'next-pwa';
 /** @type {NextConfig} */
 
 const pwaConfig = withPWA({
-  dest: "public",
+  dest: 'public',
   register: true,
-  disable: process.env.NODE_ENV === "development",
+  disable: process.env.NODE_ENV === 'development',
   skipWaiting: true,
   buildExcludes: [/middleware-manifest\.json$/],
-  sw: "/sw.js",
+  sw: '/sw.js',
   runtimeCaching: [
     {
       urlPattern: /^https?.*/,
-      handler: "NetworkFirst",
+      handler: 'NetworkFirst',
       options: {
-        cacheName: "offlineCache",
+        cacheName: 'offlineCache',
         expiration: {
-          maxEntries: 200,
-        },
-      },
-    },
-  ],
+          maxEntries: 200
+        }
+      }
+    }
+  ]
   // cacheOnFrontEndNav: true,
 });
 
 const withAnalyze = withBundleAnalyzer({
-  enabled: process.env.ANALYZE === "true",
+  enabled: process.env.ANALYZE === 'true'
 });
 
 const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
-  : "bewgymyresxixvkkqbzl.supabase.co";
+  : 'bewgymyresxixvkkqbzl.supabase.co';
 
 const config: NextConfig = {
   ...pwaConfig,
-  serverExternalPackages: ["@sentry/nextjs"],
-  turbo: {
-    resolveExtensions: [".ts", ".tsx", ".js", ".jsx", ".json", ".md", ".mdx"],
-  },
+  serverExternalPackages: ['@sentry/nextjs'],
+
   experimental: {
     // Optimize for modern browsers to reduce polyfills
     optimizePackageImports: [
-      "@radix-ui/react-icons",
-      "lucide-react",
-      "date-fns",
-      "@tiptap/react", // Add your heavy dependencies
-      "@tiptap/starter-kit",
-      "@supabase/supabase-js",
-    ],
+      '@radix-ui/react-icons',
+      'lucide-react',
+      'date-fns',
+      '@tiptap/react', // Add your heavy dependencies
+      '@tiptap/starter-kit',
+      '@supabase/supabase-js'
+    ]
   },
   webpack: (config, { dev, isServer }) => {
     // Only apply optimizations for production builds
@@ -63,14 +61,14 @@ const config: NextConfig = {
         stream: false,
         util: false,
         buffer: false,
-        process: false,
+        process: false
       };
 
       // Optimize module resolution
       config.optimization = {
         ...config.optimization,
-        moduleIds: "deterministic",
-        chunkIds: "deterministic",
+        moduleIds: 'deterministic',
+        chunkIds: 'deterministic'
       };
     }
 
@@ -79,41 +77,41 @@ const config: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: "https",
+        protocol: 'https',
         hostname: supabaseHostname,
-        pathname: "/storage/v1/object/public/**",
+        pathname: '/storage/v1/object/public/**'
       },
       {
-        protocol: "https",
-        hostname: "conject.io",
+        protocol: 'https',
+        hostname: 'conject.io'
       },
       {
-        protocol: "http",
-        hostname: "127.0.0.1",
+        protocol: 'http',
+        hostname: '127.0.0.1'
       },
       {
-        protocol: "http",
-        hostname: "localhost",
-      },
-    ],
+        protocol: 'http',
+        hostname: 'localhost'
+      }
+    ]
   },
   async headers() {
     return [
       {
-        source: "/:path*",
+        source: '/:path*',
         headers: [
           {
-            key: "X-DNS-Prefetch-Control",
-            value: "on",
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on'
           },
           {
-            key: "Strict-Transport-Security",
-            value: "max-age=31536000; includeSubDomains",
-          },
-        ],
-      },
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains'
+          }
+        ]
+      }
     ];
-  },
+  }
   // reactStrictMode: false,
   // logging: {
   //   fetches: {
@@ -127,8 +125,8 @@ export default withAnalyze(
     // For all available options, see:
     // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
-    org: "cooperativ-labs",
-    project: "conject",
+    org: 'cooperativ-labs',
+    project: 'conject',
 
     // Only print logs for uploading source maps in CI
     silent: !process.env.CI,
@@ -141,14 +139,14 @@ export default withAnalyze(
 
     // Automatically annotate React components to show their full name in breadcrumbs and session replay
     reactComponentAnnotation: {
-      enabled: true,
+      enabled: true
     },
 
     // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
     // This can increase your server load as well as your hosting bill.
     // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
     // side errors will fail.
-    tunnelRoute: "/monitoring",
+    tunnelRoute: '/monitoring',
 
     // Automatically tree-shake Sentry logger statements to reduce bundle size
     disableLogger: true,
@@ -157,6 +155,6 @@ export default withAnalyze(
     // See the following for more information:
     // https://docs.sentry.io/product/crons/
     // https://vercel.com/docs/cron-jobs
-    automaticVercelMonitors: true,
-  }),
+    automaticVercelMonitors: true
+  })
 );

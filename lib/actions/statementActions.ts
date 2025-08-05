@@ -292,174 +292,16 @@ export async function getPublishedOrLatest(
   }
 }
 
-// export async function getStatementPackage({
-//   statementSlug,
-//   version
-// }: {
-//   statementSlug: string;
-//   version?: number;
-// }): Promise<StatementPackage> {
-//   const statPackage = await db.transaction().execute(async tx => {
-//     const statement = await tx
-//       .selectFrom('statement')
-//       .select(({ eb }) => [
-//         'statementId',
-//         'slug',
-//         'creatorId',
-//         'createdAt',
-//         'updatedAt',
-//         'parentStatementId',
-//         'headerImg',
-//         'threadId',
-//         'title',
-//         'subtitle',
-//         'distributedAt',
-//         jsonArrayFrom(
-//           eb
-//             .selectFrom('collaborator')
-//             .selectAll()
-//             .whereRef('collaborator.statementId', '=', 'statement.statementId')
-//         ).as('collaborators'),
-//         jsonArrayFrom(
-//           eb
-//             .selectFrom('statementImage')
-//             .selectAll()
-//             .whereRef('statementImage.statementId', '=', 'statement.statementId')
-//         ).as('images'),
-//         jsonArrayFrom(
-//           eb
-//             .selectFrom('statementCitation')
-//             .selectAll()
-//             .whereRef('statementCitation.statementId', '=', 'statement.statementId')
-//         ).as('citations'),
-//         jsonArrayFrom(
-//           eb
-//             .selectFrom('statementVote')
-//             .selectAll()
-//             .whereRef('statementVote.statementId', '=', 'statement.statementId')
-//         ).as('upvotes')
-//       ])
-//       .where('slug', '=', statementSlug)
-//       .executeTakeFirstOrThrow();
-
-//     let draftQuery = tx
-//       .selectFrom('draft')
-//       .selectAll()
-//       .where('draft.statementId', '=', statement.statementId);
-//     if (version) {
-//       draftQuery = draftQuery.where('versionNumber', '=', version);
-//     } else {
-//       draftQuery = draftQuery.where('publishedAt', 'is not', null);
-//     }
-
-//     const draft = await draftQuery.executeTakeFirstOrThrow();
-
-//     const annotations = await tx
-//       .selectFrom('annotation')
-//       .selectAll()
-//       .where('annotation.draftId', '=', draft.id)
-//       .orderBy('annotation.createdAt', 'desc')
-//       .execute();
-
-//     const annotationIds = annotations.map(annotation => annotation.id);
-
-//     let comments: BaseComment[] = [];
-//     if (annotationIds.length > 0) {
-//       comments = await tx
-//         .selectFrom('comment')
-//         .select(({ eb }) => [
-//           'comment.id',
-//           'comment.content',
-//           'comment.createdAt',
-//           'comment.updatedAt',
-//           'comment.userId',
-//           'comment.annotationId',
-//           'comment.parentId',
-//           'comment.isPublic',
-//           jsonArrayFrom(
-//             eb
-//               .selectFrom('commentVote')
-//               .selectAll()
-//               .whereRef('commentVote.commentId', '=', 'comment.id')
-//           ).as('votes')
-//         ])
-//         .where('comment.annotationId', 'in', annotationIds)
-//         .orderBy('comment.createdAt', 'desc')
-//         .execute();
-//     }
-
-//     const profileIds = new Set([
-//       ...statement.collaborators.map(collaborator => collaborator.userId),
-//       ...comments.map(comment => comment.userId),
-//       ...annotations.map(annotation => annotation.userId)
-//     ]);
-
-//     const profiles = await tx
-//       .selectFrom('profile')
-//       .selectAll()
-//       .where('profile.id', 'in', Array.from(profileIds))
-//       .execute();
-
-//     return {
-//       statement,
-//       draft,
-//       annotations,
-//       comments,
-//       profiles
-//     };
-//   });
-
-//   const { statement, draft, annotations, comments, profiles } = statPackage;
-
-//   const authors = statement.collaborators
-//     .map(collaborator =>
-//       AuthorGroup.includes(collaborator.role as UserStatementRoles)
-//         ? profiles.find(p => p.id === collaborator.userId)
-//         : undefined
-//     )
-//     .filter(author => author !== undefined);
-
-//   const statementPackage = {
-//     ...statement,
-//     authors,
-//     creatorSlug: profiles.find(p => p.id === statement.creatorId)?.username,
-//     citations: statement.citations.map(c => ({
-//       ...c,
-//       title: c.title ?? ''
-//     })),
-//     images: statement.images,
-//     upvotes: statement.upvotes,
-//     collaborators: statement.collaborators,
-//     draft: {
-//       ...draft,
-//       annotations: annotations
-//         .filter(a => a.draftId === draft.id)
-//         .map(a => ({
-//           ...a,
-//           userName: profiles.find(p => p.id === a.userId)?.name,
-//           userImageUrl: profiles.find(p => p.id === a.userId)?.imageUrl,
-//           comments: comments
-//             .filter(c => c.annotationId === a.id)
-//             .map(c => ({
-//               ...c,
-//               userName: profiles.find(p => p.id === c.userId)?.name,
-//               userImageUrl: profiles.find(p => p.id === c.userId)?.imageUrl
-//             })) as CommentWithUser[]
-//         })) as AnnotationWithComments[]
-//     } as DraftWithAnnotations
-//   };
-
-//   return statementPackage;
-// }
-
 export async function getStatementPageData({
   statementSlug,
   userId,
-  version
+  version,
+  publishedOnly = false
 }: {
   statementSlug: string;
   userId?: string;
   version?: number;
+  publishedOnly?: boolean;
 }): Promise<{
   userRole: UserStatementRoles;
   userIsCollaborator: boolean;
@@ -469,6 +311,7 @@ export async function getStatementPageData({
   } | null;
   statementPackage: StatementPackage | null;
 }> {
+  console.log('First', statementSlug);
   if (statementSlug === 'appspecific') {
     return {
       userRole: UserStatementRoles.Viewer,
@@ -524,11 +367,17 @@ export async function getStatementPageData({
     const statement = await _statement.executeTakeFirstOrThrow();
 
     // Get drafts in parallel with the statement query
-    const drafts = await db
+    let drafts = db
       .selectFrom('draft')
       .selectAll()
       .where('statementId', '=', statement.statementId)
-      .execute();
+      .orderBy('versionNumber', 'desc');
+
+    if (publishedOnly) {
+      drafts = drafts.where('publishedAt', 'is not', null);
+    }
+
+    const draftsList = await drafts.execute();
 
     // Determine user role from collaborators
     const userRole =
@@ -536,9 +385,13 @@ export async function getStatementPageData({
         ?.role as UserStatementRoles) || UserStatementRoles.Viewer;
 
     const userIsCollaborator = userRole !== UserStatementRoles.Viewer;
-
+    // If version is provided and user is not a collaborator, send to base page
+    if (version && !userIsCollaborator) {
+      const creatorSlug = statement.collaborators.find(p => p.userId === statement.creatorId)?.slug;
+      redirect(`/${creatorSlug}/${statementSlug}`);
+    }
     // Determine version selection
-    const versions = drafts
+    const versions = draftsList
       .map(draft => ({
         versionNumber: draft.versionNumber,
         createdAt: draft.createdAt
@@ -546,14 +399,14 @@ export async function getStatementPageData({
       .sort((a, b) => b.versionNumber - a.versionNumber);
 
     let selectedVersion: number;
-    if (drafts.length > 0 && userIsCollaborator) {
+    if (draftsList.length > 0 && userIsCollaborator) {
       if (version) {
         selectedVersion = version;
       } else {
-        selectedVersion = drafts.reduce((max, draft) => Math.max(max, draft.versionNumber), 0);
+        selectedVersion = draftsList.reduce((max, draft) => Math.max(max, draft.versionNumber), 0);
       }
     } else {
-      const publishedDraft = drafts.find(draft => draft.publishedAt !== null);
+      const publishedDraft = draftsList.find(draft => draft.publishedAt !== null);
       selectedVersion = publishedDraft?.versionNumber || 0;
     }
 
@@ -571,7 +424,7 @@ export async function getStatementPageData({
     }
 
     // Get the selected draft and related data
-    const selectedDraft = drafts.find(d => d.versionNumber === selectedVersion);
+    const selectedDraft = draftsList.find(d => d.versionNumber === selectedVersion);
     if (!selectedDraft) {
       return {
         userRole,
@@ -693,11 +546,13 @@ export const getStatementPageDataCached = cache(
   async ({
     statementSlug,
     userId,
-    version
+    version,
+    publishedOnly = false
   }: {
     statementSlug: string;
     userId?: string;
     version?: number;
+    publishedOnly?: boolean;
   }): Promise<{
     userRole: UserStatementRoles;
     userIsCollaborator: boolean;
@@ -707,7 +562,12 @@ export const getStatementPageDataCached = cache(
     } | null;
     statementPackage: StatementPackage | null;
   }> => {
-    return getStatementPageData({ statementSlug, userId, version });
+    return getStatementPageData({
+      statementSlug,
+      userId,
+      version,
+      publishedOnly
+    });
   }
 );
 

@@ -1,6 +1,5 @@
 import './globals.css';
 
-import { lt } from 'date-fns/locale';
 import type { Metadata, Viewport } from 'next';
 
 import { Toaster } from '@/components/ui/sonner';
@@ -45,7 +44,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  console.time('RootLayout');
   const supabase = await createClient();
   const {
     data: { user }
@@ -60,7 +58,7 @@ export default async function RootLayout({
     email = user.email;
     slug = profile?.username;
   }
-  console.timeEnd('RootLayout');
+
   return (
     <html lang="en" className={` ${fontSans.variable}`}>
       <link

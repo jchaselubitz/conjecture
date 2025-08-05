@@ -4,7 +4,7 @@ import StatementLayout from '@/components/statements/statement_layout';
 import { EditModeProvider } from '@/contexts/EditModeContext';
 import { balancePanelSizes } from '@/lib/helpers/helpersLayout';
 
-export async function StatementContainer({ statementId }: { statementId: string }) {
+export async function StatementContainer({ statementSlug }: { statementSlug: string }) {
   const cookieStore = await cookies();
   const authorCommentCookie = cookieStore.get('show_author_comments');
   const readerCommentCookie = cookieStore.get('show_reader_comments');
@@ -18,7 +18,7 @@ export async function StatementContainer({ statementId }: { statementId: string 
     cookieStore.get('annotation_panel_size')?.value ?? JSON.stringify({ size: 30, isOpen: false });
   const panelSizes = balancePanelSizes({ stackCookie, annotationCookie });
 
-  const editModeCookie = cookieStore.get(`edit_${statementId}`);
+  const editModeCookie = cookieStore.get(`edit_${statementSlug}`);
   const editMode = editModeCookie ? JSON.parse(editModeCookie.value) : false;
 
   return (

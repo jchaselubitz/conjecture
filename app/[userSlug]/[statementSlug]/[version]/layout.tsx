@@ -12,44 +12,54 @@ import {
   getStatementPageDataCached,
   getStatements
 } from '@/lib/actions/statementActions';
+import { userAccess } from '@/lib/enums/permissions';
 
 type Props = {
   params: Promise<{ statementSlug: string; userSlug: string; version: string }>;
   children: React.ReactNode;
 };
 
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
-  const { statementSlug } = await params;
-  console.time('generateMetadata');
-  const statement = (await getStatements({ statementSlug, publishedOnly: true }))[0];
-  console.timeEnd('generateMetadata');
-  const previousImages = (await parent).openGraph?.images || [];
-
-  return {
-    title: statement?.title,
-    description: statement?.subtitle,
-    creator: statement?.authors.map(author => author.name).join(', '),
-    // keywords: statement?.keywords,
-    openGraph: {
-      images: [`${statement?.headerImg}`, ...previousImages]
-    }
-  };
-}
+// export async function generateMetadata(
+//   { params }: Props,
+//   parent: ResolvingMetadata
+// ): Promise<Metadata> {
+//   const { statementSlug, userSlug } = await params;
+//   const user = await getUser();
+//   if (!user) {
+//     redirect(`/${userSlug}/${statementSlug}`);
+//   }
+//   console.time('generateMetadata');
+//   const statement = (await getStatements({ statementSlug, publishedOnly: true }))[0];
+//   console.timeEnd('generateMetadata');
+//   const previousImages = (await parent).openGraph?.images || [];
+//   return {
+//     title: statement?.title,
+//     description: statement?.subtitle,
+//     creator: statement?.authors.map(author => author.name).join(', '),
+//     // keywords: statement?.keywords,
+//     openGraph: {
+//       images: [`${statement?.headerImg}`, ...previousImages]
+//     }
+//   };
+// }
 
 export default async function UserStatementLayout({ children, params }: Props) {
   const user = await getUser();
   const userId = user?.id?.toString();
   const { statementSlug, userSlug, version } = await params;
+
   console.time('getStatementPageDataCached');
   const { userRole, selection, statementPackage } = await getStatementPageDataCached({
     statementSlug,
     userId,
     version: parseInt(version, 10)
   });
+
   console.timeEnd('getStatementPageDataCached');
+
+  if (userAccess(userRole) === 'reader') {
+    redirect(`/${userSlug}/${statementSlug}`);
+  }
   const { version: selectedVersion, versionList } = selection ?? {};
 
   const versionNumber = versionList?.find(

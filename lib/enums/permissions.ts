@@ -15,6 +15,10 @@ export enum UserStatementRoles {
   SuperAdmin = 'super_admin'
 }
 
+type UserRole = `${UserStatementRoles}`;
+type UserRoleKey = keyof typeof UserStatementRoles;
+type UserAccess = 'author' | 'manager' | 'reader';
+
 export enum StatementPermissions {
   ViewPublished = 'viewPublished',
   ViewDraft = 'viewDraft',
@@ -49,3 +53,13 @@ export const UserStatementPermissions = {
 export const AuthorGroup = [UserStatementRoles.Author, UserStatementRoles.LeadAuthor];
 
 export const ManagerGroup = [UserStatementRoles.Moderator, UserStatementRoles.Moderator];
+
+export const userAccess = (userRole: UserRole): UserAccess => {
+  if (AuthorGroup.includes(userRole as UserStatementRoles)) {
+    return 'author';
+  }
+  if (ManagerGroup.includes(userRole as UserStatementRoles)) {
+    return 'manager';
+  }
+  return 'reader';
+};
