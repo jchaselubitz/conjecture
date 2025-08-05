@@ -13,11 +13,12 @@ import ViewModeButton from '../view_mode_button';
 
 import MobileNav from './mobile_nav';
 import UserButton from './user_button';
+import { AuthButtons } from './auth_buttons';
 
 export default function ReadNav() {
   const params = useParams();
   const userSlug = params.userSlug;
-  const { currentUserSlug } = useUserContext();
+  const { currentUserSlug, userId } = useUserContext();
   const { statement, isCreator } = useStatementContext();
 
   const router = useRouter();
@@ -38,12 +39,16 @@ export default function ReadNav() {
           <nav className="flex items-center gap-6">
             <div className="hidden md:flex items-center gap-3">
               <Link href="/feed">Feed</Link>
-              <Link href={`/${currentUserSlug}`}>My Conjectures</Link>
+              {userId && <Link href={`/${currentUserSlug}`}>My Conjectures</Link>}
             </div>
-            <div className="flex items-center gap-3">
-              {statement && isCreator && <ViewModeButton iconOnly={isMobile} variant="default" />}
-              <UserButton />
-            </div>
+            {userId ? (
+              <div className="flex items-center gap-3">
+                {statement && isCreator && <ViewModeButton iconOnly={isMobile} variant="default" />}
+                <UserButton />
+              </div>
+            ) : (
+              <AuthButtons />
+            )}
           </nav>
         </div>
       </div>
