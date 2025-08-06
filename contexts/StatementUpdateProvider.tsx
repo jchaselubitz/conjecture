@@ -27,21 +27,21 @@ interface StatementUpdateContextType {
 const StatementUpdateContext = createContext<StatementUpdateContextType | undefined>(undefined);
 
 export function StatementUpdateProvider({ children }: { children: ReactNode }) {
-  const { editor, debouncedStatement, userId, statement } = useStatementContext();
+  const { editor, debouncedDraft, userId, statement } = useStatementContext();
   const { annotations, setAnnotations } = useStatementAnnotationContext();
 
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const updateStatementDraft = useCallback(async () => {
-    if (!editor || !debouncedStatement || !userId || !annotations || !statement) {
+    if (!editor || !debouncedDraft || !userId || !annotations || !statement) {
       return;
     }
 
     let annotationsToKeep = [...annotations];
-    let cleanedHtmlContent = debouncedStatement.draft.content;
-    let cleanedContentJson = debouncedStatement.draft.contentJson;
-    let cleanedContentPlainText = debouncedStatement.draft.contentPlainText;
+    let cleanedHtmlContent = debouncedDraft.content;
+    let cleanedContentJson = debouncedDraft.contentJson;
+    let cleanedContentPlainText = debouncedDraft.contentPlainText;
     try {
       const currentMarks = getMarks(editor, ['annotationHighlight']);
       const liveMarkIds = new Set(
@@ -84,8 +84,7 @@ export function StatementUpdateProvider({ children }: { children: ReactNode }) {
       setError('Error cleaning up annotations during save.');
     }
 
-    const { draft, creatorId } = debouncedStatement;
-    const { id, versionNumber } = draft;
+    const { id, versionNumber } = debouncedDraft;
 
     const isStale = cleanedHtmlContent === statement.draft.content;
 
@@ -103,7 +102,7 @@ export function StatementUpdateProvider({ children }: { children: ReactNode }) {
         contentJson: cleanedContentJson ? JSON.stringify(cleanedContentJson) : undefined, // JSON
         contentPlainText: cleanedContentPlainText ?? undefined, // Plain text,
         versionNumber: versionNumber,
-        creatorId: creatorId
+        creatorId: statement.creatorId
       });
     } catch (err) {
       console.error('[UpdateProvider] Error updating draft:', err);
@@ -114,7 +113,7 @@ export function StatementUpdateProvider({ children }: { children: ReactNode }) {
     }
   }, [
     editor,
-    debouncedStatement,
+    debouncedDraft,
     userId,
     annotations,
     setAnnotations,
@@ -124,12 +123,12 @@ export function StatementUpdateProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Trigger update only if debounced statement exists and userId is present
-    if (debouncedStatement?.draft.id && userId) {
+    if (debouncedDraft?.id && userId) {
       startTransition(() => {
         updateStatementDraft();
       });
     }
-  }, [debouncedStatement, updateStatementDraft, userId]); // Ensure correct dependencies
+  }, [debouncedDraft, updateStatementDraft, userId]); // Ensure correct dependencies
 
   return (
     <StatementUpdateContext.Provider value={{ updateStatementDraft, isUpdating, error }}>

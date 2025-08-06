@@ -4,7 +4,7 @@ import {
   BaseCommentVote,
   CommentWithReplies,
   CommentWithUser,
-  StatementWithUser
+  StatementWithDraftAndCollaborators
 } from 'kysely-codegen';
 import { DotIcon } from 'lucide-react';
 import React, { useOptimistic, useState } from 'react';
@@ -31,7 +31,7 @@ interface CommentProps {
   onCommentDeleted: (commentId: string) => void;
   level?: number;
   isRootComment?: boolean;
-  statement?: StatementWithUser;
+  statement?: StatementWithDraftAndCollaborators;
 }
 
 const Comment: React.FC<CommentProps> = ({

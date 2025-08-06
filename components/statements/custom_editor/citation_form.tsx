@@ -76,7 +76,8 @@ export function CitationForm({
 }: CitationFormProps) {
   const { userId } = useUserContext();
   const { updateStatementDraft } = useStatementUpdateContext();
-  const { citationData, setCitationData, citations, setCitations } = useStatementToolsContext();
+  const { citationData, setCitationData } = useStatementToolsContext();
+  const { citations, setCitations } = useStatementContext();
   const pathname = usePathname();
   const [saveButtonState, setSaveButtonState] = useState<ButtonLoadingState>('default');
   const [error, setError] = useState<string | null>(null);

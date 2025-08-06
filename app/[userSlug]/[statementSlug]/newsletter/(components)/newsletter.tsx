@@ -1,19 +1,24 @@
 'use client';
 
+import { StatementWithDraftAndCollaborators, SubscriptionWithRecipient } from 'kysely-codegen';
 import React from 'react';
 
-import { useNewsletterContext } from '@/contexts/NewsletterContext';
-import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { getNewsletterHtml } from '@/lib/assets/newsletter_template';
 
-export default function Newsletter() {
-  const { isCreator, statement } = useStatementContext();
-  const { subscribers } = useNewsletterContext();
+export default function Newsletter({
+  statement,
+  isAuthor,
+  subscribers
+}: {
+  statement: StatementWithDraftAndCollaborators;
+  isAuthor: boolean;
+  subscribers: SubscriptionWithRecipient[] | [];
+}) {
+  const subscriberEmail = isAuthor ? subscribers[0]?.email : undefined;
 
-  const subscriberEmail = isCreator ? subscribers[0]?.email : undefined;
   const newsletterHtml = getNewsletterHtml({
-    statement,
     subscriberEmail,
+    statement: statement,
     previewMode: true
   });
 

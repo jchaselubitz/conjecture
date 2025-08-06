@@ -9,7 +9,13 @@ import { Step } from '@tiptap/pm/transform';
 import { EditorView } from '@tiptap/pm/view';
 import { Editor, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { AnnotationWithComments, NewStatementCitation, StatementPackage } from 'kysely-codegen';
+import {
+  AnnotationWithComments,
+  BaseDraft,
+  NewStatementCitation,
+  StatementCitation,
+  StatementImage
+} from 'kysely-codegen';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { RefObject, startTransition, useEffect } from 'react';
 import { ImperativePanelGroupHandle } from 'react-resizable-panels';
@@ -43,7 +49,8 @@ import { QuotePasteHandler } from '../custom_extensions/quote_paste_handler';
 import { TableWithTools } from '../custom_extensions/table_with_tools';
 
 interface UseHtmlSuperEditorProps {
-  statement: StatementPackage;
+  draft: BaseDraft;
+  statementCreatorId: string;
   existingAnnotations: AnnotationWithComments[];
   userId: string | undefined;
   onAnnotationClick?: (id: string) => void;
@@ -70,7 +77,9 @@ type NodeInfo = { node: ProsemirrorNode; pos: number; [key: string]: any };
 type GetMarksNodeInfo = { node: ProsemirrorNode; [key: string]: any }; // Assuming node is ProsemirrorNode
 
 export const useHtmlSuperEditor = ({
-  statement,
+  // citations,
+  draft,
+  statementCreatorId,
   existingAnnotations,
   userId,
   onAnnotationClick,
@@ -82,7 +91,8 @@ export const useHtmlSuperEditor = ({
   setFootnoteIds,
   panelGroupRef
 }: UseHtmlSuperEditorProps): Editor | null => {
-  const { setEditor, setUpdatedDraft, updatedDraft } = useStatementContext();
+  const { setEditor, setUpdatedDraft, updatedDraft, statement, setCitations, images, citations } =
+    useStatementContext();
   const { annotations, setAnnotations } = useStatementAnnotationContext();
   const {
     setSelectedNodePosition,
@@ -94,18 +104,15 @@ export const useHtmlSuperEditor = ({
     setCitationPopoverOpen,
     setImagePopoverOpen,
     setImageLightboxOpen,
-    setLatexPopoverOpen,
-    setCitations
+    setLatexPopoverOpen
   } = useStatementToolsContext();
   const router = useRouter();
   const searchParams = useSearchParams();
   const isMobile = useWindowSize().width < 600;
-  const htmlContent = updatedDraft.draft.content;
-  const jsonContent = updatedDraft.draft.contentJson;
-  const draftId = updatedDraft.draft.id;
+  const htmlContent = updatedDraft.content;
+  const jsonContent = updatedDraft.contentJson;
+  const draftId = updatedDraft.id;
   const statementId = statement.statementId;
-  const statementCreatorId = statement.creatorId;
-  const citations = updatedDraft.citations;
 
   useEffect(() => {
     setAnnotations(existingAnnotations);
@@ -251,17 +258,14 @@ export const useHtmlSuperEditor = ({
         const newContentJson = editor.getJSON();
         const newPlainText = editor.getText();
 
-        const newStatement = {
+        const newDraft = {
           ...updatedDraft,
-          draft: {
-            ...updatedDraft.draft,
-            content: newContent,
-            contentJson: newContentJson,
-            contentPlainText: newPlainText
-          }
+          content: newContent,
+          contentJson: newContentJson,
+          contentPlainText: newPlainText
         };
         startTransition(() => {
-          setUpdatedDraft(newStatement);
+          setUpdatedDraft(newDraft);
         });
       }
     },
@@ -359,7 +363,7 @@ export const useHtmlSuperEditor = ({
                   width: rect.width,
                   height: rect.height
                 },
-                statementImages: statement.images,
+                statementImages: images,
                 setInitialImageData,
                 setSelectedNodePosition,
                 setImagePopoverOpen,
@@ -368,7 +372,7 @@ export const useHtmlSuperEditor = ({
             } else {
               openImageLightbox({
                 id,
-                statementImages: statement.images,
+                statementImages: images,
                 setInitialImageData,
                 setImageLightboxOpen
               });

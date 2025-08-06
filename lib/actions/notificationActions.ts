@@ -1,5 +1,9 @@
 'use server';
-import { NotificationMedium, StatementWithUser, SubscriptionWithRecipient } from 'kysely-codegen';
+import {
+  NotificationMedium,
+  StatementWithDraftAndCollaborators,
+  SubscriptionWithRecipient
+} from 'kysely-codegen';
 import { revalidatePath } from 'next/cache';
 import { cache } from 'react';
 import { Resend } from 'resend';
@@ -47,7 +51,7 @@ export const sendNewsletterEmail = async ({
   testEmails,
   authorNames
 }: {
-  statement: StatementWithUser;
+  statement: StatementWithDraftAndCollaborators;
   testEmails?: string[];
   authorNames: string[];
 }) => {

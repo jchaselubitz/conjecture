@@ -6,7 +6,8 @@ import {
   BaseStatementCitation,
   BaseStatementImage,
   NewStatementCitation,
-  StatementWithUser
+  StatementWithDraft,
+  StatementWithDraftAndCollaborators
 } from 'kysely-codegen';
 import { AnnotationWithComments } from 'kysely-codegen';
 
@@ -461,12 +462,15 @@ export const checkValidStatementSlug = (slug: string) => {
   return slug.match(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 };
 
-export const groupThreadsByParentId = (
-  threads: StatementWithUser[],
-  currentDraft: StatementWithUser
-): {
-  precedingPosts: StatementWithUser[];
-  followingPosts: StatementWithUser[];
+export const groupThreadsByParentId = ({
+  threads,
+  statement
+}: {
+  threads: StatementWithDraft[];
+  statement: StatementWithDraftAndCollaborators;
+}): {
+  precedingPosts: StatementWithDraft[];
+  followingPosts: StatementWithDraft[];
   hasPosts: boolean;
 } => {
   let hasPosts = true;
@@ -474,8 +478,8 @@ export const groupThreadsByParentId = (
     hasPosts = false;
   }
   const precedingPostsRecursive = (
-    precedingDraft: StatementWithUser,
-    precedingPosts: StatementWithUser[]
+    precedingDraft: StatementWithDraft,
+    precedingPosts: StatementWithDraft[]
   ) => {
     const precedingPost = threads.find(
       draft => draft.statementId === precedingDraft.parentStatementId
@@ -485,15 +489,24 @@ export const groupThreadsByParentId = (
       precedingPostsRecursive(precedingPost, precedingPosts);
     }
     return precedingPosts.sort(
-      (a, b) => (a.draft.publishedAt?.getTime() ?? 0) - (b.draft.publishedAt?.getTime() ?? 0)
+      (a, b) => (a.publishedAt?.getTime() ?? 0) - (b.publishedAt?.getTime() ?? 0)
     );
   };
 
-  const precedingPosts = precedingPostsRecursive(currentDraft, []);
+  const statementWithDraft = {
+    ...statement,
+    publishedAt: statement.draft.publishedAt,
+    versionNumber: statement.draft.versionNumber,
+    content: statement.draft.content,
+    contentPlainText: statement.draft.contentPlainText,
+    draftId: statement.draft.id
+  } as StatementWithDraft;
 
-  const followingPosts: StatementWithUser[] = threads.filter(draft => {
-    if (draft.statementId !== currentDraft.statementId) {
-      if (draft.parentStatementId === currentDraft.statementId) {
+  const precedingPosts = precedingPostsRecursive(statementWithDraft, []);
+
+  const followingPosts: StatementWithDraft[] = threads.filter(draft => {
+    if (draft.statementId !== statement.statementId) {
+      if (draft.parentStatementId === statement.statementId) {
         return draft;
       }
     }

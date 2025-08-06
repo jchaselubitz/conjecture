@@ -1,14 +1,6 @@
-'use client';
-
-import { useSelectedLayoutSegment } from 'next/navigation';
-
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function StatementLoading() {
-  const segment = useSelectedLayoutSegment();
-
-  if (segment) return null;
-
   return (
     <div>
       <div className=" py-8 px-4 md:px-0 w-full">

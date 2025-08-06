@@ -1,4 +1,4 @@
-import { StatementWithUser } from 'kysely-codegen';
+import { StatementWithDraft } from 'kysely-codegen';
 import React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -15,8 +15,8 @@ export default function InlineCardStack({
   currentTitle
 }: {
   familyTree: {
-    precedingPosts: StatementWithUser[];
-    followingPosts: StatementWithUser[];
+    precedingPosts: StatementWithDraft[];
+    followingPosts: StatementWithDraft[];
   };
   currentTitle: string;
 }) {
@@ -36,7 +36,7 @@ export default function InlineCardStack({
           opacity={1}
           className={cn('-mb-6', index === precedingPosts.length - 1 && 'mb-1')}
           tabIndex={0}
-          publishedAt={post.draft.publishedAt ?? null}
+          publishedAt={post.publishedAt ?? null}
         />
       ))}
       {/* Separator with more space and current post title */}
@@ -62,7 +62,7 @@ export default function InlineCardStack({
           opacity={1}
           className={cn('-mb-6', index === followingPosts.length - 1 && 'mb-1')}
           tabIndex={0}
-          publishedAt={post.draft.publishedAt ?? null}
+          publishedAt={post.publishedAt ?? null}
         />
       ))}
     </div>

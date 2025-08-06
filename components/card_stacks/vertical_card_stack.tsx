@@ -1,4 +1,4 @@
-import { StatementWithUser } from 'kysely-codegen';
+import { StatementWithDraft } from 'kysely-codegen';
 import { Plus } from 'lucide-react';
 import React from 'react';
 
@@ -15,8 +15,8 @@ export default function VerticalCardStack({
   currentThreadId
 }: {
   familyTree: {
-    precedingPosts: StatementWithUser[];
-    followingPosts: StatementWithUser[];
+    precedingPosts: StatementWithDraft[];
+    followingPosts: StatementWithDraft[];
   };
   currentTitle: string;
   currentStatementId: string;
@@ -39,7 +39,7 @@ export default function VerticalCardStack({
             opacity={1 - index * 0.12}
             className={cn('mb-1')}
             tabIndex={0}
-            publishedAt={post.draft.publishedAt ?? null}
+            publishedAt={post.publishedAt ?? null}
           />
         ))}
       </div>
@@ -66,7 +66,7 @@ export default function VerticalCardStack({
             zIndex={followingPosts.length - idx}
             opacity={1 - idx * 0.12}
             tabIndex={0}
-            publishedAt={post.draft.publishedAt ?? null}
+            publishedAt={post.publishedAt ?? null}
           />
         ))}
         <div className="w-full flex">

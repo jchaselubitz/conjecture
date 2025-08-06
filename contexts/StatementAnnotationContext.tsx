@@ -36,11 +36,9 @@ const StatementAnnotationContext = createContext<StatementAnnotationContextType 
 );
 
 export function StatementAnnotationProvider({ children }: { children: ReactNode }) {
-  const { statement, updatedDraft, setUpdatedDraft } = useStatementContext();
+  const { annotations, setAnnotations } = useStatementContext();
 
-  const [annotations, setAnnotations] = useState<AnnotationWithComments[]>(
-    updatedDraft.draft.annotations
-  );
+  console.log('annotations', annotations);
 
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | undefined>(undefined);
   const [selectedAnnotation, setSelectedAnnotation] = useState<AnnotationWithComments | null>(null);
@@ -76,13 +74,7 @@ export function StatementAnnotationProvider({ children }: { children: ReactNode 
           }
         : a
     );
-    setUpdatedDraft({
-      ...statement,
-      draft: {
-        ...updatedDraft.draft,
-        annotations: newAnnotations as AnnotationWithComments[]
-      }
-    });
+    setAnnotations(newAnnotations as AnnotationWithComments[]);
   };
 
   // a kind of hackish way to keep the comments in sync with the annotations
@@ -97,13 +89,7 @@ export function StatementAnnotationProvider({ children }: { children: ReactNode 
           }
         : a
     );
-    setUpdatedDraft({
-      ...statement,
-      draft: {
-        ...updatedDraft.draft,
-        annotations: newAnnotations as AnnotationWithComments[]
-      }
-    });
+    setAnnotations(newAnnotations as AnnotationWithComments[]);
     if (replyToComment?.id === commentId) {
       setReplyToComment(null);
     }

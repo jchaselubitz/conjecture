@@ -1,11 +1,11 @@
 import { StatementCard } from '@/components/statements/card';
 import { getAnnotations } from '@/lib/actions/commentActions';
-import { getStatements } from '@/lib/actions/statementActions';
+import { getStatementsCached } from '@/lib/actions/statementActions';
 
 import AnnotationFeed from './(components)/annotation_feed';
 
 export default async function Feed() {
-  const statements = await getStatements({
+  const statements = await getStatementsCached({
     forCurrentUser: false,
     publishedOnly: true
   });

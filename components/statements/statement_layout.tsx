@@ -46,9 +46,8 @@ export default function StatementLayout({
   readerCommentsEnabled,
   startingPanelSizes
 }: StatementDetailsProps) {
-  console.log('StatementLayout');
   const { statement, parentStatement, thread, isCreator, editor } = useStatementContext();
-  const familyTree = groupThreadsByParentId(thread, statement);
+  const familyTree = groupThreadsByParentId({ threads: thread, statement });
 
   const {
     selectedAnnotationId,

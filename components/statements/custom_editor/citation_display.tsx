@@ -1,4 +1,4 @@
-import { BaseStatementCitation, StatementWithUser } from 'kysely-codegen';
+import { BaseStatementCitation, StatementWithDraftAndCollaborators } from 'kysely-codegen';
 import { BookIcon, CalendarIcon, FileTextIcon, LinkIcon, UsersIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -7,13 +7,13 @@ import { useAsyncFn } from 'react-use';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
-import { getStatements } from '@/lib/actions/statementActions';
+import { getStatementsCached } from '@/lib/actions/statementActions';
 import { formatDateForCitation } from '@/lib/helpers/helpersDate';
 import { cn } from '@/lib/utils';
 export function CitationDisplay() {
   const { citationData } = useStatementToolsContext();
   const citation = citationData as BaseStatementCitation;
-  const [conjecture, setConjecture] = useState<StatementWithUser | null>(null);
+  const [conjecture, setConjecture] = useState<StatementWithDraftAndCollaborators | null>(null);
 
   const formatPageRange = () => {
     const { pageType } = citation;
@@ -40,7 +40,7 @@ export function CitationDisplay() {
         const statementSlug = url.searchParams.get('statementSlug');
         if (!statementSlug) return;
         try {
-          const statement = (await getStatements({ statementSlug, publishedOnly: true }))[0];
+          const statement = (await getStatementsCached({ statementSlug, publishedOnly: true }))[0];
           if (statement) {
             setConjecture(statement);
           }

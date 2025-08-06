@@ -3,7 +3,7 @@
 import { SubscriptionWithRecipient } from 'kysely-codegen';
 import { useEffect, useState } from 'react';
 
-import { getSubscribers } from '@/lib/actions/notificationActions';
+import { getSubscribersCached } from '@/lib/actions/notificationActions';
 
 interface LazySubscriberDataProps {
   authorId: string;
@@ -20,7 +20,7 @@ export function LazySubscriberData({ authorId, children, fallback }: LazySubscri
     const loadSubscribers = async () => {
       try {
         setLoading(true);
-        const data = await getSubscribers(authorId);
+        const data = await getSubscribersCached(authorId);
         setSubscribers(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load subscribers');

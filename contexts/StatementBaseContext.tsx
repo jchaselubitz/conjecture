@@ -2,7 +2,14 @@
 
 import * as Sentry from '@sentry/nextjs';
 import { Editor } from '@tiptap/react';
-import { StatementPackage, StatementWithUser, SubscriptionWithRecipient } from 'kysely-codegen';
+import {
+  AnnotationWithComments,
+  BaseDraft,
+  BaseStatementCitation,
+  BaseStatementImage,
+  StatementWithDraft,
+  StatementWithDraftAndCollaborators
+} from 'kysely-codegen';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   createContext,
@@ -11,18 +18,23 @@ import {
   SetStateAction,
   useContext,
   useEffect,
+  useMemo,
   useState
 } from 'react';
 import { useDebounce } from 'use-debounce';
 
-import { createDraft, publishDraft } from '@/lib/actions/statementActions';
-import { UserStatementRoles } from '@/lib/enums/permissions';
+import {
+  createDraft,
+  getFullThread,
+  getStatementDetails,
+  publishDraft
+} from '@/lib/actions/statementActions';
 
 interface StatementContextType {
   versionOptions: { versionNumber: number; createdAt: Date }[];
   currentVersion: number;
-  updatedDraft: StatementPackage;
-  setUpdatedDraft: Dispatch<SetStateAction<StatementPackage>>;
+  updatedDraft: BaseDraft;
+  setUpdatedDraft: Dispatch<SetStateAction<BaseDraft>>;
   saveStatementDraft: () => Promise<void>;
   nextVersionNumber: number;
   changeVersion: (version: number) => void;
@@ -31,71 +43,101 @@ interface StatementContextType {
   setEditor: (editor: Editor | null) => void;
   userId: string | undefined;
   writerUserSlug: string | undefined | null;
-  statement: StatementPackage;
-  debouncedStatement: StatementPackage | undefined;
-  parentStatement: StatementWithUser | undefined;
-  thread: StatementWithUser[];
+  statement: StatementWithDraftAndCollaborators;
+  debouncedDraft: BaseDraft | undefined;
+  parentStatement: StatementWithDraft | undefined;
+  thread: StatementWithDraft[];
   isCreator: boolean;
+  annotations: AnnotationWithComments[];
+  setAnnotations: Dispatch<SetStateAction<AnnotationWithComments[]>>;
+  images: BaseStatementImage[];
+  setImages: Dispatch<SetStateAction<BaseStatementImage[]>>;
+  citations: BaseStatementCitation[];
+  setCitations: Dispatch<SetStateAction<BaseStatementCitation[]>>;
 }
 
 const StatementContext = createContext<StatementContextType | undefined>(undefined);
 
 export function StatementProvider({
   children,
-  statementPackage,
+  statement,
   userId,
   writerUserSlug,
-  thread,
-  versionList,
+  // thread,
+  // versionList,
   isCreator
 }: {
   children: ReactNode;
-  statementPackage: StatementPackage;
+  statement: StatementWithDraftAndCollaborators;
   userId: string | undefined;
   writerUserSlug: string | undefined | null;
-  thread: StatementWithUser[] | [];
-  versionList: { versionNumber: number; createdAt: Date }[];
+  // thread: StatementWithDraft[] | [];
+  // versionList: { versionNumber: number; createdAt: Date }[];
   isCreator: boolean;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editMode = searchParams.get('edit') === 'true';
-  const parentStatement = thread.find(
-    draft => draft.statementId === statementPackage.parentStatementId
-  );
+
+  // const defaultPackage = {
+  //   ...statement,
+  //   draft: statement.draft,
+  //   annotations: [] as AnnotationWithComments[],
+  //   images: [],
+  //   citations: []
+  // } as StatementPackage;
+
+  const [updatedDraft, setUpdatedDraft] = useState<BaseDraft>(statement.draft);
+  const [annotations, setAnnotations] = useState<AnnotationWithComments[]>([]);
+  const [images, setImages] = useState<BaseStatementImage[]>([]);
+  const [citations, setCitations] = useState<BaseStatementCitation[]>([]);
+  const [thread, setThread] = useState<StatementWithDraft[]>([]);
+  const [versionList, setVersionList] = useState<{ versionNumber: number; createdAt: Date }[]>([]);
+  const [parentStatement, setParentStatement] = useState<StatementWithDraft | undefined>(undefined);
+
+  // const parentStatement = thread.find(draft => draft.statementId === statement.parentStatementId);
+
+  useEffect(() => {
+    const loadStatementDetails = async () => {
+      const thread = statement.threadId && (await getFullThread(statement.threadId));
+      const { images, citations, annotations } = await getStatementDetails({
+        statementId: statement.statementId,
+        draftId: statement.draft.id,
+        userId: userId
+      });
+      setImages(images);
+      setCitations(citations);
+      setAnnotations(annotations);
+      setThread(thread || []);
+    };
+    loadStatementDetails();
+  }, [statement, userId]);
 
   //Need to do some silliness here to make sure preserve the state of updatedDraft while statement updates in the background. Without it, some changes to the HTMLcontent will be lost.
 
-  const [updatedDraft, setUpdatedDraft] = useState<StatementPackage>(statementPackage);
-
-  const [debouncedStatement, setDebouncedStatement] = useDebounce<StatementPackage | undefined>(
-    updatedDraft,
-    500
-  );
+  const [debouncedDraft, setDebouncedDraft] = useDebounce<BaseDraft | undefined>(updatedDraft, 500);
 
   useEffect(() => {
-    setDebouncedStatement(updatedDraft);
-  }, [updatedDraft, setDebouncedStatement]);
+    setDebouncedDraft(updatedDraft);
+  }, [updatedDraft, setDebouncedDraft]);
 
   const [editor, setEditor] = useState<Editor | null>(null);
 
   const nextVersionNumber = versionList.length + 1;
 
   const changeVersion = (newVersion: number) => {
-    router.push(`/${writerUserSlug}/${statementPackage.slug}/${newVersion}?edit=${editMode}`);
+    router.push(`/${writerUserSlug}/${statement.slug}?edit=${editMode}&v=${newVersion}`);
   };
 
   const saveStatementDraft = async () => {
-    const { draft } = updatedDraft;
-    const { content, annotations } = draft;
-
+    const content = updatedDraft.content;
     if (!content) {
       return;
     }
     try {
       await createDraft({
         content,
-        statementId: statementPackage.statementId || undefined,
+        statementId: statement.statementId || undefined,
         versionNumber: nextVersionNumber,
         annotations: annotations || undefined
       });
@@ -106,8 +148,7 @@ export function StatementProvider({
 
   const togglePublish = async () => {
     if (!updatedDraft) return;
-    const { statementId, creatorId } = statementPackage;
-    const { draft } = updatedDraft;
+    const { statementId, creatorId, draft } = statement;
     const { publishedAt } = draft;
     await publishDraft({
       statementId,
@@ -121,7 +162,7 @@ export function StatementProvider({
     <StatementContext.Provider
       value={{
         versionOptions: versionList,
-        currentVersion: statementPackage.draft.versionNumber,
+        currentVersion: statement.draft.versionNumber,
         updatedDraft,
         setUpdatedDraft,
         saveStatementDraft,
@@ -132,11 +173,17 @@ export function StatementProvider({
         setEditor,
         userId,
         writerUserSlug,
-        statement: statementPackage,
-        debouncedStatement,
+        statement,
+        debouncedDraft,
         parentStatement,
         thread,
-        isCreator
+        isCreator,
+        annotations,
+        setAnnotations,
+        images,
+        setImages,
+        citations,
+        setCitations
       }}
     >
       {children}

@@ -8,8 +8,7 @@ import { unsubscribeBulk } from '@/lib/actions/notificationActions';
 
 export default function NewsletterPanel() {
   const { userId } = useUserContext();
-  const { statement } = useStatementContext();
-  const authorId = statement.creatorId;
+
   const handleSubscriptionsChange = async (subscriberIds: string[]) => {
     if (!userId) return;
     await unsubscribeBulk(userId, subscriberIds);
@@ -26,7 +25,7 @@ export default function NewsletterPanel() {
       </div>
 
       <div className="flex flex-col gap-2 h-full overflow-hidden">
-        <LazySubscriberData authorId={authorId} fallback={<div>Loading subscribers...</div>}>
+        <LazySubscriberData authorId={userId || ''} fallback={<div>Loading subscribers...</div>}>
           {subscribers => (
             <SubscriberTable
               subscriptions={subscribers}

@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { StatementWithUser } from 'kysely-codegen';
+import { StatementWithDraftAndCollaborators } from 'kysely-codegen';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -17,18 +17,18 @@ import {
 import { StatusBadge } from './status_badge';
 
 interface StatementCardProps {
-  statement: StatementWithUser;
+  statement: StatementWithDraftAndCollaborators;
   isPublic?: boolean;
   pathname: string;
 }
 
 export function StatementCard({ statement, isPublic, pathname }: StatementCardProps) {
-  const formattedDate = statement.draft.publishedAt
+  const formattedDate = statement.draft?.publishedAt
     ? format(new Date(statement.draft.publishedAt), 'MMM d, yyyy')
     : format(new Date(statement.updatedAt), 'MMM d, yyyy');
 
   const previewLength = isPublic ? 200 : 100;
-  const contentPreview = statement.draft.content
+  const contentPreview = statement.draft?.content
     ? statement.draft.content.replace(/<[^>]*>?/gm, '').slice(0, previewLength) +
       (statement.draft.content.length > previewLength ? '...' : '')
     : statement.subtitle || 'No preview available';
@@ -37,7 +37,7 @@ export function StatementCard({ statement, isPublic, pathname }: StatementCardPr
 
   return (
     <Link
-      href={`/${pathname}/${statement.slug}/${statement.draft.versionNumber}`}
+      href={`/${pathname}/${statement.slug}`}
       className="block transition-transform hover:scale-[1.01]"
     >
       <Card className="relative h-full overflow-hidden pt-0 ">
@@ -71,7 +71,7 @@ export function StatementCard({ statement, isPublic, pathname }: StatementCardPr
         </CardContent>
         <CardFooter className="absolute bottom-0 left-0 right-0 flex justify-between py-3">
           <div className="flex items-center gap-2">
-            <StatusBadge isPublished={statement.draft.publishedAt !== null} />
+            <StatusBadge isPublished={statement.draft?.publishedAt !== null} />
             <CardDescription className="text-sm text-muted-foreground">
               {formattedDate}
             </CardDescription>

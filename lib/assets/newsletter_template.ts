@@ -1,4 +1,4 @@
-import { StatementWithUser } from 'kysely-codegen';
+import { StatementWithDraftAndCollaborators } from 'kysely-codegen';
 
 const mainStyles = ` * {
         .newsletter-email box-sizing: border-box;
@@ -710,7 +710,7 @@ export function getNewsletterHtml({
   subscriberEmail,
   previewMode = false
 }: {
-  statement: StatementWithUser;
+  statement: StatementWithDraftAndCollaborators;
   subscriberEmail?: string;
   previewMode?: boolean;
 }): string {

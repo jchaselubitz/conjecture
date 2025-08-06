@@ -71,6 +71,12 @@ export const getUserProfileBySlug = async (
   return result as BaseProfile;
 };
 
+export const userProfileCache = cache(
+  async (userSlug: string, user?: any): Promise<BaseProfile | null | undefined> => {
+    return await getUserProfileBySlug(userSlug, user);
+  }
+);
+
 export const getUserByEmail = async (email: string): Promise<BaseProfile | null> => {
   const profile = await db
     .selectFrom('profile')

@@ -1,4 +1,4 @@
-import { StatementPackage } from 'kysely-codegen';
+import { StatementPackage, StatementWithDraftAndCollaborators } from 'kysely-codegen';
 import { BarChart3, CalendarClock, MoreHorizontal, PencilLine, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -36,7 +36,7 @@ import RebuttalButton from './rebuttal_button';
 import VoteButton from './vote_button';
 
 interface StatementOptionsProps {
-  statement: StatementPackage;
+  statement: StatementWithDraftAndCollaborators;
   showAuthorComments: boolean;
   showReaderComments: boolean;
   onShowAuthorCommentsChange: (checked: boolean) => void;

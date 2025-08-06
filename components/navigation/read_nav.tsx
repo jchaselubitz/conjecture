@@ -11,9 +11,9 @@ import { useUserContext } from '@/contexts/userContext';
 import { Button } from '../ui/button';
 import ViewModeButton from '../view_mode_button';
 
+import { AuthButtons } from './auth_buttons';
 import MobileNav from './mobile_nav';
 import UserButton from './user_button';
-import { AuthButtons } from './auth_buttons';
 
 export default function ReadNav() {
   const params = useParams();

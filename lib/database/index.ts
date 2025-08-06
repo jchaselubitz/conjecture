@@ -4,8 +4,8 @@ import {
   Kysely,
   PostgresDialect,
   Selectable,
-  Updateable
-} from 'kysely';
+  Updateable,
+} from "kysely";
 import {
   Annotation,
   Collaborator,
@@ -19,24 +19,24 @@ import {
   StatementCitation,
   StatementImage,
   StatementVote,
-  Subscription
-} from 'kysely-codegen';
-import { Pool } from 'pg';
+  Subscription,
+} from "kysely-codegen";
+import { Pool } from "pg";
 
 const db = new Kysely<DB>({
   plugins: [new CamelCasePlugin()],
   dialect: new PostgresDialect({
     pool: new Pool({
       connectionString: process.env.DATABASE_URL,
-      max: 10
-    })
-  })
+      max: 10,
+    }),
+  }),
 });
 
-declare module 'kysely-codegen' {
+declare module "kysely-codegen" {
   export type RevalidationPath = {
     path: string;
-    type?: 'page' | 'layout' | undefined;
+    type?: "page" | "layout" | undefined;
   };
 
   export type BaseProfile = Selectable<Profile>;
@@ -50,7 +50,7 @@ declare module 'kysely-codegen' {
   export type NewCollaborator = Insertable<Collaborator>;
   export type EditedCollaborator = Updateable<Collaborator>;
 
-  export type NotificationMedium = 'email';
+  export type NotificationMedium = "email";
 
   export type BaseSubscription = Selectable<Subscription>;
   export type SubscriptionWithRecipient = BaseSubscription & {
@@ -121,7 +121,7 @@ declare module 'kysely-codegen' {
   };
 
   export type CommentWithStatement = CommentWithUser & {
-    statement?: StatementWithUser;
+    statement?: StatementWithDraft;
   };
 
   export type CommentWithReplies = CommentWithStatement & {
@@ -153,8 +153,33 @@ declare module 'kysely-codegen' {
 
   export type BaseStatement = Selectable<Statement>;
 
-  export type StatementWithUser = BaseStatement & {
+  export type StatementWithDraft = BaseStatement & {
+    publishedAt: Date | null | undefined;
+    versionNumber: number;
+    content: string | null | undefined;
+    contentPlainText: string | null | undefined;
+    draftId: string | null | undefined;
+    collaborators: BaseCollaborator[];
     authors: {
+      id: string;
+      name: string | null | undefined;
+      username: string | null | undefined;
+      imageUrl: string | null | undefined;
+      email: string | null | undefined;
+    }[];
+    // upvotes: BaseStatementVote[];
+    creatorSlug: string | null | undefined;
+  };
+
+  export type StatementWithDraftAndCollaborators = BaseStatement & {
+    authors: {
+      id: string;
+      name: string | null | undefined;
+      username: string | null | undefined;
+      imageUrl: string | null | undefined;
+      email: string | null | undefined;
+    }[];
+    managers: {
       id: string;
       name: string | null | undefined;
       username: string | null | undefined;
@@ -164,22 +189,13 @@ declare module 'kysely-codegen' {
     collaborators: BaseCollaborator[];
     creatorSlug: string | null | undefined;
     upvotes?: BaseStatementVote[];
-    draft: {
-      id: string;
-      publishedAt?: Date | null | undefined;
-      versionNumber: number;
-      content?: string | null | undefined;
-      contentPlainText?: string | null | undefined;
-    };
+    draft: BaseDraft;
   };
 
-  // export type StatementDraft = DraftWithAnnotations & StatementWithUser;
-
-  export type StatementPackage = StatementWithUser & {
-    images: BaseStatementImage[];
+  export type StatementPackage = StatementWithDraftAndCollaborators & {
     draft: DraftWithAnnotations;
+    images: BaseStatementImage[];
     citations: BaseStatementCitation[];
-    upvotes: BaseStatementVote[];
   };
 }
 export default db;

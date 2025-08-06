@@ -1,6 +1,6 @@
 'use client';
 
-import { StatementWithUser } from 'kysely-codegen';
+import { StatementWithDraftAndCollaborators } from 'kysely-codegen';
 import Link from 'next/link';
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -38,7 +38,7 @@ const AvatarGroup = ({ authors }: { authors: author[] }) => {
   );
 };
 
-const Byline = ({ statement }: { statement: StatementWithUser }) => {
+const Byline = ({ statement }: { statement: StatementWithDraftAndCollaborators }) => {
   const { userId } = useUserContext();
   const [buttonStates, setButtonStates] = useState<Record<string, ButtonLoadingState>>({});
   const [isFollowing, setIsFollowing] = useState<Record<string, boolean>>({});

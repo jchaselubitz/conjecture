@@ -1,15 +1,19 @@
 'use server';
 
+import { User } from '@supabase/supabase-js';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import {
   AnnotationWithComments,
-  BaseComment,
+  BaseCollaborator,
+  BaseDraft,
   BaseProfile,
-  CommentWithUser,
-  DraftWithAnnotations,
+  BaseStatement,
+  BaseStatementCitation,
+  BaseStatementImage,
   NewAnnotation,
   StatementPackage,
-  StatementWithUser
+  StatementWithDraft,
+  StatementWithDraftAndCollaborators
 } from 'kysely-codegen';
 import { RevalidationPath } from 'kysely-codegen';
 import { revalidatePath } from 'next/cache';
@@ -18,7 +22,7 @@ import { cache } from 'react';
 
 import db from '@/lib/database';
 
-import { AuthorGroup, UserStatementRoles } from '../enums/permissions';
+import { AuthorGroup, userAccess, UserStatementRoles } from '../enums/permissions';
 import { checkValidStatementSlug, generateStatementId } from '../helpers/helpersStatements';
 import { createStatementImageUrl } from '../helpers/helpersStorage';
 
@@ -34,13 +38,13 @@ export async function getStatementId(statementSlug: string) {
   return statement.statementId;
 }
 
-export async function getStatements({
+export async function getPublishedOrLatestStatements({
   forCurrentUser,
   publishedOnly,
   creatorId,
   statementSlug,
   statementId,
-  limit = 20,
+  limit = 100,
   offset = 0
 }: {
   forCurrentUser?: boolean;
@@ -50,11 +54,16 @@ export async function getStatements({
   statementId?: string;
   limit?: number;
   offset?: number;
-}): Promise<StatementWithUser[]> {
+}): Promise<StatementWithDraftAndCollaborators[]> {
   const user = await getUser();
+
+  type BaseStatementQuery = BaseStatement & {
+    collaborators: BaseCollaborator[];
+    drafts: BaseDraft[];
+  };
+
   let statements = db
     .selectFrom('statement')
-    .leftJoin('draft', 'statement.statementId', 'draft.statementId')
     .select(({ eb }) => [
       'statement.statementId',
       'statement.slug',
@@ -67,16 +76,11 @@ export async function getStatements({
       'statement.subtitle',
       'statement.threadId',
       'statement.distributedAt as distributedAt',
-      'draft.publishedAt as publishedAt',
-      'draft.content as content',
-      'draft.versionNumber as versionNumber',
-      'draft.id as draftId',
       jsonArrayFrom(
         eb
           .selectFrom('collaborator')
           .selectAll()
           .whereRef('collaborator.statementId', '=', 'statement.statementId')
-          .where('collaborator.role', 'in', AuthorGroup)
       ).as('collaborators'),
       jsonArrayFrom(
         eb
@@ -85,6 +89,29 @@ export async function getStatements({
           .whereRef('statementVote.statementId', '=', 'statement.statementId')
       ).as('upvotes')
     ]);
+
+  if (publishedOnly) {
+    statements = statements.select(({ eb }) => [
+      jsonArrayFrom(
+        eb
+          .selectFrom('draft')
+          .selectAll()
+          .whereRef('draft.statementId', '=', 'statement.statementId')
+          .where('draft.publishedAt', 'is not', null)
+          .limit(1)
+      ).as('drafts')
+    ]);
+  } else {
+    statements = statements.select(({ eb }) => [
+      jsonArrayFrom(
+        eb
+          .selectFrom('draft')
+          .selectAll()
+          .whereRef('draft.statementId', '=', 'statement.statementId')
+          .orderBy('draft.createdAt', 'desc')
+      ).as('drafts')
+    ]);
+  }
 
   if (forCurrentUser && user) {
     statements = statements.where('statement.creatorId', '=', user.id);
@@ -98,25 +125,25 @@ export async function getStatements({
   if (statementId) {
     statements = statements.where('statement.statementId', '=', statementId);
   }
-  if (publishedOnly) {
-    statements = statements
-      .where('draft.publishedAt', 'is not', null)
-      .orderBy('draft.publishedAt', 'desc');
-  } else {
-    statements = statements.orderBy('draft.createdAt', 'desc');
-  }
-
   // Add pagination
   statements = statements.limit(limit).offset(offset);
 
-  const statementsList = await statements.execute();
+  const statementsList = (await statements.execute()) as unknown as BaseStatementQuery[];
 
   if (statementsList.length === 0) {
     return [];
   }
 
   const authorIds = statementsList.flatMap(statement => {
-    return statement.collaborators.map(collaborator => collaborator.userId);
+    return statement.collaborators
+      .filter(collaborator => userAccess(collaborator.role as UserStatementRoles) === 'author')
+      .map(collaborator => collaborator.userId);
+  });
+
+  const managerIds = statementsList.flatMap(statement => {
+    return statement.collaborators
+      .filter(collaborator => userAccess(collaborator.role as UserStatementRoles) === 'manager')
+      .map(collaborator => collaborator.userId);
   });
 
   const profiles = await db
@@ -136,17 +163,38 @@ export async function getStatements({
       .filter((profile): profile is BaseProfile => !!profile);
   };
 
-  return statementsList.map(statement => ({
+  const getLeadDraft = ({
+    statement,
+    user
+  }: {
+    statement: BaseStatementQuery;
+    user: User | null;
+  }) => {
+    const drafts = statement.drafts;
+    const userIsCollaborator = statement.collaborators.some(
+      collaborator => collaborator.userId === user?.id
+    );
+    const publishedDraft = drafts.find(draft => draft.publishedAt !== null) ?? null;
+    if (publishedDraft) {
+      return publishedDraft;
+    } else if (userIsCollaborator) {
+      const greatestVersionNumber = drafts.reduce(
+        (max, draft) => Math.max(max, draft.versionNumber),
+        0
+      );
+      return drafts.find(draft => draft.versionNumber === greatestVersionNumber) ?? null;
+    }
+  };
+
+  const statementsWithDraft = statementsList.map(statement => ({
     ...statement,
     creatorSlug: profiles.find(profile => profile.id === statement.creatorId)?.username,
+    draft: getLeadDraft({ statement: statement as BaseStatementQuery, user }),
     authors: getStatementAuthors(statement, profiles),
-    draft: {
-      id: statement.draftId,
-      publishedAt: statement.publishedAt,
-      versionNumber: statement.versionNumber,
-      content: statement.content
-    }
-  })) as StatementWithUser[];
+    managers: profiles.filter(profile => managerIds.includes(profile.id))
+  })) as StatementWithDraftAndCollaborators[];
+
+  return statementsWithDraft;
 }
 
 // Cached version for better performance
@@ -167,8 +215,8 @@ export const getStatementsCached = cache(
     statementId?: string;
     limit?: number;
     offset?: number;
-  }): Promise<StatementWithUser[]> => {
-    return getStatements({
+  }): Promise<StatementWithDraftAndCollaborators[]> => {
+    return getPublishedOrLatestStatements({
       forCurrentUser,
       publishedOnly,
       creatorId,
@@ -180,7 +228,7 @@ export const getStatementsCached = cache(
   }
 );
 
-export async function getFullThread(threadId: string): Promise<StatementWithUser[]> {
+export async function getFullThread(threadId: string): Promise<StatementWithDraft[]> {
   const statementsList = await db
     .selectFrom('statement')
     .innerJoin('draft', 'statement.statementId', 'draft.statementId')
@@ -202,14 +250,14 @@ export async function getFullThread(threadId: string): Promise<StatementWithUser
       'draft.content as content',
       'draft.contentPlainText as contentPlainText',
       'draft.id as draftId',
+      'profile.username as creatorSlug',
       jsonArrayFrom(
         eb
           .selectFrom('collaborator')
           .selectAll()
           .whereRef('collaborator.statementId', '=', 'statement.statementId')
           .where('collaborator.role', 'in', AuthorGroup)
-      ).as('collaborators'),
-      'profile.username as creatorSlug'
+      ).as('collaborators')
     ])
     .where('threadId', '=', threadId)
     .where('draft.publishedAt', 'is not', null)
@@ -232,214 +280,50 @@ export async function getFullThread(threadId: string): Promise<StatementWithUser
     ...statement,
     authors: statement.collaborators
       .map(collaborator => profileMap.get(collaborator.userId))
-      .filter((profile): profile is BaseProfile => !!profile),
-    creatorSlug: statement.creatorSlug,
-    draft: {
-      id: statement.draftId,
-      publishedAt: statement.publishedAt,
-      versionNumber: statement.versionNumber,
-      content: statement.content
-    }
+      .filter((profile): profile is BaseProfile => !!profile)
   }));
 }
 
-export const getFullThreadCached = cache(async (threadId: string): Promise<StatementWithUser[]> => {
-  return getFullThread(threadId);
-});
-
-export async function getPublishedOrLatest(
-  statementSlug: string,
-  userIsCollaborator: boolean = false
-): Promise<{
-  version: number;
-  versionList: { versionNumber: number; createdAt: Date }[];
-} | null> {
-  if (statementSlug === 'appspecific') {
-    return null;
+export const getFullThreadCached = cache(
+  async (threadId: string): Promise<StatementWithDraft[]> => {
+    return getFullThread(threadId);
   }
-  try {
-    const statement = await db
-      .selectFrom('statement')
-      .selectAll()
-      .where('slug', '=', statementSlug)
-      .executeTakeFirstOrThrow();
+);
 
-    const drafts = await db
-      .selectFrom('draft')
-      .selectAll()
-      .where('statementId', '=', statement.statementId)
-      .execute();
-
-    const versions = drafts
-      .map(draft => ({
-        versionNumber: draft.versionNumber,
-        createdAt: draft.createdAt
-      }))
-      .sort((a, b) => b.versionNumber - a.versionNumber);
-
-    if (drafts.length > 0 && userIsCollaborator) {
-      const greatestVersionNumber = drafts.reduce(
-        (max, draft) => Math.max(max, draft.versionNumber),
-        0
-      );
-      return { version: greatestVersionNumber, versionList: versions };
-    }
-    const publishedDraft = drafts.filter(draft => draft.publishedAt !== null)[0]?.versionNumber;
-
-    return { version: publishedDraft ?? undefined, versionList: versions };
-  } catch (error) {
-    return null;
-  }
-}
-
-export async function getStatementPageData({
-  statementSlug,
+export async function getStatementDetails({
+  statementId,
+  draftId,
   userId,
-  version,
-  publishedOnly = false
+  version
 }: {
-  statementSlug: string;
+  statementId: string;
+  draftId: string;
   userId?: string;
   version?: number;
-  publishedOnly?: boolean;
 }): Promise<{
-  userRole: UserStatementRoles;
-  userIsCollaborator: boolean;
-  selection: {
-    version: number;
-    versionList: { versionNumber: number; createdAt: Date }[];
-  } | null;
-  statementPackage: StatementPackage | null;
+  images: BaseStatementImage[];
+  citations: BaseStatementCitation[];
+  annotations: AnnotationWithComments[];
 }> {
-  console.log('First', statementSlug);
-  if (statementSlug === 'appspecific') {
-    return {
-      userRole: UserStatementRoles.Viewer,
-      userIsCollaborator: false,
-      selection: null,
-      statementPackage: null
-    };
-  }
-
   try {
-    // Get statement and collaborators in a single query
-    let _statement = db
-      .selectFrom('statement')
-      .select(({ eb }) => [
-        'statementId',
-        'slug',
-        'creatorId',
-        'createdAt',
-        'updatedAt',
-        'parentStatementId',
-        'headerImg',
-        'threadId',
-        'title',
-        'subtitle',
-        'distributedAt',
-        jsonArrayFrom(
-          eb
-            .selectFrom('collaborator')
-            .selectAll()
-            .whereRef('collaborator.statementId', '=', 'statement.statementId')
-        ).as('collaborators'),
-        jsonArrayFrom(
-          eb
-            .selectFrom('statementImage')
-            .selectAll()
-            .whereRef('statementImage.statementId', '=', 'statement.statementId')
-        ).as('images'),
-        jsonArrayFrom(
-          eb
-            .selectFrom('statementCitation')
-            .selectAll()
-            .whereRef('statementCitation.statementId', '=', 'statement.statementId')
-        ).as('citations'),
-        jsonArrayFrom(
-          eb
-            .selectFrom('statementVote')
-            .selectAll()
-            .whereRef('statementVote.statementId', '=', 'statement.statementId')
-        ).as('upvotes')
-      ])
-      .where('slug', '=', statementSlug);
-
-    const statement = await _statement.executeTakeFirstOrThrow();
-
-    // Get drafts in parallel with the statement query
-    let drafts = db
-      .selectFrom('draft')
+    const images = await db
+      .selectFrom('statementImage')
       .selectAll()
-      .where('statementId', '=', statement.statementId)
-      .orderBy('versionNumber', 'desc');
+      .where('statementId', '=', statementId)
+      .execute();
 
-    if (publishedOnly) {
-      drafts = drafts.where('publishedAt', 'is not', null);
-    }
-
-    const draftsList = await drafts.execute();
-
-    // Determine user role from collaborators
-    const userRole =
-      (statement.collaborators.find(collaborator => collaborator.userId === userId)
-        ?.role as UserStatementRoles) || UserStatementRoles.Viewer;
-
-    const userIsCollaborator = userRole !== UserStatementRoles.Viewer;
-    // If version is provided and user is not a collaborator, send to base page
-    if (version && !userIsCollaborator) {
-      const creatorSlug = statement.collaborators.find(p => p.userId === statement.creatorId)?.slug;
-      redirect(`/${creatorSlug}/${statementSlug}`);
-    }
-    // Determine version selection
-    const versions = draftsList
-      .map(draft => ({
-        versionNumber: draft.versionNumber,
-        createdAt: draft.createdAt
-      }))
-      .sort((a, b) => b.versionNumber - a.versionNumber);
-
-    let selectedVersion: number;
-    if (draftsList.length > 0 && userIsCollaborator) {
-      if (version) {
-        selectedVersion = version;
-      } else {
-        selectedVersion = draftsList.reduce((max, draft) => Math.max(max, draft.versionNumber), 0);
-      }
-    } else {
-      const publishedDraft = draftsList.find(draft => draft.publishedAt !== null);
-      selectedVersion = publishedDraft?.versionNumber || 0;
-    }
-
-    const selection =
-      selectedVersion > 0 ? { version: selectedVersion, versionList: versions } : null;
-
-    // If no valid version found, return early
-    if (!selection) {
-      return {
-        userRole,
-        userIsCollaborator,
-        selection: null,
-        statementPackage: null
-      };
-    }
-
-    // Get the selected draft and related data
-    const selectedDraft = draftsList.find(d => d.versionNumber === selectedVersion);
-    if (!selectedDraft) {
-      return {
-        userRole,
-        userIsCollaborator,
-        selection: null,
-        statementPackage: null
-      };
-    }
+    const citations = await db
+      .selectFrom('statementCitation')
+      .selectAll()
+      .where('statementId', '=', statementId)
+      .execute();
 
     // Get annotations and comments for the selected draft
     const [annotations, comments] = await Promise.all([
       db
         .selectFrom('annotation')
         .selectAll()
-        .where('annotation.draftId', '=', selectedDraft.id)
+        .where('annotation.draftId', '=', draftId)
         .orderBy('annotation.createdAt', 'desc')
         .execute(),
       db
@@ -463,7 +347,7 @@ export async function getStatementPageData({
         .where(
           'comment.annotationId',
           'in',
-          db.selectFrom('annotation').select('id').where('draftId', '=', selectedDraft.id)
+          db.selectFrom('annotation').select('id').where('draftId', '=', draftId)
         )
         .orderBy('comment.createdAt', 'desc')
         .execute()
@@ -471,7 +355,6 @@ export async function getStatementPageData({
 
     // Get profiles for all users involved
     const profileIds = new Set([
-      ...statement.collaborators.map(collaborator => collaborator.userId),
       ...comments.map(comment => comment.userId),
       ...annotations.map(annotation => annotation.userId)
     ]);
@@ -482,91 +365,75 @@ export async function getStatementPageData({
       .where('profile.id', 'in', Array.from(profileIds))
       .execute();
 
-    // Build the statement package
-    const authors = statement.collaborators
-      .map(collaborator =>
-        AuthorGroup.includes(collaborator.role as UserStatementRoles)
-          ? profiles.find(p => p.id === collaborator.userId)
-          : undefined
-      )
-      .filter(author => author !== undefined);
+    const composedAnnotations = annotations.map(annotation => ({
+      ...annotation,
+      userName: profiles.find(p => p.id === annotation.userId)?.name || '',
+      userImageUrl: profiles.find(p => p.id === annotation.userId)?.imageUrl || '',
+      comments: comments
+        .filter(c => c.annotationId === annotation.id)
+        .map(comment => ({
+          ...comment,
+          userName: profiles.find(p => p.id === comment.userId)?.name || '',
+          userImageUrl: profiles.find(p => p.id === comment.userId)?.imageUrl || '',
+          draftId: draftId
+        }))
+    }));
 
-    const statementPackage = {
-      ...statement,
-      authors,
-      creatorSlug: profiles.find(p => p.id === statement.creatorId)?.username,
-      citations: statement.citations.map(c => ({
-        ...c,
-        title: c.title ?? ''
-      })),
-      images: statement.images,
-      upvotes: statement.upvotes,
-      collaborators: statement.collaborators,
-      draft: {
-        ...selectedDraft,
-        slug: statement.slug,
-        images: statement.images,
-        upvotes: statement.upvotes,
-        citations: statement.citations,
-        annotations: annotations
-          .filter(a => a.draftId === selectedDraft.id)
-          .map(a => ({
-            ...a,
-            userName: profiles.find(p => p.id === a.userId)?.name || '',
-            userImageUrl: profiles.find(p => p.id === a.userId)?.imageUrl || '',
-            comments: comments
-              .filter(c => c.annotationId === a.id)
-              .map(c => ({
-                ...c,
-                userName: profiles.find(p => p.id === c.userId)?.name || '',
-                userImageUrl: profiles.find(p => p.id === c.userId)?.imageUrl || '',
-                draftId: selectedDraft.id
-              }))
-          }))
-      }
-    } as StatementPackage;
+    // annotations
+    //   .filter((a) => a.draftId === draftId)
+    //   .map((a) => ({
+    //     ...a,
+    //     userName: profiles.find((p) => p.id === a.userId)?.name || "",
+    //     userImageUrl: profiles.find((p) => p.id === a.userId)?.imageUrl ||
+    //       "",
+    //     comments: comments
+    //       .filter((c) => c.annotationId === a.id)
+    //       .map((c) => ({
+    //         ...c,
+    //         userName: profiles.find((p) => p.id === c.userId)?.name || "",
+    //         userImageUrl: profiles.find((p) => p.id === c.userId)?.imageUrl ||
+    //           "",
+    //         draftId: draftId,
+    //       })),
+    //   })),
 
-    return {
-      userRole,
-      userIsCollaborator,
-      selection,
-      statementPackage
+    const returnPackage = {
+      images: images,
+      citations: citations,
+      annotations: composedAnnotations
     };
+
+    return returnPackage;
   } catch (error) {
     return {
-      userRole: UserStatementRoles.Viewer,
-      userIsCollaborator: false,
-      selection: null,
-      statementPackage: null
+      images: [],
+      citations: [],
+      annotations: []
     };
   }
 }
 
-export const getStatementPageDataCached = cache(
+export const getStatementDetailsCached = cache(
   async ({
-    statementSlug,
+    statementId,
+    draftId,
     userId,
-    version,
-    publishedOnly = false
+    version
   }: {
-    statementSlug: string;
+    statementId: string;
+    draftId: string;
     userId?: string;
     version?: number;
-    publishedOnly?: boolean;
   }): Promise<{
-    userRole: UserStatementRoles;
-    userIsCollaborator: boolean;
-    selection: {
-      version: number;
-      versionList: { versionNumber: number; createdAt: Date }[];
-    } | null;
-    statementPackage: StatementPackage | null;
+    images: BaseStatementImage[];
+    citations: BaseStatementCitation[];
+    annotations: AnnotationWithComments[];
   }> => {
-    return getStatementPageData({
-      statementSlug,
+    return getStatementDetails({
+      statementId,
+      draftId,
       userId,
-      version,
-      publishedOnly
+      version
     });
   }
 );
@@ -1023,3 +890,284 @@ export async function updateDraftPublicationDate({
 //       eb.selectFrom("draft as d2")
 //         .select(eb.fn.max("versionNumber").as("maxVersion"))
 //         .whereRef("d2.statementId", "=", "statement.statementId")))
+
+// export async function getStatementPageData({
+//   statementSlug,
+//   userId,
+//   version,
+//   publishedOnly = false,
+// }: {
+//   statementSlug: string;
+//   userId?: string;
+//   version?: number;
+//   publishedOnly?: boolean;
+// }): Promise<{
+//   userRole: UserStatementRoles;
+//   userIsCollaborator: boolean;
+//   selection: {
+//     version: number;
+//     versionList: { versionNumber: number; createdAt: Date }[];
+//   } | null;
+//   statementPackage: StatementPackage | null;
+// }> {
+//   if (statementSlug === "appspecific") {
+//     return {
+//       userRole: UserStatementRoles.Viewer,
+//       userIsCollaborator: false,
+//       selection: null,
+//       statementPackage: null,
+//     };
+//   }
+
+//   try {
+//     // Get statement and collaborators in a single query
+//     let _statement = db
+//       .selectFrom("statement")
+//       .select(({ eb }) => [
+//         "statementId",
+//         "slug",
+//         "creatorId",
+//         "createdAt",
+//         "updatedAt",
+//         "parentStatementId",
+//         "headerImg",
+//         "threadId",
+//         "title",
+//         "subtitle",
+//         "distributedAt",
+//         jsonArrayFrom(
+//           eb
+//             .selectFrom("collaborator")
+//             .selectAll()
+//             .whereRef("collaborator.statementId", "=", "statement.statementId"),
+//         ).as("collaborators"),
+//         jsonArrayFrom(
+//           eb
+//             .selectFrom("statementImage")
+//             .selectAll()
+//             .whereRef(
+//               "statementImage.statementId",
+//               "=",
+//               "statement.statementId",
+//             ),
+//         ).as("images"),
+//         jsonArrayFrom(
+//           eb
+//             .selectFrom("statementCitation")
+//             .selectAll()
+//             .whereRef(
+//               "statementCitation.statementId",
+//               "=",
+//               "statement.statementId",
+//             ),
+//         ).as("citations"),
+//         jsonArrayFrom(
+//           eb
+//             .selectFrom("statementVote")
+//             .selectAll()
+//             .whereRef(
+//               "statementVote.statementId",
+//               "=",
+//               "statement.statementId",
+//             ),
+//         ).as("upvotes"),
+//       ])
+//       .where("slug", "=", statementSlug);
+
+//     const statement = await _statement.executeTakeFirstOrThrow();
+
+//     // Get drafts in parallel with the statement query
+//     let drafts = db
+//       .selectFrom("draft")
+//       .selectAll()
+//       .where("statementId", "=", statement.statementId)
+//       .orderBy("versionNumber", "desc");
+
+//     if (publishedOnly) {
+//       drafts = drafts.where("publishedAt", "is not", null);
+//     }
+
+//     const draftsList = await drafts.execute();
+
+//     // Determine user role from collaborators
+//     const userRole = (statement.collaborators.find((collaborator) =>
+//       collaborator.userId === userId
+//     )
+//       ?.role as UserStatementRoles) || UserStatementRoles.Viewer;
+
+//     const userIsCollaborator = userRole !== UserStatementRoles.Viewer;
+//     // If version is provided and user is not a collaborator, send to base page
+//     if (version && !userIsCollaborator) {
+//       const creatorSlug = statement.collaborators.find((p) =>
+//         p.userId === statement.creatorId
+//       )?.slug;
+//       redirect(`/${creatorSlug}/${statementSlug}`);
+//     }
+//     // Determine version selection
+//     const versions = draftsList
+//       .map((draft) => ({
+//         versionNumber: draft.versionNumber,
+//         createdAt: draft.createdAt,
+//       }))
+//       .sort((a, b) =>
+//         b.versionNumber - a.versionNumber
+//       );
+
+//     let selectedVersion: number;
+//     if (draftsList.length > 0 && userIsCollaborator) {
+//       if (version) {
+//         selectedVersion = version;
+//       } else {
+//         selectedVersion = draftsList.reduce(
+//           (max, draft) => Math.max(max, draft.versionNumber),
+//           0,
+//         );
+//       }
+//     } else {
+//       const publishedDraft = draftsList.find((draft) =>
+//         draft.publishedAt !== null
+//       );
+//       selectedVersion = publishedDraft?.versionNumber || 0;
+//     }
+
+//     const selection = selectedVersion > 0
+//       ? { version: selectedVersion, versionList: versions }
+//       : null;
+
+//     // If no valid version found, return early
+//     if (!selection) {
+//       return {
+//         userRole,
+//         userIsCollaborator,
+//         selection: null,
+//         statementPackage: null,
+//       };
+//     }
+
+//     // Get the selected draft and related data
+//     const selectedDraft = draftsList.find((d) =>
+//       d.versionNumber === selectedVersion
+//     );
+//     if (!selectedDraft) {
+//       return {
+//         userRole,
+//         userIsCollaborator,
+//         selection: null,
+//         statementPackage: null,
+//       };
+//     }
+
+//     // Get annotations and comments for the selected draft
+//     const [annotations, comments] = await Promise.all([
+//       db
+//         .selectFrom("annotation")
+//         .selectAll()
+//         .where("annotation.draftId", "=", selectedDraft.id)
+//         .orderBy("annotation.createdAt", "desc")
+//         .execute(),
+//       db
+//         .selectFrom("comment")
+//         .select(({ eb }) => [
+//           "comment.id",
+//           "comment.content",
+//           "comment.createdAt",
+//           "comment.updatedAt",
+//           "comment.userId",
+//           "comment.annotationId",
+//           "comment.parentId",
+//           "comment.isPublic",
+//           jsonArrayFrom(
+//             eb
+//               .selectFrom("commentVote")
+//               .selectAll()
+//               .whereRef("commentVote.commentId", "=", "comment.id"),
+//           ).as("votes"),
+//         ])
+//         .where(
+//           "comment.annotationId",
+//           "in",
+//           db.selectFrom("annotation").select("id").where(
+//             "draftId",
+//             "=",
+//             selectedDraft.id,
+//           ),
+//         )
+//         .orderBy("comment.createdAt", "desc")
+//         .execute(),
+//     ]);
+
+//     // Get profiles for all users involved
+//     const profileIds = new Set([
+//       ...statement.collaborators.map((collaborator) => collaborator.userId),
+//       ...comments.map((comment) => comment.userId),
+//       ...annotations.map((annotation) => annotation.userId),
+//     ]);
+
+//     const profiles = await db
+//       .selectFrom("profile")
+//       .selectAll()
+//       .where("profile.id", "in", Array.from(profileIds))
+//       .execute();
+
+//     // Build the statement package
+//     const authors = statement.collaborators
+//       .map((collaborator) =>
+//         AuthorGroup.includes(collaborator.role as UserStatementRoles)
+//           ? profiles.find((p) => p.id === collaborator.userId)
+//           : undefined
+//       )
+//       .filter((author) => author !== undefined);
+
+//     const statementPackage = {
+//       ...statement,
+//       authors,
+//       creatorSlug: profiles.find((p) => p.id === statement.creatorId)?.username,
+//       citations: statement.citations.map((c) => ({
+//         ...c,
+//         title: c.title ?? "",
+//       })),
+//       images: statement.images,
+//       upvotes: statement.upvotes,
+//       collaborators: statement.collaborators,
+//       draft: {
+//         ...selectedDraft,
+//         slug: statement.slug,
+//         images: statement.images,
+//         upvotes: statement.upvotes,
+//         citations: statement.citations,
+//         annotations: annotations
+//           .filter((a) => a.draftId === selectedDraft.id)
+//           .map((a) => ({
+//             ...a,
+//             userName: profiles.find((p) => p.id === a.userId)?.name || "",
+//             userImageUrl: profiles.find((p) => p.id === a.userId)?.imageUrl ||
+//               "",
+//             comments: comments
+//               .filter((c) => c.annotationId === a.id)
+//               .map((c) => ({
+//                 ...c,
+//                 userName: profiles.find((p) => p.id === c.userId)?.name || "",
+//                 userImageUrl: profiles.find((p) =>
+//                   p.id === c.userId
+//                 )?.imageUrl || "",
+//                 draftId: selectedDraft.id,
+//               })),
+//           })),
+//       },
+//     } as StatementPackage;
+
+//     return {
+//       userRole,
+//       userIsCollaborator,
+//       selection,
+//       statementPackage,
+//     };
+//   } catch (error) {
+//     return {
+//       userRole: UserStatementRoles.Viewer,
+//       userIsCollaborator: false,
+//       selection: null,
+//       statementPackage: null,
+//     };
+//   }
+// }

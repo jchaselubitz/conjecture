@@ -1,14 +1,9 @@
-import { BaseProfile } from 'kysely-codegen';
-import { cache } from 'react';
-import { Suspense } from 'react';
-
 import SiteNav from '@/components/navigation/site_nav';
 import NotFound from '@/components/ui/not_found';
-import { Skeleton } from '@/components/ui/skeleton';
 import { StatementListContainer } from '@/containers/StatementListContainer';
 import { getUser } from '@/lib/actions/baseActions';
 import { getStatementsCached } from '@/lib/actions/statementActions';
-import { getUserProfileBySlug } from '@/lib/actions/userActions';
+import { userProfileCache } from '@/lib/actions/userActions';
 
 type UserPageProps = {
   params: Promise<{
@@ -16,47 +11,21 @@ type UserPageProps = {
   }>;
 };
 
-const userProfileCache = cache(
-  async (userSlug: string, user?: any): Promise<BaseProfile | null | undefined> => {
-    return await getUserProfileBySlug(userSlug, user);
-  }
-);
-
-// Async component for loading statements
-async function StatementsListLoader({
-  creatorId,
-  publishedOnly,
-  userSlug
-}: {
-  creatorId: string;
-  publishedOnly: boolean;
-  userSlug: string;
-}) {
-  const statements = await getStatementsCached({ creatorId, publishedOnly });
-  return <StatementListContainer statements={statements} pathname={userSlug} />;
-}
-
-// Loading component for statements
-function StatementsLoading() {
-  return (
-    <div className="space-y-4">
-      <div className="h-8 bg-muted rounded animate-pulse" />
-      <div className="space-y-3">
-        {[...Array(3)].map((_, i) => (
-          <Skeleton key={i} className="h-24 bg-muted rounded" />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export default async function UserPage({ params }: UserPageProps) {
   const { userSlug } = await params;
-
-  // Parallel data fetching for better performance
-  const [user, profile] = await Promise.all([getUser(), userProfileCache(userSlug)]);
-
+  const user = await getUser();
+  const profile = await userProfileCache(userSlug);
   const userIsCreator = user?.user_metadata.username === userSlug;
+
+  const statements = await getStatementsCached({ creatorId: profile?.id });
+
+  const permittedStatements = statements.filter(statement => {
+    const statementForCollaborator = statement.collaborators.some(
+      collaborator => collaborator.userId === user?.id
+    );
+    const statementIsPublished = !!statement.draft?.publishedAt;
+    return statementForCollaborator || statementIsPublished;
+  });
 
   if (!profile) {
     return (
@@ -83,13 +52,7 @@ export default async function UserPage({ params }: UserPageProps) {
       <SiteNav />
       <main className="flex-1 mx-auto bg-background container py-8 px-4 md:px-0">
         <h1 className="text-3xl font-bold mb-6">{title}</h1>
-        <Suspense fallback={<StatementsLoading />}>
-          <StatementsListLoader
-            creatorId={profile.id}
-            publishedOnly={!userIsCreator}
-            userSlug={userSlug}
-          />
-        </Suspense>
+        <StatementListContainer statements={permittedStatements} pathname={userSlug} />
       </main>
     </>
   );

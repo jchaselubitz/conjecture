@@ -1,18 +1,14 @@
-import { StatementWithUser } from 'kysely-codegen';
+import { StatementWithDraftAndCollaborators } from 'kysely-codegen';
 
 import { StatementCard } from '@/components/statements/card';
 
 interface StatementListContainerProps {
-  statements: StatementWithUser[] | { error: string };
+  statements: StatementWithDraftAndCollaborators[] | { error: string };
   title?: string;
   pathname: string;
 }
 
-export function StatementListContainer({
-  statements,
-  title = 'Statements',
-  pathname
-}: StatementListContainerProps) {
+export function StatementListContainer({ statements, pathname }: StatementListContainerProps) {
   if ('error' in statements) {
     return (
       <div className="text-center py-12">

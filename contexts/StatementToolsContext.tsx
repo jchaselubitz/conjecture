@@ -46,15 +46,12 @@ interface StatementToolsContextType {
   setSelectedLatexId: (id: string | null) => void;
   selectedNodePosition: PositionParams | null;
   setSelectedNodePosition: (position: PositionParams | null) => void;
-  citations: BaseStatementCitation[];
-  setCitations: Dispatch<SetStateAction<BaseStatementCitation[]>>;
 }
 
 const StatementToolsContext = createContext<StatementToolsContextType | undefined>(undefined);
 
 export function StatementToolsProvider({ children }: { children: ReactNode }) {
-  const { statement, updatedDraft } = useStatementContext();
-  const [citations, setCitations] = useState<BaseStatementCitation[]>(updatedDraft.citations);
+  const { statement } = useStatementContext();
   const [isBlock, setIsBlock] = useState(true);
   const [selectedLatexId, setSelectedLatexId] = useState<string | null>(null);
   const [selectedNodePosition, setSelectedNodePosition] = useState<PositionParams | null>(null);
@@ -87,9 +84,9 @@ export function StatementToolsProvider({ children }: { children: ReactNode }) {
     text: ''
   });
 
-  useEffect(() => {
-    setCitations(updatedDraft.citations);
-  }, [updatedDraft.citations]);
+  // useEffect(() => {
+  //   setCitations(updatedDraft.citations);
+  // }, [updatedDraft.citations]);
 
   const [popoverState, setPopoverState] = useState({
     latex: false,
@@ -139,9 +136,7 @@ export function StatementToolsProvider({ children }: { children: ReactNode }) {
         selectedLatexId,
         setSelectedLatexId,
         selectedNodePosition,
-        setSelectedNodePosition,
-        citations,
-        setCitations
+        setSelectedNodePosition
       }}
     >
       {children}

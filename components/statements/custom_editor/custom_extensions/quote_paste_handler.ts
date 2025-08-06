@@ -4,7 +4,7 @@ import { EditorView } from '@tiptap/pm/view';
 import { BaseStatementCitation } from 'kysely-codegen';
 import { Dispatch, SetStateAction } from 'react';
 
-import { getStatements } from '@/lib/actions/statementActions';
+import { getStatementsCached } from '@/lib/actions/statementActions';
 
 import { upsertCitation } from './helpers/helpersCitationExtension';
 export const QuotePasteHandler = Extension.create({
@@ -98,7 +98,7 @@ export const handleCitationPaste = async ({
   view: EditorView;
   setCitations: Dispatch<SetStateAction<BaseStatementCitation[]>>;
 }) => {
-  const statements = await getStatements({
+  const statements = await getStatementsCached({
     statementId,
     publishedOnly: true
   });

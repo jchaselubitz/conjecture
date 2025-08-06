@@ -2,7 +2,13 @@ import 'katex/dist/katex.min.css';
 
 import { EditorContent } from '@tiptap/react';
 import { FloatingMenu } from '@tiptap/react/menus';
-import { AnnotationWithComments, StatementPackage } from 'kysely-codegen';
+import {
+  AnnotationWithComments,
+  BaseDraft,
+  StatementCitation,
+  StatementImage,
+  StatementWithDraftAndCollaborators
+} from 'kysely-codegen';
 import React, { RefObject } from 'react';
 import { ImperativePanelGroupHandle } from 'react-resizable-panels';
 
@@ -16,7 +22,9 @@ import { CitationNodeEditor } from './citation_node_editor';
 import { VideoPopover } from './video_popover';
 
 interface HTMLSuperEditorProps {
-  statement: StatementPackage;
+  // statement: StatementWithDraftAndCollaborators;
+  draft: BaseDraft;
+  statementCreatorId: string;
   existingAnnotations: AnnotationWithComments[];
   userId: string | undefined;
   onAnnotationClick?: (id: string) => void;
@@ -36,7 +44,8 @@ interface HTMLSuperEditorProps {
 const HTMLSuperEditor = ({
   existingAnnotations,
   userId,
-  statement,
+  draft,
+  statementCreatorId,
   onAnnotationClick,
   style,
   className,
@@ -52,12 +61,12 @@ const HTMLSuperEditor = ({
 }: HTMLSuperEditorProps) => {
   const { latexPopoverOpen, imagePopoverOpen, videoPopoverOpen } = useStatementToolsContext();
 
-  const draftId = statement.draft.id;
-  const statementId = statement.statementId;
-  const statementCreatorId = statement.creatorId;
+  const draftId = draft.id;
+  const statementId = draft.statementId;
 
   const editor = useHtmlSuperEditor({
-    statement,
+    draft,
+    statementCreatorId,
     existingAnnotations,
     userId,
     onAnnotationClick,

@@ -1,4 +1,4 @@
-import { BaseStatementCitation, StatementWithUser } from 'kysely-codegen';
+import { BaseStatementCitation, StatementWithDraft } from 'kysely-codegen';
 import { ChevronLeft, Loader2, Upload } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
@@ -57,10 +57,10 @@ export interface StatementDetailsProps {
   onShowAuthorCommentsChange: (checked: boolean) => void;
   onShowReaderCommentsChange: (checked: boolean) => void;
   panelGroupRef: RefObject<ImperativePanelGroupHandle | null>;
-  parentStatement: StatementWithUser | null | undefined;
+  parentStatement: StatementWithDraft | null | undefined;
   familyTree: {
-    precedingPosts: StatementWithUser[];
-    followingPosts: StatementWithUser[];
+    precedingPosts: StatementWithDraft[];
+    followingPosts: StatementWithDraft[];
   };
   annotationMode: boolean;
   setAnnotationMode: (annotationMode: boolean) => void;
@@ -80,9 +80,9 @@ export default function StatementDetails({
   setAnnotationMode
 }: StatementDetailsProps) {
   const { userId, currentUserSlug } = useUserContext();
-  const { editor, updatedDraft, statement } = useStatementContext();
+  const { editor, updatedDraft, statement, annotations, citations, images } = useStatementContext();
   const { selectedAnnotationId, setSelectedAnnotationId } = useStatementAnnotationContext();
-  const { initialImageData, setInitialImageData, setImageLightboxOpen, citations } =
+  const { initialImageData, setInitialImageData, setImageLightboxOpen } =
     useStatementToolsContext();
 
   const isPublished = !!statement?.draft.publishedAt;
@@ -91,9 +91,6 @@ export default function StatementDetails({
   const [footnoteIds, setFootnoteIds] = useState<string[]>([]);
 
   const { statementId, title, subtitle, headerImg } = statement;
-
-  const { draft } = updatedDraft;
-  const annotations = draft.annotations;
 
   const orderedFootnotes = useMemo(() => {
     const footnotes: BaseStatementCitation[] = [];
@@ -340,9 +337,10 @@ export default function StatementDetails({
           <div className="pb-6 overflow-hidden bg-background ">
             <HTMLSuperEditor
               key={`editor-content-${editMode}`}
-              statement={updatedDraft}
+              draft={updatedDraft}
               style={{ minHeight: '40px' }}
               existingAnnotations={annotations}
+              statementCreatorId={statement.creatorId}
               userId={userId}
               onAnnotationClick={handleAnnotationClick}
               placeholder="Start typing or paste content here..."
@@ -368,10 +366,7 @@ export default function StatementDetails({
           ) : (
             <>
               <LatexNodeEditor />
-              <ImageNodeEditor
-                statementId={statementId}
-                statementCreatorId={updatedDraft.creatorId}
-              />
+              <ImageNodeEditor statementId={statementId} statementCreatorId={statement.creatorId} />
             </>
           )}
           {editor && (

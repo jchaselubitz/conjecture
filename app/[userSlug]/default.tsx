@@ -1,6 +1,6 @@
 import AppNav from '@/components/navigation/site_nav';
 import { StatementListContainer } from '@/containers/StatementListContainer';
-import { getStatements } from '@/lib/actions/statementActions';
+import { getStatementsCached } from '@/lib/actions/statementActions';
 import { getUserProfile } from '@/lib/actions/userActions';
 import { createClient } from '@/supabase/server';
 
@@ -27,7 +27,10 @@ export default async function UserDefault({ params }: UserPageProps) {
 
   const { name, id } = profile;
 
-  const statements = await getStatements({ creatorId: id, publishedOnly: !userIsCreator });
+  const statements = await getStatementsCached({
+    creatorId: id,
+    publishedOnly: !userIsCreator
+  });
 
   return (
     <div>

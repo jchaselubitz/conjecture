@@ -1,12 +1,11 @@
 'use client';
 
+import { StatementWithDraftAndCollaborators } from 'kysely-codegen';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
-import { useEditModeContext } from '@/contexts/EditModeContext';
-import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
 import { sendNewsletterEmail } from '@/lib/actions/notificationActions';
 import { formatDate } from '@/lib/helpers/helpersDate';
@@ -18,11 +17,14 @@ import { Label } from '../ui/label';
 
 import UserButton from './user_button';
 
-export default function NewsletterNav() {
+export default function NewsletterNav({
+  statement
+}: {
+  statement: StatementWithDraftAndCollaborators | null;
+}) {
   const { currentUserSlug } = useUserContext();
-  const { editMode } = useEditModeContext();
-  const { statement, currentVersion } = useStatementContext();
-  const isPublished = !!statement?.draft.publishedAt;
+
+  const isPublished = !!statement?.draft?.publishedAt;
 
   const [sendEmailState, setSendEmailState] = useState<'default' | 'loading' | 'success' | 'error'>(
     'default'
@@ -41,6 +43,7 @@ export default function NewsletterNav() {
   };
 
   const handleSendEmail = async () => {
+    if (!statement) return;
     setSendEmailState('loading');
     try {
       const validEmails = testEmails.filter(email => email.trim() !== '');
@@ -62,6 +65,7 @@ export default function NewsletterNav() {
   };
 
   const handleSendToSubscribers = async () => {
+    if (!statement) return;
     if (statement.distributedAt) {
       confirm(
         'This newsletter has already been distributed. Are you sure you want to send another email to subscribers?'
@@ -87,11 +91,7 @@ export default function NewsletterNav() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() =>
-              router.push(
-                `/${currentUserSlug}/${statement?.slug}/${currentVersion}?edit=${editMode}`
-              )
-            }
+            onClick={() => router.push(`/${currentUserSlug}/${statement?.slug}/`)}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

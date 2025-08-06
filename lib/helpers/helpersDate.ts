@@ -4,10 +4,14 @@ export const formatDate = ({
   date,
   withTime = false
 }: {
-  date: Date;
+  date: Date | null | undefined;
   withTime?: boolean;
 }): string => {
-  return date.toLocaleDateString('en-US', {
+  if (!date) {
+    return '';
+  }
+
+  return new Date(date).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
