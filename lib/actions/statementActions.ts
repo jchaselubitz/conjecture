@@ -59,7 +59,7 @@ export async function getPublishedOrLatestStatements({
 
   type BaseStatementQuery = BaseStatement & {
     collaborators: BaseCollaborator[];
-    drafts: BaseDraft[];
+    // drafts: BaseDraft[];
   };
 
   let statements = db
@@ -90,28 +90,28 @@ export async function getPublishedOrLatestStatements({
       ).as('upvotes')
     ]);
 
-  if (publishedOnly) {
-    statements = statements.select(({ eb }) => [
-      jsonArrayFrom(
-        eb
-          .selectFrom('draft')
-          .selectAll()
-          .whereRef('draft.statementId', '=', 'statement.statementId')
-          .where('draft.publishedAt', 'is not', null)
-          .limit(1)
-      ).as('drafts')
-    ]);
-  } else {
-    statements = statements.select(({ eb }) => [
-      jsonArrayFrom(
-        eb
-          .selectFrom('draft')
-          .selectAll()
-          .whereRef('draft.statementId', '=', 'statement.statementId')
-          .orderBy('draft.createdAt', 'desc')
-      ).as('drafts')
-    ]);
-  }
+  // if (publishedOnly) {
+  //   statements = statements.select(({ eb }) => [
+  //     jsonArrayFrom(
+  //       eb
+  //         .selectFrom('draft')
+  //         .selectAll()
+  //         .whereRef('draft.statementId', '=', 'statement.statementId')
+  //         .where('draft.publishedAt', 'is not', null)
+  //         .limit(1)
+  //     ).as('drafts')
+  //   ]);
+  // } else {
+  //   statements = statements.select(({ eb }) => [
+  //     jsonArrayFrom(
+  //       eb
+  //         .selectFrom('draft')
+  //         .selectAll()
+  //         .whereRef('draft.statementId', '=', 'statement.statementId')
+  //         .orderBy('draft.createdAt', 'desc')
+  //     ).as('drafts')
+  //   ]);
+  // }
 
   if (forCurrentUser && user) {
     statements = statements.where('statement.creatorId', '=', user.id);
@@ -128,11 +128,26 @@ export async function getPublishedOrLatestStatements({
   // Add pagination
   statements = statements.limit(limit).offset(offset);
 
-  const statementsList = (await statements.execute()) as unknown as BaseStatementQuery[];
+  const statementsList = await statements.execute();
 
   if (statementsList.length === 0) {
     return [];
   }
+
+  let drafts = db
+    .selectFrom('draft')
+    .selectAll()
+    .where(
+      'statementId',
+      'in',
+      statementsList.map(statement => statement.statementId)
+    );
+
+  if (publishedOnly) {
+    drafts = drafts.where('publishedAt', 'is not', null);
+  }
+
+  const draftsList = (await drafts.execute()) as BaseDraft[];
 
   const authorIds = statementsList.flatMap(statement => {
     return statement.collaborators
@@ -163,14 +178,41 @@ export async function getPublishedOrLatestStatements({
       .filter((profile): profile is BaseProfile => !!profile);
   };
 
+  // const getLeadDraft = ({
+  //   statement,
+  //   user,
+  // }: {
+  //   statement: BaseStatementQuery;
+  //   user: User | null;
+  // }) => {
+  //   const drafts = statement.drafts;
+  //   const userIsCollaborator = statement.collaborators.some(
+  //     (collaborator) => collaborator.userId === user?.id,
+  //   );
+  //   const publishedDraft = drafts.find((draft) => draft.publishedAt !== null) ??
+  //     null;
+  //   if (publishedDraft) {
+  //     return publishedDraft;
+  //   } else if (userIsCollaborator) {
+  //     const greatestVersionNumber = drafts.reduce(
+  //       (max, draft) => Math.max(max, draft.versionNumber),
+  //       0,
+  //     );
+  //     return drafts.find((draft) =>
+  //       draft.versionNumber === greatestVersionNumber
+  //     ) ?? null;
+  //   }
+  // };
+
   const getLeadDraft = ({
     statement,
+    drafts,
     user
   }: {
     statement: BaseStatementQuery;
+    drafts: BaseDraft[];
     user: User | null;
   }) => {
-    const drafts = statement.drafts;
     const userIsCollaborator = statement.collaborators.some(
       collaborator => collaborator.userId === user?.id
     );
@@ -189,7 +231,11 @@ export async function getPublishedOrLatestStatements({
   const statementsWithDraft = statementsList.map(statement => ({
     ...statement,
     creatorSlug: profiles.find(profile => profile.id === statement.creatorId)?.username,
-    draft: getLeadDraft({ statement: statement as BaseStatementQuery, user }),
+    draft: getLeadDraft({
+      statement: statement as BaseStatementQuery,
+      drafts: draftsList,
+      user
+    }),
     authors: getStatementAuthors(statement, profiles),
     managers: profiles.filter(profile => managerIds.includes(profile.id))
   })) as StatementWithDraftAndCollaborators[];
