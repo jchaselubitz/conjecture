@@ -1,6 +1,6 @@
 'use client';
 
-import 'katex/dist/katex.min.css';
+// KaTeX CSS loaded conditionally in useHtmlSuperEditor
 
 import katex from 'katex';
 import { Trash2 } from 'lucide-react';

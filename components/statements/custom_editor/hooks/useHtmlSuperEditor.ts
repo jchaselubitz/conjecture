@@ -38,6 +38,7 @@ import {
   openImagePopover,
   openLatexPopover
 } from '@/lib/helpers/helpersStatements';
+import { processLatex } from '../custom_extensions/helpers/helpersLatexExtension';
 
 import { AnnotationHighlight } from '../custom_extensions/annotation_highlight';
 import { BlockImage } from '../custom_extensions/block_image';
@@ -488,6 +489,38 @@ export const useHtmlSuperEditor = ({
   useEffect(() => {
     setEditor(editor);
   }, [editor, setEditor]);
+
+  // Conditionally load KaTeX CSS only when needed
+  useEffect(() => {
+    const hasLatexContent =
+      htmlContent?.includes('data-type="latex') ||
+      htmlContent?.includes('data-type="inline-latex"') ||
+      htmlContent?.includes('data-type="latex-block"') ||
+      htmlContent?.includes('inline-latex') ||
+      htmlContent?.includes('latex-block');
+
+    if (hasLatexContent && !document.querySelector('link[href*="katex"]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css';
+      link.integrity = 'sha384-5TcZemv2l/9On385z///+d7MSYlvIEw9FuZTIdZ14vJLqWphw7e7ZPuOiCHJcFCP';
+      link.crossOrigin = 'anonymous';
+
+      // Non-blocking load technique
+      link.media = 'print';
+      link.onload = () => {
+        link.media = 'all';
+        // Process LaTeX after CSS loads
+        if (editor) {
+          setTimeout(() => {
+            processLatex(editor.view.dom as HTMLElement);
+          }, 50);
+        }
+      };
+
+      document.head.appendChild(link);
+    }
+  }, [htmlContent, editor]);
   //Scrolls to the annotation when the url has an annotation-id
   useEffect(() => {
     if (!editor) return;

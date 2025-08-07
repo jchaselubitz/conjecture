@@ -1,14 +1,8 @@
-import 'katex/dist/katex.min.css';
+// KaTeX CSS loaded conditionally in useHtmlSuperEditor
 
 import { EditorContent } from '@tiptap/react';
 import { FloatingMenu } from '@tiptap/react/menus';
-import {
-  AnnotationWithComments,
-  BaseDraft,
-  StatementCitation,
-  StatementImage,
-  StatementWithDraftAndCollaborators
-} from 'kysely-codegen';
+import { AnnotationWithComments, BaseDraft } from 'kysely-codegen';
 import React, { RefObject } from 'react';
 import { ImperativePanelGroupHandle } from 'react-resizable-panels';
 

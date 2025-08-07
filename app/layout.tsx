@@ -71,6 +71,22 @@ export default async function RootLayout({
       />
       <link rel="manifest" href="/manifest.json" />
 
+      {/* Preload KaTeX fonts for better performance when math is present */}
+      <link
+        rel="preload"
+        href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Main-Regular.woff2"
+        as="font"
+        type="font/woff2"
+        crossOrigin="anonymous"
+      />
+      <link
+        rel="preload"
+        href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/fonts/KaTeX_Math-Italic.woff2"
+        as="font"
+        type="font/woff2"
+        crossOrigin="anonymous"
+      />
+
       <body>
         <div className="min-h-screen">
           <UserProvider userProfile={profile} userEmail={user?.email} userSlug={profile?.username}>
