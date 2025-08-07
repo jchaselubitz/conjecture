@@ -335,7 +335,7 @@ export default function StatementDetails({
           <Byline statement={statement} />
 
           <div className="pb-6 overflow-hidden bg-background ">
-            <HTMLSuperEditor
+            {/* <HTMLSuperEditor
               key={`editor-content-${editMode}`}
               draft={updatedDraft}
               style={{ minHeight: '40px' }}
@@ -352,7 +352,7 @@ export default function StatementDetails({
               editMode={editMode}
               setFootnoteIds={setFootnoteIds}
               panelGroupRef={panelGroupRef}
-            />
+            /> */}
           </div>
           {!editMode ? (
             <ImageLightbox
