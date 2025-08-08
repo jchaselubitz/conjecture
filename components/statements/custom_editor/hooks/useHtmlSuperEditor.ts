@@ -38,12 +38,12 @@ import {
   openImagePopover,
   openLatexPopover
 } from '@/lib/helpers/helpersStatements';
-import { processLatex } from '../custom_extensions/helpers/helpersLatexExtension';
 
 import { AnnotationHighlight } from '../custom_extensions/annotation_highlight';
 import { BlockImage } from '../custom_extensions/block_image';
 import { BlockLatex } from '../custom_extensions/block_latex';
 import { Citation } from '../custom_extensions/citation';
+import { processLatex } from '../custom_extensions/helpers/helpersLatexExtension';
 import { InlineLatex } from '../custom_extensions/inline_latex';
 import { handleCitationPaste } from '../custom_extensions/quote_paste_handler';
 import { QuotePasteHandler } from '../custom_extensions/quote_paste_handler';
@@ -513,12 +513,22 @@ export const useHtmlSuperEditor = ({
         // Process LaTeX after CSS loads
         if (editor) {
           setTimeout(() => {
-            processLatex(editor.view.dom as HTMLElement);
-          }, 50);
+            const editorElement = editor.view.dom as HTMLElement;
+            processLatex(editorElement);
+          }, 100);
         }
       };
 
       document.head.appendChild(link);
+    } else if (hasLatexContent && document.querySelector('link[href*="katex"]')) {
+      // CSS already loaded, just process LaTeX
+      console.log('KaTeX CSS already loaded, processing LaTeX...');
+      if (editor) {
+        setTimeout(() => {
+          const editorElement = editor.view.dom as HTMLElement;
+          processLatex(editorElement);
+        }, 100);
+      }
     }
   }, [htmlContent, editor]);
   //Scrolls to the annotation when the url has an annotation-id

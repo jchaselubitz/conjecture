@@ -18,6 +18,7 @@ export const handleHeaderImageCompression = async (imageFile: File): Promise<Fil
     maxSizeMB: 0.8, // Slightly smaller for header images
     maxWidthOrHeight: 1600, // Optimized for typical header display
     useWebWorker: true,
+    initialQuality: 1,
     fileType: 'image/webp' // Use WebP for better compression
   };
   try {

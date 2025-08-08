@@ -38,8 +38,6 @@ const StatementAnnotationContext = createContext<StatementAnnotationContextType 
 export function StatementAnnotationProvider({ children }: { children: ReactNode }) {
   const { annotations, setAnnotations } = useStatementContext();
 
-  console.log('annotations', annotations);
-
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | undefined>(undefined);
   const [selectedAnnotation, setSelectedAnnotation] = useState<AnnotationWithComments | null>(null);
 
