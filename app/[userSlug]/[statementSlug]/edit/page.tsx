@@ -78,6 +78,7 @@ export default async function StatementPage({ params }: Props) {
       userId={userId}
       writerUserSlug={userSlug}
       isCreator={isCreator}
+      versionList={statement.versionList}
     >
       <StatementToolsProvider>
         <StatementAnnotationProvider>

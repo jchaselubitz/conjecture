@@ -178,31 +178,12 @@ export async function getPublishedOrLatestStatements({
       .filter((profile): profile is BaseProfile => !!profile);
   };
 
-  // const getLeadDraft = ({
-  //   statement,
-  //   user,
-  // }: {
-  //   statement: BaseStatementQuery;
-  //   user: User | null;
-  // }) => {
-  //   const drafts = statement.drafts;
-  //   const userIsCollaborator = statement.collaborators.some(
-  //     (collaborator) => collaborator.userId === user?.id,
-  //   );
-  //   const publishedDraft = drafts.find((draft) => draft.publishedAt !== null) ??
-  //     null;
-  //   if (publishedDraft) {
-  //     return publishedDraft;
-  //   } else if (userIsCollaborator) {
-  //     const greatestVersionNumber = drafts.reduce(
-  //       (max, draft) => Math.max(max, draft.versionNumber),
-  //       0,
-  //     );
-  //     return drafts.find((draft) =>
-  //       draft.versionNumber === greatestVersionNumber
-  //     ) ?? null;
-  //   }
-  // };
+  const getVersionList = ({ drafts }: { drafts: BaseDraft[] }) => {
+    return drafts.map(draft => ({
+      versionNumber: draft.versionNumber,
+      createdAt: draft.createdAt
+    }));
+  };
 
   const getLeadDraft = ({
     statement,
@@ -235,6 +216,9 @@ export async function getPublishedOrLatestStatements({
       statement: statement as BaseStatementQuery,
       drafts: draftsList,
       user
+    }),
+    versionList: getVersionList({
+      drafts: draftsList
     }),
     authors: getStatementAuthors(statement, profiles),
     managers: profiles.filter(profile => managerIds.includes(profile.id))

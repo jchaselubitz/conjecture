@@ -190,6 +190,7 @@ declare module 'kysely-codegen' {
     creatorSlug: string | null | undefined;
     upvotes?: BaseStatementVote[];
     draft: BaseDraft;
+    versionList: { versionNumber: number; createdAt: Date }[];
   };
 
   export type StatementPackage = StatementWithDraftAndCollaborators & {

@@ -63,57 +63,57 @@ export function StatementProvider({
   statement,
   userId,
   writerUserSlug,
-  // thread,
-  // versionList,
+
+  versionList,
   isCreator
 }: {
   children: ReactNode;
   statement: StatementWithDraftAndCollaborators;
   userId: string | undefined;
   writerUserSlug: string | undefined | null;
-  // thread: StatementWithDraft[] | [];
-  // versionList: { versionNumber: number; createdAt: Date }[];
+
+  versionList: { versionNumber: number; createdAt: Date }[];
   isCreator: boolean;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editMode = searchParams.get('edit') === 'true';
 
-  // const defaultPackage = {
-  //   ...statement,
-  //   draft: statement.draft,
-  //   annotations: [] as AnnotationWithComments[],
-  //   images: [],
-  //   citations: []
-  // } as StatementPackage;
-
   const [updatedDraft, setUpdatedDraft] = useState<BaseDraft>(statement.draft);
   const [annotations, setAnnotations] = useState<AnnotationWithComments[]>([]);
   const [images, setImages] = useState<BaseStatementImage[]>([]);
   const [citations, setCitations] = useState<BaseStatementCitation[]>([]);
   const [thread, setThread] = useState<StatementWithDraft[]>([]);
-  const [versionList, setVersionList] = useState<{ versionNumber: number; createdAt: Date }[]>([]);
-  const [parentStatement, setParentStatement] = useState<StatementWithDraft | undefined>(undefined);
 
-  // const parentStatement = thread.find(draft => draft.statementId === statement.parentStatementId);
+  const parentStatement = useMemo(() => {
+    return thread.find(draft => draft.statementId === statement.parentStatementId);
+  }, [statement.parentStatementId, thread]);
 
   useEffect(() => {
-    const loadStatementDetails = async () => {
-      const thread = statement.threadId && (await getFullThread(statement.threadId));
-      const { images, citations, annotations } = await getStatementDetails({
-        statementId: statement.statementId,
-        draftId: statement.draft.id,
-        userId: userId
-      });
-      setImages(images);
-      setCitations(citations);
-      setAnnotations(annotations);
+    let cancelled = false;
+    const load = async () => {
+      const [thread, details] = await Promise.all([
+        statement.threadId ? getFullThread(statement.threadId) : Promise.resolve([]),
+        getStatementDetails({
+          statementId: statement.statementId,
+          draftId: statement.draft.id,
+          userId
+        })
+      ]);
+
+      if (cancelled) return;
+
+      setImages(details.images);
+      setCitations(details.citations);
+      setAnnotations(details.annotations);
       setThread(thread || []);
     };
-    loadStatementDetails();
-  }, [statement, userId]);
 
-  //Need to do some silliness here to make sure preserve the state of updatedDraft while statement updates in the background. Without it, some changes to the HTMLcontent will be lost.
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [statement.threadId, statement.statementId, statement.draft.id, userId]);
 
   const [debouncedDraft, setDebouncedDraft] = useDebounce<BaseDraft | undefined>(updatedDraft, 500);
 
@@ -158,37 +158,51 @@ export function StatementProvider({
     });
   };
 
-  return (
-    <StatementContext.Provider
-      value={{
-        versionOptions: versionList,
-        currentVersion: statement.draft.versionNumber,
-        updatedDraft,
-        setUpdatedDraft,
-        saveStatementDraft,
-        nextVersionNumber,
-        changeVersion,
-        togglePublish,
-        editor,
-        setEditor,
-        userId,
-        writerUserSlug,
-        statement,
-        debouncedDraft,
-        parentStatement,
-        thread,
-        isCreator,
-        annotations,
-        setAnnotations,
-        images,
-        setImages,
-        citations,
-        setCitations
-      }}
-    >
-      {children}
-    </StatementContext.Provider>
+  const contextValue = useMemo(
+    () => ({
+      versionOptions: versionList,
+      currentVersion: statement.draft.versionNumber,
+      updatedDraft,
+      setUpdatedDraft,
+      saveStatementDraft,
+      nextVersionNumber,
+      changeVersion,
+      togglePublish,
+      editor,
+      setEditor,
+      userId,
+      writerUserSlug,
+      statement,
+      debouncedDraft,
+      parentStatement,
+      thread,
+      isCreator,
+      annotations,
+      setAnnotations,
+      images,
+      setImages,
+      citations,
+      setCitations
+    }),
+    [
+      versionList,
+      statement.draft.versionNumber,
+      updatedDraft,
+      editor,
+      userId,
+      writerUserSlug,
+      statement,
+      debouncedDraft,
+      parentStatement,
+      thread,
+      isCreator,
+      annotations,
+      images,
+      citations
+    ]
   );
+
+  return <StatementContext.Provider value={contextValue}>{children}</StatementContext.Provider>;
 }
 
 export function useStatementContext() {
