@@ -1,4 +1,5 @@
 'use client';
+import { useRouter } from 'next/navigation';
 import { createContext, ReactNode, useContext, useState } from 'react';
 
 import { setEditModeCookie } from '@/lib/helpers/helpersLayout';
@@ -22,14 +23,17 @@ export function EditModeProvider({
 }) {
   const { statement } = useStatementContext();
   const { setSelectedAnnotationId } = useStatementAnnotationContext();
-
+  const router = useRouter();
   const [editMode, setEditMode] = useState(editModeEnabled);
+
+  const versionNumber = statement?.draft.versionNumber;
 
   const handleEditMode = (edit: boolean) => {
     setSelectedAnnotationId(undefined);
     setEditModeCookie(edit, statement?.statementId);
     if (edit) {
       setEditMode(true);
+      router.push(`/${statement?.creatorSlug}/${statement?.slug}/${versionNumber}?edit=true`);
     } else {
       setEditMode(false);
     }

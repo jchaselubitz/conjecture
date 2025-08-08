@@ -27,19 +27,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import ViewModeButton from '../view_mode_button';
 
 export default function EditNav() {
-  const { setEditMode } = useEditModeContext();
+  const { setEditMode, editMode } = useEditModeContext();
   const {
     versionOptions,
     saveStatementDraft,
     togglePublish,
     nextVersionNumber,
-    changeVersion,
     currentVersion,
-    statement
+    statement,
+    writerUserSlug
   } = useStatementContext();
 
   const { updateStatementDraft, isUpdating } = useStatementUpdateContext();
 
+  const currentDraftIsPublished = statement?.draft.publishedAt;
   const [saveButtonState, setSaveButtonState] = useState<ButtonLoadingState>('default');
   const [updateButtonState, setUpdateButtonState] = useState<ButtonLoadingState>('default');
   const [publishButtonState, setPublishButtonState] = useState<ButtonLoadingState>('default');
@@ -102,6 +103,10 @@ export default function EditNav() {
       console.error(error);
       setSendToSubscribersButtonState('error');
     }
+  };
+
+  const changeVersion = (newVersion: number) => {
+    router.push(`/${writerUserSlug}/${statement.slug}/${newVersion}?edit=${editMode}`);
   };
 
   const isPublished = statement?.draft.publishedAt;
@@ -224,12 +229,12 @@ export default function EditNav() {
                   variant="outline"
                   onClick={handleUpdate}
                   buttonState={updateButtonState}
-                  text={`Update`}
-                  loadingText="Updating..."
-                  successText="Updated"
+                  text={currentDraftIsPublished ? `Update` : `Save`}
+                  loadingText={currentDraftIsPublished ? 'Updating...' : 'Saving...'}
+                  successText={currentDraftIsPublished ? 'Updated' : 'Saved'}
                   setButtonState={setUpdateButtonState}
                   reset
-                  errorText="Failed to update"
+                  errorText={currentDraftIsPublished ? 'Failed to update' : 'Failed to save'}
                 />
                 {/* <div className="hidden md:flex gap-3">
                   {isPublished && (

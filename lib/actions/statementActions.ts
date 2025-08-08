@@ -44,6 +44,7 @@ export async function getPublishedOrLatestStatements({
   creatorId,
   statementSlug,
   statementId,
+  version,
   limit = 100,
   offset = 0
 }: {
@@ -52,6 +53,7 @@ export async function getPublishedOrLatestStatements({
   creatorId?: string;
   statementSlug?: string;
   statementId?: string;
+  version?: number;
   limit?: number;
   offset?: number;
 }): Promise<StatementWithDraftAndCollaborators[]> {
@@ -59,7 +61,6 @@ export async function getPublishedOrLatestStatements({
 
   type BaseStatementQuery = BaseStatement & {
     collaborators: BaseCollaborator[];
-    // drafts: BaseDraft[];
   };
 
   let statements = db
@@ -188,25 +189,39 @@ export async function getPublishedOrLatestStatements({
   const getLeadDraft = ({
     statement,
     drafts,
-    user
+    user,
+    version
   }: {
     statement: BaseStatementQuery;
     drafts: BaseDraft[];
     user: User | null;
+    version?: number;
   }) => {
     const userIsCollaborator = statement.collaborators.some(
-      collaborator => collaborator.userId === user?.id
+      collaborator => collaborator.userId === user?.id?.toString()
     );
+
+    if (version && userIsCollaborator) {
+      const versionDraft = drafts.find(draft => draft.versionNumber === version) ?? null;
+      if (versionDraft) {
+        return versionDraft;
+      }
+    }
+
+    //get published draft
     const publishedDraft = drafts.find(draft => draft.publishedAt !== null) ?? null;
     if (publishedDraft) {
       return publishedDraft;
-    } else if (userIsCollaborator) {
-      const greatestVersionNumber = drafts.reduce(
-        (max, draft) => Math.max(max, draft.versionNumber),
-        0
-      );
-      return drafts.find(draft => draft.versionNumber === greatestVersionNumber) ?? null;
     }
+    // else if (userIsCollaborator) {
+
+    //   //get latest version
+    //   const greatestVersionNumber = drafts.reduce(
+    //     (max, draft) => Math.max(max, draft.versionNumber),
+    //     0
+    //   );
+    //   return drafts.find(draft => draft.versionNumber === greatestVersionNumber) ?? null;
+    // }
   };
 
   const statementsWithDraft = statementsList.map(statement => ({
@@ -215,7 +230,8 @@ export async function getPublishedOrLatestStatements({
     draft: getLeadDraft({
       statement: statement as BaseStatementQuery,
       drafts: draftsList,
-      user
+      user,
+      version
     }),
     versionList: getVersionList({
       drafts: draftsList
@@ -235,6 +251,7 @@ export const getStatementsCached = cache(
     creatorId,
     statementSlug,
     statementId,
+    version,
     limit = 20,
     offset = 0
   }: {
@@ -243,6 +260,7 @@ export const getStatementsCached = cache(
     creatorId?: string;
     statementSlug?: string;
     statementId?: string;
+    version?: number;
     limit?: number;
     offset?: number;
   }): Promise<StatementWithDraftAndCollaborators[]> => {
@@ -252,6 +270,7 @@ export const getStatementsCached = cache(
       creatorId,
       statementSlug,
       statementId,
+      version,
       limit,
       offset
     });

@@ -31,7 +31,7 @@ const ViewModeButton = ({
       ) : (
         <div className="flex items-center gap-2">
           {editMode ? <Eye className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
-          {editMode ? 'Switch back to view' : 'Switch to edit'}
+          {editMode ? 'Switch to view' : 'Switch to edit'}
         </div>
       )}
     </Button>

@@ -16,6 +16,7 @@ import {
   Dispatch,
   ReactNode,
   SetStateAction,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -37,7 +38,6 @@ interface StatementContextType {
   setUpdatedDraft: Dispatch<SetStateAction<BaseDraft>>;
   saveStatementDraft: () => Promise<void>;
   nextVersionNumber: number;
-  changeVersion: (version: number) => void;
   togglePublish: () => Promise<void>;
   editor: Editor | null;
   setEditor: (editor: Editor | null) => void;
@@ -63,7 +63,6 @@ export function StatementProvider({
   statement,
   userId,
   writerUserSlug,
-
   versionList,
   isCreator
 }: {
@@ -71,7 +70,6 @@ export function StatementProvider({
   statement: StatementWithDraftAndCollaborators;
   userId: string | undefined;
   writerUserSlug: string | undefined | null;
-
   versionList: { versionNumber: number; createdAt: Date }[];
   isCreator: boolean;
 }) {
@@ -125,11 +123,7 @@ export function StatementProvider({
 
   const nextVersionNumber = versionList.length + 1;
 
-  const changeVersion = (newVersion: number) => {
-    router.push(`/${writerUserSlug}/${statement.slug}?edit=${editMode}&v=${newVersion}`);
-  };
-
-  const saveStatementDraft = async () => {
+  const saveStatementDraft = useCallback(async () => {
     const content = updatedDraft.content;
     if (!content) {
       return;
@@ -144,9 +138,9 @@ export function StatementProvider({
     } catch (err) {
       Sentry.captureException(err);
     }
-  };
+  }, [updatedDraft, nextVersionNumber, annotations, statement.statementId]);
 
-  const togglePublish = async () => {
+  const togglePublish = useCallback(async () => {
     if (!updatedDraft) return;
     const { statementId, creatorId, draft } = statement;
     const { publishedAt } = draft;
@@ -156,7 +150,7 @@ export function StatementProvider({
       publish: publishedAt ? false : true,
       creatorId
     });
-  };
+  }, [statement, updatedDraft]);
 
   const contextValue = useMemo(
     () => ({
@@ -166,7 +160,6 @@ export function StatementProvider({
       setUpdatedDraft,
       saveStatementDraft,
       nextVersionNumber,
-      changeVersion,
       togglePublish,
       editor,
       setEditor,
@@ -186,7 +179,6 @@ export function StatementProvider({
     }),
     [
       versionList,
-      statement.draft.versionNumber,
       updatedDraft,
       editor,
       userId,
@@ -198,7 +190,10 @@ export function StatementProvider({
       isCreator,
       annotations,
       images,
-      citations
+      citations,
+      saveStatementDraft,
+      togglePublish,
+      nextVersionNumber
     ]
   );
 
