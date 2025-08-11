@@ -17,6 +17,7 @@ const ViewModeButton = ({
   const { editMode, setEditMode } = useEditModeContext();
 
   const handleEditModeToggle = () => {
+    console.log('editMode', editMode);
     setEditMode(!editMode);
   };
 
@@ -31,7 +32,7 @@ const ViewModeButton = ({
       ) : (
         <div className="flex items-center gap-2">
           {editMode ? <Eye className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
-          {editMode ? 'Switch to view' : 'Switch to edit'}
+          {editMode ? 'View published' : 'Edit mode'}
         </div>
       )}
     </Button>

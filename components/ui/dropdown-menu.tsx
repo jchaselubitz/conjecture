@@ -57,6 +57,7 @@ function DropdownMenuItem({
 }) {
   return (
     <DropdownMenuPrimitive.Item
+      onClick={e => e.preventDefault()} // need to prevent default to work on mobile in some cases
       data-slot="dropdown-menu-item"
       data-inset={inset}
       data-variant={variant}

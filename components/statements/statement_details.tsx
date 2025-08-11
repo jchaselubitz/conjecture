@@ -191,9 +191,16 @@ export default function StatementDetails({
   return (
     <div className={cn('h-full md:pb-2')}>
       <div className="flex justify-center">
-        {!isPublished && (
-          <div className="text-center bg-amber-100 bg-opacity-20 rounded-md py-1 text-lg uppercase text-amber-700 border border-amber-300 font-semibold md:max-w-3xl w-full  px-4 ">
-            Draft
+        {editMode && (
+          <div
+            className={cn(
+              'text-center bg-opacity-20 rounded-md py-1 text-lg uppercase font-semibold md:max-w-3xl w-full px-4',
+              isPublished
+                ? 'text-emerald-700 border-emerald-300 bg-emerald-100'
+                : 'text-amber-700 border border-amber-300  bg-amber-100'
+            )}
+          >
+            {isPublished ? 'Published' : `Draft `} {`(v${statement.draft.versionNumber})`}
           </div>
         )}
       </div>

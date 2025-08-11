@@ -11,7 +11,6 @@ import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-butto
 import { useEditModeContext } from '@/contexts/EditModeContext';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementUpdateContext } from '@/contexts/StatementUpdateProvider';
-import { useUserContext } from '@/contexts/userContext';
 import { sendNewsletterEmail } from '@/lib/actions/notificationActions';
 import { formatDate } from '@/lib/helpers/helpersDate';
 
@@ -236,17 +235,6 @@ export default function EditNav() {
                   reset
                   errorText={currentDraftIsPublished ? 'Failed to update' : 'Failed to save'}
                 />
-                {/* <div className="hidden md:flex gap-3">
-                  {isPublished && (
-                    <LoadingButton
-                      onClick={handleSendToSubscribers}
-                      buttonState={sendToSubscribersButtonState}
-                      variant="outline"
-                      text="Send to subscribers"
-                      loadingText="Sending..."
-                      setButtonState={setSendToSubscribersButtonState}
-                    />
-                  )}*/}
                 {!isPublished && (
                   <LoadingButton
                     onClick={handlePublish}

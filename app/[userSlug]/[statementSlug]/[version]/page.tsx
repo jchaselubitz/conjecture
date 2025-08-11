@@ -11,6 +11,7 @@ import { getPublishedOrLatestStatements } from '@/lib/actions/statementActions';
 
 type Props = {
   params: Promise<{ statementSlug: string; userSlug: string; version: string }>;
+  searchParams: Promise<{ edit: string }>;
 };
 
 // export async function generateMetadata(
@@ -36,8 +37,9 @@ type Props = {
 //   };
 // }
 
-export default async function StatementPage({ params }: Props) {
+export default async function StatementPage({ params, searchParams }: Props) {
   const { statementSlug, userSlug, version } = await params;
+  const { edit } = await searchParams;
 
   const [user, statements] = await Promise.all([
     getUser(),
@@ -87,7 +89,7 @@ export default async function StatementPage({ params }: Props) {
       <StatementToolsProvider>
         <StatementAnnotationProvider>
           <StatementUpdateProvider>
-            <StatementContainer statementSlug={statementSlug} />
+            <StatementContainer editMode={edit === 'true'} />
           </StatementUpdateProvider>
         </StatementAnnotationProvider>
       </StatementToolsProvider>

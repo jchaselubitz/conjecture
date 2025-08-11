@@ -4,7 +4,11 @@ import StatementLayout from '@/components/statements/statement_layout';
 import { EditModeProvider } from '@/contexts/EditModeContext';
 import { balancePanelSizes } from '@/lib/helpers/helpersLayout';
 
-export async function StatementContainer({ statementSlug }: { statementSlug: string }) {
+type Props = {
+  editMode: boolean;
+};
+
+export async function StatementContainer({ editMode }: Props) {
   const cookieStore = await cookies();
   const authorCommentCookie = cookieStore.get('show_author_comments');
   const readerCommentCookie = cookieStore.get('show_reader_comments');
@@ -18,8 +22,8 @@ export async function StatementContainer({ statementSlug }: { statementSlug: str
     cookieStore.get('annotation_panel_size')?.value ?? JSON.stringify({ size: 30, isOpen: false });
   const panelSizes = balancePanelSizes({ stackCookie, annotationCookie });
 
-  const editModeCookie = cookieStore.get(`edit_${statementSlug}`);
-  const editMode = editModeCookie ? JSON.parse(editModeCookie.value) : false;
+  // const editModeCookie = cookieStore.get(`edit_${statementSlug}`);
+  // const editMode = editModeCookie ? JSON.parse(editModeCookie.value) : false;
 
   return (
     <div className="md:flex-1 bg-background md:h-screen h-full">
