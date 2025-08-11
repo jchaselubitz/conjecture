@@ -6,7 +6,7 @@
     "start": "supabase start",
     "stop": "supabase stop",
     "generate": "kysely-codegen --env-file .env.local",
-    "generate-deploy": "if [ -n \"$VERCEL\" ] && [ -z \"$SUPABASE_CA_PEM\" ]; then echo 'Codegen: TLS verify off (no CA provided)'; NODE_TLS_REJECT_UNAUTHORIZED=0 kysely-codegen; else kysely-codegen; fi",
+    "generate-deploy": "kysely-codegen",
     "new": "rm -rf node_modules && rm -rf .next && rm -rf .netlify && yarn cache clean && yarn install && yarn generate",
     "nuke": "yarn install && supabase db reset && supabase start && supabase status && yarn generate",
     "create-migration": "supabase db diff --use-migra -f local_schema",
