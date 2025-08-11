@@ -25,6 +25,15 @@ import { Pool } from 'pg';
 
 const conn = process.env.POSTGRES_URL;
 
+console.log(
+  'conn',
+  process.env.VERCEL
+    ? process.env.SUPABASE_CA_PEM
+      ? { rejectUnauthorized: true, ca: process.env.SUPABASE_CA_PEM }
+      : { rejectUnauthorized: false } // quick fallback if you don't have the CA yet
+    : false
+);
+
 const db = new Kysely<DB>({
   plugins: [new CamelCasePlugin()],
   dialect: new PostgresDialect({

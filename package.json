@@ -6,7 +6,6 @@
     "start": "supabase start",
     "stop": "supabase stop",
     "generate": "kysely-codegen --env-file .env.local",
-    "write-supabase-ca": "node -e \"const fs=require('fs'); if(process.env.SUPABASE_CA_PEM){fs.writeFileSync('./supabase-ca.pem', process.env.SUPABASE_CA_PEM)} else {console.error('SUPABASE_CA_PEM not set'); process.exit(1)}\"",
     "generate-deploy": "if [ -n \"$VERCEL\" ]; then yarn write-supabase-ca && PGSSLMODE=verify-full PGSSLROOTCERT=./supabase-ca.pem kysely-codegen; else kysely-codegen; fi",
     "new": "rm -rf node_modules && rm -rf .next && rm -rf .netlify && yarn cache clean && yarn install && yarn generate",
     "nuke": "yarn install && supabase db reset && supabase start && supabase status && yarn generate",
