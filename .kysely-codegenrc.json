@@ -16,5 +16,6 @@
   "singularize": false,
   "typeOnlyImports": true,
   "url": "env(POSTGRES_URL)",
+  "ssl": { "ca": "env(SUPABASE_CA_PEM)" },
   "verify": false
 }
