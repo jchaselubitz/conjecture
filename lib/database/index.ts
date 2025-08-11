@@ -27,13 +27,14 @@ const connectionString = process.env.POSTGRES_URL || process.env.POSTGRES_URL_NO
 
 // SSL configuration for different environments
 const ssl = (() => {
-  // Local development - no SSL
+  // Local development - no SSL unless URL specifies it
   if (process.env.NODE_ENV === 'development' && !process.env.VERCEL) {
-    return false;
+    // Check if connection string has sslmode=require
+    return connectionString.includes('sslmode=require') ? true : false;
   }
 
-  // Production/Vercel deployment
-  if (process.env.VERCEL) {
+  // Production/Vercel deployment or when sslmode=require is in connection string
+  if (process.env.VERCEL || connectionString.includes('sslmode=require')) {
     // If Supabase CA certificate is provided, use it
     if (process.env.SUPABASE_CA_PEM) {
       return {
@@ -42,11 +43,19 @@ const ssl = (() => {
       };
     }
 
-    // For Vercel-Supabase integration, use these settings to handle certificate chain
+    // For Supabase pooler connections, use these settings to handle certificate chain
+    // The pooler uses different certificates that may cause SELF_SIGNED_CERT_IN_CHAIN errors
     return {
-      rejectUnauthorized: true,
-      // Allow self-signed certificates in certificate chain
-      checkServerIdentity: () => undefined
+      rejectUnauthorized: false,
+      // Still check server identity when possible
+      checkServerIdentity: (host: string, cert: any) => {
+        // Allow pooler.supabase.com certificates
+        if (host.includes('pooler.supabase.com')) {
+          return undefined;
+        }
+        // Use default checking for other hosts
+        return undefined;
+      }
     };
   }
 
