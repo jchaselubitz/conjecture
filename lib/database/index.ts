@@ -23,8 +23,9 @@ import {
 } from 'kysely-codegen';
 import { Pool } from 'pg';
 
-const connectionString = process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING || '';
+const connectionString = process.env.POSTGRES_URL_NON_POOLING || '';
 
+console.log('connectionString', connectionString);
 // SSL configuration for different environments
 const ssl = (() => {
   // Local development - no SSL unless URL specifies it
@@ -43,19 +44,11 @@ const ssl = (() => {
       };
     }
 
-    // For Supabase pooler connections, use these settings to handle certificate chain
+    // For Supabase pooler connections, disable certificate validation
     // The pooler uses different certificates that may cause SELF_SIGNED_CERT_IN_CHAIN errors
+    // This is safe because we're still using SSL encryption, just not validating the certificate chain
     return {
-      rejectUnauthorized: false,
-      // Still check server identity when possible
-      checkServerIdentity: (host: string, cert: any) => {
-        // Allow pooler.supabase.com certificates
-        if (host.includes('pooler.supabase.com')) {
-          return undefined;
-        }
-        // Use default checking for other hosts
-        return undefined;
-      }
+      rejectUnauthorized: false
     };
   }
 
