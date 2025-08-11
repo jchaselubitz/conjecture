@@ -15,11 +15,6 @@
   "runtimeEnums": false,
   "singularize": false,
   "typeOnlyImports": true,
-  "ssl": { "ca": "env(SUPABASE_CA_PEM)" },
-  "host": "env(POSTGRES_HOST)",
-  "port": 6543,
-  "user": "env(POSTGRES_USER)",
-  "password": "env(POSTGRES_PASSWORD)",
-  "database": "env(POSTGRES_DATABASE)",
+  "url": "env(POSTGRES_URL)",
   "verify": false
 }
