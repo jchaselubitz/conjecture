@@ -25,11 +25,34 @@ import { Pool } from 'pg';
 
 const connectionString = process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING || '';
 
-const ssl = process.env.VERCEL
-  ? process.env.SUPABASE_CA_PEM
-    ? { rejectUnauthorized: true, ca: process.env.SUPABASE_CA_PEM }
-    : { rejectUnauthorized: false } // temporary fallback if you haven't added the CA yet
-  : false;
+// SSL configuration for different environments
+const ssl = (() => {
+  // Local development - no SSL
+  if (process.env.NODE_ENV === 'development' && !process.env.VERCEL) {
+    return false;
+  }
+
+  // Production/Vercel deployment
+  if (process.env.VERCEL) {
+    // If Supabase CA certificate is provided, use it
+    if (process.env.SUPABASE_CA_PEM) {
+      return {
+        rejectUnauthorized: true,
+        ca: process.env.SUPABASE_CA_PEM
+      };
+    }
+
+    // For Vercel-Supabase integration, use these settings to handle certificate chain
+    return {
+      rejectUnauthorized: true,
+      // Allow self-signed certificates in certificate chain
+      checkServerIdentity: () => undefined
+    };
+  }
+
+  // Default SSL for other production environments
+  return { rejectUnauthorized: true };
+})();
 
 const db = new Kysely<DB>({
   plugins: [new CamelCasePlugin()],
