@@ -23,16 +23,23 @@ import {
 } from 'kysely-codegen';
 import { Pool } from 'pg';
 
+const conn = process.env.POSTGRES_URL;
+
 const db = new Kysely<DB>({
   plugins: [new CamelCasePlugin()],
   dialect: new PostgresDialect({
     pool: new Pool({
-      connectionString: process.env.POSTGRES_URL,
-      max: 10
+      connectionString: conn,
+      max: 10,
+      // On Vercel/Supabase you should enable SSL. Prefer CA if you’ve added it as an env.
+      ssl: process.env.VERCEL
+        ? process.env.SUPABASE_CA_PEM
+          ? { rejectUnauthorized: true, ca: process.env.SUPABASE_CA_PEM }
+          : { rejectUnauthorized: false } // quick fallback if you don't have the CA yet
+        : false
     })
   })
 });
-
 declare module 'kysely-codegen' {
   export type RevalidationPath = {
     path: string;
