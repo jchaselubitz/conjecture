@@ -15,6 +15,6 @@
   "runtimeEnums": false,
   "singularize": false,
   "typeOnlyImports": true,
-  "url": "env(DATABASE_URL)",
+  "url": "env(POSTGRES_URL)",
   "verify": false
 }

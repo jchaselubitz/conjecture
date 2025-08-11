@@ -31,8 +31,8 @@ const withAnalyze = withBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true'
 });
 
-const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
-  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
+const supabaseHostname = process.env.SUPABASE_URL
+  ? new URL(process.env.SUPABASE_URL).hostname
   : 'bewgymyresxixvkkqbzl.supabase.co';
 
 const config: NextConfig = {

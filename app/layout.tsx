@@ -61,10 +61,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={` ${fontSans.variable}`}>
-      <link
-        rel="dns-prefetch"
-        href={`//${process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '')}`}
-      />
+      <link rel="dns-prefetch" href={`//${process.env.SUPABASE_URL?.replace('https://', '')}`} />
       <link
         rel="dns-prefetch"
         href={`//${process.env.NEXT_PUBLIC_SITE_URL?.replace('https://', '')}`}
