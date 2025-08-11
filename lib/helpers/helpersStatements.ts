@@ -1,7 +1,6 @@
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import { Editor, Extension } from '@tiptap/react';
-import crypto from 'crypto';
 import {
   BaseStatementCitation,
   BaseStatementImage,
@@ -32,14 +31,7 @@ import { Dispatch, SetStateAction } from 'react';
 import { deleteCitations } from '../actions/citationActions';
 
 export const generateStatementId = (): string => {
-  const randomNumber = Math.floor(Math.random() * 100000);
-  const currentDatetime = new Date().toISOString();
-  const hash = crypto
-    .createHash('sha256')
-    .update(currentDatetime + randomNumber.toString())
-    .digest('hex');
-
-  return hash.slice(0, 10);
+  return nanoid(10); // 10 chars, URL-safe, good collision resistance
 };
 
 // Define the return type for getMarks
