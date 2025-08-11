@@ -9,13 +9,7 @@ import { Step } from '@tiptap/pm/transform';
 import { EditorView } from '@tiptap/pm/view';
 import { Editor, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import {
-  AnnotationWithComments,
-  BaseDraft,
-  NewStatementCitation,
-  StatementCitation,
-  StatementImage
-} from 'kysely-codegen';
+import { AnnotationWithComments, BaseDraft, NewStatementCitation } from 'kysely-codegen';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { RefObject, startTransition, useEffect } from 'react';
 import { ImperativePanelGroupHandle } from 'react-resizable-panels';
