@@ -1,7 +1,7 @@
 'use client';
 
 import * as Sentry from '@sentry/nextjs';
-import { CommentWithUser } from 'kysely-codegen';
+import { BaseCommentVote, CommentWithUser } from 'kysely-codegen';
 import { ArrowUp, Edit2, RefreshCw, Reply, Trash2 } from 'lucide-react';
 import { startTransition, useState } from 'react';
 
@@ -16,14 +16,7 @@ interface CommentControlsProps {
   isHovered: boolean;
   editingComment: boolean;
   statementId: string;
-  votes:
-    | {
-        userId: string;
-        createdAt: Date;
-        id: string;
-        commentId: string;
-      }[]
-    | undefined;
+  votes: BaseCommentVote[] | undefined;
   setVotes: (
     action: {
       createdAt: Date;
