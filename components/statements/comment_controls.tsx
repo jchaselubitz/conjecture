@@ -17,14 +17,7 @@ interface CommentControlsProps {
   editingComment: boolean;
   statementId: string;
   votes: BaseCommentVote[] | undefined;
-  setVotes: (
-    action: {
-      createdAt: Date;
-      id: string;
-      userId: string;
-      commentId: string;
-    }[]
-  ) => void;
+  setVotes: (action: BaseCommentVote[]) => void;
   onReplyClick: (comment: CommentWithUser) => void;
   onEditClick: () => void;
   onCommentDeleted: (commentId: string) => void;
