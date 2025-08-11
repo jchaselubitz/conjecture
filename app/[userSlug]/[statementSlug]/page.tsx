@@ -14,7 +14,7 @@ type Props = {
   searchParams: Promise<{ edit: string }>;
 };
 
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 export async function generateMetadata(
   { params }: Props,
