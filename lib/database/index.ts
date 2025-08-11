@@ -23,22 +23,21 @@ import {
 } from 'kysely-codegen';
 import { Pool } from 'pg';
 
-const conn = process.env.POSTGRES_URL;
+const connectionString = process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING || '';
 
-console.log('conn', conn);
+const ssl = process.env.VERCEL
+  ? process.env.SUPABASE_CA_PEM
+    ? { rejectUnauthorized: true, ca: process.env.SUPABASE_CA_PEM }
+    : { rejectUnauthorized: false } // temporary fallback if you haven't added the CA yet
+  : false;
 
 const db = new Kysely<DB>({
   plugins: [new CamelCasePlugin()],
   dialect: new PostgresDialect({
     pool: new Pool({
-      connectionString: conn,
+      connectionString: connectionString,
+      ssl: ssl,
       max: 10
-      // On Vercel/Supabase you should enable SSL. Prefer CA if you’ve added it as an env.
-      //   ssl: process.env.VERCEL
-      //     ? process.env.SUPABASE_CA_PEM
-      //       ? { rejectUnauthorized: true, ca: process.env.SUPABASE_CA_PEM }
-      //       : { rejectUnauthorized: false } // quick fallback if you don't have the CA yet
-      //     : false
     })
   })
 });
