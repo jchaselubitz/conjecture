@@ -23,36 +23,24 @@ import {
 } from 'kysely-codegen';
 import { Pool } from 'pg';
 
-const connectionString = process.env.POSTGRES_URL_NON_POOLING || '';
+const connectionString = process.env.POSTGRES_URL || '';
 
 console.log('connectionString', connectionString);
-// SSL configuration for different environments
 const ssl = (() => {
-  // Local development - no SSL unless URL specifies it
   if (process.env.NODE_ENV === 'development' && !process.env.VERCEL) {
-    // Check if connection string has sslmode=require
     return connectionString.includes('sslmode=require') ? true : false;
   }
-
-  // Production/Vercel deployment or when sslmode=require is in connection string
   if (process.env.VERCEL || connectionString.includes('sslmode=require')) {
-    // If Supabase CA certificate is provided, use it
     if (process.env.SUPABASE_CA_PEM) {
       return {
         rejectUnauthorized: true,
         ca: process.env.SUPABASE_CA_PEM
       };
     }
-
-    // For Supabase pooler connections, disable certificate validation
-    // The pooler uses different certificates that may cause SELF_SIGNED_CERT_IN_CHAIN errors
-    // This is safe because we're still using SSL encryption, just not validating the certificate chain
     return {
       rejectUnauthorized: false
     };
   }
-
-  // Default SSL for other production environments
   return { rejectUnauthorized: true };
 })();
 
