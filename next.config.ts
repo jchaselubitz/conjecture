@@ -8,7 +8,7 @@ import withPWA from 'next-pwa';
 const pwaConfig = withPWA({
   dest: 'public',
   register: true,
-  disable: process.env.NODE_ENV === 'development',
+  // disable: process.env.NODE_ENV === 'development',
   skipWaiting: true,
   buildExcludes: [/middleware-manifest\.json$/],
   sw: '/sw.js',

@@ -1,7 +1,8 @@
 import './globals.css';
 
-import type { Metadata, Viewport } from 'next';
 import { Analytics } from '@vercel/analytics/next';
+import type { Metadata, Viewport } from 'next';
+
 import { Toaster } from '@/components/ui/sonner';
 import { UserProvider } from '@/contexts/userContext';
 import { getUserProfile } from '@/lib/actions/userActions';
@@ -19,6 +20,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteURL),
   title: 'Conject',
   description: 'Conjecture and Critique',
+  manifest: '/manifest.webmanifest',
   icons: {
     icon: '/favicon.ico'
   },
@@ -36,7 +38,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  viewportFit: 'cover'
+  viewportFit: 'contain'
 };
 
 export default async function RootLayout({
@@ -66,7 +68,7 @@ export default async function RootLayout({
         rel="dns-prefetch"
         href={`//${process.env.NEXT_PUBLIC_SITE_URL?.replace('https://', '')}`}
       />
-      <link rel="manifest" href="/manifest.json" />
+      <link rel="manifest" href="/manifest.webmanifest" />
 
       <body>
         <div className="min-h-screen">
@@ -77,6 +79,7 @@ export default async function RootLayout({
             <ProfileSettingsDialog />
           </UserProvider>
         </div>
+        <Analytics />
       </body>
     </html>
   );
