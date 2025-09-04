@@ -74,6 +74,7 @@ export default function AnnotationDetailMobile({
                 isRootComment={earliestComment.id === comment.id}
               />
             ))}
+            <div className="h-32"></div>
           </div>
         )}
       </div>

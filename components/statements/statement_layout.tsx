@@ -31,7 +31,7 @@ import VerticalCardStack from '../card_stacks/vertical_card_stack';
 import EditNav from '../navigation/edit_nav';
 import ReadNav from '../navigation/read_nav';
 
-import AnnotationDrawer from './annotation/annotation_drawer';
+import AnnotationDialog from './annotation/annotation_drawer';
 import StatementDetails from './statement_details';
 import StatementTopControls from './statement_top_controls';
 
@@ -66,7 +66,7 @@ export default function StatementLayout({
   const { editMode } = useEditModeContext();
   const { updateStatementDraft } = useStatementUpdateContext();
 
-  const [showAnnotationDrawer, setShowAnnotationDrawer] = useState(false);
+  const [showAnnotationDialog, setShowAnnotationDialog] = useState(false);
   const [showAuthorComments, setShowAuthorComments] = useState(authorCommentsEnabled);
   const [showReaderComments, setShowReaderComments] = useState(readerCommentsEnabled);
   const [annotationMode, setAnnotationMode] = useState<boolean>(true);
@@ -118,7 +118,7 @@ export default function StatementLayout({
 
   useEffect(() => {
     if (selectedAnnotationId) {
-      setShowAnnotationDrawer(true);
+      setShowAnnotationDialog(true);
     }
   }, [selectedAnnotationId]);
 
@@ -167,11 +167,11 @@ export default function StatementLayout({
     }
   };
 
-  const handleCloseAnnotationDrawer = () => {
+  const handleCloseAnnotationDialog = () => {
     if (!!editMode || !!annotationMode) {
       editor?.setEditable(true);
     }
-    setShowAnnotationDrawer(false);
+    setShowAnnotationDialog(false);
     handleCloseAnnotationPanel();
   };
 
@@ -249,9 +249,10 @@ export default function StatementLayout({
         setAnnotationMode={setAnnotationMode}
         familyTree={familyTree}
       />
-      <AnnotationDrawer
-        showAnnotationDrawer={showAnnotationDrawer}
-        handleCloseAnnotationDrawer={handleCloseAnnotationDrawer}
+
+      <AnnotationDialog
+        showAnnotationDialog={showAnnotationDialog}
+        handleCloseAnnotationDialog={handleCloseAnnotationDialog}
         filteredAnnotations={filteredAnnotations}
         handleAnnotationSelection={handleAnnotationSelection}
         annotations={annotations}

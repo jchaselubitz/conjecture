@@ -191,7 +191,7 @@
 html, body, #__next {
   height: 100%;
   min-height: 100svh; /* make sure it fills modern mobile viewports */
-  background-color: var(--background); /* use your theme variable */
+  background-color: white; /* use your theme variable */
   -webkit-font-smoothing: antialiased;
 }
 
