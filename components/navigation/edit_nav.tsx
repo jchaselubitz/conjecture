@@ -215,7 +215,7 @@ export default function EditNav() {
 
   return (
     <header className="h-14">
-      <div className="fixed z-50 top-0 left-0 right-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="nav-fixed z-50 top-0 left-0 right-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex h-14 items-center justify-between px-4">
           <Button variant="ghost" size="icon" onClick={() => setEditMode(false)}>
             <ArrowLeft className="h-5 w-5" />

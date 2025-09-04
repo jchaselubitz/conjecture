@@ -26,6 +26,7 @@ export const metadata: Metadata = {
   },
   applicationName: 'Conject',
   appleWebApp: {
+    capable: true,
     title: 'Conject',
     statusBarStyle: 'black-translucent',
     startupImage: '/favicon.ico'
@@ -38,7 +39,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  viewportFit: 'contain'
+  viewportFit: 'cover'
 };
 
 export default async function RootLayout({
@@ -71,7 +72,7 @@ export default async function RootLayout({
       <link rel="manifest" href="/manifest.webmanifest" />
 
       <body>
-        <div className="min-h-screen">
+        <div className="min-h-screen app-safe">
           <UserProvider userProfile={profile} userEmail={user?.email} userSlug={profile?.username}>
             {children}
 
