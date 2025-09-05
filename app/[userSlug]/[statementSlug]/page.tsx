@@ -1,4 +1,5 @@
 import { Metadata, ResolvingMetadata } from 'next';
+import { redirect } from 'next/navigation';
 
 import NotFound from '@/components/ui/not_found';
 import { StatementContainer } from '@/containers/StatementContainer';
@@ -8,7 +9,6 @@ import { StatementToolsProvider } from '@/contexts/StatementToolsContext';
 import { StatementUpdateProvider } from '@/contexts/StatementUpdateProvider';
 import { getUser } from '@/lib/actions/baseActions';
 import { getStatementsCached } from '@/lib/actions/statementActions';
-import { redirect } from 'next/navigation';
 
 type Props = {
   params: Promise<{ statementSlug: string; userSlug: string }>;

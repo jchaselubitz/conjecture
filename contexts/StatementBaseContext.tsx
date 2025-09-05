@@ -83,8 +83,6 @@ export function StatementProvider({
   const [citations, setCitations] = useState<BaseStatementCitation[]>([]);
   const [thread, setThread] = useState<StatementWithDraft[]>([]);
 
-
-
   const parentStatement = useMemo(() => {
     return thread.find(draft => draft.statementId === statement.parentStatementId);
   }, [statement.parentStatementId, thread]);

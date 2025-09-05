@@ -10,7 +10,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
 
 import AnnotationPanel from '@/components/statements/annotation/annotation_panel';
+import NotFound from '@/components/ui/not_found';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useEditModeContext } from '@/contexts/EditModeContext';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
@@ -26,8 +28,6 @@ import {
 } from '@/lib/helpers/helpersLayout';
 import { groupThreadsByParentId } from '@/lib/helpers/helpersStatements';
 import { cn } from '@/lib/utils';
-import { Skeleton } from '@/components/ui/skeleton';
-import NotFound from '@/components/ui/not_found';
 
 import VerticalCardStack from '../card_stacks/vertical_card_stack';
 import EditNav from '../navigation/edit_nav';

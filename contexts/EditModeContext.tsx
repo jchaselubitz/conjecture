@@ -1,6 +1,14 @@
 'use client';
-import { useRouter } from 'next/navigation';
-import { createContext, ReactNode, useContext } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import {
+  createContext,
+  ReactNode,
+  startTransition,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react';
 
 import { setEditModeCookie } from '@/lib/helpers/helpersLayout';
 
@@ -24,7 +32,9 @@ export function EditModeProvider({
   const { statement } = useStatementContext();
   const { setSelectedAnnotationId } = useStatementAnnotationContext();
   const router = useRouter();
-  const editMode = editModeEnabled;
+  const editMode = useMemo(() => {
+    return editModeEnabled;
+  }, [editModeEnabled]);
 
   const versionNumber = statement?.draft?.versionNumber;
 
@@ -32,9 +42,9 @@ export function EditModeProvider({
     setSelectedAnnotationId(undefined);
     setEditModeCookie(edit, statement?.statementId);
     if (edit) {
-      router.push(`/${statement?.creatorSlug}/${statement?.slug}/${versionNumber}?edit=true`);
+      router.replace(`/${statement?.creatorSlug}/${statement?.slug}/${versionNumber}?edit=true`);
     } else {
-      router.push(`/${statement?.creatorSlug}/${statement?.slug}`);
+      router.replace(`/${statement?.creatorSlug}/${statement?.slug}`);
     }
   };
 

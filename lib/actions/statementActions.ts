@@ -11,7 +11,6 @@ import {
   BaseStatementCitation,
   BaseStatementImage,
   NewAnnotation,
-  StatementPackage,
   StatementWithDraft,
   StatementWithDraftAndCollaborators
 } from 'kysely-codegen';
@@ -90,29 +89,6 @@ export async function getPublishedOrLatestStatements({
           .whereRef('statementVote.statementId', '=', 'statement.statementId')
       ).as('upvotes')
     ]);
-
-  // if (publishedOnly) {
-  //   statements = statements.select(({ eb }) => [
-  //     jsonArrayFrom(
-  //       eb
-  //         .selectFrom('draft')
-  //         .selectAll()
-  //         .whereRef('draft.statementId', '=', 'statement.statementId')
-  //         .where('draft.publishedAt', 'is not', null)
-  //         .limit(1)
-  //     ).as('drafts')
-  //   ]);
-  // } else {
-  //   statements = statements.select(({ eb }) => [
-  //     jsonArrayFrom(
-  //       eb
-  //         .selectFrom('draft')
-  //         .selectAll()
-  //         .whereRef('draft.statementId', '=', 'statement.statementId')
-  //         .orderBy('draft.createdAt', 'desc')
-  //     ).as('drafts')
-  //   ]);
-  // }
 
   if (forCurrentUser && user) {
     statements = statements.where('statement.creatorId', '=', user.id);
@@ -232,16 +208,6 @@ export async function getPublishedOrLatestStatements({
         return versionDraft;
       }
     }
-
-    // else if (userIsCollaborator) {
-
-    //   //get latest version
-    //   const greatestVersionNumber = drafts.reduce(
-    //     (max, draft) => Math.max(max, draft.versionNumber),
-    //     0
-    //   );
-    //   return drafts.find(draft => draft.versionNumber === greatestVersionNumber) ?? null;
-    // }
   };
 
   const statementsWithDraft = statementsList.map(statement => ({
