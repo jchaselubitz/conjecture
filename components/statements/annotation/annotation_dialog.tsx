@@ -4,18 +4,17 @@ import { ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { nestComments } from '@/lib/helpers/helpersComments';
 import { cn } from '@/lib/utils';
 
 import AnnotationDetailMobile from './ad_mobile';
-import CommentDialog from './comment_dialog';
 import CommentInput from './comment_input';
 
-interface AnnotationDrawerProps {
-  showAnnotationDrawer: boolean;
-  handleCloseAnnotationDrawer: () => void;
+interface AnnotationDialogProps {
+  showAnnotationDialog: boolean;
+  handleCloseAnnotationDialog: () => void;
   annotations: AnnotationWithComments[] | null;
   statement: {
     statementId: string;
@@ -27,22 +26,21 @@ interface AnnotationDrawerProps {
   handleDeleteAnnotation: (annotation: AnnotationWithComments) => Promise<void>;
 }
 
-export default function AnnotationDrawer({
-  showAnnotationDrawer,
-  handleCloseAnnotationDrawer,
+export default function AnnotationDialog({
+  showAnnotationDialog,
+  handleCloseAnnotationDialog,
   annotations,
   statement,
   filteredAnnotations,
   handleAnnotationSelection,
   selectedAnnotation,
   handleDeleteAnnotation
-}: AnnotationDrawerProps) {
+}: AnnotationDialogProps) {
   const { replyToComment, setReplyToComment, cancelReply, comments } =
     useStatementAnnotationContext();
 
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
-
   const [emblaRan, setEmblaRan] = useState(false);
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: 'center',
@@ -88,8 +86,8 @@ export default function AnnotationDrawer({
     setShowCommentInput(false);
   };
 
-  const onHandleCloseAnnotationDrawer = () => {
-    handleCloseAnnotationDrawer();
+  const onHandleCloseAnnotationDialog = () => {
+    handleCloseAnnotationDialog();
     onCancelReply();
   };
 
@@ -110,22 +108,21 @@ export default function AnnotationDrawer({
   };
 
   return (
-    <Drawer
-      open={showAnnotationDrawer}
-      repositionInputs={false}
-      onOpenChange={onHandleCloseAnnotationDrawer}
-      // direction="right"
+    <Dialog
+      open={showAnnotationDialog}
+      // repositionInputs={false}
+      onOpenChange={onHandleCloseAnnotationDialog}
     >
-      <DrawerContent
+      <DialogContent
         className={cn(
-          'p-2 pt-0 min-h-[40dvh] h-full focus:outline-none'
-          // showCommentInput ? 'max-h-[55dvh] translate-y-[65%]' : 'max-h-[90dvh] translate-y-[0%]'
+          'p-2 pt-10 top-10 min-h-[40dvh] h-full focus:outline-none',
+          showCommentInput ? 'max-h-[55dvh] translate-y-[65%]' : 'max-h-[90dvh] translate-y-[0%]'
         )}
-        handle={true}
+        showCloseButton={true}
       >
-        <DrawerTitle className="sr-only">Comments</DrawerTitle>
+        <DialogTitle className="sr-only">Comments</DialogTitle>
 
-        <div className=" mt-2 overflow-y-auto min-h-2/3 h-full">
+        <div className="overflow-y-auto min-h-2/3 h-full">
           <div className="overflow-hidden h-full" ref={emblaRef}>
             {annotations && (
               <div className="flex h-full">
@@ -147,48 +144,55 @@ export default function AnnotationDrawer({
         </div>
 
         <div className="absolute bottom-0 w-full z-60 justify-center bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 h-fit rounded-lg">
-          <div className="w-full py-2 flex gap-2 items-center justify-between">
-            <div className="w-24 flex pl-2">
-              {canGoPrevious() && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={scrollPrev}
-                  className="h-8 w-fit text-muted-foreground flex justify-center items-center gap-2 "
-                >
-                  <ChevronLeft className="h-4 w-4" /> Previous
-                  <span className="sr-only">Previous annotation</span>
-                </Button>
+          {showCommentInput ? (
+            <div className="w-full px-2 pt-2">
+              {selectedAnnotation && (
+                <CommentInput
+                  showCommentInput={showCommentInput}
+                  setShowCommentInput={setShowCommentInput}
+                  annotation={selectedAnnotation}
+                />
               )}
             </div>
-            <Button
-              variant="ghost"
-              onClick={() => setShowCommentInput(true)}
-              className="rounded-lg text-left text-muted-foreground justify-center w-fit"
-            >
-              Add comment <MessageCircle className="h-4 w-4" />
-            </Button>
-            <div className="w-24 flex justify-end pr-2 rounded-lg">
-              {canGoNext() && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={scrollNext}
-                  className="h-8 w-fit text-muted-foreground flex justify-center items-center gap-2 "
-                >
-                  Next <ChevronRight className="h-4 w-4" />
-                  <span className="sr-only">Next annotation</span>
-                </Button>
-              )}
+          ) : (
+            <div className="w-full py-2 flex gap-2 items-center justify-between">
+              <div className="w-24 flex pl-2">
+                {canGoPrevious() && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={scrollPrev}
+                    className="h-8 w-fit text-muted-foreground flex justify-center items-center gap-2 "
+                  >
+                    <ChevronLeft className="h-4 w-4" /> Previous
+                    <span className="sr-only">Previous annotation</span>
+                  </Button>
+                )}
+              </div>
+              <Button
+                variant="ghost"
+                onClick={() => setShowCommentInput(true)}
+                className="rounded-lg text-left text-muted-foreground justify-center w-fit"
+              >
+                Add comment <MessageCircle className="h-4 w-4" />
+              </Button>
+              <div className="w-24 flex justify-end pr-2 rounded-lg">
+                {canGoNext() && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={scrollNext}
+                    className="h-8 w-fit text-muted-foreground flex justify-center items-center gap-2 "
+                  >
+                    Next <ChevronRight className="h-4 w-4" />
+                    <span className="sr-only">Next annotation</span>
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
-        <CommentDialog
-          showCommentInput={showCommentInput}
-          setShowCommentInput={setShowCommentInput}
-          selectedAnnotation={selectedAnnotation as AnnotationWithComments}
-        />
-      </DrawerContent>
-    </Drawer>
+      </DialogContent>
+    </Dialog>
   );
 }

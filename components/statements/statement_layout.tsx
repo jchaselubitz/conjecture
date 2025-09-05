@@ -31,7 +31,8 @@ import VerticalCardStack from '../card_stacks/vertical_card_stack';
 import EditNav from '../navigation/edit_nav';
 import ReadNav from '../navigation/read_nav';
 
-import AnnotationDialog from './annotation/annotation_drawer';
+import AnnotationDialog from './annotation/annotation_dialog';
+import AnnotationDrawer from './annotation/annotation_drawer';
 import StatementDetails from './statement_details';
 import StatementTopControls from './statement_top_controls';
 
@@ -249,8 +250,20 @@ export default function StatementLayout({
         setAnnotationMode={setAnnotationMode}
         familyTree={familyTree}
       />
-
-      <AnnotationDialog
+      <AnnotationDrawer
+        showAnnotationDrawer={showAnnotationDialog}
+        handleCloseAnnotationDrawer={handleCloseAnnotationDialog}
+        filteredAnnotations={filteredAnnotations}
+        handleAnnotationSelection={handleAnnotationSelection}
+        annotations={annotations}
+        statement={{
+          statementId: statement.statementId,
+          creatorId: statement.creatorId
+        }}
+        selectedAnnotation={selectedAnnotation}
+        handleDeleteAnnotation={handleDeleteAnnotation}
+      />
+      {/* <AnnotationDialog
         showAnnotationDialog={showAnnotationDialog}
         handleCloseAnnotationDialog={handleCloseAnnotationDialog}
         filteredAnnotations={filteredAnnotations}
@@ -262,7 +275,7 @@ export default function StatementLayout({
         }}
         selectedAnnotation={selectedAnnotation}
         handleDeleteAnnotation={handleDeleteAnnotation}
-      />
+      /> */}
     </div>
   );
 

@@ -65,6 +65,7 @@ export default function CommentInput({
       });
 
       setCommentText('');
+
       await createComment({
         comment: newComment,
         parentId: replyToComment?.id,
@@ -72,6 +73,7 @@ export default function CommentInput({
       });
 
       setReplyToComment(null);
+      setShowCommentInput?.(false);
       setSubmittingButtonState('success');
     } catch (error) {
       console.error('Error creating comment:', error);
@@ -106,14 +108,17 @@ export default function CommentInput({
       {userId ? (
         <div id="comment-input" className=" ">
           {replyToComment && (
-            <div className="flex items-center gap-2 mb-2 p-2 bg-muted/50 rounded-md">
-              <span className="text-xs flex-1 truncate">
-                Replying to:{' '}
-                <span className="font-medium italic">
-                  {replyToComment.content.substring(0, 40)}
-                  {replyToComment.content.length > 40 ? '...' : ''}
+            <div className="flex items-center gap-2 mb-2 p-2 bg-muted/50 rounded-md ">
+              <div className="max-h-20 h-full overflow-y-auto text-xs/4">
+                <span className=" flex-1">
+                  Replying to:{' '}
+                  <span className="font-medium italic ">
+                    {replyToComment.content}
+                    {/* {replyToComment.content.substring(0, 100)}
+                  {replyToComment.content.length > 100 ? '...' : ''} */}
+                  </span>
                 </span>
-              </span>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
