@@ -8,6 +8,7 @@ import { StatementToolsProvider } from '@/contexts/StatementToolsContext';
 import { StatementUpdateProvider } from '@/contexts/StatementUpdateProvider';
 import { getUser } from '@/lib/actions/baseActions';
 import { getStatementsCached } from '@/lib/actions/statementActions';
+import { redirect } from 'next/navigation';
 
 type Props = {
   params: Promise<{ statementSlug: string; userSlug: string }>;
@@ -47,13 +48,18 @@ export default async function StatementPage({ params, searchParams }: Props) {
   const [user, statements] = await Promise.all([
     getUser(),
     getStatementsCached({
-      statementSlug,
-      publishedOnly: true
+      statementSlug
     })
   ]);
 
   const statement = statements[0];
   const userId = user?.id?.toString();
+
+  if (!statement.draft?.publishedAt) {
+    if (statement.collaborators.some(collaborator => collaborator.userId === userId)) {
+      return redirect(`/${userSlug}/${statementSlug}/${statement.draft?.versionNumber}`);
+    }
+  }
 
   if (!statement) {
     return (

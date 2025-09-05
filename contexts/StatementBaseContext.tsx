@@ -83,20 +83,29 @@ export function StatementProvider({
   const [citations, setCitations] = useState<BaseStatementCitation[]>([]);
   const [thread, setThread] = useState<StatementWithDraft[]>([]);
 
+
+
   const parentStatement = useMemo(() => {
     return thread.find(draft => draft.statementId === statement.parentStatementId);
   }, [statement.parentStatementId, thread]);
 
   useEffect(() => {
     let cancelled = false;
+
     const load = async () => {
       const [thread, details] = await Promise.all([
         statement.threadId ? getFullThread(statement.threadId) : Promise.resolve([]),
-        getStatementDetails({
-          statementId: statement.statementId,
-          draftId: statement.draft.id,
-          userId
-        })
+        statement.draft?.id
+          ? getStatementDetails({
+              statementId: statement.statementId,
+              draftId: statement.draft.id,
+              userId
+            })
+          : Promise.resolve({
+              images: [],
+              citations: [],
+              annotations: []
+            })
       ]);
 
       if (cancelled) return;
@@ -111,7 +120,7 @@ export function StatementProvider({
     return () => {
       cancelled = true;
     };
-  }, [statement.threadId, statement.statementId, statement.draft.id, userId]);
+  }, [statement.threadId, statement.statementId, statement.draft?.id, userId]);
 
   const [debouncedDraft, setDebouncedDraft] = useDebounce<BaseDraft | undefined>(updatedDraft, 500);
 
@@ -155,7 +164,7 @@ export function StatementProvider({
   const contextValue = useMemo(
     () => ({
       versionOptions: versionList,
-      currentVersion: statement.draft.versionNumber,
+      currentVersion: statement.draft?.versionNumber,
       updatedDraft,
       setUpdatedDraft,
       saveStatementDraft,

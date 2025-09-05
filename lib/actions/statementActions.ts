@@ -200,19 +200,39 @@ export async function getPublishedOrLatestStatements({
     const userIsCollaborator = statement.collaborators.some(
       collaborator => collaborator.userId === user?.id?.toString()
     );
+    if (drafts.length === 0) {
+      return null;
+    }
+    const statementDrafts = drafts.filter(draft => draft.statementId === statement.statementId);
 
+    //get version if user is collaborator
     if (version && userIsCollaborator) {
-      const versionDraft = drafts.find(draft => draft.versionNumber === version) ?? null;
+      const versionDraft = statementDrafts.find(draft => draft.versionNumber === version) ?? null;
+
       if (versionDraft) {
         return versionDraft;
       }
     }
 
     //get published draft
-    const publishedDraft = drafts.find(draft => draft.publishedAt !== null) ?? null;
+    const publishedDraft = statementDrafts.find(draft => draft.publishedAt !== null) ?? null;
     if (publishedDraft) {
       return publishedDraft;
     }
+
+    //get latest version if user is collaborator
+    if (userIsCollaborator) {
+      const latestVersionDraft = statementDrafts.reduce(
+        (max, draft) => Math.max(max, draft.versionNumber),
+        0
+      );
+      const versionDraft =
+        statementDrafts.find(draft => draft.versionNumber === latestVersionDraft) ?? null;
+      if (versionDraft) {
+        return versionDraft;
+      }
+    }
+
     // else if (userIsCollaborator) {
 
     //   //get latest version
@@ -240,7 +260,7 @@ export async function getPublishedOrLatestStatements({
     managers: profiles.filter(profile => managerIds.includes(profile.id))
   })) as StatementWithDraftAndCollaborators[];
 
-  return statementsWithDraft;
+  return statementsWithDraft.filter(statement => statement.draft !== undefined);
 }
 
 // Cached version for better performance

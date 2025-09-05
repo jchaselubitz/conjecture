@@ -26,6 +26,8 @@ import {
 } from '@/lib/helpers/helpersLayout';
 import { groupThreadsByParentId } from '@/lib/helpers/helpersStatements';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
+import NotFound from '@/components/ui/not_found';
 
 import VerticalCardStack from '../card_stacks/vertical_card_stack';
 import EditNav from '../navigation/edit_nav';
@@ -48,7 +50,6 @@ export default function StatementLayout({
   startingPanelSizes
 }: StatementDetailsProps) {
   const { statement, parentStatement, thread, isCreator, editor } = useStatementContext();
-  const familyTree = groupThreadsByParentId({ threads: thread, statement });
 
   const {
     selectedAnnotationId,
@@ -128,6 +129,35 @@ export default function StatementLayout({
   useEffect(() => {
     setPanelSizes(panelGroupRef);
   });
+
+  if (!statement) {
+    return (
+      <div className="p-6 space-y-4">
+        <Skeleton className="h-10 w-2/3" />
+        <Skeleton className="h-5 w-full" />
+        <Skeleton className="h-5 w-11/12" />
+        <Skeleton className="h-5 w-10/12" />
+      </div>
+    );
+  } else if (!statement.draft) {
+    return (
+      <NotFound
+        title="Draft unavailable"
+        message={
+          <>
+            This draft could not be found. It may be published, deleted, or you may not have
+            permission to view it.
+          </>
+        }
+        actions={[
+          { label: 'Go to Feed', href: '/feed' },
+          { label: 'Home', href: '/', variant: 'outline' }
+        ]}
+      />
+    );
+  }
+
+  const familyTree = groupThreadsByParentId({ threads: thread, statement });
 
   const handleCloseAnnotationPanel = () => {
     setSelectedAnnotationId(undefined);

@@ -26,7 +26,7 @@ export function EditModeProvider({
   const router = useRouter();
   const editMode = editModeEnabled;
 
-  const versionNumber = statement?.draft.versionNumber;
+  const versionNumber = statement?.draft?.versionNumber;
 
   const handleEditMode = (edit: boolean) => {
     setSelectedAnnotationId(undefined);

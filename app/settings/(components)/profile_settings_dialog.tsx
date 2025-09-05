@@ -84,7 +84,7 @@ export default function ProfileSettingsDialog() {
 
   return (
     <Dialog open={settingsDialog} onOpenChange={setSettingsDialog}>
-      <DialogContent className="md:max-w-[800px] md:h-[70vh] max-h-[100vh] flex flex-col">
+      <DialogContent className="md:max-w-[800px] md:h-[70vh] h-full max-h-[95vh] flex flex-col overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Profile Settings</DialogTitle>
           <DialogDescription>Manage your profile settings here.</DialogDescription>
