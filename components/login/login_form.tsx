@@ -27,13 +27,14 @@ export const signInWithGoogle = async ({ redirectTo }: { redirectTo?: string }) 
     provider: 'google',
     options: {
       redirectTo: redirectUrl,
+      scopes: 'email profile',
       queryParams: {
-        access_type: 'offline',
-        prompt: 'consent'
+        prompt: 'consent',
+        include_granted_scopes: 'true'
       }
     }
   });
-  console.log('data', data);
+
   if (error) {
     console.log('error', error);
     // Sentry.captureException(error);
@@ -131,7 +132,7 @@ export function LoginForm({
         </CardHeader>
 
         <CardContent>
-          <LoadingButton
+          {/* <LoadingButton
             type="button"
             className="w-full"
             onClick={async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -153,7 +154,7 @@ export function LoginForm({
             successText="Redirecting..."
             errorText="Google sign-in failed"
             variant="outline"
-          />
+          /> */}
           <div className="my-8 flex items-center gap-2">
             <Separator className="flex-1" />
             <div className="text-center text-sm">Or</div>
