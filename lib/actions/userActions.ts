@@ -11,7 +11,6 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
-
 import { createClient } from '@/supabase/server';
 
 import db from '../database';
@@ -233,14 +232,13 @@ export const signInWithGoogle = async ({ redirectTo }: { redirectTo?: string }) 
 
   const nextPath = redirectTo ?? '/feed';
   const redirectUrl = `${origin}/auth/v1/callback?next=${encodeURIComponent(nextPath)}`;
-
   const { error, data } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
       redirectTo: redirectUrl
     }
   });
-  console.log(data);
+  console.log('data', data);
   if (error) {
     Sentry.captureException(error);
     return redirect('/login?message=Could not authenticate with Google');

@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useSearchParams } from 'next/navigation';
+import { redirect, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -11,11 +11,29 @@ import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
-import { checkUsername, signIn, signInWithGoogle, signUp } from '@/lib/actions/userActions';
+import { checkUsername, signIn, signUp } from '@/lib/actions/userActions';
 import { cn } from '@/lib/utils';
 
 import { FormField } from '../ui/form';
 import { Separator } from '../ui/separator';
+import { createClient } from '@/supabase/client';
+
+export const signInWithGoogle = async ({ redirectTo }: { redirectTo?: string }) => {
+  const supabase = createClient();
+  const nextPath = redirectTo ?? '/feed';
+  const redirectUrl = `${window.location.origin}/auth/v1/callback?next=${encodeURIComponent(nextPath)}`;
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: redirectUrl
+    }
+  });
+  if (error) {
+    // Sentry.captureException(error);
+    return (window.location.href = '/login?message=Could not authenticate with Google');
+  }
+};
+
 export function LoginForm({
   className,
   isSignUp,
