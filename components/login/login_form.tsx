@@ -11,10 +11,11 @@ import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
-import { checkUsername, signIn, signUp } from '@/lib/actions/userActions';
+import { checkUsername, signIn, signUp, signInWithGoogle } from '@/lib/actions/userActions';
 import { cn } from '@/lib/utils';
 
 import { FormField } from '../ui/form';
+import { Separator } from '../ui/separator';
 export function LoginForm({
   className,
   isSignUp,
@@ -100,10 +101,38 @@ export function LoginForm({
         <CardHeader>
           <CardTitle className="text-2xl">{isSignUp ? 'Sign Up' : 'Login'}</CardTitle>
           <CardDescription>
-            Enter your email below to {isSignUp ? 'sign up' : 'login'} to your account
+            Choose a method below to {isSignUp ? 'sign up' : 'login'} to your account
           </CardDescription>
         </CardHeader>
+
         <CardContent>
+          <LoadingButton
+            type="button"
+            className="w-full"
+            onClick={async () => {
+              setButtonState('loading');
+              try {
+                await signInWithGoogle({ redirectTo: redirectTo ?? undefined });
+                setButtonState('success');
+              } catch (e) {
+                setButtonState('error');
+              } finally {
+                setButtonState('default');
+              }
+            }}
+            buttonState={buttonState}
+            setButtonState={setButtonState}
+            text="Continue with Google"
+            loadingText="Redirecting to Google..."
+            successText="Redirecting..."
+            errorText="Google sign-in failed"
+            variant="outline"
+          />
+          <div className="my-8 flex items-center gap-2">
+            <Separator className="flex-1" />
+            <div className="text-center text-sm">Or</div>
+            <Separator className="flex-1" />
+          </div>
           <Form {...form}>
             <form className="flex flex-col gap-4">
               {isSignUp && (
@@ -160,10 +189,6 @@ export function LoginForm({
                 successText={isSignUp ? 'Signed up!' : 'Logged in!'}
                 errorText={isSignUp ? 'Sign up failed' : 'Login failed'}
               />
-
-              {/* <Button variant="outline" className="w-full">
-                Login with Google
-              </Button> */}
 
               <div className="mt-4 text-center text-sm">
                 {isSignUp ? 'Already have an account?' : `Don't have an account?`}{' '}

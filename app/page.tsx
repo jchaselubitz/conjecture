@@ -178,6 +178,31 @@ export default async function Home() {
           </div>
         </section>
       </div>
+
+      {/* Footer */}
+      <footer className="border-t bg-white/50 backdrop-blur-sm">
+        <div className="max-w-screen-xl mx-auto px-4 py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-[#4A4A4A]">
+              © {new Date().getFullYear()} Conjecture. All rights reserved.
+            </p>
+            <div className="flex gap-6">
+              <Link
+                href="/terms"
+                className="text-sm text-[#4A4A4A] hover:text-[#C26033] transition-colors"
+              >
+                Terms of Service
+              </Link>
+              <Link
+                href="/privacy"
+                className="text-sm text-[#4A4A4A] hover:text-[#C26033] transition-colors"
+              >
+                Privacy Policy
+              </Link>
+            </div>
+          </div>
+        </div>
+      </footer>
     </>
   );
 }

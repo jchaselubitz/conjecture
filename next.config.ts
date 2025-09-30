@@ -38,7 +38,7 @@ const supabaseHostname = process.env.SUPABASE_URL
 const config: NextConfig = {
   ...pwaConfig,
   serverExternalPackages: ['@sentry/nextjs'],
-
+  allowedDevOrigins: ['*.romantic-pig-living.ngrok-free.app'],
   experimental: {
     // Optimize for modern browsers to reduce polyfills
     optimizePackageImports: [
