@@ -1,5 +1,6 @@
-import SiteNav from '@/components/navigation/site_nav';
 import Link from 'next/link';
+
+import SiteNav from '@/components/navigation/site_nav';
 
 export default function TermsOfService() {
   return (
@@ -139,9 +140,9 @@ export default function TermsOfService() {
             <section>
               <h2 className="text-2xl font-semibold text-[#2D1810] mb-4">Disclaimers</h2>
               <p className="text-[#4A4A4A] leading-relaxed">
-                Conjecture is provided "as is" without warranties of any kind. We do not guarantee
+                {`Conjecture is provided "as is" without warranties of any kind. We do not guarantee
                 the accuracy, completeness, or reliability of user-generated content. Users are
-                responsible for their own content and interactions on the platform.
+                responsible for their own content and interactions on the platform.`}
               </p>
             </section>
 

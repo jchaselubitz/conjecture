@@ -235,10 +235,10 @@ export const signInWithGoogle = async ({ redirectTo }: { redirectTo?: string }) 
   const redirectUrl = `${origin}/auth/v1/callback?next=${encodeURIComponent(nextPath)}`;
 
   const { error, data } = await supabase.auth.signInWithOAuth({
-    provider: 'google'
-    // options: {
-    //   redirectTo: redirectUrl
-    // }
+    provider: 'google',
+    options: {
+      redirectTo: redirectUrl
+    }
   });
   console.log(data);
   if (error) {

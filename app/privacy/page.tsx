@@ -1,5 +1,6 @@
-import SiteNav from '@/components/navigation/site_nav';
 import Link from 'next/link';
+
+import SiteNav from '@/components/navigation/site_nav';
 
 export default function PrivacyPolicy() {
   return (
@@ -48,10 +49,10 @@ export default function PrivacyPolicy() {
                     Usage Analytics (Privacy-Preserving)
                   </h3>
                   <p className="text-[#4A4A4A] leading-relaxed">
-                    We use privacy-preserving analytics to understand how our platform is used. This
+                    {`We use privacy-preserving analytics to understand how our platform is used. This
                     includes basic metrics like page views and feature usage, but does not include
                     tracking of individual user behavior or personal data collection beyond what's
-                    necessary for the platform to function.
+                    necessary for the platform to function.`}
                   </p>
                 </div>
               </div>
