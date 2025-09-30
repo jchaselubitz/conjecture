@@ -36,6 +36,6 @@ export const config = {
      * 3. /static (inside /public)
      * 4. all root files inside /public (e.g. /favicon.ico)
      */
-    '/((?!api|_next|static|[\\w-]+\\.\\w+).*)'
+    '/((?!api|_next|auth|static|[\\w-]+\\.\\w+).*)'
   ]
 };

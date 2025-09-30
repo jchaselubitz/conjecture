@@ -21,14 +21,21 @@ import { createClient } from '@/supabase/client';
 export const signInWithGoogle = async ({ redirectTo }: { redirectTo?: string }) => {
   const supabase = createClient();
   const nextPath = redirectTo ?? '/feed';
-  const redirectUrl = `${window.location.origin}/auth/v1/callback?next=${encodeURIComponent(nextPath)}`;
-  const { error } = await supabase.auth.signInWithOAuth({
+  const redirectUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
+
+  const { error, data } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: redirectUrl
+      redirectTo: redirectUrl,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent'
+      }
     }
   });
+  console.log('data', data);
   if (error) {
+    console.log('error', error);
     // Sentry.captureException(error);
     return (window.location.href = '/login?message=Could not authenticate with Google');
   }
@@ -127,7 +134,8 @@ export function LoginForm({
           <LoadingButton
             type="button"
             className="w-full"
-            onClick={async () => {
+            onClick={async (e: React.MouseEvent<HTMLButtonElement>) => {
+              e.preventDefault(); // if inside a form
               setButtonState('loading');
               try {
                 await signInWithGoogle({ redirectTo: redirectTo ?? undefined });

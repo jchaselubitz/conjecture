@@ -225,25 +225,25 @@ export const signUp = async ({
   }
 };
 
-export const signInWithGoogle = async ({ redirectTo }: { redirectTo?: string }) => {
-  const supabase = await createClient();
-  const headersList = await headers();
-  const origin = headersList.get('origin');
+// export const signInWithGoogle = async ({ redirectTo }: { redirectTo?: string }) => {
+//   const supabase = await createClient();
+//   const headersList = await headers();
+//   const origin = headersList.get('origin');
 
-  const nextPath = redirectTo ?? '/feed';
-  const redirectUrl = `${origin}/auth/v1/callback?next=${encodeURIComponent(nextPath)}`;
-  const { error, data } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: redirectUrl
-    }
-  });
-  console.log('data', data);
-  if (error) {
-    Sentry.captureException(error);
-    return redirect('/login?message=Could not authenticate with Google');
-  }
-};
+//   const nextPath = redirectTo ?? '/feed';
+//   const redirectUrl = `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
+//   const { error, data } = await supabase.auth.signInWithOAuth({
+//     provider: 'google',
+//     options: {
+//       redirectTo: redirectUrl
+//     }
+//   });
+//   console.log('data', data);
+//   if (error) {
+//     Sentry.captureException(error);
+//     return redirect('/login?message=Could not authenticate with Google');
+//   }
+// };
 
 export const checkUsername = async (username: string) => {
   const profile = await db
