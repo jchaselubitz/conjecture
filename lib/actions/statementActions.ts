@@ -103,7 +103,7 @@ export async function getPublishedOrLatestStatements({
     statements = statements.where('statement.statementId', '=', statementId);
   }
   // Add pagination
-  statements = statements.limit(limit).offset(offset);
+  statements = statements.limit(limit).offset(offset).orderBy('statement.createdAt', 'desc');
 
   const statementsList = await statements.execute();
 

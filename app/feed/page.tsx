@@ -57,9 +57,9 @@ export default async function Feed() {
               </div>
             )}
           </div>
-          <div className="flex flex-col  max-w-md mx-auto">
+          {/* <div className="flex flex-col  max-w-md mx-auto">
             {annotations && <AnnotationFeed annotations={annotations} />}
-          </div>
+          </div> */}
         </div>
       </main>
     </div>
