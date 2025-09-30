@@ -106,7 +106,7 @@ export function LoginForm({
         </CardHeader>
 
         <CardContent>
-          <LoadingButton
+          {/* <LoadingButton
             type="button"
             className="w-full"
             onClick={async () => {
@@ -132,7 +132,7 @@ export function LoginForm({
             <Separator className="flex-1" />
             <div className="text-center text-sm">Or</div>
             <Separator className="flex-1" />
-          </div>
+          </div> */}
           <Form {...form}>
             <form className="flex flex-col gap-4">
               {isSignUp && (
