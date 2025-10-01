@@ -27,7 +27,6 @@ export async function GET(request: NextRequest) {
       if (type === 'recovery') {
         return NextResponse.redirect(`${process.env.NEXT_PUBLIC_SITE_URL}/login/reset`);
       }
-
       console.log(`${process.env.NEXT_PUBLIC_SITE_URL}/${next}`, `${next}`);
       // return NextResponse.redirect(
       //   process.env.NEXT_PUBLIC_CONTEXT !== "development"
@@ -40,6 +39,6 @@ export async function GET(request: NextRequest) {
   }
 
   // return the user to an error page with some instructions
-  redirectTo.pathname = '/error';
+  redirectTo.pathname = '/not-found';
   return NextResponse.redirect(redirectTo.href);
 }

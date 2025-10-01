@@ -227,7 +227,7 @@ export function LoginForm({
           </Form>
         </CardContent>
       </Card>
-      {message && <div className="mt-4 text-center text-sm">{message}</div>}
+      {message && <div className="mt-4 text-center font-medium text-red-500">{message}</div>}
     </div>
   );
 }
