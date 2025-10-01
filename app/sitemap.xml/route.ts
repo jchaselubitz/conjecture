@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import db from '../../lib/database';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://conject.io';
+const BASE_URL =
+  process.env.NEXT_PUBLIC_CONTEXT === 'development'
+    ? 'http://localhost:3000'
+    : 'https://www.conject.io';
 
 interface SitemapUrl {
   loc: string;

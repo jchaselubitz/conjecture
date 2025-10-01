@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: http://conject.io/sitemap.xml 
+Sitemap: https://www.conject.io/sitemap.xml 
