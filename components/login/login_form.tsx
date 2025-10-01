@@ -132,7 +132,7 @@ export function LoginForm({
         </CardHeader>
 
         <CardContent>
-          {/* <LoadingButton
+          <LoadingButton
             type="button"
             className="w-full"
             onClick={async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -154,7 +154,7 @@ export function LoginForm({
             successText="Redirecting..."
             errorText="Google sign-in failed"
             variant="outline"
-          /> */}
+          />
           <div className="my-8 flex items-center gap-2">
             <Separator className="flex-1" />
             <div className="text-center text-sm">Or</div>
