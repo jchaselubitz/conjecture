@@ -47,7 +47,7 @@ export default function ReadNav() {
                 <UserButton />
               </div>
             ) : (
-              <AuthButtons />
+              <AuthButtons defaultOtherOptions={true} />
             )}
           </nav>
         </div>

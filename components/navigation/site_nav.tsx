@@ -37,7 +37,7 @@ export default async function SiteNav() {
               <UserButton />
             </>
           ) : (
-            <AuthButtons />
+            <AuthButtons defaultOtherOptions={true} />
           )}
         </div>
       </div>

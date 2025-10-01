@@ -16,31 +16,7 @@ import { cn } from '@/lib/utils';
 
 import { FormField } from '../ui/form';
 import { Separator } from '../ui/separator';
-import { createClient } from '@/supabase/client';
-
-export const signInWithGoogle = async ({ redirectTo }: { redirectTo?: string }) => {
-  const supabase = createClient();
-  const nextPath = redirectTo ?? '/feed';
-  const redirectUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
-
-  const { error, data } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: redirectUrl,
-      scopes: 'email profile',
-      queryParams: {
-        prompt: 'consent',
-        include_granted_scopes: 'true'
-      }
-    }
-  });
-
-  if (error) {
-    console.log('error', error);
-    // Sentry.captureException(error);
-    return (window.location.href = '/login?message=Could not authenticate with Google');
-  }
-};
+import { GoogleButton, signInWithGoogle } from '@/lib/helpers/helpersLogin';
 
 export function LoginForm({
   className,
@@ -132,29 +108,7 @@ export function LoginForm({
         </CardHeader>
 
         <CardContent>
-          <LoadingButton
-            type="button"
-            className="w-full"
-            onClick={async (e: React.MouseEvent<HTMLButtonElement>) => {
-              e.preventDefault(); // if inside a form
-              setButtonState('loading');
-              try {
-                await signInWithGoogle({ redirectTo: redirectTo ?? undefined });
-                setButtonState('success');
-              } catch (e) {
-                setButtonState('error');
-              } finally {
-                setButtonState('default');
-              }
-            }}
-            buttonState={buttonState}
-            setButtonState={setButtonState}
-            text="Continue with Google"
-            loadingText="Redirecting to Google..."
-            successText="Redirecting..."
-            errorText="Google sign-in failed"
-            variant="outline"
-          />
+          <GoogleButton redirectTo={redirectTo ?? '/feed'} />
           <div className="my-8 flex items-center gap-2">
             <Separator className="flex-1" />
             <div className="text-center text-sm">Or</div>
