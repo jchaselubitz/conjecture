@@ -101,15 +101,15 @@ const config: NextConfig = {
     return [
       // never redirect these
       { source: '/sitemap.xml', destination: '/sitemap.xml', permanent: false },
-      { source: '/sitemap.xml/', destination: '/sitemap.xml', permanent: false },
+      { source: '/sitemap.xml/', destination: '/sitemap.xml', permanent: false }
 
       // your catch-all
-      {
-        source: '/((?!sitemap\\.xml|robots\\.txt|favicon\\.ico|_next/|api/).*)',
-        destination: '/',
-        permanent: false,
-        locale: false // avoid locale redirects on XML
-      }
+      // {
+      //   source: '/((?!sitemap\\.xml|robots\\.txt|favicon\\.ico|_next/|api/).*)',
+      //   destination: '/',
+      //   permanent: false,
+      //   locale: false // avoid locale redirects on XML
+      // }
     ];
   },
   async headers() {
