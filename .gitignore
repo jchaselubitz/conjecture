@@ -47,5 +47,3 @@ next-env.d.ts
 .netlify
 
 # Generated sitemap (generated during build)
-public/sitemap.xml
-public/robots.txt
