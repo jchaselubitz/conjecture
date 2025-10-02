@@ -1,0 +1,6 @@
+{
+  "redirects": [
+    { "source": "/(.*)", "destination": "https://www.conject.io/$1", "permanent": true }
+  ],
+  "overrides": [{ "source": "/sitemap.xml", "path": "public/sitemap.xml" }]
+}
