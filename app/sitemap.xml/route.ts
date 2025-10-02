@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import db from '../../lib/database';
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_CONTEXT === 'development'
-    ? 'http://localhost:3000'
-    : 'https://www.conject.io';
+// Handle both www and non-www domains based on request
 
 interface SitemapUrl {
   loc: string;
@@ -34,26 +31,40 @@ ${xmlUrls}
 }
 
 export async function GET(request: NextRequest) {
+  // Handle both www and non-www domains for Google Search Console compatibility
+  const host = request.headers.get('host') || '';
+  const BASE_URL_WWW = 'https://www.conject.io';
+  const BASE_URL_NON_WWW = 'https://conject.io';
+
+  // Use www as canonical, but serve content for both domains
+  // Handle development environment
+  let baseUrl: string;
+  if (process.env.NEXT_PUBLIC_CONTEXT === 'development') {
+    baseUrl = 'http://localhost:3000';
+  } else {
+    baseUrl = host.includes('www.') ? BASE_URL_WWW : BASE_URL_NON_WWW;
+  }
+
   try {
     const urls: SitemapUrl[] = [
       // Static pages
       {
-        loc: `${BASE_URL}/`,
+        loc: `${baseUrl}/`,
         changefreq: 'daily',
         priority: 1.0
       },
       {
-        loc: `${BASE_URL}/feed`,
+        loc: `${baseUrl}/feed`,
         changefreq: 'hourly',
         priority: 0.9
       },
       {
-        loc: `${BASE_URL}/login`,
+        loc: `${baseUrl}/login`,
         changefreq: 'monthly',
         priority: 0.3
       },
       {
-        loc: `${BASE_URL}/sign-up`,
+        loc: `${baseUrl}/sign-up`,
         changefreq: 'monthly',
         priority: 0.3
       }
@@ -76,7 +87,7 @@ export async function GET(request: NextRequest) {
     for (const statement of publishedStatements) {
       if (statement.creatorSlug && statement.slug) {
         urls.push({
-          loc: `${BASE_URL}/${statement.creatorSlug}/${statement.slug}`,
+          loc: `${baseUrl}/${statement.creatorSlug}/${statement.slug}`,
           lastmod: statement.updatedAt?.toISOString() || statement.publishedAt?.toISOString(),
           changefreq: 'weekly',
           priority: 0.8
@@ -93,7 +104,7 @@ export async function GET(request: NextRequest) {
     for (const profile of userProfiles) {
       if (profile.username) {
         urls.push({
-          loc: `${BASE_URL}/${profile.username}`,
+          loc: `${baseUrl}/${profile.username}`,
           lastmod: profile.updatedAt?.toISOString(),
           changefreq: 'weekly',
           priority: 0.6
