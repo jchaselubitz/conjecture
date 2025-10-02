@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import db from '../../lib/database';
+import db from '../../../lib/database';
 
 // Handle both www and non-www domains based on request
 
