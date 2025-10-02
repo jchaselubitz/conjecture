@@ -5,7 +5,12 @@ import { updateSession } from './supabase/middleware';
 export async function middleware(request: NextRequest) {
   // Skip middleware for SEO/crawler routes to avoid Supabase latency
   const pathname = request.nextUrl.pathname;
-  if (pathname === '/sitemap.xml' || pathname === '/robots.txt') {
+  if (
+    pathname === '/sitemap.xml' ||
+    pathname === '/sitemap' ||
+    pathname === '/robots.txt' ||
+    pathname.startsWith('/sitemaps/')
+  ) {
     return NextResponse.next();
   }
 
@@ -41,8 +46,8 @@ export const config = {
      * 2. /_next (Next.js internals)
      * 3. /static (inside /public)
      * 4. all root files inside /public (e.g. /favicon.ico)
-     * 5. /sitemap.xml and /robots.txt (for SEO crawlers)
+     * 5. /sitemap, /sitemap.xml, /sitemaps/* and /robots.txt (for SEO crawlers)
      */
-    '/((?!_next/|api/|auth/|static/|sitemap\\.xml|robots\\.txt|favicon\\.ico|[\\w-]+\\.\\w+$).*)'
+    '/((?!_next/|api/|auth/|static/|sitemap|sitemaps/|robots\\.txt|favicon\\.ico|[\\w-]+\\.\\w+$).*)'
   ]
 };
