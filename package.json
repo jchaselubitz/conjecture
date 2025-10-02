@@ -8,6 +8,7 @@
     "generate": "kysely-codegen --env-file .env.local",
     "generate-deploy": "kysely-codegen",
     "build": "next build --turbo",
+    "static-sitemap": "npx tsx -r dotenv/config scripts/generate-sitemap.ts",
     "new": "rm -rf node_modules && rm -rf .next && rm -rf .netlify && yarn cache clean && yarn install && yarn generate",
     "nuke": "yarn install && supabase db reset && supabase start && supabase status && yarn generate",
     "create-migration": "supabase db diff --use-migra -f local_schema",
