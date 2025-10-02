@@ -96,22 +96,22 @@ const config: NextConfig = {
     ]
   },
   // next.config.js
-  trailingSlash: false, // prevents /sitemap.xml -> /sitemap.xml/
-  async redirects() {
-    return [
-      // never redirect these
-      { source: '/sitemap.xml', destination: '/sitemap.xml', permanent: false },
-      { source: '/sitemap.xml/', destination: '/sitemap.xml', permanent: false }
+  // trailingSlash: false, // prevents /sitemap.xml -> /sitemap.xml/
+  // async redirects() {
+  //   return [
+  //     // never redirect these
+  //     { source: '/sitemap.xml', destination: '/sitemap.xml', permanent: false },
+  //     { source: '/sitemap.xml/', destination: '/sitemap.xml', permanent: false },
 
-      // your catch-all
-      // {
-      //   source: '/((?!sitemap\\.xml|robots\\.txt|favicon\\.ico|_next/|api/).*)',
-      //   destination: '/',
-      //   permanent: false,
-      //   locale: false // avoid locale redirects on XML
-      // }
-    ];
-  },
+  //     // your catch-all
+  //     {
+  //       source: '/((?!sitemap\\.xml|robots\\.txt|favicon\\.ico|_next/|api/).*)',
+  //       destination: '/',
+  //       permanent: false,
+  //       locale: false // avoid locale redirects on XML
+  //     }
+  //   ];
+  // },
   async headers() {
     return [
       {
