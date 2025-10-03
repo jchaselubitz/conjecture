@@ -39,8 +39,6 @@ export const GoogleButton = ({ redirectTo }: { redirectTo?: string }) => {
           await signInWithGoogle({ redirectTo: redirectTo ?? undefined });
         } catch (e) {
           setButtonState('error');
-        } finally {
-          setButtonState('default');
         }
       }}
       buttonState={buttonState}
