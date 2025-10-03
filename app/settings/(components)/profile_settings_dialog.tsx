@@ -84,7 +84,7 @@ export default function ProfileSettingsDialog() {
 
   return (
     <Dialog open={settingsDialog} onOpenChange={setSettingsDialog}>
-      <DialogContent className="md:max-w-[800px] md:h-[70vh] h-full max-h-[95vh] flex flex-col overflow-y-auto">
+      <DialogContent className="md:max-w-[800px] md:h-[70vh] max-h-[95vh] flex flex-col h-full">
         <DialogHeader>
           <DialogTitle>Profile Settings</DialogTitle>
           <DialogDescription>Manage your profile settings here.</DialogDescription>
@@ -96,7 +96,7 @@ export default function ProfileSettingsDialog() {
             <TabsTrigger value="network">Network</TabsTrigger>
             <TabsTrigger value="subscribers">Subscribers</TabsTrigger>
           </TabsList>
-          <TabsContent value="profile">
+          <TabsContent value="profile" className="flex flex-col h-full overflow-y-auto">
             <ProfileForm />
           </TabsContent>
           <TabsContent value="network">

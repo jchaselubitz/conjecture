@@ -167,8 +167,8 @@ export default function ProfileForm() {
   }
 
   return (
-    <div className="container max-w-2xl py-10">
-      <div className="space-y-8">
+    <div className="container max-w-2xl py-10 ">
+      <div className="space-y-8  ">
         <div className="flex flex-col items-center space-y-4">
           <Avatar className="h-24 w-24">
             <AvatarImage src={imageUrl} className="object-cover" />

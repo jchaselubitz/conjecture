@@ -152,7 +152,7 @@ export function SubscriberTable({
           ))}
         </TableBody>
       </Table>
-      <div className="h-24"></div>
+      <div className="md:h-24"></div>
     </div>
   );
 }
