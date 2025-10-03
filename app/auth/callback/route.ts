@@ -23,18 +23,46 @@ export async function GET(request: Request) {
 
       if (user) {
         const existingMeta = (user.user_metadata as Record<string, any>) || {};
-        
+
         // Log what Google OAuth actually provides
-        console.log('=== Google OAuth Metadata ===');
-        console.log('user.email:', user.email);
-        console.log('user.user_metadata:', JSON.stringify(user.user_metadata, null, 2));
-        console.log('user.app_metadata:', JSON.stringify(user.app_metadata, null, 2));
-        console.log('============================');
-        
+        // console.log('=== Google OAuth Metadata ===');
+        // console.log('user.email:', user.email);
+        // console.log('user.user_metadata:', JSON.stringify(user.user_metadata, null, 2));
+        // console.log('user.app_metadata:', JSON.stringify(user.app_metadata, null, 2));
+        // console.log('============================');
+
         const email = user.email ?? existingMeta.email;
         const name = existingMeta.name || existingMeta.full_name || user.user_metadata?.name;
         const picture =
           existingMeta.picture || existingMeta.avatar_url || user.user_metadata?.avatar_url;
+
+        // Only update image_url if user doesn't already have one
+        const { data: existingProfile, error: existingProfileError } = await supabase
+          .from('profile')
+          .select('image_url, name, email')
+          .eq('id', user.id)
+          .single();
+
+        if (existingProfileError) {
+          console.error('existingProfileError', { existingProfileError });
+        }
+
+        if (existingProfile) {
+          let error;
+
+          if (!existingProfile?.image_url && picture && existingProfile.image_url !== picture) {
+            error = await supabase.from('profile').update({ image_url: picture }).eq('id', user.id);
+          }
+          if (!existingProfile?.name && name && existingProfile.name !== name) {
+            error = await supabase.from('profile').update({ name }).eq('id', user.id);
+          }
+          if (!existingProfile?.email && email && existingProfile.email !== email) {
+            error = await supabase.from('profile').update({ email }).eq('id', user.id);
+          }
+          if (error) {
+            console.error('error', { error });
+          }
+        }
 
         const hasUsername =
           typeof existingMeta.username === 'string' && existingMeta.username.length > 0;
