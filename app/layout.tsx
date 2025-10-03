@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   title: 'Conject',
   description: 'Conjecture and Critique',
   manifest: '/manifest.webmanifest',
-  icons: { apple: [{ url: '/favicon.ico' }] },
+  icons: { apple: [{ url: '/apple-icon-180.png' }] },
   applicationName: 'Conject',
   appleWebApp: {
     capable: true,
@@ -35,12 +35,12 @@ export const metadata: Metadata = {
     'apple-mobile-web-app-status-bar-style': 'default',
     'apple-mobile-web-app-title': 'TOP',
     'mobile-web-app-capable': 'yes',
-    'theme-color': '#f1f5f9'
+    'theme-color': '#fdf6ec'
   }
 };
 
 export const viewport: Viewport = {
-  themeColor: '#f1f5f9',
+  themeColor: '#fdf6ec',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
