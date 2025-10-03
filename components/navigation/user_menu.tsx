@@ -44,7 +44,12 @@ export default function UserMenu({ isMenuOpen, setIsMenuOpen, children }: UserMe
 
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => setSettingsDialog(true)}>
+          <DropdownMenuItem
+            onClick={() => {
+              setSettingsDialog(true);
+              setIsMenuOpen(false);
+            }}
+          >
             <Settings className="mr-2 h-4 w-4" />
             <span>Settings</span>
           </DropdownMenuItem>

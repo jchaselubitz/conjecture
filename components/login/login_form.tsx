@@ -122,7 +122,7 @@ export function LoginForm({
                   name="username"
                   render={({ field }) => (
                     <div className="grid gap-2">
-                      <Label htmlFor="username">Username</Label>
+                      <Label htmlFor="username">Username | Domain</Label>
                       <Input id="username" {...field} placeholder="Bobby" />
                       {errors?.username && (
                         <div className="text-red-500">{errors.username.message as string}</div>

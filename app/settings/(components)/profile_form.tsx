@@ -229,9 +229,9 @@ export default function ProfileForm() {
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username</FormLabel>
+                  <FormLabel>Username | Domain</FormLabel>
                   <FormControl>
-                    <Input placeholder="Your username" {...field} />
+                    <Input placeholder="Your username | domain" {...field} />
                   </FormControl>
                   <FormDescription>
                     This defines your public URL. Changing it will break existing links to your
