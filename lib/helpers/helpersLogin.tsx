@@ -1,6 +1,7 @@
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
 import { createClient } from '@/supabase/client';
 import { useState } from 'react';
+import Image from 'next/image';
 
 export const signInWithGoogle = async ({ redirectTo }: { redirectTo?: string }) => {
   const supabase = createClient();
@@ -45,7 +46,11 @@ export const GoogleButton = ({ redirectTo }: { redirectTo?: string }) => {
       }}
       buttonState={buttonState}
       setButtonState={setButtonState}
-      text={'Login with Google'}
+      text={
+        <>
+          <Image src="/icons/google.png" alt="Google" width={20} height={20} /> Login with Google
+        </>
+      }
       loadingText="Redirecting to Google..."
       successText="Redirecting..."
       errorText="Google sign-in failed"
