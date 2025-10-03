@@ -22,6 +22,63 @@ const pwaConfig = withPWA({
           maxEntries: 200
         }
       }
+    },
+    {
+      urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'google-fonts-cache',
+        expiration: {
+          maxEntries: 10,
+          maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+        }
+      }
+    },
+    {
+      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'images-cache',
+        expiration: {
+          maxEntries: 100,
+          maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+        }
+      }
+    },
+    {
+      urlPattern: /^\/_next\/static\/.*/,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'next-static-cache',
+        expiration: {
+          maxEntries: 200,
+          maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+        }
+      }
+    },
+    {
+      urlPattern: /^\/api\/(?!auth).*/, // Cache API calls except auth
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'api-cache',
+        networkTimeoutSeconds: 3,
+        expiration: {
+          maxEntries: 100,
+          maxAgeSeconds: 60 * 10 // 10 minutes
+        }
+      }
+    },
+    {
+      urlPattern: /^\//,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'pages-cache',
+        networkTimeoutSeconds: 3,
+        expiration: {
+          maxEntries: 100,
+          maxAgeSeconds: 60 * 60 * 24 // 1 day
+        }
+      }
     }
   ]
   // cacheOnFrontEndNav: true,

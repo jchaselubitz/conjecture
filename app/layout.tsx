@@ -9,6 +9,7 @@ import { getUserProfile } from '@/lib/actions/userActions';
 import { createClient } from '@/supabase/server';
 
 import ProfileSettingsDialog from './settings/(components)/profile_settings_dialog';
+import { optimizedStartupImages } from './optimizedImages';
 
 const fontSans = {
   variable: '--font-sans'
@@ -21,15 +22,20 @@ export const metadata: Metadata = {
   title: 'Conject',
   description: 'Conjecture and Critique',
   manifest: '/manifest.webmanifest',
-  icons: {
-    icon: '/favicon.ico'
-  },
+  icons: { apple: [{ url: '/favicon.ico' }] },
   applicationName: 'Conject',
   appleWebApp: {
     capable: true,
     title: 'Conject',
     statusBarStyle: 'black-translucent',
-    startupImage: '/favicon.ico'
+    startupImage: optimizedStartupImages
+  },
+  other: {
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'default',
+    'apple-mobile-web-app-title': 'TOP',
+    'mobile-web-app-capable': 'yes',
+    'theme-color': '#f1f5f9'
   }
 };
 
