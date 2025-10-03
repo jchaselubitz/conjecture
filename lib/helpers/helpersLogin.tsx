@@ -45,7 +45,7 @@ export const GoogleButton = ({ redirectTo }: { redirectTo?: string }) => {
       }}
       buttonState={buttonState}
       setButtonState={setButtonState}
-      text={'Continue with Google'}
+      text={'Login with Google'}
       loadingText="Redirecting to Google..."
       successText="Redirecting..."
       errorText="Google sign-in failed"

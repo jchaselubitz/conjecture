@@ -5,13 +5,20 @@ import { usePathname } from 'next/navigation';
 import { GoogleButton } from '@/lib/helpers/helpersLogin';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
-export function AuthButtons({ defaultOtherOptions }: { defaultOtherOptions?: boolean }) {
+export function AuthButtons({
+  defaultOtherOptions,
+  className
+}: {
+  defaultOtherOptions?: boolean;
+  className?: string;
+}) {
   const pathname = usePathname();
   const [showOtherOptions, setShowOtherOptions] = useState(defaultOtherOptions ?? false);
 
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className={cn('flex flex-col items-center gap-2', className)}>
       {!showOtherOptions ? (
         <>
           <GoogleButton redirectTo={pathname ?? undefined} />

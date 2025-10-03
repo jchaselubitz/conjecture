@@ -15,6 +15,7 @@ import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationCon
 import { useUserContext } from '@/contexts/userContext';
 import { createComment } from '@/lib/actions/commentActions';
 import { nestComments } from '@/lib/helpers/helpersComments';
+import { AuthButtons } from '@/components/navigation/auth_buttons';
 
 interface CommentInputProps {
   annotation: AnnotationWithComments;
@@ -190,18 +191,7 @@ export default function CommentInput({
           </div>
         </div>
       ) : (
-        <div className="flex items-center gap-2 justify-end">
-          <Link href="/login">
-            <Button variant="default" size="sm">
-              Login
-            </Button>
-          </Link>
-          <Link href="/sign-up">
-            <Button variant="outline" size="sm">
-              Create Account
-            </Button>
-          </Link>
-        </div>
+        <AuthButtons className="mt-4" />
       )}
     </div>
   );
