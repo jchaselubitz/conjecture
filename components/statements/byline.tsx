@@ -108,19 +108,21 @@ const Byline = ({ statement }: { statement: StatementWithDraftAndCollaborators }
             </div>
           </div>
         </PopoverTrigger>
-        <PopoverContent className="w-80 m-2">
+        <PopoverContent className="w-80  m-2">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col items-start gap-4">
               {statement?.authors.map(author => (
                 <div className="flex flex-col gap-2 w-full" key={author.id}>
-                  <div className="flex items-center gap-2">
+                  <div className="flex  items-center gap-2">
                     <Avatar>
                       <AvatarImage src={author.imageUrl || ''} className="object-cover" />
                       <AvatarFallback>{author.name?.slice(0, 2)}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2">
-                        <div className="font-bold text-lg">{author.name ?? author.username}</div>
+                      <div className="flex flex-wrap items-center">
+                        <div className="font-bold text-lg mr-2">
+                          {author.name ?? author.username}
+                        </div>
                         <Link
                           className="text-sm text-muted-foreground hover:underline"
                           href={`/${author.username}`}
@@ -129,14 +131,14 @@ const Byline = ({ statement }: { statement: StatementWithDraftAndCollaborators }
                           @{author.username}
                         </Link>
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      {/* <div className="text-sm text-muted-foreground">
                         Joined {formatDate({ date: statement?.createdAt })}
-                      </div>
+                      </div> */}
                       {/*   <div className="text-sm text-muted-foreground">0 followers</div> */}
                     </div>
                   </div>
                   <LoadingButton
-                    className="w-full"
+                    className="w-full my-2"
                     variant={isFollowing[author.id] ? 'outline' : 'default'}
                     onClick={() => handleFollow(author.id)}
                     disabled={userId === author.id}
