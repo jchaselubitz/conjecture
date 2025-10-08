@@ -98,7 +98,7 @@ const Byline = ({ statement }: { statement: StatementWithDraftAndCollaborators }
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap md:flex-row items-center gap-6 md:gap-4">
       <Popover>
         <PopoverTrigger asChild>
           <div className="flex items-center gap-2 cursor-pointer">
@@ -171,9 +171,9 @@ const Byline = ({ statement }: { statement: StatementWithDraftAndCollaborators }
           )}
         </Tooltip>
       </TooltipProvider>
-      <div className="text-xs text-muted-foreground bg-zinc-100 rounded-sm px-2 py-1">
+      {/* <div className="text-xs text-muted-foreground bg-zinc-100 rounded-sm px-2 py-1">
         v{statement?.draft.versionNumber}
-      </div>
+      </div> */}
     </div>
   );
 };
