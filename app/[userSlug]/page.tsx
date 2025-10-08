@@ -4,12 +4,34 @@ import { StatementListContainer } from '@/containers/StatementListContainer';
 import { getUser } from '@/lib/actions/baseActions';
 import { getStatementsCached } from '@/lib/actions/statementActions';
 import { userProfileCache } from '@/lib/actions/userActions';
+import { Metadata, ResolvingMetadata } from 'next';
 
 type UserPageProps = {
   params: Promise<{
     userSlug: string;
   }>;
 };
+
+export async function generateMetadata(
+  { params }: UserPageProps,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const { userSlug } = await params;
+  const user = await userProfileCache(userSlug);
+  return {
+    title: user?.name,
+    description: `${user?.followerCount} are following ${user?.name}`,
+
+    openGraph: {
+      images: [`${user?.imageUrl}`]
+    },
+    other: {
+      ...(user?.imageUrl && {
+        'link[rel="preload"][as="image"]': user.imageUrl
+      })
+    }
+  };
+}
 
 export default async function UserPage({ params }: UserPageProps) {
   const { userSlug } = await params;

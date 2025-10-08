@@ -5,7 +5,8 @@ import {
   BaseProfile,
   FollowWithFollowed,
   FollowWithFollower,
-  NewSubscription
+  NewSubscription,
+  ProfileWithFollowers
 } from 'kysely-codegen';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
@@ -33,7 +34,7 @@ export const getUserProfile = cache(
 export const getUserProfileBySlug = async (
   slug: string | undefined,
   existingUser?: any
-): Promise<BaseProfile | null | undefined> => {
+): Promise<ProfileWithFollowers | null | undefined> => {
   let profile = db
     .selectFrom('profile')
     .leftJoin('follow', 'profile.id', 'follow.followed')
@@ -67,11 +68,11 @@ export const getUserProfileBySlug = async (
   }
   const result = await profile.executeTakeFirst();
 
-  return result as BaseProfile;
+  return result as ProfileWithFollowers;
 };
 
 export const userProfileCache = cache(
-  async (userSlug: string, user?: any): Promise<BaseProfile | null | undefined> => {
+  async (userSlug: string, user?: any): Promise<ProfileWithFollowers | null | undefined> => {
     return await getUserProfileBySlug(userSlug, user);
   }
 );
