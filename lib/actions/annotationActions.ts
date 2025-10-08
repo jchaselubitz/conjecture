@@ -7,14 +7,14 @@ import { createClient } from '@/supabase/server';
 
 import db from '../database';
 
-export async function getAnnotationsForDraft({ draftId }: { draftId: string }) {
-  const annotations = await db
-    .selectFrom('annotation')
-    .selectAll()
-    .where('draftId', '=', draftId)
-    .execute();
-  return annotations;
-}
+// export async function getAnnotationsForDraft({ draftId }: { draftId: string }) {
+//   const annotations = await db
+//     .selectFrom('annotation')
+//     .selectAll()
+//     .where('draftId', '=', draftId)
+//     .execute();
+//   return annotations;
+// }
 
 export async function createAnnotation({
   annotation,
@@ -42,41 +42,41 @@ export async function createAnnotation({
   return annotationId;
 }
 
-export async function updateAnnotation({
-  annotation,
-  statementId
-}: {
-  annotation: EditedAnnotation;
-  statementId: string;
-}) {
-  const supabase = await createClient();
+// export async function updateAnnotation({
+//   annotation,
+//   statementId
+// }: {
+//   annotation: EditedAnnotation;
+//   statementId: string;
+// }) {
+//   const supabase = await createClient();
 
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
+//   const {
+//     data: { user }
+//   } = await supabase.auth.getUser();
 
-  if (!user || user.id !== annotation.userId) {
-    return { error: 'Unauthorized' };
-  }
-  if (!annotation.id) {
-    return { error: 'Annotation ID is required' };
-  }
+//   if (!user || user.id !== annotation.userId) {
+//     return { error: 'Unauthorized' };
+//   }
+//   if (!annotation.id) {
+//     return { error: 'Annotation ID is required' };
+//   }
 
-  const annotationId = annotation.id;
-  const { start, end, text } = annotation;
+//   const annotationId = annotation.id;
+//   const { start, end, text } = annotation;
 
-  await db
-    .updateTable('annotation')
-    .set({
-      id: annotationId,
-      start,
-      end,
-      text
-    })
-    .where('id', '=', annotation.id)
-    .execute();
-  revalidatePath(`/[userSlug]/${statementId}`, 'page');
-}
+//   await db
+//     .updateTable('annotation')
+//     .set({
+//       id: annotationId,
+//       start,
+//       end,
+//       text
+//     })
+//     .where('id', '=', annotation.id)
+//     .execute();
+//   revalidatePath(`/[userSlug]/${statementId}`, 'page');
+// }
 
 export async function deleteAnnotation({
   annotationId,

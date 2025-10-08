@@ -408,8 +408,13 @@ export const createStatementAnnotation = async ({
       userName: '',
       userImageUrl: ''
     };
+    // Set selected annotation first so the useEffect applies it with selected=true
+    setSelectedAnnotationId(newAnnotation.id);
+
+    // Add to annotations state - this will trigger the useEffect to apply marks in batch
     setAnnotations([...annotations, newAnnotation]);
 
+    // Persist to database
     await createAnnotation({
       annotation: {
         id: newAnnotation.id,
@@ -423,28 +428,8 @@ export const createStatementAnnotation = async ({
       statementId: draftId
     });
 
-    // Apply the highlight mark
-    if (!newAnnotation.id || !newAnnotation.userId) {
-      return;
-    }
-
-    editor
-      .chain()
-      .focus()
-      .setTextSelection({ from, to })
-      .setAnnotationHighlight({
-        annotationId: newAnnotation.id,
-        userId: newAnnotation.userId,
-        isAuthor: newAnnotation.userId === statementCreatorId,
-        createdAt:
-          newAnnotation.createdAt instanceof Date
-            ? newAnnotation.createdAt.toISOString()
-            : new Date().toISOString(),
-        tag: newAnnotation.tag || null
-      })
-      .run();
-
-    setSelectedAnnotationId(newAnnotation.id);
+    // Note: Mark application is now handled by the useEffect in useHtmlSuperEditor
+    // This prevents race conditions and ensures all marks are applied in a single transaction
   } catch (error) {
     // Handle error silently
   }

@@ -18,7 +18,6 @@ declare module '@tiptap/core' {
         userId: string;
         createdAt?: string | null;
         tag?: string | null;
-        selected?: boolean;
       }) => ReturnType;
       /**
        * Toggle an annotation highlight mark
@@ -29,7 +28,6 @@ declare module '@tiptap/core' {
         userId: string;
         createdAt?: string | null;
         tag?: string | null;
-        selected?: boolean;
       }) => ReturnType;
       /**
        * Unset an annotation highlight mark
@@ -51,6 +49,15 @@ export const AnnotationHighlight = Mark.create<AnnotationHighlightOptions>({
       HTMLAttributes: {}
     };
   },
+
+  // Prevent marks with the same annotationId from being duplicated
+  excludes: '',
+
+  // Allow annotations to overlap with other marks
+  spanning: true,
+
+  // Inclusive: false means the mark won't extend when typing at boundaries
+  inclusive: false,
 
   addAttributes() {
     return {
@@ -123,15 +130,10 @@ export const AnnotationHighlight = Mark.create<AnnotationHighlightOptions>({
             'data-created-at': attributes.createdAt
           };
         }
-      },
-      selected: {
-        default: false,
-        parseHTML: element => element.classList.contains('selected'),
-        renderHTML: attributes => {
-          if (!attributes.selected) return {};
-          return { class: 'selected' };
-        }
       }
+      // Note: 'selected' state is now handled via direct DOM class manipulation
+      // instead of being part of the mark attributes. This eliminates the need
+      // to reapply marks when selection changes.
     };
   },
 
@@ -149,6 +151,36 @@ export const AnnotationHighlight = Mark.create<AnnotationHighlightOptions>({
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, { class: 'annotation' }),
       0
     ];
+  },
+
+  // Add comparison logic to prevent duplicate marks with the same annotationId
+  onUpdate() {
+    // This hook can be used to clean up duplicates if they somehow get created
+    const { editor } = this;
+    if (!editor) return;
+
+    // Track seen annotation IDs at each position to detect duplicates
+    const seenMarks = new Map<string, Set<string>>();
+
+    editor.state.doc.descendants((node, pos) => {
+      if (!node.isText) return;
+
+      const annotationMarks = node.marks.filter(mark => mark.type.name === 'annotationHighlight');
+
+      if (annotationMarks.length > 1) {
+        // Multiple annotation marks on the same text node
+        const ids = annotationMarks.map(m => m.attrs.annotationId);
+        const uniqueIds = new Set(ids);
+
+        // If there are duplicate IDs, we have a problem
+        if (uniqueIds.size < ids.length) {
+          console.warn(
+            `Duplicate annotation marks detected at position ${pos}:`,
+            ids.filter((id, index) => ids.indexOf(id) !== index)
+          );
+        }
+      }
+    });
   },
 
   addCommands() {

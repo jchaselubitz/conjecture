@@ -219,6 +219,27 @@ export const useHtmlSuperEditor = ({
         annotations
       });
 
+      // Check for duplicate annotation marks in the loaded HTML
+      const marksGroupedById = new Map<string, number>();
+      editor.state.doc.descendants(node => {
+        const annotationMark = node.marks.find(m => m.type.name === 'annotationHighlight');
+        if (annotationMark) {
+          const id = annotationMark.attrs.annotationId;
+          marksGroupedById.set(id, (marksGroupedById.get(id) || 0) + 1);
+        }
+      });
+
+      // Warn about duplicates
+      marksGroupedById.forEach((count, id) => {
+        if (count > 1) {
+          console.warn(
+            `[Duplicate Annotation Marks] Found ${count} separate mark elements with ID "${id}". ` +
+              `This indicates the HTML content has duplicate/split marks. ` +
+              `These will persist until the document is edited and saved.`
+          );
+        }
+      });
+
       const citationIds = citationNodes.map(nodeInfo => nodeInfo.node.attrs.citationId);
       setFootnoteIds(citationIds);
 
@@ -484,6 +505,30 @@ export const useHtmlSuperEditor = ({
     setEditor(editor);
   }, [editor, setEditor]);
 
+  // Helper function to update annotation selection via CSS classes (no mark reapplication)
+  const updateAnnotationSelection = (annotationId: string | undefined) => {
+    if (!editor) return;
+
+    const editorElement = editor.view.dom;
+
+    // Remove 'selected' class from all annotations
+    editorElement.querySelectorAll('.annotation.selected').forEach(el => {
+      el.classList.remove('selected');
+    });
+
+    // Add 'selected' class to the clicked annotation
+    if (annotationId) {
+      editorElement.querySelectorAll(`[data-annotation-id="${annotationId}"]`).forEach(el => {
+        el.classList.add('selected');
+      });
+    }
+  };
+
+  // Update selection when selectedAnnotationId changes
+  useEffect(() => {
+    updateAnnotationSelection(selectedAnnotationId);
+  }, [editor, selectedAnnotationId]);
+
   // Conditionally load KaTeX CSS only when needed
   useEffect(() => {
     const hasLatexContent =
@@ -591,29 +636,34 @@ export const useHtmlSuperEditor = ({
       );
       const incomingAnnotationIds = new Set(annotations.map(a => a.id));
 
-      // Simple check: If sizes differ or any incoming ID is not present
-      let needsUpdate =
+      // Check if annotation structure changed (annotations added/removed)
+      const structureChanged =
         currentAnnotationIds.size !== incomingAnnotationIds.size ||
         annotations.some(a => !currentAnnotationIds.has(a.id));
 
-      if (!needsUpdate) {
-        // More thorough check: verify attributes like 'selected'
-        editor.state.doc.descendants((node, pos) => {
-          if (!node.isText) return;
-          const mark = node.marks.find(m => m.type.name === 'annotationHighlight');
-          if (mark) {
-            const annotation = annotations.find(a => a.id === mark.attrs.annotationId);
-            if (annotation && mark.attrs.selected !== (annotation.id === selectedAnnotationId)) {
-              needsUpdate = true;
-              return false; // Stop descending if update is needed
-            }
-          }
-        });
+      // If no structural changes, skip reapplication entirely
+      if (!structureChanged) {
+        return;
       }
 
-      if (!needsUpdate) return; // Skip if no changes detected
+      // Full reapplication: structure changed (annotations added/removed)
+      const { tr } = editor.state;
+      const annotationMarkType = editor.schema.marks.annotationHighlight;
 
-      editor.commands.unsetAnnotationHighlight(); // Clear existing marks first
+      if (!annotationMarkType) return;
+
+      // Step 1: Remove ALL existing annotation marks in one pass
+      editor.state.doc.descendants((node, pos) => {
+        if (!node.isText) return;
+        const annotationMarks = node.marks.filter(mark => mark.type.name === 'annotationHighlight');
+        if (annotationMarks.length > 0) {
+          annotationMarks.forEach(mark => {
+            tr.removeMark(pos, pos + node.nodeSize, annotationMarkType);
+          });
+        }
+      });
+
+      // Step 2: Apply all new annotation marks in the same transaction
       annotations.forEach(annotation => {
         if (!annotation.id || !annotation.userId || annotation.start < 0 || annotation.end < 0) {
           return;
@@ -623,24 +673,28 @@ export const useHtmlSuperEditor = ({
         const from = Math.min(annotation.start, maxPos);
         const to = Math.min(annotation.end, maxPos);
         if (from >= to) return; // Ignore invalid ranges
-        const selected = annotation.id === selectedAnnotationId;
-        editor
-          .chain()
-          .setTextSelection({ from, to })
-          .setAnnotationHighlight({
-            annotationId: annotation.id,
-            userId: annotation.userId,
-            isAuthor: annotation.userId === statementCreatorId,
-            createdAt:
-              annotation.createdAt instanceof Date
-                ? annotation.createdAt.toISOString()
-                : String(annotation.createdAt),
-            tag: annotation.tag || null,
-            selected
-          })
-          .run();
+
+        // Create the mark with all attributes (selected is now handled via CSS)
+        const mark = annotationMarkType.create({
+          annotationId: annotation.id,
+          userId: annotation.userId,
+          isAuthor: annotation.userId === statementCreatorId,
+          createdAt:
+            annotation.createdAt instanceof Date
+              ? annotation.createdAt.toISOString()
+              : String(annotation.createdAt),
+          tag: annotation.tag || null
+        });
+
+        // Add the mark to the range
+        tr.addMark(from, to, mark);
       });
-      // editor.commands.setTextSelection({ from: 0, to: 0 }); // Deselect after applying
+
+      // Step 3: Dispatch the transaction only if there were changes
+      if (tr.docChanged || tr.steps.length > 0) {
+        editor.view.dispatch(tr);
+      }
+
       // Deselect only if the editor had focus, otherwise keep selection
       if (editor.isFocused) {
         editor.commands.blur(); // Use blur instead of setting selection to 0,0
@@ -648,8 +702,8 @@ export const useHtmlSuperEditor = ({
     };
 
     applyAnnotations();
-    // Dependency array includes selectedAnnotationId to re-apply marks when selection changes
-  }, [editor, annotations, selectedAnnotationId, statementCreatorId]);
+    // Note: selectedAnnotationId removed from dependencies - selection now handled via CSS
+  }, [editor, annotations, statementCreatorId]);
 
   // Effect to handle selectedAnnotationId changes (URL update & scroll)
 
