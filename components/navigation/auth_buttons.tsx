@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { GoogleButton } from '@/lib/helpers/helpersLogin';
-import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { GoogleButton } from '@/lib/helpers/helpersLogin';
 import { cn } from '@/lib/utils';
 
 export function AuthButtons({

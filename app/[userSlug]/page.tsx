@@ -1,10 +1,11 @@
+import { Metadata, ResolvingMetadata } from 'next';
+
 import SiteNav from '@/components/navigation/site_nav';
 import NotFound from '@/components/ui/not_found';
 import { StatementListContainer } from '@/containers/StatementListContainer';
 import { getUser } from '@/lib/actions/baseActions';
 import { getStatementsCached } from '@/lib/actions/statementActions';
 import { userProfileCache } from '@/lib/actions/userActions';
-import { Metadata, ResolvingMetadata } from 'next';
 
 type UserPageProps = {
   params: Promise<{

@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
 
+import { AuthButtons } from '@/components/navigation/auth_buttons';
 import { Button } from '@/components/ui/button';
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,7 +16,6 @@ import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationCon
 import { useUserContext } from '@/contexts/userContext';
 import { createComment } from '@/lib/actions/commentActions';
 import { nestComments } from '@/lib/helpers/helpersComments';
-import { AuthButtons } from '@/components/navigation/auth_buttons';
 
 interface CommentInputProps {
   annotation: AnnotationWithComments;

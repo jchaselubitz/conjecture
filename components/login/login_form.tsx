@@ -12,11 +12,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
 import { checkUsername, signIn, signUp } from '@/lib/actions/userActions';
+import { GoogleButton, signInWithGoogle } from '@/lib/helpers/helpersLogin';
 import { cn } from '@/lib/utils';
 
 import { FormField } from '../ui/form';
 import { Separator } from '../ui/separator';
-import { GoogleButton, signInWithGoogle } from '@/lib/helpers/helpersLogin';
 
 export function LoginForm({
   className,

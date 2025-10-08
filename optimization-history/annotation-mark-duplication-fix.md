@@ -220,44 +220,6 @@ useEffect(() => {
 - **Eliminates all mark reapplication overhead** for selection
 - **Much simpler code** - separation of concerns between content and visual state
 
-## Handling Pre-Existing Duplicate Marks
-
-**Problem**: If the HTML stored in the database already contains duplicate marks (from previous bugs), TipTap's `parseHTML` would load them as-is.
-
-**Solution**: Detect and warn about duplicates on initial load:
-
-```typescript
-onCreate: ({ editor }) => {
-  // Check for duplicate annotation marks in the loaded HTML
-  const marksGroupedById = new Map<string, number>();
-  
-  editor.state.doc.descendants(node => {
-    const annotationMark = node.marks.find(m => m.type.name === 'annotationHighlight');
-    if (annotationMark) {
-      const id = annotationMark.attrs.annotationId;
-      marksGroupedById.set(id, (marksGroupedById.get(id) || 0) + 1);
-    }
-  });
-  
-  // Warn about duplicates
-  marksGroupedById.forEach((count, id) => {
-    if (count > 1) {
-      console.warn(
-        `[Duplicate Annotation Marks] Found ${count} separate mark elements with ID "${id}". ` +
-        `This indicates the HTML content has duplicate/split marks. ` +
-        `These will persist until the document is edited and saved.`
-      );
-    }
-  });
-}
-```
-
-**Result**: 
-- HTML content remains the source of truth
-- Duplicates are detected and logged for debugging
-- Next edit/save will clean up duplicates through normal batched mark application
-- The batched transaction approach prevents new duplicates from being created
-
 ## Testing Recommendations
 
 1. **Overlapping Annotations**: Create multiple annotations that overlap to ensure they don't duplicate
@@ -265,7 +227,6 @@ onCreate: ({ editor }) => {
 3. **Rapid Creation**: Create multiple annotations quickly to test batching
 4. **Document Edits**: Edit document content with existing annotations to verify position handling
 5. **Large Documents**: Test with 50+ annotations to verify selection performance
-6. **Corrupt HTML Recovery**: Load a document with duplicate marks in HTML to verify they get cleaned up on first load
 
 ## Performance Impact
 

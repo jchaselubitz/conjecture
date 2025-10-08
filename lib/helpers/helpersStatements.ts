@@ -67,41 +67,43 @@ export const getNodes = (editor: Editor, nodeTypes: string[]) => {
   return nodes;
 };
 
-// Update the type definition for marks parameter in ensureAnnotationMarks
+// HTML-first approach: This function is now just for validation/debugging
+// HTML is the source of truth, so we just validate consistency
 type EnsureAnnotationMarksProps = {
   annotations: AnnotationWithComments[];
   marks: MarkInfo[];
 };
 
-// This function now primarily serves to check consistency on load, not modify state.
-export const ensureAnnotationMarks = async ({
-  annotations, // The initial annotations from props
-  marks
-}: EnsureAnnotationMarksProps) => {
+export const ensureAnnotationMarks = async ({ annotations, marks }: EnsureAnnotationMarksProps) => {
+  // HTML-first approach: HTML marks are the source of truth
+  // This function just validates consistency for debugging
+
+  if (marks.length === 0 && annotations.length > 0) {
+    console.warn(
+      `[ensureAnnotationMarks] HTML-first validation: Found ${annotations.length} annotations in DB but no marks in HTML. HTML is the source of truth.`
+    );
+  }
+
+  // Check if any DB annotations don't have corresponding HTML marks
+  const htmlAnnotationIds = new Set<string>();
   marks.forEach(markInfo => {
-    const { node, pos } = markInfo;
-    const annotationMark = node.marks.find((mark: any) => mark.type.name === 'annotationHighlight');
-
-    if (annotationMark) {
-      const annotationId = annotationMark.attrs.annotationId;
-      // Check against the *initial* annotations passed in
-      const existsInInitialState = annotations.some(a => a.id === annotationId);
-
-      if (!existsInInitialState) {
-        // Log a warning if a mark exists in HTML but not in the initial annotation data.
-        // This indicates a potential data inconsistency.
-        console.warn(
-          `[ensureAnnotationMarks] Annotation mark found in initial HTML for ID [${annotationId}] at position ${pos}, but no corresponding annotation was provided in initial props. The mark might be drawn later by useEffect if state changes, but check for data inconsistency.`,
-          { markAttributes: annotationMark.attrs }
-        );
-      }
-
-      // No need to check start/end validity or create/add annotations here.
-      // The useEffect hook handles drawing marks based on the authoritative state.
+    const annotationMark = markInfo.node.marks.find(
+      (mark: any) => mark.type.name === 'annotationHighlight'
+    );
+    if (annotationMark?.attrs?.annotationId) {
+      htmlAnnotationIds.add(annotationMark.attrs.annotationId);
     }
   });
 
-  // No state updates or DB calls from this function anymore.
+  const dbOnlyAnnotations = annotations.filter(a => !htmlAnnotationIds.has(a.id));
+  if (dbOnlyAnnotations.length > 0) {
+    console.warn(
+      `[ensureAnnotationMarks] HTML-first validation: ${dbOnlyAnnotations.length} annotations exist in DB but not in HTML. HTML is the source of truth. DB IDs:`,
+      dbOnlyAnnotations.map(a => a.id)
+    );
+  }
+
+  // No state updates or mark reapplication - HTML is already correct
 };
 
 export const ensureCitations = async ({
@@ -391,47 +393,70 @@ export const createStatementAnnotation = async ({
   }
 
   try {
-    // Create a new annotation
+    // HTML-first approach: Apply mark to HTML first, then save to DB as reference
     const annotationId = nanoid();
+    const createdAt = new Date();
+
+    // Step 1: Apply the mark to the HTML FIRST
+    editor
+      .chain()
+      .setTextSelection({ from, to })
+      .setMark('annotationHighlight', {
+        annotationId,
+        userId,
+        isAuthor,
+        createdAt: createdAt.toISOString(),
+        tag: null
+      })
+      .run();
+
+    // Step 2: Get the updated HTML content (now contains the annotation mark)
+    const newContent = editor.getHTML();
+    const newContentJson = editor.getJSON();
+    const newPlainText = editor.getText();
+
+    // Step 3: Save the HTML with the mark to the database
+    // Note: This requires access to the draft object with versionNumber
+    // The onUpdate handler in useHtmlSuperEditor will handle this automatically
+    // So we just need to trigger an update
+
     const newAnnotation: AnnotationWithComments = {
       id: annotationId,
       text: editor.state.doc.textBetween(from, to),
       userId,
       draftId,
-      start: editor.state.selection.from,
-      end: editor.state.selection.to,
+      start: from,
+      end: to,
       tag: '',
       isPublic: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt,
+      updatedAt: createdAt,
       comments: [],
       userName: '',
       userImageUrl: ''
     };
-    // Set selected annotation first so the useEffect applies it with selected=true
-    setSelectedAnnotationId(newAnnotation.id);
 
-    // Add to annotations state - this will trigger the useEffect to apply marks in batch
+    // Step 4: Update local state (this will trigger onUpdate which saves HTML)
+    setSelectedAnnotationId(annotationId);
     setAnnotations([...annotations, newAnnotation]);
 
-    // Persist to database
+    // Step 5: THEN save the position to DB as a reference for other features
     await createAnnotation({
       annotation: {
-        id: newAnnotation.id,
-        tag: newAnnotation.tag || null,
+        id: annotationId,
+        tag: null,
         text: newAnnotation.text,
-        start: newAnnotation.start,
-        end: newAnnotation.end,
-        userId: newAnnotation.userId,
-        draftId: newAnnotation.draftId.toString()
+        start: from,
+        end: to,
+        userId,
+        draftId: draftId.toString()
       },
       statementId: draftId
     });
 
-    // Note: Mark application is now handled by the useEffect in useHtmlSuperEditor
-    // This prevents race conditions and ensures all marks are applied in a single transaction
+    // Note: HTML is now the source of truth. The DB positions are just references.
   } catch (error) {
-    // Handle error silently
+    console.error('Error creating annotation:', error);
   }
 };
 

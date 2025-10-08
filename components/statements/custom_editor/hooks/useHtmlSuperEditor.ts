@@ -11,7 +11,7 @@ import { Editor, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { AnnotationWithComments, BaseDraft, NewStatementCitation } from 'kysely-codegen';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { RefObject, startTransition, useEffect } from 'react';
+import { RefObject, startTransition, useCallback, useEffect } from 'react';
 import { ImperativePanelGroupHandle } from 'react-resizable-panels';
 import { useWindowSize } from 'react-use';
 
@@ -209,36 +209,14 @@ export const useHtmlSuperEditor = ({
     content: htmlContent,
     editable: false,
     onCreate: ({ editor }) => {
-      // Use type assertion carefully, ensure the helpers actually return compatible types
-      // Let's use the specific MarkInfo type for annotationMarks.
-      const annotationMarks = getMarks(editor, ['annotationHighlight']) as MarkInfo[]; // Use MarkInfo[] type
+      // HTML-first approach: just read what's already in the HTML
+      const annotationMarks = getMarks(editor, ['annotationHighlight']) as MarkInfo[];
       const citationNodes = getNodes(editor, ['citation', 'citation-block']) as NodeInfo[];
 
-      ensureAnnotationMarks({
-        marks: annotationMarks, // Pass the correctly typed marks
-        annotations
-      });
-
-      // Check for duplicate annotation marks in the loaded HTML
-      const marksGroupedById = new Map<string, number>();
-      editor.state.doc.descendants(node => {
-        const annotationMark = node.marks.find(m => m.type.name === 'annotationHighlight');
-        if (annotationMark) {
-          const id = annotationMark.attrs.annotationId;
-          marksGroupedById.set(id, (marksGroupedById.get(id) || 0) + 1);
-        }
-      });
-
-      // Warn about duplicates
-      marksGroupedById.forEach((count, id) => {
-        if (count > 1) {
-          console.warn(
-            `[Duplicate Annotation Marks] Found ${count} separate mark elements with ID "${id}". ` +
-              `This indicates the HTML content has duplicate/split marks. ` +
-              `These will persist until the document is edited and saved.`
-          );
-        }
-      });
+      // Log for debugging - HTML marks are the source of truth
+      if (annotationMarks.length > 0) {
+        console.log(`[onCreate] Found ${annotationMarks.length} annotation marks in HTML`);
+      }
 
       const citationIds = citationNodes.map(nodeInfo => nodeInfo.node.attrs.citationId);
       setFootnoteIds(citationIds);
@@ -260,16 +238,12 @@ export const useHtmlSuperEditor = ({
           return mark.type.name === 'annotationHighlight';
         });
 
-        // if (!editMode && !hasAnnotationChanges) {
-        //   const previousContent = transaction.before.content.toJSON();
-        //   editor.commands.setContent(previousContent);
-        //   return;
-        // }
-
+        // Update citation footnotes
         const citationNodes = getNodes(editor, ['citation', 'citation-block']) as NodeInfo[];
         const citationIds = citationNodes.map(nodeInfo => nodeInfo.node.attrs.citationId);
         setFootnoteIds(citationIds);
 
+        // HTML is the source of truth - save it
         const newContent = editor.getHTML();
         const newContentJson = editor.getJSON();
         const newPlainText = editor.getText();
@@ -283,6 +257,54 @@ export const useHtmlSuperEditor = ({
         startTransition(() => {
           setUpdatedDraft(newDraft);
         });
+
+        // If annotation marks changed, update their positions in the database
+        // This keeps the DB in sync with HTML as a reference for other features
+        if (hasAnnotationChanges || editMode) {
+          const annotationMarks = getMarks(editor, ['annotationHighlight']) as MarkInfo[];
+          const updatedAnnotations = [...annotations];
+          const seenIds = new Set<string>();
+
+          annotationMarks.forEach(markInfo => {
+            const annotationMark = markInfo.node.marks.find(
+              mark => mark.type.name === 'annotationHighlight'
+            );
+
+            if (annotationMark && annotationMark.attrs.annotationId) {
+              const annotationId = annotationMark.attrs.annotationId;
+
+              if (!seenIds.has(annotationId)) {
+                seenIds.add(annotationId);
+
+                // Find the full extent of this annotation
+                const allNodesWithThisMark = annotationMarks.filter(m => {
+                  const mark = m.node.marks.find(
+                    mark =>
+                      mark.type.name === 'annotationHighlight' &&
+                      mark.attrs.annotationId === annotationId
+                  );
+                  return !!mark;
+                });
+
+                const start = Math.min(...allNodesWithThisMark.map(m => m.pos));
+                const end = Math.max(...allNodesWithThisMark.map(m => m.end));
+
+                // Update annotation positions in state
+                const index = updatedAnnotations.findIndex(a => a.id === annotationId);
+                if (index >= 0) {
+                  updatedAnnotations[index] = {
+                    ...updatedAnnotations[index],
+                    start,
+                    end
+                  };
+                }
+              }
+            }
+          });
+
+          // Update state with new positions (DB sync will happen via separate effect/action)
+          setAnnotations(updatedAnnotations);
+        }
       }
     },
     onSelectionUpdate: ({ editor }) => {
@@ -506,28 +528,31 @@ export const useHtmlSuperEditor = ({
   }, [editor, setEditor]);
 
   // Helper function to update annotation selection via CSS classes (no mark reapplication)
-  const updateAnnotationSelection = (annotationId: string | undefined) => {
-    if (!editor) return;
+  const updateAnnotationSelection = useCallback(
+    (annotationId: string | undefined) => {
+      if (!editor) return;
 
-    const editorElement = editor.view.dom;
+      const editorElement = editor.view.dom;
 
-    // Remove 'selected' class from all annotations
-    editorElement.querySelectorAll('.annotation.selected').forEach(el => {
-      el.classList.remove('selected');
-    });
-
-    // Add 'selected' class to the clicked annotation
-    if (annotationId) {
-      editorElement.querySelectorAll(`[data-annotation-id="${annotationId}"]`).forEach(el => {
-        el.classList.add('selected');
+      // Remove 'selected' class from all annotations
+      editorElement.querySelectorAll('.annotation.selected').forEach(el => {
+        el.classList.remove('selected');
       });
-    }
-  };
+
+      // Add 'selected' class to the clicked annotation
+      if (annotationId) {
+        editorElement.querySelectorAll(`[data-annotation-id="${annotationId}"]`).forEach(el => {
+          el.classList.add('selected');
+        });
+      }
+    },
+    [editor]
+  );
 
   // Update selection when selectedAnnotationId changes
   useEffect(() => {
     updateAnnotationSelection(selectedAnnotationId);
-  }, [editor, selectedAnnotationId]);
+  }, [selectedAnnotationId, updateAnnotationSelection]);
 
   // Conditionally load KaTeX CSS only when needed
   useEffect(() => {
@@ -619,91 +644,90 @@ export const useHtmlSuperEditor = ({
       router.replace(newUrl, { scroll: false });
     }
   }, [editor, selectedAnnotationId, router, isMobile]); // Added isMobile dependency
-  // Effect to apply/update annotation marks
+  // HTML-first approach: Read existing annotations from HTML marks on load
+  // No reapplication needed - HTML is the source of truth
   useEffect(() => {
-    if (!editor) return; // Apply only if editable or focused
+    if (!editor) return;
 
-    const applyAnnotations = () => {
-      // Check if annotations actually changed to prevent unnecessary updates
-      const currentMarksInfo = getMarks(editor, ['annotationHighlight']) as GetMarksNodeInfo[];
-      // We need to access mark.attrs.annotationId. Find the correct mark on the node.
-      const currentAnnotationIds = new Set(
-        currentMarksInfo.flatMap(info =>
-          info.node.marks
-            .filter(mark => mark.type.name === 'annotationHighlight')
-            .map(mark => mark.attrs.annotationId)
-        )
-      );
-      const incomingAnnotationIds = new Set(annotations.map(a => a.id));
+    // Extract annotations from existing HTML marks
+    const annotationMarks = getMarks(editor, ['annotationHighlight']) as MarkInfo[];
 
-      // Check if annotation structure changed (annotations added/removed)
-      const structureChanged =
-        currentAnnotationIds.size !== incomingAnnotationIds.size ||
-        annotations.some(a => !currentAnnotationIds.has(a.id));
+    if (annotationMarks.length > 0) {
+      const annotationsFromHTML: Partial<AnnotationWithComments>[] = [];
+      const seenIds = new Set<string>();
 
-      // If no structural changes, skip reapplication entirely
-      if (!structureChanged) {
-        return;
-      }
+      annotationMarks.forEach(markInfo => {
+        const annotationMark = markInfo.node.marks.find(
+          mark => mark.type.name === 'annotationHighlight'
+        );
 
-      // Full reapplication: structure changed (annotations added/removed)
-      const { tr } = editor.state;
-      const annotationMarkType = editor.schema.marks.annotationHighlight;
+        if (annotationMark && annotationMark.attrs.annotationId) {
+          const annotationId = annotationMark.attrs.annotationId;
 
-      if (!annotationMarkType) return;
+          // Only add each annotation once (marks can span multiple nodes)
+          if (!seenIds.has(annotationId)) {
+            seenIds.add(annotationId);
 
-      // Step 1: Remove ALL existing annotation marks in one pass
-      editor.state.doc.descendants((node, pos) => {
-        if (!node.isText) return;
-        const annotationMarks = node.marks.filter(mark => mark.type.name === 'annotationHighlight');
-        if (annotationMarks.length > 0) {
-          annotationMarks.forEach(mark => {
-            tr.removeMark(pos, pos + node.nodeSize, annotationMarkType);
-          });
+            // Find the full extent of this annotation across all nodes
+            const allNodesWithThisMark = annotationMarks.filter(m => {
+              const mark = m.node.marks.find(
+                mark =>
+                  mark.type.name === 'annotationHighlight' &&
+                  mark.attrs.annotationId === annotationId
+              );
+              return !!mark;
+            });
+
+            const start = Math.min(...allNodesWithThisMark.map(m => m.pos));
+            const end = Math.max(...allNodesWithThisMark.map(m => m.end));
+
+            // Check if this annotation exists in the existing annotations list
+            const existingAnnotation = annotations.find(a => a.id === annotationId);
+
+            if (existingAnnotation) {
+              // Update positions if they differ
+              if (existingAnnotation.start !== start || existingAnnotation.end !== end) {
+                annotationsFromHTML.push({
+                  ...existingAnnotation,
+                  start,
+                  end
+                });
+              }
+            } else {
+              // New annotation found in HTML that's not in state
+              // Skip adding it to state since we don't have all the required fields
+              // The annotation should be fetched from the database on the next page load
+              console.warn(
+                `[HTML-first] Found annotation ${annotationId} in HTML but not in state. It should be fetched from DB.`
+              );
+            }
+          }
         }
       });
 
-      // Step 2: Apply all new annotation marks in the same transaction
-      annotations.forEach(annotation => {
-        if (!annotation.id || !annotation.userId || annotation.start < 0 || annotation.end < 0) {
-          return;
-        }
-        // Ensure positions are valid within the current document
-        const maxPos = editor.state.doc.content.size;
-        const from = Math.min(annotation.start, maxPos);
-        const to = Math.min(annotation.end, maxPos);
-        if (from >= to) return; // Ignore invalid ranges
-
-        // Create the mark with all attributes (selected is now handled via CSS)
-        const mark = annotationMarkType.create({
-          annotationId: annotation.id,
-          userId: annotation.userId,
-          isAuthor: annotation.userId === statementCreatorId,
-          createdAt:
-            annotation.createdAt instanceof Date
-              ? annotation.createdAt.toISOString()
-              : String(annotation.createdAt),
-          tag: annotation.tag || null
+      // Only update state if there are differences
+      if (annotationsFromHTML.length > 0) {
+        const updatedAnnotations = [...annotations];
+        annotationsFromHTML.forEach(htmlAnnotation => {
+          const index = updatedAnnotations.findIndex(a => a.id === htmlAnnotation.id);
+          if (
+            index >= 0 &&
+            htmlAnnotation.start !== undefined &&
+            htmlAnnotation.end !== undefined
+          ) {
+            updatedAnnotations[index] = {
+              ...updatedAnnotations[index],
+              start: htmlAnnotation.start,
+              end: htmlAnnotation.end
+            };
+          } else if (index < 0 && htmlAnnotation.id) {
+            updatedAnnotations.push(htmlAnnotation as AnnotationWithComments);
+          }
         });
-
-        // Add the mark to the range
-        tr.addMark(from, to, mark);
-      });
-
-      // Step 3: Dispatch the transaction only if there were changes
-      if (tr.docChanged || tr.steps.length > 0) {
-        editor.view.dispatch(tr);
+        setAnnotations(updatedAnnotations);
       }
-
-      // Deselect only if the editor had focus, otherwise keep selection
-      if (editor.isFocused) {
-        editor.commands.blur(); // Use blur instead of setting selection to 0,0
-      }
-    };
-
-    applyAnnotations();
-    // Note: selectedAnnotationId removed from dependencies - selection now handled via CSS
-  }, [editor, annotations, statementCreatorId]);
+    }
+  }, [editor, annotations, setAnnotations]); // Only run when editor is created/recreated
 
   // Effect to handle selectedAnnotationId changes (URL update & scroll)
 
