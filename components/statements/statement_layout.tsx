@@ -33,7 +33,6 @@ import VerticalCardStack from '../card_stacks/vertical_card_stack';
 import EditNav from '../navigation/edit_nav';
 import ReadNav from '../navigation/read_nav';
 
-import AnnotationDialog from './annotation/annotation_dialog';
 import AnnotationDrawer from './annotation/annotation_drawer';
 import StatementDetails from './statement_details';
 import StatementTopControls from './statement_top_controls';

@@ -23,7 +23,7 @@ import { deleteStatementImage } from '@/lib/actions/statementActions';
 import { setPanelState } from '@/lib/helpers/helpersLayout';
 import {
   createQuoteHighlight,
-  ensureAnnotationMarks,
+  // ensureAnnotationMarks,
   ensureCitations,
   getMarks,
   getNodes,
