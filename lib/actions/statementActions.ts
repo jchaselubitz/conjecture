@@ -226,7 +226,14 @@ export async function getPublishedOrLatestStatements({
     managers: profiles.filter(profile => managerIds.includes(profile.id))
   })) as StatementWithDraftAndCollaborators[];
 
-  return statementsWithDraft.filter(statement => statement.draft !== undefined);
+  const orderedStatementsWithDraft = statementsWithDraft.sort((a, b) => {
+    if (a.draft?.publishedAt && b.draft?.publishedAt) {
+      return b.draft.publishedAt.getTime() - a.draft.publishedAt.getTime();
+    }
+    return b.createdAt.getTime() - a.createdAt.getTime();
+  });
+
+  return orderedStatementsWithDraft.filter(statement => statement.draft !== undefined);
 }
 
 // Cached version for better performance
