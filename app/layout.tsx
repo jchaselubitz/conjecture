@@ -22,7 +22,13 @@ export const metadata: Metadata = {
   title: 'Conject',
   description: 'Conjecture and Critique',
   manifest: '/manifest.webmanifest',
-  icons: { apple: [{ url: '/apple-icon-180.png' }] },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.png', type: 'image/png' }
+    ],
+    apple: [{ url: '/apple-icon-180.png' }]
+  },
   applicationName: 'Conject',
   appleWebApp: {
     capable: true,
