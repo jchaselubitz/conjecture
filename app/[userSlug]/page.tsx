@@ -20,7 +20,7 @@ export async function generateMetadata(
   const { userSlug } = await params;
   const user = await userProfileCache(userSlug);
   return {
-    title: user?.name,
+    title: `${user?.name} | Conject`,
     description: `${user?.followerCount} ${user?.followerCount === 1 ? 'reader is' : 'readers are'} following ${user?.name}`,
 
     openGraph: {

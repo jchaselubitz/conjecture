@@ -28,7 +28,7 @@ export async function generateMetadata(
   const previousImages = (await parent).openGraph?.images || [];
 
   return {
-    title: statement?.title,
+    title: `${statement?.title} | Conject`,
     description: statement?.subtitle,
     creator: statement?.authors.map((author: any) => author.name).join(', '),
     openGraph: {
