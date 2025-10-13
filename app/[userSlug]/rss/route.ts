@@ -91,6 +91,11 @@ export async function GET(_request: Request, context: { params: Promise<{ userSl
         const imageEnclosure = buildImageEnclosure(featuredImage);
         const mediaContent = buildMediaContent(featuredImage);
 
+        // Add a call-to-action link at the top of the content
+        const contentWithLink = content
+          ? `<p><a href="${escapeXml(link)}">Read on Conject to respond</a></p>\n\n${content}`
+          : `<p><a href="${escapeXml(link)}">Read on Conject to respond</a></p>`;
+
         return `      <item>
         <title>${escapeXml(statement.title ?? 'Untitled')}</title>
         <link>${escapeXml(link)}</link>
@@ -99,7 +104,7 @@ export async function GET(_request: Request, context: { params: Promise<{ userSl
         )}</guid>
         ${publishedAt ? `<pubDate>${publishedAt.toUTCString()}</pubDate>` : ''}
         <description>${escapeXml(description)}</description>
-        ${content ? `<content:encoded><![CDATA[${content}]]></content:encoded>` : ''}
+        ${contentWithLink ? `<content:encoded><![CDATA[${contentWithLink}]]></content:encoded>` : ''}
         ${imageEnclosure}
         ${mediaContent}
         ${
