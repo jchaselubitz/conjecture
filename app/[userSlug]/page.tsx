@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Metadata, ResolvingMetadata } from 'next';
 
 import SiteNav from '@/components/navigation/site_nav';
@@ -19,12 +20,18 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { userSlug } = await params;
   const user = await userProfileCache(userSlug);
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
   return {
     title: `${user?.name} | Conject`,
     description: `${user?.followerCount} ${user?.followerCount === 1 ? 'reader is' : 'readers are'} following ${user?.name}`,
 
     openGraph: {
       images: [`${user?.imageUrl}`]
+    },
+    alternates: {
+      types: {
+        'application/rss+xml': `${baseUrl}/${userSlug}/rss`
+      }
     },
     other: {
       ...(user?.imageUrl && {
@@ -39,16 +46,6 @@ export default async function UserPage({ params }: UserPageProps) {
   const user = await getUser();
   const profile = await userProfileCache(userSlug);
   const userIsCreator = user?.user_metadata.username === userSlug;
-
-  const statements = await getStatementsCached({ creatorId: profile?.id });
-
-  const permittedStatements = statements.filter(statement => {
-    const statementForCollaborator = statement.collaborators.some(
-      collaborator => collaborator.userId === user?.id
-    );
-    const statementIsPublished = !!statement.draft?.publishedAt;
-    return statementForCollaborator || statementIsPublished;
-  });
 
   if (!profile) {
     return (
@@ -66,6 +63,16 @@ export default async function UserPage({ params }: UserPageProps) {
     );
   }
 
+  const statements = await getStatementsCached({ creatorId: profile.id });
+
+  const permittedStatements = statements.filter(statement => {
+    const statementForCollaborator = statement.collaborators.some(
+      collaborator => collaborator.userId === user?.id
+    );
+    const statementIsPublished = !!statement.draft?.publishedAt;
+    return statementForCollaborator || statementIsPublished;
+  });
+
   const title = userIsCreator
     ? 'My conjectures'
     : `${profile.name ?? profile.username}'s conjectures`;
@@ -74,7 +81,15 @@ export default async function UserPage({ params }: UserPageProps) {
     <>
       <SiteNav />
       <main className="flex-1 mx-auto bg-background container py-8 px-4 md:px-0">
-        <h1 className="text-3xl font-bold mb-6">{title}</h1>
+        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-3xl font-bold">{title}</h1>
+          <Link
+            href={`/${userSlug}/rss`}
+            className="inline-flex w-fit items-center gap-2 rounded-md border border-border px-4 py-2 text-sm font-medium text-primary hover:bg-muted"
+          >
+            Subscribe via RSS
+          </Link>
+        </div>
         <StatementListContainer statements={permittedStatements} pathname={userSlug} />
       </main>
     </>
