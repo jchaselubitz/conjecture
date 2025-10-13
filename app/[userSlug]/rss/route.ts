@@ -69,7 +69,7 @@ export async function GET(_request: Request, context: { params: Promise<{ userSl
           : null;
         const description = buildDescription(statement.subtitle);
         const content = buildContent(statement.draft?.content ?? null);
-        const link = `${SITE_URL}/${userSlug}/${statement.slug}`;
+        const link = `${SITE_URL}/${userSlug}/${statement.slug}?utm_source=rssfeed`;
         const authorNames = statement.authors?.map(author => author?.name).filter(Boolean) ?? [];
 
         // Get statement images for featured image
