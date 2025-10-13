@@ -646,7 +646,6 @@ export async function updateStatementTitle({
 
   await db.updateTable('statement').set({ title }).where('statementId', '=', statementId).execute();
   revalidatePath(`/[userSlug]/${statementSlug}`, 'layout');
-  revalidatePath('/[userSlug]/rss');
 }
 
 export async function updateStatementSubtitle({
@@ -668,7 +667,6 @@ export async function updateStatementSubtitle({
     .where('statementId', '=', statementId)
     .execute();
   revalidatePath(`/[userSlug]/${statementSlug}`, 'layout');
-  revalidatePath('/[userSlug]/rss');
 }
 
 export async function updateStatementThreadId({
@@ -762,14 +760,12 @@ export async function publishDraft({
       await tx.updateTable('draft').set({ publishedAt: now }).where('id', '=', id).execute();
     }
   });
-  revalidatePath('/[userSlug]/rss');
 }
 
 export async function deleteDraft(id: string, creatorId: string, statementSlug: string) {
   await authenticatedUser(creatorId);
   await db.deleteFrom('draft').where('id', '=', id).execute();
   revalidatePath(`/[userSlug]/${statementSlug}`, 'layout');
-  revalidatePath('/[userSlug]/rss');
 }
 
 export async function deleteStatement(
@@ -787,7 +783,6 @@ export async function deleteStatement(
   await db.deleteFrom('draft').where('statementId', '=', statementId).execute();
 
   revalidatePath(revalidationPath?.path ?? `/[userSlug]`, 'layout');
-  revalidatePath('/[userSlug]/rss');
 }
 
 export type UpsertImageDataType = {
@@ -928,7 +923,6 @@ export async function updateDraftPublicationDate({
   } else {
     revalidatePath(`/[userSlug]/${statementSlug}`, 'layout');
   }
-  revalidatePath('/[userSlug]/rss');
 }
 
 // .innerJoin("draft", (join) =>

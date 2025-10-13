@@ -14,6 +14,7 @@ type UserPageProps = {
     userSlug: string;
   }>;
 };
+const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
 
 export async function generateMetadata(
   { params }: UserPageProps,
@@ -21,7 +22,6 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { userSlug } = await params;
   const user = await userProfileCache(userSlug);
-  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
   return {
     title: `${user?.name} | Conject`,
     description: `${user?.followerCount} ${user?.followerCount === 1 ? 'reader is' : 'readers are'} following ${user?.name}`,
@@ -84,9 +84,7 @@ export default async function UserPage({ params }: UserPageProps) {
       <main className="flex-1 mx-auto bg-background container py-8 px-4 md:px-0">
         <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-3xl font-bold">{title}</h1>
-          <RssCopyButton
-            rssUrl={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${userSlug}/rss`}
-          />
+          <RssCopyButton rssUrl={`${baseUrl}/${userSlug}/rss`} />
         </div>
         <StatementListContainer statements={permittedStatements} pathname={userSlug} />
       </main>
