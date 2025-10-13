@@ -51,7 +51,7 @@ export default function AnnotationDetailMobile({
 
   return (
     <div className="flex flex-col gap-3 px-2 h-full">
-      <div className="h-full flex flex-col overflow-y-auto">
+      <div className="h-full flex flex-col overflow-y-auto gap-3">
         <AnnotationHeader
           annotation={annotation}
           isCreator={isCreator}

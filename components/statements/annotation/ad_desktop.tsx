@@ -31,7 +31,8 @@ export default function AnnotationDetailDesktop({
   statementCreatorId,
   handleDeleteAnnotation
 }: AnnotationDetailDesktopProps) {
-  const { setReplyToComment, handleCommentDeleted, comments } = useStatementAnnotationContext();
+  const { setReplyToComment, handleCommentDeleted, comments, replyToComment } =
+    useStatementAnnotationContext();
 
   const { editor } = useStatementContext();
   const { userId } = useUserContext();
@@ -135,7 +136,7 @@ export default function AnnotationDetailDesktop({
             ))}
           </div>
         )}
-        <CommentInput annotation={annotation} />
+        {(comments.length < 1 || replyToComment) && <CommentInput annotation={annotation} />}
       </AccordionContent>
     </Card>
   );

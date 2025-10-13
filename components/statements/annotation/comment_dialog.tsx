@@ -18,14 +18,12 @@ export default function CommentDialog({
   if (!selectedAnnotation) return null;
   return (
     <Dialog open={showCommentInput} onOpenChange={setShowCommentInput}>
+      <DialogTitle className="sr-only">Comments</DialogTitle>
       <DialogContent
-        className="p-3 pt-6 top-0 bottom-0 translate-y-0 rounded-none max-w-screen h-full max-h-[60dvh]"
+        className="p-3 pt-6 top-2 left-1 right-1 mx-auto bottom-0 translate-x-0 translate-y-0 max-w-[calc(100%-1rem)] h-fit max-h-[40dvh] "
         showCloseButton={false}
       >
-        <DialogTitle className="text-base font-medium max-h-24 overflow-y-auto">
-          {selectedAnnotation.text}
-        </DialogTitle>
-        <div className="w-full absolute bottom-2 p-2">
+        <div className="w-full  bottom-2 p-2">
           {selectedAnnotation && (
             <CommentInput
               showCommentInput={showCommentInput}
