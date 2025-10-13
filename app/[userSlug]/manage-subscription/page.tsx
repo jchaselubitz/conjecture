@@ -130,7 +130,7 @@ export default function UnsubscribePage() {
         throw new Error('User information not found');
       }
 
-      await subscribe(author.id, subscriber.id);
+      await subscribe(author.id, subscriber.id, subscriberEmail);
       setIsSubscribed(true);
       setSubscribeButtonState('success');
       toast('Successfully subscribed to ' + authorName);

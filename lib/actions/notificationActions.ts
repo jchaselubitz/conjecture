@@ -195,12 +195,13 @@ export const unsubscribeBulk = async (authorId: string, emails: string[]) => {
   revalidatePath('/');
 };
 
-export const subscribe = async (authorId: string, recipientId: string) => {
+export const subscribe = async (authorId: string, recipientId: string, email: string) => {
   await db
     .insertInto('subscription')
     .values({
       authorId,
       recipientId,
+      email,
       medium: 'email'
     })
     .execute();
