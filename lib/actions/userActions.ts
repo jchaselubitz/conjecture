@@ -458,7 +458,7 @@ export const toggleFollow = async ({ followingId }: { followingId: string }) => 
       .values({
         authorId: followingId,
         recipientId: followerId,
-        handle: followerEmail,
+        email: followerEmail,
         medium: 'email'
       } as NewSubscription)
       .execute();

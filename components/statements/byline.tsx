@@ -1,6 +1,6 @@
 'use client';
 
-import { StatementWithDraftAndCollaborators } from 'kysely-codegen';
+import { FollowWithFollower, StatementWithDraftAndCollaborators } from 'kysely-codegen';
 import Link from 'next/link';
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -9,7 +9,7 @@ import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-butto
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUserContext } from '@/contexts/userContext';
-import { getFollow, toggleFollow } from '@/lib/actions/userActions';
+import { getFollow, getFollowers, toggleFollow } from '@/lib/actions/userActions';
 import { formatDate } from '@/lib/helpers/helpersDate';
 import { cn } from '@/lib/utils';
 
@@ -41,27 +41,23 @@ const AvatarGroup = ({ authors }: { authors: author[] }) => {
 const Byline = ({ statement }: { statement: StatementWithDraftAndCollaborators }) => {
   const { userId } = useUserContext();
   const [buttonStates, setButtonStates] = useState<Record<string, ButtonLoadingState>>({});
-  const [isFollowing, setIsFollowing] = useState<Record<string, boolean>>({});
+  const [readerFollows, setReaderFollows] = useState<Record<string, boolean>>({});
+  const [followers, setFollowers] = useState<Record<string, FollowWithFollower[]>>({});
 
-  // const [followerCount, setFollowerCount] = useState<number>(0);
-
-  const getIsFollowing = useCallback(
+  const getReaderFollows = useCallback(
     async (authorId: string) => {
       if (!userId || !authorId) {
         return false;
       }
       const following = await getFollow({ followerId: userId, followingId: authorId });
-      setIsFollowing(prev => ({ ...prev, [authorId]: following }));
+      setReaderFollows(prev => ({ ...prev, [authorId]: following }));
     },
     [userId]
   );
 
-  // const getFollowerCount = async () => {
-  //   console.log('getFollowerCount');
-  //   const followers = await getFollowers(statement?.creatorId);
-  //   console.log(followers);
-  //   setFollowerCount(followers.length);
-  // };
+  const getFollowerCount = async (authorId: string) => {
+    return followers[authorId]?.length;
+  };
 
   useEffect(() => {
     const checkFollow = async () => {
@@ -69,12 +65,18 @@ const Byline = ({ statement }: { statement: StatementWithDraftAndCollaborators }
         return;
       }
       statement?.authors.forEach(author => {
-        getIsFollowing(author.id);
+        getReaderFollows(author.id);
       });
-      // getFollowerCount();
     };
     checkFollow();
-  }, [userId, statement?.authors, getIsFollowing]);
+  }, [userId, statement?.authors, getReaderFollows]);
+
+  useEffect(() => {
+    statement?.authors.forEach(async author => {
+      const follows = await getFollowers(author.id);
+      setFollowers(prev => ({ ...prev, [author.id]: follows }));
+    });
+  }, [statement?.authors]);
 
   const handleFollow = async (authorId: string) => {
     setButtonStates(prev => ({ ...prev, [authorId]: 'loading' }));
@@ -88,7 +90,7 @@ const Byline = ({ statement }: { statement: StatementWithDraftAndCollaborators }
     try {
       await toggleFollow({ followingId: authorId });
       setButtonStates(prev => ({ ...prev, [authorId]: 'success' }));
-      getIsFollowing(authorId);
+      getReaderFollows(authorId);
     } catch (error) {
       console.error(error);
       setButtonStates(prev => ({ ...prev, [authorId]: 'error' }));
@@ -129,23 +131,29 @@ const Byline = ({ statement }: { statement: StatementWithDraftAndCollaborators }
                           </div>
                         </div>
                         {/* <div className="text-sm text-muted-foreground">
-                        Joined {formatDate({ date: statement?.createdAt })}
-                      </div> */}
-                        {/*   <div className="text-sm text-muted-foreground">0 followers</div> */}
+                          Joined {formatDate({ date: statement?.createdAt })}
+                        </div> */}
+                        <div className="text-sm text-muted-foreground">
+                          {followers[author.id]?.length} followers
+                        </div>
                       </div>
                     </div>
                   </Link>
                   <LoadingButton
                     className="w-full my-2"
-                    variant={isFollowing[author.id] ? 'outline' : 'default'}
+                    variant={readerFollows[author.id] ? 'outline' : 'default'}
                     onClick={() => handleFollow(author.id)}
                     disabled={userId === author.id}
                     buttonState={buttonStates[author.id] ?? 'default'}
                     text={
-                      userId === author.id ? 'You' : isFollowing[author.id] ? 'Following' : 'Follow'
+                      userId === author.id
+                        ? 'You'
+                        : readerFollows[author.id]
+                          ? 'Following'
+                          : 'Follow'
                     }
-                    loadingText={isFollowing[author.id] ? 'Unfollowing...' : 'Following...'}
-                    successText={isFollowing[author.id] ? 'Unfollowed' : 'Followed'}
+                    loadingText={readerFollows[author.id] ? 'Unfollowing...' : 'Following...'}
+                    successText={readerFollows[author.id] ? 'Unfollowed' : 'Followed'}
                     errorText="Error"
                   />
                 </div>

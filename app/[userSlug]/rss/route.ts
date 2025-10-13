@@ -62,7 +62,9 @@ export async function GET(_request: Request, context: { params: Promise<{ userSl
         <description>${escapeXml(description)}</description>
         ${
           authorNames.length
-            ? authorNames.map(author => `<author>${escapeXml(author)}</author>`).join('\n        ')
+            ? authorNames
+                .map(author => `<author>${escapeXml(author ?? '')}</author>`)
+                .join('\n        ')
             : ''
         }
       </item>`;
