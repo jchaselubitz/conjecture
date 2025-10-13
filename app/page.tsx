@@ -28,6 +28,18 @@ export default async function Home() {
             <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white" />
           </div>
 
+          {/* Logo */}
+          <div className="relative mb-6">
+            <Image
+              src="/conject-icon.png"
+              alt="Conjecture logo"
+              width={96}
+              height={96}
+              priority
+              className="rounded-md"
+            />
+          </div>
+
           <h1 className="relative text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tighter text-[#2D1810]">
             The Network for
             <span className="block sm:inline text-[#C26033]"> Civilized Debate</span>
