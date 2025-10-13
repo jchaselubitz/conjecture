@@ -3,6 +3,7 @@ import { Metadata, ResolvingMetadata } from 'next';
 
 import SiteNav from '@/components/navigation/site_nav';
 import NotFound from '@/components/ui/not_found';
+import RssCopyButton from '@/components/special_buttons/rss_copy_button';
 import { StatementListContainer } from '@/containers/StatementListContainer';
 import { getUser } from '@/lib/actions/baseActions';
 import { getStatementsCached } from '@/lib/actions/statementActions';
@@ -83,12 +84,9 @@ export default async function UserPage({ params }: UserPageProps) {
       <main className="flex-1 mx-auto bg-background container py-8 px-4 md:px-0">
         <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-3xl font-bold">{title}</h1>
-          <Link
-            href={`/${userSlug}/rss`}
-            className="inline-flex w-fit items-center gap-2 rounded-md border border-border px-4 py-2 text-sm font-medium text-primary hover:bg-muted"
-          >
-            Subscribe via RSS
-          </Link>
+          <RssCopyButton
+            rssUrl={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${userSlug}/rss`}
+          />
         </div>
         <StatementListContainer statements={permittedStatements} pathname={userSlug} />
       </main>
