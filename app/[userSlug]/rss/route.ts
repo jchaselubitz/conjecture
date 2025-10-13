@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { getStatementsCached } from '@/lib/actions/statementActions';
+import { getStatementDetailsCached } from '@/lib/actions/statementActions';
 import { userProfileCache } from '@/lib/actions/userActions';
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
@@ -23,9 +24,27 @@ const buildDescription = (subtitle?: string | null) => {
 
 const buildContent = (contentPlainText?: string | null) => {
   if (contentPlainText && contentPlainText.trim().length > 0) {
-    return contentPlainText.trim();
+    // Clean up the content and ensure proper encoding
+    return contentPlainText
+      .trim()
+      .replace(/\u00A0/g, ' ') // Replace non-breaking spaces
+      .replace(/[\u2000-\u200F\u2028-\u202F\u205F-\u206F]/g, ' '); // Replace various Unicode spaces
   }
   return '';
+};
+
+const buildImageEnclosure = (imageUrl?: string | null) => {
+  if (!imageUrl) return '';
+
+  // For RSS, we need to provide file size and MIME type
+  // Since we don't have this info readily available, we'll use reasonable defaults
+  return `    <enclosure url="${escapeXml(imageUrl)}" type="image/jpeg" length="0" />`;
+};
+
+const buildMediaContent = (imageUrl?: string | null) => {
+  if (!imageUrl) return '';
+
+  return `    <media:content url="${escapeXml(imageUrl)}" type="image/jpeg" medium="image" />`;
 };
 
 export async function GET(_request: Request, context: { params: Promise<{ userSlug: string }> }) {
@@ -41,18 +60,38 @@ export async function GET(_request: Request, context: { params: Promise<{ userSl
     publishedOnly: true
   });
 
-  const items = statements
-    .filter(statement => statement.draft?.publishedAt)
-    .map(statement => {
-      const publishedAt = statement.draft?.publishedAt
-        ? new Date(statement.draft.publishedAt)
-        : null;
-      const description = buildDescription(statement.subtitle);
-      const content = buildContent(statement.draft?.contentPlainText ?? null);
-      const link = `${SITE_URL}/${userSlug}/${statement.slug}`;
-      const authorNames = statement.authors?.map(author => author?.name).filter(Boolean) ?? [];
+  const items = await Promise.all(
+    statements
+      .filter(statement => statement.draft?.publishedAt)
+      .map(async statement => {
+        const publishedAt = statement.draft?.publishedAt
+          ? new Date(statement.draft.publishedAt)
+          : null;
+        const description = buildDescription(statement.subtitle);
+        const content = buildContent(statement.draft?.contentPlainText ?? null);
+        const link = `${SITE_URL}/${userSlug}/${statement.slug}`;
+        const authorNames = statement.authors?.map(author => author?.name).filter(Boolean) ?? [];
 
-      return `      <item>
+        // Get statement images for featured image
+        let featuredImage = statement.headerImg;
+        if (!featuredImage && statement.draft?.id) {
+          try {
+            const statementDetails = await getStatementDetailsCached({
+              statementId: statement.statementId,
+              draftId: statement.draft.id,
+              version: statement.draft.versionNumber
+            });
+            // Use the first image as featured image if no header image
+            featuredImage = statementDetails.images?.[0]?.src;
+          } catch (error) {
+            console.error('Error fetching statement images:', error);
+          }
+        }
+
+        const imageEnclosure = buildImageEnclosure(featuredImage);
+        const mediaContent = buildMediaContent(featuredImage);
+
+        return `      <item>
         <title>${escapeXml(statement.title ?? 'Untitled')}</title>
         <link>${escapeXml(link)}</link>
         <guid isPermaLink="false">${escapeXml(
@@ -61,6 +100,8 @@ export async function GET(_request: Request, context: { params: Promise<{ userSl
         ${publishedAt ? `<pubDate>${publishedAt.toUTCString()}</pubDate>` : ''}
         <description>${escapeXml(description)}</description>
         ${content ? `<content:encoded><![CDATA[${content}]]></content:encoded>` : ''}
+        ${imageEnclosure}
+        ${mediaContent}
         ${
           authorNames.length
             ? authorNames
@@ -69,14 +110,16 @@ export async function GET(_request: Request, context: { params: Promise<{ userSl
             : ''
         }
       </item>`;
-    })
-    .join('\n');
+      })
+  );
+
+  const itemsString = items.join('\n');
 
   const channelLastBuild =
     statements[0]?.draft?.publishedAt ?? statements[0]?.createdAt ?? new Date();
 
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:media="http://search.yahoo.com/mrss/">
   <channel>
     <title>${escapeXml(profile.name ?? profile.username ?? 'Conject Writer')}</title>
     <link>${escapeXml(`${SITE_URL}/${userSlug}`)}</link>
@@ -86,7 +129,7 @@ export async function GET(_request: Request, context: { params: Promise<{ userSl
     <language>en</language>
     <lastBuildDate>${new Date(channelLastBuild).toUTCString()}</lastBuildDate>
     ${profile.imageUrl ? `<image><url>${escapeXml(profile.imageUrl)}</url></image>` : ''}
-${items}
+${itemsString}
   </channel>
 </rss>`;
 
