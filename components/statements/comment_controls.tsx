@@ -113,7 +113,7 @@ export default function CommentControls({
                   onClick={() => onReplyClick(comment)}
                   className="text-xs opacity-70 hover:opacity-100 hover:cursor-pointer"
                 >
-                  <Reply className="w-3 h-3" />
+                  <Reply className="w-3 h-3" /> Reply
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -132,7 +132,7 @@ export default function CommentControls({
                     onClick={onEditClick}
                     className="text-xs opacity-70 hover:opacity-100 hover:cursor-pointer"
                   >
-                    <Edit2 className="w-3 h-3" />
+                    <Edit2 className="w-3 h-3" /> Edit
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -150,7 +150,10 @@ export default function CommentControls({
                   onClick={handleVote}
                   className="text-xs opacity-70 hover:opacity-100 hover:cursor-pointer"
                 >
-                  {isHovered && <ArrowUp className="w-3 h-3" />}
+                  <>
+                    <ArrowUp className="w-3 h-3" /> Upvote
+                  </>
+
                   {voteCount > 0 && voteCount}
                 </Button>
               </TooltipTrigger>

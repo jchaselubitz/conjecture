@@ -11,7 +11,6 @@ import { cn } from '@/lib/utils';
 
 import AnnotationDetailMobile from './ad_mobile';
 import CommentDialog from './comment_dialog';
-import CommentInput from './comment_input';
 
 interface AnnotationDrawerProps {
   showAnnotationDrawer: boolean;
@@ -161,13 +160,13 @@ export default function AnnotationDrawer({
                 </Button>
               )}
             </div>
-            <Button
+            {/* <Button
               variant="ghost"
               onClick={() => setShowCommentInput(true)}
               className="rounded-lg text-left text-muted-foreground justify-center w-fit"
             >
               Add comment <MessageCircle className="h-4 w-4" />
-            </Button>
+            </Button> */}
             <div className="w-24 flex justify-end pr-2 rounded-lg">
               {canGoNext() && (
                 <Button
