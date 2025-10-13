@@ -26,11 +26,8 @@ const buildDescription = (subtitle?: string | null, fallback?: string | null) =>
   return '';
 };
 
-export async function GET(
-  _request: Request,
-  context: { params: { userSlug: string } }
-) {
-  const { userSlug } = context.params;
+export async function GET(_request: Request, context: { params: Promise<{ userSlug: string }> }) {
+  const { userSlug } = await context.params;
   const profile = await userProfileCache(userSlug);
 
   if (!profile) {
@@ -61,17 +58,11 @@ export async function GET(
         <guid isPermaLink="false">${escapeXml(
           `${statement.statementId}:${statement.draft?.versionNumber ?? ''}`
         )}</guid>
-        ${
-          publishedAt
-            ? `<pubDate>${publishedAt.toUTCString()}</pubDate>`
-            : ''
-        }
+        ${publishedAt ? `<pubDate>${publishedAt.toUTCString()}</pubDate>` : ''}
         <description>${escapeXml(description)}</description>
         ${
           authorNames.length
-            ? authorNames
-                .map(author => `<author>${escapeXml(author)}</author>`)
-                .join('\n        ')
+            ? authorNames.map(author => `<author>${escapeXml(author)}</author>`).join('\n        ')
             : ''
         }
       </item>`;
