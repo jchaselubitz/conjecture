@@ -22,10 +22,10 @@ const buildDescription = (subtitle?: string | null) => {
   return '';
 };
 
-const buildContent = (contentPlainText?: string | null) => {
-  if (contentPlainText && contentPlainText.trim().length > 0) {
+const buildContent = (content?: string | null) => {
+  if (content && content.trim().length > 0) {
     // Clean up the content and ensure proper encoding
-    return contentPlainText
+    return content
       .trim()
       .replace(/\u00A0/g, ' ') // Replace non-breaking spaces
       .replace(/[\u2000-\u200F\u2028-\u202F\u205F-\u206F]/g, ' '); // Replace various Unicode spaces
@@ -68,7 +68,7 @@ export async function GET(_request: Request, context: { params: Promise<{ userSl
           ? new Date(statement.draft.publishedAt)
           : null;
         const description = buildDescription(statement.subtitle);
-        const content = buildContent(statement.draft?.contentPlainText ?? null);
+        const content = buildContent(statement.draft?.content ?? null);
         const link = `${SITE_URL}/${userSlug}/${statement.slug}`;
         const authorNames = statement.authors?.map(author => author?.name).filter(Boolean) ?? [];
 
