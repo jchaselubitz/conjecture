@@ -129,7 +129,7 @@ export async function GET(_request: Request, context: { params: Promise<{ userSl
     <title>${escapeXml(profile.name ?? profile.username ?? 'Conject Writer')}</title>
     <link>${escapeXml(`${SITE_URL}/${userSlug}`)}</link>
     <description>${escapeXml(
-      `${profile.followerCount ?? 0} follower${profile.followerCount === 1 ? '' : 's'} on Conject`
+      `Opinions from ${profile.name ?? profile.username} on Conject`
     )}</description>
     <language>en</language>
     <lastBuildDate>${new Date(channelLastBuild).toUTCString()}</lastBuildDate>
