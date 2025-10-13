@@ -13,16 +13,18 @@ const escapeXml = (value: string) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
 
-const buildDescription = (subtitle?: string | null, fallback?: string | null) => {
+const buildDescription = (subtitle?: string | null) => {
   if (subtitle && subtitle.trim().length > 0) {
-    return subtitle.trim();
-  }
-
-  if (fallback && fallback.trim().length > 0) {
-    const text = fallback.trim();
+    const text = subtitle.trim();
     return text.length > 280 ? `${text.slice(0, 277)}...` : text;
   }
+  return '';
+};
 
+const buildContent = (contentPlainText?: string | null) => {
+  if (contentPlainText && contentPlainText.trim().length > 0) {
+    return contentPlainText.trim();
+  }
   return '';
 };
 
@@ -45,10 +47,8 @@ export async function GET(_request: Request, context: { params: Promise<{ userSl
       const publishedAt = statement.draft?.publishedAt
         ? new Date(statement.draft.publishedAt)
         : null;
-      const description = buildDescription(
-        statement.subtitle,
-        statement.draft?.contentPlainText ?? null
-      );
+      const description = buildDescription(statement.subtitle);
+      const content = buildContent(statement.draft?.contentPlainText ?? null);
       const link = `${SITE_URL}/${userSlug}/${statement.slug}`;
       const authorNames = statement.authors?.map(author => author?.name).filter(Boolean) ?? [];
 
@@ -60,6 +60,7 @@ export async function GET(_request: Request, context: { params: Promise<{ userSl
         )}</guid>
         ${publishedAt ? `<pubDate>${publishedAt.toUTCString()}</pubDate>` : ''}
         <description>${escapeXml(description)}</description>
+        ${content ? `<content:encoded><![CDATA[${content}]]></content:encoded>` : ''}
         ${
           authorNames.length
             ? authorNames
@@ -75,7 +76,7 @@ export async function GET(_request: Request, context: { params: Promise<{ userSl
     statements[0]?.draft?.publishedAt ?? statements[0]?.createdAt ?? new Date();
 
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>${escapeXml(profile.name ?? profile.username ?? 'Conject Writer')}</title>
     <link>${escapeXml(`${SITE_URL}/${userSlug}`)}</link>
