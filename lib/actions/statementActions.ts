@@ -404,6 +404,13 @@ export async function getStatementDetails({
           .execute()
       ]);
 
+      if (annotations.length === 0) {
+        return {
+          images: images,
+          citations: citations,
+          annotations: []
+        };
+      }
       // Get profiles for all users involved
       const profileIds = new Set([
         ...comments.map(comment => comment.userId),
@@ -442,24 +449,6 @@ export async function getStatementDetails({
         annotations: []
       };
     }
-
-    // annotations
-    //   .filter((a) => a.draftId === draftId)
-    //   .map((a) => ({
-    //     ...a,
-    //     userName: profiles.find((p) => p.id === a.userId)?.name || "",
-    //     userImageUrl: profiles.find((p) => p.id === a.userId)?.imageUrl ||
-    //       "",
-    //     comments: comments
-    //       .filter((c) => c.annotationId === a.id)
-    //       .map((c) => ({
-    //         ...c,
-    //         userName: profiles.find((p) => p.id === c.userId)?.name || "",
-    //         userImageUrl: profiles.find((p) => p.id === c.userId)?.imageUrl ||
-    //           "",
-    //         draftId: draftId,
-    //       })),
-    //   })),
   } catch (error) {
     console.error('Error loading statement details:', error);
     return {
