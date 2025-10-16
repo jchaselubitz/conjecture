@@ -347,6 +347,15 @@ export async function getStatementDetails({
   citations: BaseStatementCitation[];
   annotations: AnnotationWithComments[];
 }> {
+  console.log('loading statement details');
+  if (!statementId || !draftId) {
+    console.warn('Invalid statementId or draftId provided');
+    return {
+      images: [],
+      citations: [],
+      annotations: []
+    };
+  }
   try {
     const images = await db
       .selectFrom('statementImage')
@@ -378,13 +387,13 @@ export async function getStatementDetails({
           'comment.userId',
           'comment.annotationId',
           'comment.parentId',
-          'comment.isPublic',
-          jsonArrayFrom(
-            eb
-              .selectFrom('commentVote')
-              .selectAll()
-              .whereRef('commentVote.commentId', '=', 'comment.id')
-          ).as('votes')
+          'comment.isPublic'
+          // jsonArrayFrom(
+          //   eb
+          //     .selectFrom('commentVote')
+          //     .selectAll()
+          //     .whereRef('commentVote.commentId', '=', 'comment.id')
+          // ).as('votes')
         ])
         .where(
           'comment.annotationId',
