@@ -444,7 +444,7 @@ export async function getStatementDetails({
       citations: citations,
       annotations: composedAnnotations
     };
-
+    console.log('returnPackage', returnPackage);
     return returnPackage;
   } catch (error) {
     return {

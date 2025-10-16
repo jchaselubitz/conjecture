@@ -82,7 +82,7 @@ export function StatementProvider({
   const [images, setImages] = useState<BaseStatementImage[]>([]);
   const [citations, setCitations] = useState<BaseStatementCitation[]>([]);
   const [thread, setThread] = useState<StatementWithDraft[]>([]);
-
+  console.log('citations state', citations);
   const parentStatement = useMemo(() => {
     return thread.find(draft => draft.statementId === statement.parentStatementId);
   }, [statement.parentStatementId, thread]);
@@ -107,7 +107,7 @@ export function StatementProvider({
       ]);
 
       if (cancelled) return;
-
+      console.log('citations', details.citations);
       setImages(details.images);
       setCitations(details.citations);
       setAnnotations(details.annotations);
