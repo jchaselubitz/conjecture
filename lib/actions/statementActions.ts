@@ -370,65 +370,65 @@ export async function getStatementDetails({
       .execute();
 
     // Get annotations and comments for the selected draft
-    const [annotations, comments] = await Promise.all([
-      db
-        .selectFrom('annotation')
-        .selectAll()
-        .where('annotation.draftId', '=', draftId)
-        .orderBy('annotation.createdAt', 'desc')
-        .execute(),
-      db
-        .selectFrom('comment')
-        .select(({ eb }) => [
-          'comment.id',
-          'comment.content',
-          'comment.createdAt',
-          'comment.updatedAt',
-          'comment.userId',
-          'comment.annotationId',
-          'comment.parentId',
-          'comment.isPublic'
-          // jsonArrayFrom(
-          //   eb
-          //     .selectFrom('commentVote')
-          //     .selectAll()
-          //     .whereRef('commentVote.commentId', '=', 'comment.id')
-          // ).as('votes')
-        ])
-        .where(
-          'comment.annotationId',
-          'in',
-          db.selectFrom('annotation').select('id').where('draftId', '=', draftId)
-        )
-        .orderBy('comment.createdAt', 'desc')
-        .execute()
-    ]);
+    // const [annotations, comments] = await Promise.all([
+    //   db
+    //     .selectFrom('annotation')
+    //     .selectAll()
+    //     .where('annotation.draftId', '=', draftId)
+    //     .orderBy('annotation.createdAt', 'desc')
+    //     .execute(),
+    //   db
+    //     .selectFrom('comment')
+    //     .select(({ eb }) => [
+    //       'comment.id',
+    //       'comment.content',
+    //       'comment.createdAt',
+    //       'comment.updatedAt',
+    //       'comment.userId',
+    //       'comment.annotationId',
+    //       'comment.parentId',
+    //       'comment.isPublic',
+    //       jsonArrayFrom(
+    //         eb
+    //           .selectFrom('commentVote')
+    //           .selectAll()
+    //           .whereRef('commentVote.commentId', '=', 'comment.id')
+    //       ).as('votes')
+    //     ])
+    //     .where(
+    //       'comment.annotationId',
+    //       'in',
+    //       db.selectFrom('annotation').select('id').where('draftId', '=', draftId)
+    //     )
+    //     .orderBy('comment.createdAt', 'desc')
+    //     .execute()
+    // ]);
 
     // Get profiles for all users involved
-    const profileIds = new Set([
-      ...comments.map(comment => comment.userId),
-      ...annotations.map(annotation => annotation.userId)
-    ]);
+    // const profileIds = new Set([
+    //   ...comments.map(comment => comment.userId),
+    //   ...annotations.map(annotation => annotation.userId)
+    // ]);
 
-    const profiles = await db
-      .selectFrom('profile')
-      .selectAll()
-      .where('profile.id', 'in', Array.from(profileIds))
-      .execute();
+    // const profiles = await db
+    //   .selectFrom('profile')
+    //   .selectAll()
+    //   .where('profile.id', 'in', Array.from(profileIds))
+    //   .execute();
 
-    const composedAnnotations = annotations.map(annotation => ({
-      ...annotation,
-      userName: profiles.find(p => p.id === annotation.userId)?.name || '',
-      userImageUrl: profiles.find(p => p.id === annotation.userId)?.imageUrl || '',
-      comments: comments
-        .filter(c => c.annotationId === annotation.id)
-        .map(comment => ({
-          ...comment,
-          userName: profiles.find(p => p.id === comment.userId)?.name || '',
-          userImageUrl: profiles.find(p => p.id === comment.userId)?.imageUrl || '',
-          draftId: draftId
-        }))
-    }));
+    // const composedAnnotations = annotations.map(annotation => ({
+    //   ...annotation,
+    //   userName: profiles.find(p => p.id === annotation.userId)?.name || '',
+    //   userImageUrl: profiles.find(p => p.id === annotation.userId)?.imageUrl || '',
+    //   comments: comments
+    //     .filter(c => c.annotationId === annotation.id)
+    //     .map(comment => ({
+    //       ...comment,
+    //       userName: profiles.find(p => p.id === comment.userId)?.name || '',
+    //       userImageUrl: profiles.find(p => p.id === comment.userId)?.imageUrl || '',
+    //       draftId: draftId
+    //     }))
+    // }));
 
     // annotations
     //   .filter((a) => a.draftId === draftId)
@@ -451,7 +451,7 @@ export async function getStatementDetails({
     const returnPackage = {
       images: images,
       citations: citations,
-      annotations: composedAnnotations
+      annotations: []
     };
     return returnPackage;
   } catch (error) {
