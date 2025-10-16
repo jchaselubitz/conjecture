@@ -298,7 +298,9 @@ export default function StatementDetails({
                   }
                 />
               ) : (
-                <h1 className="md:text-5xl text-3xl font-bold py-1">{statement?.title ?? title}</h1>
+                <h1 className="md:text-5xl leading-tight text-3xl font-bold ">
+                  {statement?.title ?? title}
+                </h1>
               )}
             </div>
             <div className="flex justify-between items-center">
