@@ -82,7 +82,6 @@ export function StatementProvider({
   const [images, setImages] = useState<BaseStatementImage[]>([]);
   const [citations, setCitations] = useState<BaseStatementCitation[]>([]);
   const [thread, setThread] = useState<StatementWithDraft[]>([]);
-  console.log('thread state', thread);
   const parentStatement = useMemo(() => {
     return thread.find(draft => draft.statementId === statement.parentStatementId);
   }, [statement.parentStatementId, thread]);
@@ -91,7 +90,6 @@ export function StatementProvider({
     let cancelled = false;
 
     const load = async () => {
-      console.log('loading details');
       try {
         const [thread, details] = await Promise.all([
           statement.threadId ? getFullThread(statement.threadId) : Promise.resolve([]),
@@ -109,7 +107,6 @@ export function StatementProvider({
         ]);
 
         if (cancelled) return;
-        console.log('details', details);
         setImages(details.images);
         setCitations(details.citations);
         setAnnotations(details.annotations);
