@@ -82,7 +82,7 @@ export function StatementProvider({
   const [images, setImages] = useState<BaseStatementImage[]>([]);
   const [citations, setCitations] = useState<BaseStatementCitation[]>([]);
   const [thread, setThread] = useState<StatementWithDraft[]>([]);
-
+  console.log('thread state', thread);
   const parentStatement = useMemo(() => {
     return thread.find(draft => draft.statementId === statement.parentStatementId);
   }, [statement.parentStatementId, thread]);
@@ -92,27 +92,31 @@ export function StatementProvider({
 
     const load = async () => {
       console.log('loading details');
-      const [thread, details] = await Promise.all([
-        statement.threadId ? getFullThread(statement.threadId) : Promise.resolve([]),
-        statement.draft?.id
-          ? getStatementDetails({
-              statementId: statement.statementId,
-              draftId: statement.draft.id,
-              userId
-            })
-          : Promise.resolve({
-              images: [],
-              citations: [],
-              annotations: []
-            })
-      ]);
+      try {
+        const [thread, details] = await Promise.all([
+          statement.threadId ? getFullThread(statement.threadId) : Promise.resolve([]),
+          statement.draft?.id
+            ? getStatementDetails({
+                statementId: statement.statementId,
+                draftId: statement.draft.id,
+                userId
+              })
+            : Promise.resolve({
+                images: [],
+                citations: [],
+                annotations: []
+              })
+        ]);
 
-      if (cancelled) return;
-      console.log('details', details);
-      setImages(details.images);
-      setCitations(details.citations);
-      setAnnotations(details.annotations);
-      setThread(thread || []);
+        if (cancelled) return;
+        console.log('details', details);
+        setImages(details.images);
+        setCitations(details.citations);
+        setAnnotations(details.annotations);
+        setThread(thread || []);
+      } catch (error) {
+        console.error('Error loading statement details:', error);
+      }
     };
 
     load();
