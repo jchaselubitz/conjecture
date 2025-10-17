@@ -112,7 +112,7 @@ const Comment: React.FC<CommentProps> = ({
       <div
         className={cn(
           'p-3 rounded-md transition-colors flex flex-col ',
-          currentLevel === 0 ? 'bg-background' : 'bg-muted',
+          isRootComment ? 'bg-background' : 'bg-muted',
           isHovered && 'bg-muted/80',
           !isRootComment && 'gap-3',
           !isRootComment && level === 0 && 'mt-4'
@@ -128,7 +128,9 @@ const Comment: React.FC<CommentProps> = ({
                     src={comment.userImageUrl}
                     className="object-cover border border-muted-foreground"
                   />
-                  <AvatarFallback>{comment.userName?.charAt(0) || 'U'}</AvatarFallback>
+                  <AvatarFallback className="border border-neutral-400">
+                    {comment.userName?.charAt(0) || 'U'}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-wrap font-semibold text-xs text-muted-foreground items-center">
                   <p>{comment.userId === userId ? 'You' : comment.userName}</p>
@@ -139,7 +141,7 @@ const Comment: React.FC<CommentProps> = ({
                 </div>
               </div>
 
-              <CommentControls
+              {/* <CommentControls
                 userId={userId}
                 statementCreatorId={statementCreatorId}
                 comment={comment}
@@ -152,7 +154,7 @@ const Comment: React.FC<CommentProps> = ({
                 votes={optVotes}
                 setVotes={setOptVotes}
                 statementId={statementId}
-              />
+              /> */}
             </>
           )}
         </div>
@@ -184,8 +186,6 @@ const Comment: React.FC<CommentProps> = ({
           <p className="text-sm whitespace-pre-wrap break-words">{commentContent}</p>
         )}
         {/* Reply button */}
-      </div>
-      {isRootComment && (
         <CommentControls
           userId={userId}
           comment={comment}
@@ -200,7 +200,8 @@ const Comment: React.FC<CommentProps> = ({
           setVotes={setOptVotes}
           statementId={statementId}
         />
-      )}
+      </div>
+
       {/* Nested replies */}
       {replies.length > 0 && (
         <div className="">

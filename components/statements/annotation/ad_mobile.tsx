@@ -60,7 +60,7 @@ export default function AnnotationDetailMobile({
           handleDeleteAnnotation={handleDeleteAnnotation}
         />
         {comments.length > 0 && (
-          <div className="border-b pb-1 border-muted">
+          <div className="border-b pb-1 border-muted max-w-full">
             {comments.map(comment => (
               <Comment
                 key={comment.id}

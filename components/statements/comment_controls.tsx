@@ -150,11 +150,11 @@ export default function CommentControls({
                   onClick={handleVote}
                   className="text-xs opacity-70 hover:opacity-100 hover:cursor-pointer"
                 >
-                  <>
-                    <ArrowUp className="w-3 h-3" /> Upvote
-                  </>
-
-                  {voteCount > 0 && voteCount}
+                  <div className="flex items-center gap-1">
+                    <ArrowUp className="w-3 h-3" />
+                    {voteCount > 0 && voteCount}
+                    {hasUpvoted ? ' ' : ' Upvote'}{' '}
+                  </div>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>

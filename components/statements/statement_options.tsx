@@ -1,4 +1,4 @@
-import { StatementPackage, StatementWithDraftAndCollaborators } from 'kysely-codegen';
+import { StatementWithDraftAndCollaborators } from 'kysely-codegen';
 import { BarChart3, CalendarClock, MoreHorizontal, PencilLine, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
