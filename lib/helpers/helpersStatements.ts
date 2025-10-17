@@ -217,7 +217,7 @@ export const createQuoteHighlight = (searchParamsGetter: () => URLSearchParams) 
 
               // Create a decoration that adds the quoted-text class
               const decoration = Decoration.inline(start, end, {
-                class: 'quoted-text'
+                class: 'referenced-text'
               });
 
               decorationSet = DecorationSet.create(state.doc, [decoration]);

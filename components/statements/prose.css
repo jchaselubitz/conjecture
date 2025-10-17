@@ -463,7 +463,104 @@
   white-space: nowrap;
  } */
 
-.quoted-text {
+ .quoted-text {
+  border-radius: 10px;
+  padding: 2px; 
+  padding-left: 1px;
+  padding-right: 0px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* Hover effects for quoted text */
+.quoted-text:hover {
+  background: linear-gradient(135deg, rgba(0, 64, 255, 0.2), rgba(255, 193, 7, 0.2));
+  border-left: 1px solid #ff9800;
+  /* border-left-color: #ff9800; */
+  transform: translateX(1px);
+  box-shadow: 0 1px 4px rgba(7, 255, 185, 0.3);
+}
+
+
+/* Enhanced styling for quoted text with data attributes */
+.quoted-text[data-quote-content] {
+  background: linear-gradient(135deg, rgba(255, 221, 0, 0.1), rgba(255, 193, 7, 0.1));
+  margin-left: 1px;
+  margin-right: 1px;  
+  font-style: italic;
+  color: #2d3748;
+  flex-wrap: wrap;
+}
+
+/* Exclude citation marks from quoted text styling */
+/* .quoted-text[data-quote-content] .citation-reference,
+.quoted-text[data-quote-content] .citation-number {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-style: normal !important;
+  color: inherit !important;
+  transform: none !important;
+  box-shadow: none !important;
+} */
+
+
+/* Ensure citation marks don't inherit hover effects */
+/* .quoted-text:hover .citation-reference,
+.quoted-text:hover .citation-number {
+  transform: none !important;
+  box-shadow: none !important;
+} */
+
+/* Different styles based on statement ID presence */
+.quoted-text[data-quote-statement-id]:not([data-quote-statement-id=""]) {
+  background: linear-gradient(135deg, rgba(177, 172, 185, 0.1), rgba(117, 132, 167, 0.1));
+}
+
+.quoted-text[data-quote-statement-id]:not([data-quote-statement-id=""]):hover {
+  border-left-color: #383c8e;
+  padding-left: 2px;
+  background: linear-gradient(135deg, rgba(89, 98, 194, 0.2), rgba(152, 116, 200, 0.2));
+  box-shadow: 0 1px 4px rgba(76, 76, 175, 0.3);
+}
+
+/* Tooltip-like effect on hover */
+/* .quoted-text[data-quote-content]:hover::after {
+  content: attr(data-quote-url);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 1000;
+  opacity: 0;
+  animation: tooltip-fade-in 0.2s ease-out forwards;
+  pointer-events: none;
+  max-width: 300px;
+  white-space: normal;
+  word-wrap: break-word;
+} */
+
+/* Animation for tooltip */
+@keyframes tooltip-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+
+.referenced-text {
   animation: highlight-fade 7s ease-out;
   border-radius: 10px;
   padding: 2px 5px;

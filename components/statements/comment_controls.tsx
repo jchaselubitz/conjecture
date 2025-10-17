@@ -8,8 +8,8 @@ import { startTransition, useOptimistic, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { deleteComment, toggleCommentUpvote } from '@/lib/actions/commentActions';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
+import { deleteComment, toggleCommentUpvote } from '@/lib/actions/commentActions';
 interface CommentControlsProps {
   userId?: string | null;
   comment: CommentWithUser;

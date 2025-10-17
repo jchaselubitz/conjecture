@@ -39,8 +39,11 @@ import { BlockLatex } from '../custom_extensions/block_latex';
 import { Citation } from '../custom_extensions/citation';
 import { processLatex } from '../custom_extensions/helpers/helpersLatexExtension';
 import { InlineLatex } from '../custom_extensions/inline_latex';
-import { handleCitationPaste } from '../custom_extensions/quote_paste_handler';
-import { QuotePasteHandler } from '../custom_extensions/quote_paste_handler';
+import {
+  handleCitationPaste,
+  QuotedTextMark,
+  QuotePasteHandler
+} from '../custom_extensions/quote_paste_handler';
 import { TableWithTools } from '../custom_extensions/table_with_tools';
 
 interface UseHtmlSuperEditorProps {
@@ -197,6 +200,7 @@ export const useHtmlSuperEditor = ({
         }
       }),
       QuoteHighlight,
+      QuotedTextMark,
       QuotePasteHandler.configure({
         creatorId: statementCreatorId,
         currentStatementId: statementId,

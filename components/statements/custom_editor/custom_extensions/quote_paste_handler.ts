@@ -1,4 +1,4 @@
-import { Extension } from '@tiptap/core';
+import { Extension, Mark } from '@tiptap/core';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { EditorView } from '@tiptap/pm/view';
 import { BaseStatementCitation } from 'kysely-codegen';
@@ -7,6 +7,82 @@ import { Dispatch, SetStateAction } from 'react';
 import { getStatementsCached } from '@/lib/actions/statementActions';
 
 import { upsertCitation } from './helpers/helpersCitationExtension';
+
+export const QuotedTextMark = Mark.create({
+  name: 'quotedText',
+
+  addOptions() {
+    return {
+      HTMLAttributes: {}
+    };
+  },
+
+  addAttributes() {
+    return {
+      'data-quote-content': {
+        default: null,
+        parseHTML: element => element.getAttribute('data-quote-content'),
+        renderHTML: attributes => {
+          if (!attributes['data-quote-content']) {
+            return {};
+          }
+          return {
+            'data-quote-content': attributes['data-quote-content']
+          };
+        }
+      },
+
+      'data-quote-url': {
+        default: null,
+        parseHTML: element => element.getAttribute('data-quote-url'),
+        renderHTML: attributes => {
+          if (!attributes['data-quote-url']) {
+            return {};
+          }
+          return {
+            'data-quote-url': attributes['data-quote-url']
+          };
+        }
+      },
+      'data-quote-statement-id': {
+        default: null,
+        parseHTML: element => element.getAttribute('data-quote-statement-id'),
+        renderHTML: attributes => {
+          if (!attributes['data-quote-statement-id']) {
+            return {};
+          }
+          return {
+            'data-quote-statement-id': attributes['data-quote-statement-id']
+          };
+        }
+      }
+    };
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: 'span[data-quote-content]',
+        getAttrs: node => {
+          if (typeof node === 'string') return false;
+          if (node.hasAttribute('data-quote-content')) {
+            return {
+              'data-quote-content': node.getAttribute('data-quote-content'),
+              'data-quote-url': node.getAttribute('data-quote-url'),
+              'data-quote-statement-id': node.getAttribute('data-quote-statement-id')
+            };
+          }
+          return false;
+        }
+      }
+    ];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return ['span', { class: 'quoted-text', ...HTMLAttributes }, 0];
+  }
+});
+
 export const QuotePasteHandler = Extension.create({
   name: 'quotePasteHandler',
 
@@ -42,19 +118,29 @@ export const QuotePasteHandler = Extension.create({
 
               if (!location || !content) return false;
 
-              // Create a text node with the content and wrap it in a link mark
+              // Create a custom mark for quoted text with data attributes
               const { tr } = view.state;
-              // const linkMark = view.state.schema.marks.link.create({
-              //  href: url.toString(),
-              // });
-              const italicText = view.state.schema.text(`"${content}" `, [
-                view.state.schema.marks.italic.create()
+
+              // Create the quoted text mark with all the data attributes
+              const quotedTextMark = view.state.schema.marks.quotedText.create({
+                'data-quote-content': content,
+                'data-quote-url': url.toString(),
+                'data-quote-statement-id': statementId || ''
+              });
+
+              // Create italic mark
+              const italicMark = view.state.schema.marks.italic.create();
+
+              // Create text node with both marks
+              const quotedText = view.state.schema.text(`"${content}" `, [
+                quotedTextMark,
+                italicMark
               ]);
 
-              const nodeLength = italicText.nodeSize + 1;
+              const nodeLength = quotedText.nodeSize + 1;
 
               // Insert the text at the current selection without creating a new paragraph
-              tr.replaceSelectionWith(italicText, false);
+              tr.replaceSelectionWith(quotedText, false);
               view.dispatch(tr);
 
               if (statementId) {

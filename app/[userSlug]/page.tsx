@@ -1,9 +1,9 @@
-import Link from 'next/link';
 import { Metadata, ResolvingMetadata } from 'next';
+import Link from 'next/link';
 
 import SiteNav from '@/components/navigation/site_nav';
-import NotFound from '@/components/ui/not_found';
 import RssCopyButton from '@/components/special_buttons/rss_copy_button';
+import NotFound from '@/components/ui/not_found';
 import { StatementListContainer } from '@/containers/StatementListContainer';
 import { getUser } from '@/lib/actions/baseActions';
 import { getStatementsCached } from '@/lib/actions/statementActions';
