@@ -23,11 +23,11 @@ import {
 } from 'kysely-codegen';
 import { Pool } from 'pg';
 
-const connectionString = process.env.POSTGRES_URL || '';
-
+const connectionString = process.env.DATABASE_URL || '';
 // "write-supabase-ca": "node -e \"const fs=require('fs'); if(!process.env.SUPABASE_CA_PEM){console.error('SUPABASE_CA_PEM missing'); process.exit(1)} fs.writeFileSync('./supabase-ca.pem', process.env.SUPABASE_CA_PEM)\"",
 // "generate-deploy": "if [ -n \"$VERCEL\" ]; then NODE_OPTIONS=\"--dns-result-order=ipv4first\" yarn write-supabase-ca && PGSSLMODE=verify-full PGSSLROOTCERT=./supabase-ca.pem kysely-codegen; else kysely-codegen; fi",
 //
+// const stringWithSsl = connectionString + '?sslmode=require';
 
 // const ssl = (() => {
 //   if (process.env.NODE_ENV === 'development' && !process.env.VERCEL) {
@@ -52,7 +52,7 @@ const db = new Kysely<DB>({
   dialect: new PostgresDialect({
     pool: new Pool({
       connectionString: connectionString,
-      // ssl: ssl,
+      // ssl: { rejectUnauthorized: true },
       max: 10
     })
   })
