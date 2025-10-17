@@ -29,30 +29,30 @@ const connectionString = process.env.POSTGRES_URL_NON_POOLING || '';
 // "generate-deploy": "if [ -n \"$VERCEL\" ]; then NODE_OPTIONS=\"--dns-result-order=ipv4first\" yarn write-supabase-ca && PGSSLMODE=verify-full PGSSLROOTCERT=./supabase-ca.pem kysely-codegen; else kysely-codegen; fi",
 //
 
-const ssl = (() => {
-  if (process.env.NODE_ENV === 'development' && !process.env.VERCEL) {
-    return connectionString.includes('sslmode=require') ? true : false;
-  }
-  if (process.env.VERCEL || connectionString.includes('sslmode=require')) {
-    if (process.env.SUPABASE_CA_PEM) {
-      return {
-        rejectUnauthorized: true,
-        ca: process.env.SUPABASE_CA_PEM
-      };
-    }
-    return {
-      rejectUnauthorized: false
-    };
-  }
-  return { rejectUnauthorized: true };
-})();
+// const ssl = (() => {
+//   if (process.env.NODE_ENV === 'development' && !process.env.VERCEL) {
+//     return connectionString.includes('sslmode=require') ? true : false;
+//   }
+//   if (process.env.VERCEL || connectionString.includes('sslmode=require')) {
+//     if (process.env.SUPABASE_CA_PEM) {
+//       return {
+//         rejectUnauthorized: true,
+//         ca: process.env.SUPABASE_CA_PEM
+//       };
+//     }
+//     return {
+//       rejectUnauthorized: false
+//     };
+//   }
+//   return { rejectUnauthorized: true };
+// })();
 
 const db = new Kysely<DB>({
   plugins: [new CamelCasePlugin()],
   dialect: new PostgresDialect({
     pool: new Pool({
       connectionString: connectionString,
-      ssl: ssl,
+      // ssl: ssl,
       max: 10
     })
   })
