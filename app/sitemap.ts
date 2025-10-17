@@ -64,11 +64,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
     }
 
-    // Get all user profiles (for user pages)
+    // Get user profiles that have at least one published statement
     const userProfiles = await db
       .selectFrom('profile')
-      .select(['username', 'updatedAt'])
-      .where('username', 'is not', null)
+      .innerJoin('statement', 'profile.id', 'statement.creatorId')
+      .innerJoin('draft', 'statement.statementId', 'draft.statementId')
+      .select(['profile.username as username', 'profile.updatedAt as updatedAt'])
+      .where('profile.username', 'is not', null)
+      .where('draft.publishedAt', 'is not', null)
+      .distinct()
       .execute();
 
     // Add user profile URLs

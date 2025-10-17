@@ -69,12 +69,12 @@ export default function VoteButton({
         <TooltipTrigger asChild>
           <Button
             variant={hasUpvoted ? 'default' : 'outline'}
-            size="sm"
+            size="default"
             onClick={handleVote}
             disabled={!userId}
-            className={`text-xs opacity-70 hover:opacity-100 hover:cursor-pointer ${className}`}
+            className={` opacity-70 hover:opacity-100 hover:cursor-pointer ${className}`}
           >
-            <ArrowUp className="w-3 h-3 mr-1" />
+            <ArrowUp className="w-3 h-3 mr-1" /> {hasUpvoted ? '' : 'Upvote'}
             {voteCount > 0 && voteCount}
           </Button>
         </TooltipTrigger>

@@ -71,6 +71,9 @@ export default function StatementOptions({
   };
 
   const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this statement? This action is irreversible.')) {
+      return;
+    }
     try {
       await deleteStatement(statement.statementId, statement.creatorId, statement.headerImg || '');
       router.push(`/${statement.creatorSlug}`);
