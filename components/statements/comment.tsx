@@ -7,7 +7,7 @@ import {
   StatementWithDraftAndCollaborators
 } from 'kysely-codegen';
 import { DotIcon } from 'lucide-react';
-import React, { useOptimistic, useState } from 'react';
+import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { useUserContext } from '@/contexts/userContext';
@@ -51,12 +51,10 @@ const Comment: React.FC<CommentProps> = ({
   const [editingButtonState, setEditingButtonState] = useState<ButtonLoadingState>('default');
   const [isHovered, setIsHovered] = useState(false);
 
-  const [optVotes, setOptVotes] = useOptimistic<BaseCommentVote[] | undefined, BaseCommentVote[]>(
-    comment.votes,
-    (current, updated) => {
-      return updated;
-    }
-  );
+  const getVoteCount = (comment: CommentWithReplies) => {
+    return comment.votes?.length || 0;
+  };
+  const orderedReplies = replies.sort((a, b) => getVoteCount(b) - getVoteCount(a));
 
   const handleEditComment = async () => {
     if (!userId) return;
@@ -140,21 +138,6 @@ const Comment: React.FC<CommentProps> = ({
                   </p>
                 </div>
               </div>
-
-              {/* <CommentControls
-                userId={userId}
-                statementCreatorId={statementCreatorId}
-                comment={comment}
-                isRootComment={isRootComment}
-                isHovered={isHovered}
-                editingComment={editingComment}
-                onReplyClick={onReplyClick}
-                onEditClick={() => setEditingComment(true)}
-                onCommentDeleted={onCommentDeleted}
-                votes={optVotes}
-                setVotes={setOptVotes}
-                statementId={statementId}
-              /> */}
             </>
           )}
         </div>
@@ -196,16 +179,15 @@ const Comment: React.FC<CommentProps> = ({
           onEditClick={() => setEditingComment(true)}
           onCommentDeleted={onCommentDeleted}
           statementCreatorId={statementCreatorId}
-          votes={optVotes}
-          setVotes={setOptVotes}
+          votes={comment.votes}
           statementId={statementId}
         />
       </div>
 
       {/* Nested replies */}
-      {replies.length > 0 && (
+      {orderedReplies.length > 0 && (
         <div className="">
-          {replies.map(reply => (
+          {orderedReplies.map(reply => (
             <Comment
               key={reply.id}
               comment={reply}

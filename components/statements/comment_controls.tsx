@@ -3,12 +3,13 @@
 import * as Sentry from '@sentry/nextjs';
 import { BaseCommentVote, CommentWithUser } from 'kysely-codegen';
 import { ArrowUp, Edit2, RefreshCw, Reply, Trash2 } from 'lucide-react';
-import { startTransition, useState } from 'react';
+import { startTransition, useOptimistic, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { deleteComment, toggleCommentUpvote } from '@/lib/actions/commentActions';
+import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 interface CommentControlsProps {
   userId?: string | null;
   comment: CommentWithUser;
@@ -17,12 +18,80 @@ interface CommentControlsProps {
   editingComment: boolean;
   statementId: string;
   votes: BaseCommentVote[] | undefined;
-  setVotes: (action: BaseCommentVote[]) => void;
   onReplyClick: (comment: CommentWithUser) => void;
   onEditClick: () => void;
   onCommentDeleted: (commentId: string) => void;
   statementCreatorId: string;
 }
+
+const CommentVoteButton = ({
+  votes,
+  userId,
+  commentId,
+  statementId
+}: {
+  votes: BaseCommentVote[] | undefined;
+  userId: string;
+  commentId: string;
+  statementId: string;
+}) => {
+  const [optVotes, setOptVotes] = useState<BaseCommentVote[] | undefined>(votes);
+  const voteCount = optVotes?.length || 0;
+  const hasUpvoted = optVotes?.some(vote => vote.userId === userId) || false;
+
+  const handleVote = async () => {
+    if (!userId) return;
+    try {
+      const newVotes = hasUpvoted
+        ? optVotes?.filter(vote => vote.userId !== userId)
+        : [
+            ...(optVotes || []),
+            {
+              id: crypto.randomUUID(),
+              userId,
+              commentId,
+              createdAt: new Date()
+            }
+          ];
+
+      if (newVotes) {
+        setOptVotes(newVotes);
+      }
+
+      await toggleCommentUpvote({
+        commentId,
+        isUpvoted: hasUpvoted,
+        statementId
+      });
+    } catch (error) {
+      console.error('Error upvoting comment:', error);
+    } finally {
+    }
+  };
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant={hasUpvoted ? 'default' : 'ghost'}
+            size="sm"
+            onClick={handleVote}
+            className="text-xs opacity-70 hover:opacity-100 hover:cursor-pointer"
+          >
+            <div className="flex items-center gap-1">
+              <ArrowUp className="w-3 h-3" />
+              {voteCount > 0 && voteCount}
+              {hasUpvoted ? ' ' : ' Upvote'}{' '}
+            </div>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{hasUpvoted ? 'Remove upvote' : 'Upvote comment'}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
 
 export default function CommentControls({
   userId,
@@ -34,7 +103,6 @@ export default function CommentControls({
   statementId,
   onReplyClick,
   onEditClick,
-  setVotes,
   onCommentDeleted,
   statementCreatorId
 }: CommentControlsProps) {
@@ -43,40 +111,6 @@ export default function CommentControls({
   const isModerator = userId === statementCreatorId;
   const isCreator = userId === comment.userId;
   const isCreatorOrModerator = isCreator || isModerator;
-
-  const voteCount = votes?.length || 0;
-  const hasUpvoted = votes?.some(vote => vote.userId === userId) || false;
-
-  const handleVote = async () => {
-    if (!userId) return;
-    try {
-      const newVotes = hasUpvoted
-        ? votes?.filter(vote => vote.userId !== userId)
-        : [
-            ...(votes || []),
-            {
-              id: crypto.randomUUID(),
-              userId,
-              commentId: comment.id,
-              createdAt: new Date()
-            }
-          ];
-      startTransition(() => {
-        if (newVotes) {
-          setVotes(newVotes);
-        }
-      });
-
-      await toggleCommentUpvote({
-        commentId: comment.id,
-        isUpvoted: hasUpvoted,
-        statementId
-      });
-    } catch (error) {
-      console.error('Error upvoting comment:', error);
-    } finally {
-    }
-  };
 
   const handleDeleteComment = async () => {
     if (!userId) return;
@@ -141,27 +175,14 @@ export default function CommentControls({
               </Tooltip>
             </TooltipProvider>
           )}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={hasUpvoted ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={handleVote}
-                  className="text-xs opacity-70 hover:opacity-100 hover:cursor-pointer"
-                >
-                  <div className="flex items-center gap-1">
-                    <ArrowUp className="w-3 h-3" />
-                    {voteCount > 0 && voteCount}
-                    {hasUpvoted ? ' ' : ' Upvote'}{' '}
-                  </div>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{hasUpvoted ? 'Remove upvote' : 'Upvote comment'}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          {userId && (
+            <CommentVoteButton
+              votes={votes}
+              userId={userId}
+              commentId={comment.id}
+              statementId={statementId}
+            />
+          )}
         </>
       )}
 
