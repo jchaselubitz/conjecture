@@ -23,7 +23,7 @@ import {
 } from 'kysely-codegen';
 import { Pool } from 'pg';
 
-const connectionString = process.env.DATABASE_URL || '';
+const connectionString = process.env.DATABASE_URL_TRANSACTION_POOLING || '';
 // "write-supabase-ca": "node -e \"const fs=require('fs'); if(!process.env.SUPABASE_CA_PEM){console.error('SUPABASE_CA_PEM missing'); process.exit(1)} fs.writeFileSync('./supabase-ca.pem', process.env.SUPABASE_CA_PEM)\"",
 // "generate-deploy": "if [ -n \"$VERCEL\" ]; then NODE_OPTIONS=\"--dns-result-order=ipv4first\" yarn write-supabase-ca && PGSSLMODE=verify-full PGSSLROOTCERT=./supabase-ca.pem kysely-codegen; else kysely-codegen; fi",
 //
