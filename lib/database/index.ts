@@ -53,7 +53,10 @@ const db = new Kysely<DB>({
     pool: new Pool({
       connectionString: connectionString,
       // ssl: { rejectUnauthorized: true },
-      max: 10
+      max: 10,
+      min: 2,
+      idleTimeoutMillis: 30000, // 30 seconds
+      connectionTimeoutMillis: 2000 // 2 seconds
     })
   })
 });
