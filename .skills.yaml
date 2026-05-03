@@ -1,0 +1,13 @@
+sources:
+  - name: "local"
+    kind: "local"
+install_path: ".claude/skills"
+skills:
+  - slug: "changelog"
+  - slug: "code-review"
+  - slug: "edge-functions"
+  - slug: "loading-button"
+  - slug: "pwa"
+  - slug: "seed-data-changes"
+  - slug: "supabase-client-setup"
+  - slug: "zod-v4-patterns"
