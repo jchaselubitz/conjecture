@@ -83,15 +83,15 @@
     "katex": "^0.16.21",
     "kysely": "^0.27.6",
     "lucide-react": "^0.479.0",
-    "next": "^15.3.6",
+    "next": "16.2.4",
     "next-pwa": "^5.6.0",
     "next-themes": "^0.4.6",
     "pg": "^8.13.3",
-    "react": "^19.0.0",
+    "react": "19.2.5",
     "react-day-picker": "^9.7.0",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
-    "react-dom": "^19.0.0",
+    "react-dom": "19.2.5",
     "react-hook-form": "^7.54.2",
     "react-ios-keyboard-viewport": "^0.0.1",
     "react-markdown": "^10.1.0",
@@ -108,18 +108,18 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "^15.4.4",
+    "@next/bundle-analyzer": "16.2.4",
     "@snaplet/copycat": "^6.0.0",
     "@snaplet/seed": "^0.98.0",
     "@types/katex": "^0.16.7",
     "@types/next-pwa": "^5.6.9",
     "@types/node": "^20",
     "@types/pg": "^8",
-    "@types/react": "^19.0.10",
-    "@types/react-dom": "^19.0.4",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
     "@types/turndown": "^5.0.5",
     "eslint": "^9.22.0",
-    "eslint-config-next": "^15.2.1",
+    "eslint-config-next": "16.2.4",
     "eslint-formatter-table": "^7.32.1",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-prettier": "^5.2.1",
@@ -134,5 +134,9 @@
     "tailwindcss": "^4.0.12",
     "typescript": "^5.8.2"
   },
-  "packageManager": "yarn@4.10.3"
+  "packageManager": "yarn@4.10.3",
+  "resolutions": {
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3"
+  }
 }

@@ -62,27 +62,20 @@ export default function StatementLayout({
   } = useStatementAnnotationContext();
 
   const router = useRouter();
-  const [isMobile, setIsMobile] = useState(useWindowSize().width < 600);
-  const [hasMounted, setHasMounted] = useState(false);
+  const { width } = useWindowSize();
+  const hasMounted = Number.isFinite(width);
+  const isMobile = hasMounted && width < 600;
   const { editMode } = useEditModeContext();
   const { updateStatementDraft } = useStatementUpdateContext();
 
-  const [showAnnotationDialog, setShowAnnotationDialog] = useState(false);
   const [showAuthorComments, setShowAuthorComments] = useState(authorCommentsEnabled);
   const [showReaderComments, setShowReaderComments] = useState(readerCommentsEnabled);
-  const [annotationMode, setAnnotationMode] = useState<boolean>(true);
+  const [mobileAnnotationMode, setMobileAnnotationMode] = useState(false);
   const [showAnnotationsButton, setShowAnnotationsButton] = useState(
     !getPanelState('annotation_panel_size').isOpen
   );
-
-  useEffect(() => {
-    setIsMobile(window.innerWidth < 600);
-    setHasMounted(true);
-  }, []);
-
-  useEffect(() => {
-    setAnnotationMode(!isMobile);
-  }, [isMobile]);
+  const annotationMode = !hasMounted || !isMobile || mobileAnnotationMode;
+  const showAnnotationDialog = !!selectedAnnotationId;
 
   const handleDeleteAnnotation = async (annotation: AnnotationWithComments) => {
     if (!annotation) return;
@@ -116,12 +109,6 @@ export default function StatementLayout({
       editor?.setEditable(true);
     }
   }, [editMode, annotationMode, editor]);
-
-  useEffect(() => {
-    if (selectedAnnotationId) {
-      setShowAnnotationDialog(true);
-    }
-  }, [selectedAnnotationId]);
 
   const panelGroupRef = useRef<React.ElementRef<typeof ResizablePanelGroup>>(null);
 
@@ -201,7 +188,6 @@ export default function StatementLayout({
     if (!!editMode || !!annotationMode) {
       editor?.setEditable(true);
     }
-    setShowAnnotationDialog(false);
     handleCloseAnnotationPanel();
   };
 
@@ -276,7 +262,7 @@ export default function StatementLayout({
         onShowReaderCommentsChange={onShowReaderCommentsChange}
         panelGroupRef={panelGroupRef}
         annotationMode={annotationMode}
-        setAnnotationMode={setAnnotationMode}
+        setAnnotationMode={setMobileAnnotationMode}
         familyTree={familyTree}
       />
       <AnnotationDrawer
@@ -348,7 +334,7 @@ export default function StatementLayout({
             onShowReaderCommentsChange={onShowReaderCommentsChange}
             panelGroupRef={panelGroupRef}
             annotationMode={annotationMode}
-            setAnnotationMode={setAnnotationMode}
+            setAnnotationMode={setMobileAnnotationMode}
             familyTree={familyTree}
           />
         </div>

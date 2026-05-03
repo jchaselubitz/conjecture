@@ -1,14 +1,6 @@
 'use client';
-import { useRouter, useSearchParams } from 'next/navigation';
-import {
-  createContext,
-  ReactNode,
-  startTransition,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react';
+import { useRouter } from 'next/navigation';
+import { createContext, ReactNode, useContext, useMemo } from 'react';
 
 import { setEditModeCookie } from '@/lib/helpers/helpersLayout';
 

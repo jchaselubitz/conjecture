@@ -177,7 +177,7 @@ export const BlockImage = Node.create<BlockImageOptions>({
     return {
       insertBlockImage:
         options =>
-        ({ chain, commands }) => {
+        ({ chain }) => {
           return chain()
             .insertContent({
               type: this.name,

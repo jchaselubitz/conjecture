@@ -120,8 +120,8 @@ export const saveImage = async ({
 
 export const updateImage = async ({
   editor,
-  userId,
-  pathname,
+  userId: _userId,
+  pathname: _pathname,
   statementId,
   statementSlug,
   imageData

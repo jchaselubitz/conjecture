@@ -3,18 +3,16 @@
 import * as Sentry from '@sentry/nextjs';
 import { BaseCommentVote, CommentWithUser } from 'kysely-codegen';
 import { ArrowUp, Edit2, RefreshCw, Reply, Trash2 } from 'lucide-react';
-import { startTransition, useOptimistic, useState } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { deleteComment, toggleCommentUpvote } from '@/lib/actions/commentActions';
 interface CommentControlsProps {
   userId?: string | null;
   comment: CommentWithUser;
   isRootComment: boolean;
-  isHovered: boolean;
   editingComment: boolean;
   statementId: string;
   votes: BaseCommentVote[] | undefined;
@@ -97,7 +95,6 @@ export default function CommentControls({
   userId,
   comment,
   isRootComment,
-  isHovered,
   editingComment,
   votes,
   statementId,

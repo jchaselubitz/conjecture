@@ -5,11 +5,11 @@ import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { cn } from '@/lib/utils';
 
-interface VideoButtonProps {
-  statementId: string;
-}
+// interface VideoButtonProps {
+//   statementId: string;
+// }
 
-export function VideoButton({ statementId }: VideoButtonProps) {
+export function VideoButton() {
   const { setSelectedNodePosition, setVideoPopoverOpen } = useStatementToolsContext();
   const { editor } = useStatementContext();
 

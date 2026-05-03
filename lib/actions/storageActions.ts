@@ -102,9 +102,9 @@ export async function uploadStatementImage({
 }
 
 export async function deleteStoredStatementImage({
-  url,
+  url: _url,
   creatorId,
-  statementId
+  statementId: _statementId
 }: {
   url: string;
   creatorId: string;

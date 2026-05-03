@@ -4,23 +4,12 @@ import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import simpleSort from 'eslint-plugin-simple-import-sort';
 import prettierPlugin from 'eslint-plugin-prettier';
-import { FlatCompat } from '@eslint/eslintrc';
-import js from '@eslint/js';
-import reactHooksPlugin from 'eslint-plugin-react-hooks';
+import eslintConfigNext from 'eslint-config-next';
 
-const compat = new FlatCompat({
-  // import.meta.dirname is available after Node.js v20.11.0
-  baseDirectory: import.meta.dirname,
-  recommendedConfig: js.configs.recommended
-});
-
-// Load the Next.js config first
-const nextConfig = compat.config({
-  extends: ['next']
-});
-
+// Next.js 16+ ships flat config; do not load it via FlatCompat (legacy `extends`)
+// or ESLint hits circular JSON when validating plugin graphs.
 export default [
-  ...nextConfig,
+  ...eslintConfigNext,
   {
     ignores: ['.netlify/**', '.next/**', 'node_modules/**', 'dist/**', 'build/**', 'coverage/**'],
     files: ['**/*.ts', '**/*.tsx'],
@@ -38,8 +27,7 @@ export default [
     plugins: {
       'simple-import-sort': simpleSort,
       '@typescript-eslint': tsPlugin,
-      prettier: prettierPlugin,
-      'react-hooks': reactHooksPlugin
+      prettier: prettierPlugin
     },
     rules: {
       ...reactPlugin.configs.recommended.rules,

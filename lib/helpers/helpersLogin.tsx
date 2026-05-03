@@ -9,7 +9,7 @@ export const signInWithGoogle = async ({ redirectTo }: { redirectTo?: string }) 
   const nextPath = redirectTo ?? '/feed';
   const redirectUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
 
-  const { error, data } = await supabase.auth.signInWithOAuth({
+  const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
       redirectTo: redirectUrl,
@@ -38,7 +38,7 @@ export const GoogleButton = ({ redirectTo }: { redirectTo?: string }) => {
         setButtonState('loading');
         try {
           await signInWithGoogle({ redirectTo: redirectTo ?? undefined });
-        } catch (e) {
+        } catch {
           setButtonState('error');
         }
       }}

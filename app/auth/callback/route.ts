@@ -92,7 +92,7 @@ export async function GET(request: Request) {
             await supabase.auth.updateUser({
               data: dataToUpdate
             });
-          } catch (e) {
+          } catch {
             // best-effort; failures here shouldn't block login
           }
         }

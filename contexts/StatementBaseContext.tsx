@@ -10,7 +10,6 @@ import {
   StatementWithDraft,
   StatementWithDraftAndCollaborators
 } from 'kysely-codegen';
-import { useRouter, useSearchParams } from 'next/navigation';
 import {
   createContext,
   Dispatch,
@@ -73,10 +72,6 @@ export function StatementProvider({
   versionList: { versionNumber: number; createdAt: Date }[];
   isCreator: boolean;
 }) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const editMode = searchParams.get('edit') === 'true';
-
   const [updatedDraft, setUpdatedDraft] = useState<BaseDraft>(statement.draft);
   const [annotations, setAnnotations] = useState<AnnotationWithComments[]>([]);
   const [images, setImages] = useState<BaseStatementImage[]>([]);

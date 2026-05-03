@@ -1,7 +1,7 @@
 import useEmblaCarousel from 'embla-carousel-react';
 import { AnnotationWithComments } from 'kysely-codegen';
-import { ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
@@ -40,27 +40,27 @@ export default function AnnotationDrawer({
     useStatementAnnotationContext();
 
   const [showCommentInput, setShowCommentInput] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(0);
-
-  const [emblaRan, setEmblaRan] = useState(false);
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: 'center',
     containScroll: false,
     dragFree: false
   });
 
-  useEffect(() => {
-    if (!!replyToComment) {
-      setShowCommentInput(true);
-    }
-  }, [replyToComment]);
+  const selectedIndex = useMemo(() => {
+    if (!selectedAnnotation) return 0;
+    const index = filteredAnnotations.findIndex(
+      annotation => annotation.id === selectedAnnotation.id
+    );
+    return index >= 0 ? index : 0;
+  }, [filteredAnnotations, selectedAnnotation]);
+
+  const commentDialogOpen = showCommentInput || !!replyToComment;
 
   const onSelect = useCallback(() => {
     if (!emblaApi || !filteredAnnotations) return;
     const selectedIndex = emblaApi.selectedScrollSnap();
     const selectedAnnotation = filteredAnnotations[selectedIndex];
     if (selectedAnnotation) {
-      setSelectedIndex(selectedIndex);
       setShowCommentInput(false);
       handleAnnotationSelection(selectedAnnotation.id);
     }
@@ -69,18 +69,16 @@ export default function AnnotationDrawer({
   useEffect(() => {
     if (!emblaApi) return;
     emblaApi.on('select', onSelect);
-    setEmblaRan(true);
     return () => {
       emblaApi.off('select', onSelect);
-      setEmblaRan(false);
     };
-  }, [emblaApi, onSelect, setEmblaRan]);
+  }, [emblaApi, onSelect]);
 
   useEffect(() => {
-    if (selectedAnnotation && emblaApi && !emblaRan) {
-      emblaApi?.scrollTo(filteredAnnotations.indexOf(selectedAnnotation), true);
+    if (selectedAnnotation && emblaApi) {
+      emblaApi.scrollTo(selectedIndex, true);
     }
-  }, [selectedAnnotation, emblaApi, filteredAnnotations, emblaRan]);
+  }, [selectedAnnotation, emblaApi, selectedIndex]);
 
   const onCancelReply = () => {
     cancelReply();
@@ -183,7 +181,7 @@ export default function AnnotationDrawer({
           </div>
         </div>
         <CommentDialog
-          showCommentInput={showCommentInput}
+          showCommentInput={commentDialogOpen}
           setShowCommentInput={setShowCommentInput}
           selectedAnnotation={selectedAnnotation as AnnotationWithComments}
         />

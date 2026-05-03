@@ -78,8 +78,7 @@ export async function GET(_request: Request, context: { params: Promise<{ userSl
           try {
             const statementDetails = await getStatementDetailsCached({
               statementId: statement.statementId,
-              draftId: statement.draft.id,
-              version: statement.draft.versionNumber
+              draftId: statement.draft.id
             });
             // Use the first image as featured image if no header image
             featuredImage = statementDetails.images?.[0]?.src;

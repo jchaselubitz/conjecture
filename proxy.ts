@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { updateSession } from './supabase/middleware';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Skip middleware for SEO/crawler routes to avoid Supabase latency
   const pathname = request.nextUrl.pathname;
   if (pathname === '/sitemap.xml' || pathname === '/sitemap' || pathname === '/robots.txt') {

@@ -85,7 +85,7 @@ export const Citation = Node.create<CitationOptions>({
     return {
       insertCitation:
         (options = { id: '' }) =>
-        ({ tr, dispatch, state }) => {
+        ({ tr, dispatch }) => {
           const citationId = options.id;
           if (!citationId) {
             console.error('Attempted to insert citation without an ID.');

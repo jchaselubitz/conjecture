@@ -3,7 +3,7 @@ import { ChevronLeft, Loader2, Upload } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
-import { RefObject, useEffect, useMemo, useRef } from 'react';
+import { DragEvent, RefObject, useMemo, useRef } from 'react';
 import { useState } from 'react';
 import { useFixedStyleWithIOsKeyboard } from 'react-ios-keyboard-viewport';
 import { ImperativePanelGroupHandle } from 'react-resizable-panels';
@@ -16,6 +16,7 @@ import { useStatementToolsContext } from '@/contexts/StatementToolsContext';
 import { useUserContext } from '@/contexts/userContext';
 import {
   updateStatementHeaderImageUrl,
+  updateStatementShowFullHeaderImage,
   updateStatementSubtitle,
   updateStatementTitle
 } from '@/lib/actions/statementActions';
@@ -28,6 +29,7 @@ import CommentSwitch from '../navigation/comment_switch';
 import { AspectRatio } from '../ui/aspect-ratio';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { Switch } from '../ui/switch';
 
 const EditorMenu = dynamic(
   () => import('./custom_editor/editor_menu').then(mod => mod.EditorMenu),
@@ -80,7 +82,7 @@ export default function StatementDetails({
   setAnnotationMode
 }: StatementDetailsProps) {
   const { userId, currentUserSlug } = useUserContext();
-  const { editor, updatedDraft, statement, annotations, citations, images } = useStatementContext();
+  const { editor, updatedDraft, statement, annotations, citations } = useStatementContext();
   const { selectedAnnotationId, setSelectedAnnotationId } = useStatementAnnotationContext();
   const { initialImageData, setInitialImageData, setImageLightboxOpen } =
     useStatementToolsContext();
@@ -88,9 +90,18 @@ export default function StatementDetails({
   const isPublished = !!statement?.draft.publishedAt;
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragOverHeaderImage, setIsDragOverHeaderImage] = useState(false);
   const [footnoteIds, setFootnoteIds] = useState<string[]>([]);
+  const [showFullHeaderImgOverride, setShowFullHeaderImgOverride] = useState<{
+    statementId: string;
+    value: boolean;
+  } | null>(null);
 
   const { statementId, title, subtitle, headerImg } = statement;
+  const showFullHeaderImg =
+    showFullHeaderImgOverride?.statementId === statementId
+      ? showFullHeaderImgOverride.value
+      : (statement.showFullHeaderImg ?? false);
 
   const orderedFootnotes = useMemo(() => {
     const footnotes: BaseStatementCitation[] = [];
@@ -116,15 +127,17 @@ export default function StatementDetails({
     }
   };
 
-  const handleHeaderImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const uploadHeaderImage = async (files: File[]) => {
     if (!userId) {
       alert('You must be logged in to upload an image.');
       return;
     }
+    if (files.length === 0) return;
+
     setIsUploading(true);
     try {
       const imageUrl = await headerImageChange({
-        event,
+        files,
         userId,
         statementId: prepStatementId,
         headerImg: headerImg ?? '',
@@ -151,6 +164,59 @@ export default function StatementDetails({
     }
   };
 
+  const handleHeaderImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files?.length ? Array.from(event.target.files) : [];
+    await uploadHeaderImage(files);
+  };
+
+  const handleHeaderImageDragOver = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    if (!editMode || isUploading) return;
+    setIsDragOverHeaderImage(true);
+  };
+
+  const handleHeaderImageDragLeave = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragOverHeaderImage(false);
+  };
+
+  const handleHeaderImageDrop = async (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    if (!editMode || isUploading) return;
+
+    setIsDragOverHeaderImage(false);
+    const files = Array.from(event.dataTransfer.files).filter(file =>
+      file.type.startsWith('image/')
+    );
+
+    if (files.length === 0) {
+      toast('Error', {
+        description: 'Please drop an image file.'
+      });
+      return;
+    }
+
+    await uploadHeaderImage(files);
+  };
+
+  const handleShowFullHeaderImgChange = async (checked: boolean) => {
+    setShowFullHeaderImgOverride({ statementId, value: checked });
+    try {
+      await updateStatementShowFullHeaderImage({
+        statementId,
+        creatorId: statement.creatorId,
+        showFullHeaderImg: checked,
+        statementSlug: statement.slug ?? ''
+      });
+    } catch (error) {
+      console.error(error);
+      setShowFullHeaderImgOverride(null);
+      toast('Error', {
+        description: 'Failed to update cover image display.'
+      });
+    }
+  };
+
   const isStatementCreator = useMemo(() => {
     return userId === statement?.creatorId;
   }, [userId, statement]);
@@ -167,17 +233,7 @@ export default function StatementDetails({
     return !!userId && !editMode && (authorCanAnnotate || readerCanAnnotate);
   }, [userId, editMode, authorCanAnnotate, readerCanAnnotate]);
 
-  const prevEditModeRef = useRef(editMode);
-
   const { fixedBottom } = useFixedStyleWithIOsKeyboard();
-
-  useEffect(() => {
-    if (prevEditModeRef.current && !editMode) {
-      //
-      return;
-    }
-    prevEditModeRef.current = editMode;
-  }, [editMode]);
 
   if (!updatedDraft) return null;
 
@@ -206,26 +262,55 @@ export default function StatementDetails({
       </div>
       <div className="flex flex-col md:mt-12 md:mx-auto w-full max-w-screen md:max-w-3xl bg-white">
         {headerImg ? (
-          <div className="relative group md:px-4">
-            <AspectRatio ratio={16 / 9} className="bg-muted rounded-md">
+          <div
+            className="relative group md:px-4"
+            onDragOver={handleHeaderImageDragOver}
+            onDragLeave={handleHeaderImageDragLeave}
+            onDrop={handleHeaderImageDrop}
+          >
+            {showFullHeaderImg ? (
               <Image
                 src={headerImg ?? ''}
                 alt="Statement cover image"
-                fill
-                className="h-full w-full md:rounded-md object-cover"
+                width={1600}
+                height={900}
+                className="h-auto w-full bg-muted md:rounded-md"
                 priority={true}
-                sizes="(max-width: 768px) 600px, (max-width: 1200px) 768px, 1200px"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 768px, 1200px"
                 placeholder="blur"
                 blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
                 quality={75}
                 loading="eager"
                 decoding="async"
               />
-              {isStatementCreator && editMode && (
+            ) : (
+              <AspectRatio ratio={16 / 9} className="bg-muted rounded-md">
+                <Image
+                  src={headerImg ?? ''}
+                  alt="Statement cover image"
+                  fill
+                  className="h-full w-full md:rounded-md object-cover"
+                  priority={true}
+                  sizes="(max-width: 768px) 600px, (max-width: 1200px) 768px, 1200px"
+                  placeholder="blur"
+                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                  quality={75}
+                  loading="eager"
+                  decoding="async"
+                />
+              </AspectRatio>
+            )}
+            {isStatementCreator && editMode && (
+              <div
+                className={cn(
+                  'absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center',
+                  (isUploading || isDragOverHeaderImage) && 'opacity-100'
+                )}
+              >
                 <div
                   className={cn(
-                    'absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center',
-                    isUploading && 'opacity-100'
+                    'flex flex-col items-center gap-3 rounded-md border border-white/30 bg-black/30 px-5 py-4 text-white backdrop-blur-sm transition-colors',
+                    isDragOverHeaderImage && 'border-white/70 bg-black/45'
                   )}
                 >
                   <Button variant="outline" className="gap-2" onClick={handlePhotoButtonClick}>
@@ -236,22 +321,58 @@ export default function StatementDetails({
                     )}
                     <span className="text-sm">Change cover image</span>
                   </Button>
+                  <span className="text-sm text-white/85">
+                    {isDragOverHeaderImage ? 'Drop image to upload' : 'Or drag an image here'}
+                  </span>
                 </div>
-              )}
-            </AspectRatio>
+              </div>
+            )}
+            {isStatementCreator && editMode && (
+              <div className="mt-3 flex items-center justify-end gap-3 px-1">
+                <label
+                  htmlFor="show-full-header-img"
+                  className="text-sm font-medium text-muted-foreground"
+                >
+                  Show cover image at full dimensions
+                </label>
+                <Switch
+                  id="show-full-header-img"
+                  checked={showFullHeaderImg}
+                  onCheckedChange={handleShowFullHeaderImgChange}
+                />
+              </div>
+            )}
           </div>
         ) : editMode ? (
           <div className="flex items-center justify-center w-full my-14 md:px-4">
-            <Button variant="outline" className="gap-2" onClick={handlePhotoButtonClick}>
-              {isUploading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Upload className="h-4 w-4" />
+            <div
+              className={cn(
+                'flex w-full max-w-xl cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed px-6 py-12 text-center transition-colors',
+                isDragOverHeaderImage
+                  ? 'border-primary bg-primary/5'
+                  : 'border-muted-foreground/25 bg-background'
               )}
-              <span className="text-sm text-muted-foreground">
-                Choose or drag and drop a cover image
-              </span>
-            </Button>
+              onClick={handlePhotoButtonClick}
+              onDragOver={handleHeaderImageDragOver}
+              onDragLeave={handleHeaderImageDragLeave}
+              onDrop={handleHeaderImageDrop}
+            >
+              {isUploading ? (
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              ) : (
+                <Upload className="h-8 w-8 text-muted-foreground" />
+              )}
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium">
+                  {isDragOverHeaderImage
+                    ? 'Drop image to upload'
+                    : 'Choose or drag and drop a cover image'}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  PNG, JPG, and other image files are supported.
+                </span>
+              </div>
+            </div>
           </div>
         ) : (
           <></>

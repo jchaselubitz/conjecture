@@ -55,10 +55,6 @@ const Byline = ({ statement }: { statement: StatementWithDraftAndCollaborators }
     [userId]
   );
 
-  const getFollowerCount = async (authorId: string) => {
-    return followers[authorId]?.length;
-  };
-
   useEffect(() => {
     const checkFollow = async () => {
       if (!userId) {

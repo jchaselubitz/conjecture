@@ -9,7 +9,7 @@ import { Step } from '@tiptap/pm/transform';
 import { EditorView } from '@tiptap/pm/view';
 import { Editor, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { AnnotationWithComments, BaseDraft, NewStatementCitation } from 'kysely-codegen';
+import { AnnotationWithComments, NewStatementCitation } from 'kysely-codegen';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { RefObject, startTransition, useCallback, useEffect } from 'react';
 import { ImperativePanelGroupHandle } from 'react-resizable-panels';
@@ -47,7 +47,6 @@ import {
 import { TableWithTools } from '../custom_extensions/table_with_tools';
 
 interface UseHtmlSuperEditorProps {
-  draft: BaseDraft;
   statementCreatorId: string;
   existingAnnotations: AnnotationWithComments[];
   userId: string | undefined;
@@ -70,13 +69,8 @@ type MarkInfo = {
 
 // Assuming getMarks returns an array of objects with at least node and pos
 type NodeInfo = { node: ProsemirrorNode; pos: number; [key: string]: any };
-// Linter indicates getMarks returns { node: any; }[] structure.
-// We need to find the 'annotationHighlight' mark within node.marks.
-type GetMarksNodeInfo = { node: ProsemirrorNode; [key: string]: any }; // Assuming node is ProsemirrorNode
 
 export const useHtmlSuperEditor = ({
-  // citations,
-  draft,
   statementCreatorId,
   existingAnnotations,
   userId,
@@ -108,8 +102,6 @@ export const useHtmlSuperEditor = ({
   const searchParams = useSearchParams();
   const isMobile = useWindowSize().width < 600;
   const htmlContent = updatedDraft.content;
-  const jsonContent = updatedDraft.contentJson;
-  const draftId = updatedDraft.id;
   const statementId = statement.statementId;
 
   useEffect(() => {
@@ -311,10 +303,10 @@ export const useHtmlSuperEditor = ({
         }
       }
     },
-    onSelectionUpdate: ({ editor }) => {
+    onSelectionUpdate: () => {
       if (!annotatable || !userId) return;
     },
-    onDrop: (view, event) => {
+    onDrop: () => {
       return false; // Default behavior allows drop
     },
     onDestroy: () => {
@@ -342,7 +334,7 @@ export const useHtmlSuperEditor = ({
         }
         return false; // Allow default behavior in edit mode
       },
-      handleClick: (view, pos, event) => {
+      handleClick: () => {
         // Let clicks happen for selection, but handle specific node clicks below
         return false;
       },
@@ -350,14 +342,19 @@ export const useHtmlSuperEditor = ({
         // Prevent pasting in non-editMode mode
         return editMode ? text : '';
       },
-      handleDrop: (view: EditorView, event: DragEvent, slice: Slice, moved: boolean): boolean => {
+      handleDrop: (
+        _view: EditorView,
+        event: DragEvent,
+        _slice: Slice,
+        _moved: boolean
+      ): boolean => {
         if (!editMode) {
           event.preventDefault();
           return true; // Indicate handled, prevent default Tiptap drop
         }
         return false; // Allow default Tiptap drop behavior
       },
-      handlePaste: (view: EditorView, event: ClipboardEvent, slice: Slice): boolean => {
+      handlePaste: (_view: EditorView, event: ClipboardEvent, _slice: Slice): boolean => {
         if (!editMode) {
           event.preventDefault();
           return true; // Indicate handled, prevent default Tiptap paste

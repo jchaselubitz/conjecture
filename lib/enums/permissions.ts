@@ -16,7 +16,6 @@ export enum UserStatementRoles {
 }
 
 type UserRole = `${UserStatementRoles}`;
-type UserRoleKey = keyof typeof UserStatementRoles;
 type UserAccess = 'author' | 'manager' | 'reader';
 
 export enum StatementPermissions {

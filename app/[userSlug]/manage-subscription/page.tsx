@@ -22,8 +22,9 @@ export default function UnsubscribePage() {
   const userSlug = params.userSlug as string;
   const subscriberEmailFromParams = searchParams.get('email');
   const { email } = useUserContext();
+  const initialEmail = subscriberEmailFromParams ?? email ?? '';
 
-  const [emailInput, setEmailInput] = useState<string>('');
+  const [emailInput, setEmailInput] = useState<string>(initialEmail);
   const [unsubscribeButtonState, setUnsubscribeButtonState] =
     useState<ButtonLoadingState>('default');
   const [subscribeButtonState, setSubscribeButtonState] = useState<ButtonLoadingState>('default');
@@ -31,16 +32,7 @@ export default function UnsubscribePage() {
   const [authorName, setAuthorName] = useState<string>('');
   const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
   const [error, setError] = useState<string>('');
-  const [hasCheckedEmail, setHasCheckedEmail] = useState<boolean>(false);
-
-  // Pre-populate email input with available email
-  useEffect(() => {
-    const availableEmail = subscriberEmailFromParams ?? email;
-    if (availableEmail && !emailInput) {
-      setEmailInput(availableEmail);
-      setHasCheckedEmail(true);
-    }
-  }, [subscriberEmailFromParams, email, emailInput]);
+  const [hasCheckedEmail, setHasCheckedEmail] = useState<boolean>(Boolean(initialEmail));
 
   // Use the email input as the source of truth
   const subscriberEmail = hasCheckedEmail ? emailInput : null;
@@ -55,7 +47,7 @@ export default function UnsubscribePage() {
           return;
         }
         setAuthorName(author.name || author.username || 'Unknown');
-      } catch (err) {
+      } catch {
         setError('Failed to load author information');
       }
     };
@@ -88,7 +80,7 @@ export default function UnsubscribePage() {
         const subscribed = await checkIsSubscribed(author.id, subscriber.id);
         setIsSubscribed(subscribed);
         setError(''); // Clear any previous errors
-      } catch (err) {
+      } catch {
         setError('Failed to load subscription information');
       }
     };
@@ -112,7 +104,7 @@ export default function UnsubscribePage() {
       setIsSubscribed(false);
       setUnsubscribeButtonState('success');
       toast('Successfully unsubscribed from ' + authorName);
-    } catch (err) {
+    } catch {
       setUnsubscribeButtonState('error');
       toast('Failed to unsubscribe. Please try again.');
     }
@@ -134,7 +126,7 @@ export default function UnsubscribePage() {
       setIsSubscribed(true);
       setSubscribeButtonState('success');
       toast('Successfully subscribed to ' + authorName);
-    } catch (err) {
+    } catch {
       setSubscribeButtonState('error');
       toast('Failed to subscribe. Please try again.');
     }
@@ -170,7 +162,7 @@ export default function UnsubscribePage() {
       setIsSubscribed(subscribed);
       setHasCheckedEmail(true);
       setCheckEmailButtonState('success');
-    } catch (err) {
+    } catch {
       setError('Failed to check subscription status');
       setCheckEmailButtonState('error');
     }

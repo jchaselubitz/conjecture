@@ -113,7 +113,7 @@ export async function convertAnonAccount(email: string, name: string, username: 
     }
   });
   if (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 
@@ -127,8 +127,6 @@ export async function signInWithEmail({
   shouldCreateUser?: boolean;
 }) {
   const supabase = await createClient();
-  const headersList = await headers();
-  const origin = headersList.get('origin');
 
   if (shouldCreateUser && !name) {
     return redirect('/login?message=Name required to create account');
@@ -156,10 +154,10 @@ export const signIn = async ({
   password: string;
   redirectTo?: string;
 }) => {
+  const supabase = await createClient();
   const headersList = await headers();
   const origin = headersList.get('origin');
 
-  const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password
@@ -267,6 +265,8 @@ export const signOut = async () => {
 
 export const requestReset = async ({ email }: { email: string }) => {
   const supabase = await createClient();
+  const headersList = await headers();
+  const origin = headersList.get('origin');
   await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${origin}/auth/confirm`
   });
@@ -295,7 +295,7 @@ export const updatePassword = async ({
 export const updateEmail = async (email: string) => {
   const supabase = await createClient();
 
-  const { error, data } = await supabase.auth.updateUser({
+  const { error } = await supabase.auth.updateUser({
     email
   });
   if (error) {

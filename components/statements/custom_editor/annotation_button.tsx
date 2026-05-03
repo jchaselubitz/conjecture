@@ -1,9 +1,6 @@
-import { Editor } from '@tiptap/react';
 import { MessageCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
 interface AnnotationButtonProps {
   onAnnotate: () => void;

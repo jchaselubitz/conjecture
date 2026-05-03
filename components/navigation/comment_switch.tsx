@@ -5,7 +5,6 @@ import { useWindowSize } from 'react-use';
 
 import { useEditModeContext } from '@/contexts/EditModeContext';
 import { useStatementContext } from '@/contexts/StatementBaseContext';
-import { cn } from '@/lib/utils';
 
 import AnnotationModeSwitch from '../annotation_mode_button';
 import { Button } from '../ui/button';

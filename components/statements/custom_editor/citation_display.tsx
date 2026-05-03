@@ -33,7 +33,7 @@ export function CitationDisplay() {
     return parts.length > 0 ? parts.join(', ') : null;
   };
 
-  const [_, fetch] = useAsyncFn(async () => {
+  const [, fetch] = useAsyncFn(async () => {
     if (citation.url) {
       const url = new URL(citation.url);
       if (url.origin === window.location.origin) {

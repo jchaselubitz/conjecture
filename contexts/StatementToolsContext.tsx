@@ -1,15 +1,7 @@
 'use client';
 
-import { BaseStatementCitation, NewStatementCitation } from 'kysely-codegen';
-import {
-  createContext,
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useState
-} from 'react';
+import { NewStatementCitation } from 'kysely-codegen';
+import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from 'react';
 
 import { UpsertImageDataType } from '@/lib/actions/statementActions';
 

@@ -24,8 +24,6 @@ export default function ReadNav() {
   const router = useRouter();
   const isMobile = useWindowSize().width < 600;
 
-  const isPublished = statement?.draft.publishedAt;
-
   return (
     <header className="h-14">
       <div className="nav-fixed  z-50 top-0 left-0 right-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

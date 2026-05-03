@@ -1,5 +1,4 @@
 import { Metadata, ResolvingMetadata } from 'next';
-import Link from 'next/link';
 
 import SiteNav from '@/components/navigation/site_nav';
 import RssCopyButton from '@/components/special_buttons/rss_copy_button';
@@ -18,7 +17,7 @@ const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').re
 
 export async function generateMetadata(
   { params }: UserPageProps,
-  parent: ResolvingMetadata
+  _parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { userSlug } = await params;
   const user = await userProfileCache(userSlug);

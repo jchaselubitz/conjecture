@@ -12,7 +12,6 @@ import {
   ListOrdered,
   Quote
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -27,7 +26,6 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import ViewModeButton from '@/components/view_mode_button';
-import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { cn } from '@/lib/utils';
 
 import { CitationButton } from './citation_button';
@@ -44,11 +42,9 @@ export function EditorMenu({
   editor,
   statementId,
   editMode,
-  userSlug,
-  statementSlug
+  userSlug: _userSlug,
+  statementSlug: _statementSlug
 }: EditorMenuProps) {
-  const router = useRouter();
-  const { currentVersion } = useStatementContext();
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
 

@@ -100,7 +100,7 @@ export const QuotePasteHandler = Extension.create({
       new Plugin({
         key: new PluginKey('quotePasteHandler'),
         props: {
-          handlePaste: (view, event, slice) => {
+          handlePaste: (view, event) => {
             const text = event.clipboardData?.getData('text/plain');
             if (!text) return false;
 

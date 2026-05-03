@@ -1,9 +1,9 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { redirect, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { FieldErrors, useForm } from 'react-hook-form';
+import { useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
 import { checkUsername, signIn, signUp } from '@/lib/actions/userActions';
-import { GoogleButton, signInWithGoogle } from '@/lib/helpers/helpersLogin';
+import { GoogleButton } from '@/lib/helpers/helpersLogin';
 import { cn } from '@/lib/utils';
 
 import { FormField } from '../ui/form';
@@ -53,13 +53,6 @@ export function LoginForm({
       ...(isSignUp && { username: '' })
     }
   });
-
-  const [errors, setErrors] = useState<FieldErrors<{ [x: string]: any }> | null>(null);
-  useEffect(() => {
-    if (form.formState.errors) {
-      setErrors(form.formState.errors);
-    }
-  }, [form.formState.errors]);
 
   const onSubmit = async (data: z.infer<typeof loginSchema>) => {
     setButtonState('loading');
@@ -124,8 +117,10 @@ export function LoginForm({
                     <div className="grid gap-2">
                       <Label htmlFor="username">Username | Domain</Label>
                       <Input id="username" {...field} placeholder="Bobby" />
-                      {errors?.username && (
-                        <div className="text-red-500">{errors.username.message as string}</div>
+                      {form.formState.errors.username && (
+                        <div className="text-red-500">
+                          {form.formState.errors.username.message as string}
+                        </div>
                       )}
                     </div>
                   )}
@@ -138,8 +133,10 @@ export function LoginForm({
                   <div className="grid gap-2">
                     <Label htmlFor="email">Email</Label>
                     <Input {...field} placeholder="m@example.com" type="email" />
-                    {errors?.email && (
-                      <div className="text-red-500">{errors.email.message as string}</div>
+                    {form.formState.errors.email && (
+                      <div className="text-red-500">
+                        {form.formState.errors.email.message as string}
+                      </div>
                     )}
                   </div>
                 )}
@@ -151,8 +148,10 @@ export function LoginForm({
                   <div className="grid gap-2">
                     <Label htmlFor="password">Password</Label>
                     <Input {...field} placeholder="********" type="password" />
-                    {errors?.password && (
-                      <div className="text-red-500">{errors.password.message as string}</div>
+                    {form.formState.errors.password && (
+                      <div className="text-red-500">
+                        {form.formState.errors.password.message as string}
+                      </div>
                     )}
                   </div>
                 )}

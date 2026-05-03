@@ -1,6 +1,5 @@
 'use server';
 
-import { EditedAnnotation } from 'kysely-codegen';
 import { revalidatePath } from 'next/cache';
 
 import { createClient } from '@/supabase/server';
@@ -110,7 +109,7 @@ export async function deleteAnnotation({
 export async function deleteAnnotationsBatch({
   annotationIds,
   userId, // The ID of the user initiating the delete, for authorization
-  statementCreatorId, // Optional: Creator of the statement for authorization rules
+  statementCreatorId: _statementCreatorId, // Optional: Creator of the statement for authorization rules
   statementId // For revalidation
 }: {
   annotationIds: string[];

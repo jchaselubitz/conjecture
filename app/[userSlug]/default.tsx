@@ -25,7 +25,7 @@ export default async function UserDefault({ params }: UserPageProps) {
     return <div>User not found</div>;
   }
 
-  const { name, id } = profile;
+  const { id } = profile;
 
   const statements = await getStatementsCached({
     creatorId: id,

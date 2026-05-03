@@ -1,23 +1,11 @@
 import { StatementCard } from '@/components/statements/card';
-import { getAnnotations } from '@/lib/actions/commentActions';
 import { getStatementsCached } from '@/lib/actions/statementActions';
-
-import AnnotationFeed from './(components)/annotation_feed';
 
 export default async function Feed() {
   const statements = await getStatementsCached({
     forCurrentUser: false,
     publishedOnly: true
   });
-
-  const statementAndDraftIds = statements.map(statement => ({
-    draftId: statement.draft?.id,
-    statementId: statement.statementId,
-    statementSlug: statement.slug ?? '',
-    creatorSlug: statement.creatorSlug ?? '',
-    versionNumber: statement.draft?.versionNumber ?? 1
-  }));
-  const annotations = await getAnnotations(statementAndDraftIds);
 
   if ('error' in statements) {
     return (

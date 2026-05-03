@@ -20,7 +20,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { LoadingButton } from '@/components/ui/loading-button';
 import { useUserContext } from '@/contexts/userContext';
-import { deleteProfileImage, uploadProfileImage } from '@/lib/actions/storageActions';
+import { uploadProfileImage } from '@/lib/actions/storageActions';
 import {
   checkUsername,
   updateEmail,
@@ -45,7 +45,6 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 export default function ProfileForm() {
   const { name, email, imageUrl, userId, username } = useUserContext();
-  const [imageLoading, setImageLoading] = useState(false);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
 
   const [isUploading, setIsUploading] = useState(false);
@@ -60,7 +59,6 @@ export default function ProfileForm() {
   });
 
   const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    setImageLoading(true);
     const files = event.target.files?.length ? Array.from(event.target.files) : null;
     if (files && files.length > 0) {
       files.map(async file => {
@@ -84,7 +82,7 @@ export default function ProfileForm() {
           toast('Success', {
             description: 'Profile picture updated successfully!'
           });
-        } catch (error) {
+        } catch {
           toast('Error', {
             description: 'Failed to upload image. Please try again.'
           });
@@ -93,22 +91,12 @@ export default function ProfileForm() {
         }
       });
     }
-    setImageLoading(false);
   };
 
   const handlePhotoButtonClick = () => {
     if (photoInputRef.current !== null) {
       photoInputRef.current.click();
     }
-  };
-
-  const handleImageDelete = async () => {
-    if (!imageUrl || !userId) return;
-    await deleteProfileImage({ profileId: userId, url: imageUrl });
-    await updateProfile({
-      name: name ?? '',
-      imageUrl: null
-    });
   };
 
   async function onSubmit(data: ProfileFormValues) {
@@ -159,7 +147,7 @@ export default function ProfileForm() {
           });
         }
       }
-    } catch (error) {
+    } catch {
       toast('Error', {
         description: 'Failed to update profile. Please try again.'
       });

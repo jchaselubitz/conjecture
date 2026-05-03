@@ -159,9 +159,6 @@ export const AnnotationHighlight = Mark.create<AnnotationHighlightOptions>({
     const { editor } = this;
     if (!editor) return;
 
-    // Track seen annotation IDs at each position to detect duplicates
-    const seenMarks = new Map<string, Set<string>>();
-
     editor.state.doc.descendants((node, pos) => {
       if (!node.isText) return;
 

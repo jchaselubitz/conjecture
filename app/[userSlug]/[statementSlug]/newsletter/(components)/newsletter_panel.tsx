@@ -2,7 +2,6 @@
 
 import { LazySubscriberData } from '@/components/user/lazy_subscriber_data';
 import { SubscriberTable } from '@/components/user/subscriber_table';
-import { useStatementContext } from '@/contexts/StatementBaseContext';
 import { useUserContext } from '@/contexts/userContext';
 import { unsubscribeBulk } from '@/lib/actions/notificationActions';
 

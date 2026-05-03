@@ -14,7 +14,7 @@ import { createAnnotation } from '../actions/annotationActions';
 import { UpsertImageDataType } from '../actions/statementActions';
 import { uploadStatementImage } from '../actions/storageActions';
 
-import { handleHeaderImageCompression, handleImageCompression } from './helpersImages';
+import { handleHeaderImageCompression } from './helpersImages';
 export type PositionParams = {
   x: number;
   y: number;
@@ -125,14 +125,14 @@ export const ensureCitations = async ({
 };
 
 export const headerImageChange = async ({
-  event,
+  files,
   userId,
   statementId,
   headerImg,
   updateStatementHeaderImageUrl,
   statementSlug
 }: {
-  event: React.ChangeEvent<HTMLInputElement>;
+  files: File[];
   userId: string;
   statementId: string;
   headerImg: string;
@@ -150,8 +150,7 @@ export const headerImageChange = async ({
   }) => Promise<void>;
 }): Promise<string | undefined> => {
   try {
-    const files = event.target.files?.length ? Array.from(event.target.files) : null;
-    if (files && files.length > 0) {
+    if (files.length > 0) {
       const imageUrl = await Promise.all(
         files.map(async file => {
           const compressedFile = await handleHeaderImageCompression(file);
@@ -181,7 +180,7 @@ export const headerImageChange = async ({
                 type: 'layout'
               }
             });
-          } catch (error) {
+          } catch {
             throw Error('Failed to update statement header image');
           }
           return imageUrl;
@@ -411,10 +410,6 @@ export const createStatementAnnotation = async ({
       .run();
 
     // Step 2: Get the updated HTML content (now contains the annotation mark)
-    const newContent = editor.getHTML();
-    const newContentJson = editor.getJSON();
-    const newPlainText = editor.getText();
-
     // Step 3: Save the HTML with the mark to the database
     // Note: This requires access to the draft object with versionNumber
     // The onUpdate handler in useHtmlSuperEditor will handle this automatically

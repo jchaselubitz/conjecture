@@ -7,7 +7,7 @@ import {
   ReactNode,
   SetStateAction,
   useContext,
-  useEffect,
+  useMemo,
   useState
 } from 'react';
 
@@ -39,23 +39,47 @@ export function StatementAnnotationProvider({ children }: { children: ReactNode 
   const { annotations, setAnnotations } = useStatementContext();
 
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | undefined>(undefined);
-  const [selectedAnnotation, setSelectedAnnotation] = useState<AnnotationWithComments | null>(null);
-
-  const [comments, setComments] = useState<CommentWithReplies[]>(
-    nestComments(selectedAnnotation?.comments || [])
-  );
+  const [commentsOverride, setCommentsOverride] = useState<CommentWithReplies[] | null>(null);
 
   const [replyToComment, setReplyToComment] = useState<CommentWithUser | null>(null);
 
-  useEffect(() => {
-    setComments(nestComments(selectedAnnotation?.comments || []));
-  }, [selectedAnnotation]);
+  const selectedAnnotation = useMemo(
+    () =>
+      (annotations.find(a => a.id === selectedAnnotationId) as
+        | AnnotationWithComments
+        | undefined) || null,
+    [annotations, selectedAnnotationId]
+  );
 
-  useEffect(() => {
-    setSelectedAnnotation(
-      (annotations.find(a => a.id === selectedAnnotationId) as AnnotationWithComments) || null
-    );
-  }, [selectedAnnotationId, annotations, setSelectedAnnotation]);
+  const comments = useMemo(
+    () => commentsOverride ?? nestComments(selectedAnnotation?.comments || []),
+    [commentsOverride, selectedAnnotation]
+  );
+
+  const setComments: Dispatch<SetStateAction<CommentWithReplies[]>> = update => {
+    setCommentsOverride(prevCommentsOverride => {
+      const baseComments = prevCommentsOverride ?? nestComments(selectedAnnotation?.comments || []);
+      return typeof update === 'function'
+        ? (update as (prevState: CommentWithReplies[]) => CommentWithReplies[])(baseComments)
+        : update;
+    });
+  };
+
+  const handleSetSelectedAnnotationId: Dispatch<SetStateAction<string | undefined>> = update => {
+    setSelectedAnnotationId(prevSelectedAnnotationId => {
+      const nextSelectedAnnotationId =
+        typeof update === 'function' ? update(prevSelectedAnnotationId) : update;
+      setCommentsOverride(null);
+      return nextSelectedAnnotationId;
+    });
+  };
+
+  const setSelectedAnnotation: Dispatch<SetStateAction<AnnotationWithComments | null>> = update => {
+    const nextSelectedAnnotation =
+      typeof update === 'function' ? update(selectedAnnotation) : update;
+    setCommentsOverride(null);
+    setSelectedAnnotationId(nextSelectedAnnotation?.id);
+  };
 
   const cancelReply = () => {
     setReplyToComment(null);
@@ -93,7 +117,7 @@ export function StatementAnnotationProvider({ children }: { children: ReactNode 
     }
   };
 
-  const sortedAnnotations = annotations.sort((a, b) => {
+  const sortedAnnotations = [...annotations].sort((a, b) => {
     return a.start - b.start;
   });
 
@@ -103,7 +127,7 @@ export function StatementAnnotationProvider({ children }: { children: ReactNode 
         annotations: sortedAnnotations,
         setAnnotations,
         selectedAnnotationId,
-        setSelectedAnnotationId,
+        setSelectedAnnotationId: handleSetSelectedAnnotationId,
         selectedAnnotation,
         setSelectedAnnotation,
         comments,

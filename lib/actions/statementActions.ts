@@ -72,6 +72,7 @@ export async function getPublishedOrLatestStatements({
       'statement.updatedAt',
       'statement.parentStatementId',
       'statement.headerImg as headerImg',
+      'statement.showFullHeaderImg as showFullHeaderImg',
       'statement.title',
       'statement.subtitle',
       'statement.threadId',
@@ -283,6 +284,7 @@ export async function getFullThread(threadId: string): Promise<StatementWithDraf
       'statement.updatedAt',
       'statement.parentStatementId',
       'statement.headerImg as headerImg',
+      'statement.showFullHeaderImg as showFullHeaderImg',
       'statement.title',
       'statement.subtitle',
       'statement.threadId',
@@ -335,13 +337,11 @@ export const getFullThreadCached = cache(
 export async function getStatementDetails({
   statementId,
   draftId,
-  userId,
-  version
+  userId: _userId
 }: {
   statementId: string;
   draftId: string;
   userId?: string;
-  version?: number;
 }): Promise<{
   images: BaseStatementImage[];
   citations: BaseStatementCitation[];
@@ -463,13 +463,11 @@ export const getStatementDetailsCached = cache(
   async ({
     statementId,
     draftId,
-    userId,
-    version
+    userId
   }: {
     statementId: string;
     draftId: string;
     userId?: string;
-    version?: number;
   }): Promise<{
     images: BaseStatementImage[];
     citations: BaseStatementCitation[];
@@ -478,8 +476,7 @@ export const getStatementDetailsCached = cache(
     return getStatementDetails({
       statementId,
       draftId,
-      userId,
-      version
+      userId
     });
   }
 );
@@ -597,7 +594,7 @@ export async function createDraft({
     });
 
     redirect(`/[userSlug]/${slug}/${versionNumber}?edit=true`);
-  } catch (error) {
+  } catch {
     return { error: 'Failed to create draft' };
   }
 }
@@ -709,13 +706,34 @@ export async function updateStatementHeaderImageUrl({
   revalidatePath(revalidationPath.path, revalidationPath.type);
 }
 
+export async function updateStatementShowFullHeaderImage({
+  statementId,
+  creatorId,
+  showFullHeaderImg,
+  statementSlug
+}: {
+  statementId: string;
+  creatorId: string;
+  showFullHeaderImg: boolean;
+  statementSlug: string;
+}) {
+  await authenticatedUser(creatorId);
+  await db
+    .updateTable('statement')
+    .set({ showFullHeaderImg })
+    .where('statementId', '=', statementId)
+    .execute();
+
+  revalidatePath(`/[userSlug]/${statementSlug}`, 'layout');
+}
+
 export async function updateDraft({
   id,
   content,
   contentJson,
   contentPlainText,
   versionNumber,
-  creatorId
+  creatorId: _creatorId
 }: {
   id: string;
   content?: string;

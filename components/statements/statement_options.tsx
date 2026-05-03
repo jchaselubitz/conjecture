@@ -62,7 +62,6 @@ export default function StatementOptions({
   const [calendarDate, setCalendarDate] = useState<Date | null>(
     statement.draft.publishedAt ? new Date(statement.draft.publishedAt) : null
   );
-  const [calendarLoading, setCalendarLoading] = useState(false);
   const [calendarError, setCalendarError] = useState<string | null>(null);
   const { currentVersion } = useStatementContext();
 
@@ -128,7 +127,6 @@ export default function StatementOptions({
       setCalendarError('Cannot set a future date');
       return;
     }
-    setCalendarLoading(true);
     setCalendarError(null);
     try {
       await updateDraftPublicationDate({
@@ -145,10 +143,8 @@ export default function StatementOptions({
       setCalendarDate(date);
       setDialogOpen(false);
       // Optionally, refresh or revalidate here
-    } catch (e) {
+    } catch {
       setCalendarError('Failed to update date');
-    } finally {
-      setCalendarLoading(false);
     }
   };
 
@@ -202,7 +198,6 @@ export default function StatementOptions({
                   handleDelete={handleDelete}
                   dialogOpen={dialogOpen}
                   setDialogOpen={setDialogOpen}
-                  calendarDate={calendarDate}
                 />
               )}
             </>
@@ -271,15 +266,13 @@ const CreatorOptionsButton = ({
   editMode,
   handleEditModeToggle,
   handleDelete,
-  setDialogOpen,
-  calendarDate
+  setDialogOpen
 }: {
   editMode: boolean;
   handleEditModeToggle: () => void;
   handleDelete: () => void;
   dialogOpen: boolean;
   setDialogOpen: (open: boolean) => void;
-  calendarDate: Date | null;
 }) => {
   return (
     <DropdownMenu>

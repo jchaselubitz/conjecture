@@ -109,7 +109,7 @@ export const InlineLatex = Node.create<InlineLatexOptions>({
     return {
       insertInlineLatex:
         (options = {}) =>
-        ({ chain, commands }) => {
+        ({ commands }) => {
           const latexId = nanoid();
           return commands.insertContent({
             type: this.name,

@@ -1,10 +1,4 @@
-import {
-  AnnotationWithComments,
-  AnnotationWithStatement,
-  CommentWithReplies,
-  CommentWithUser
-} from 'kysely-codegen';
-import { RefreshCw, Trash2 } from 'lucide-react';
+import { AnnotationWithStatement, CommentWithReplies } from 'kysely-codegen';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
@@ -29,8 +23,7 @@ export default function AnnotationItem({
 }: AnnotationItemProps) {
   const { userId } = useUserContext();
   const isCreator = userId === statementCreatorId;
-  const commentInputRef = useRef<HTMLTextAreaElement>(null);
-  const [comments, setComments] = useState<CommentWithReplies[]>(
+  const [comments] = useState<CommentWithReplies[]>(
     (annotation.comments as CommentWithReplies[]) || []
   );
 

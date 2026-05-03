@@ -4,7 +4,7 @@ import { ChevronDown, MoreVertical } from 'lucide-react';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useWindowSize } from 'react-use';
 
 import { ButtonLoadingState, LoadingButton } from '@/components/ui/loading-button';
@@ -41,30 +41,24 @@ export default function EditNav() {
 
   const currentDraftIsPublished = statement?.draft.publishedAt;
   const [saveButtonState, setSaveButtonState] = useState<ButtonLoadingState>('default');
-  const [updateButtonState, setUpdateButtonState] = useState<ButtonLoadingState>('default');
+  const [updateButtonStateOverride, setUpdateButtonStateOverride] =
+    useState<ButtonLoadingState>('default');
   const [publishButtonState, setPublishButtonState] = useState<ButtonLoadingState>('default');
   const [sendToSubscribersButtonState, setSendToSubscribersButtonState] =
     useState<ButtonLoadingState>('default');
 
   const router = useRouter();
   const isMobile = useWindowSize().width < 600;
-
-  useEffect(() => {
-    if (!isUpdating) {
-      setUpdateButtonState('default');
-    } else {
-      setUpdateButtonState('loading');
-    }
-  }, [isUpdating]);
+  const updateButtonState = isUpdating ? 'loading' : updateButtonStateOverride;
 
   const handleUpdate = async () => {
     try {
-      setUpdateButtonState('loading');
+      setUpdateButtonStateOverride('loading');
       await updateStatementDraft();
-      setUpdateButtonState('success');
+      setUpdateButtonStateOverride('success');
     } catch (error) {
       console.error(error);
-      setUpdateButtonState('error');
+      setUpdateButtonStateOverride('error');
     }
   };
 
@@ -231,7 +225,7 @@ export default function EditNav() {
                   text={currentDraftIsPublished ? `Update` : `Save`}
                   loadingText={currentDraftIsPublished ? 'Updating...' : 'Saving...'}
                   successText={currentDraftIsPublished ? 'Updated' : 'Saved'}
-                  setButtonState={setUpdateButtonState}
+                  setButtonState={setUpdateButtonStateOverride}
                   reset
                   errorText={currentDraftIsPublished ? 'Failed to update' : 'Failed to save'}
                 />

@@ -1,7 +1,7 @@
 import useEmblaCarousel from 'embla-carousel-react';
 import { AnnotationWithComments } from 'kysely-codegen';
 import { ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
@@ -39,20 +39,16 @@ export default function AnnotationDialog({
   const { replyToComment, setReplyToComment, cancelReply, comments } =
     useStatementAnnotationContext();
 
-  const [showCommentInput, setShowCommentInput] = useState(false);
+  const [showCommentInputManually, setShowCommentInputManually] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [emblaRan, setEmblaRan] = useState(false);
+  const emblaRanRef = useRef(false);
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: 'center',
     containScroll: false,
     dragFree: false
   });
 
-  useEffect(() => {
-    if (!!replyToComment) {
-      setShowCommentInput(true);
-    }
-  }, [replyToComment]);
+  const showCommentInput = Boolean(replyToComment) || showCommentInputManually;
 
   const onSelect = useCallback(() => {
     if (!emblaApi || !filteredAnnotations) return;
@@ -60,7 +56,7 @@ export default function AnnotationDialog({
     const selectedAnnotation = filteredAnnotations[selectedIndex];
     if (selectedAnnotation) {
       setSelectedIndex(selectedIndex);
-      setShowCommentInput(false);
+      setShowCommentInputManually(false);
       handleAnnotationSelection(selectedAnnotation.id);
     }
   }, [emblaApi, filteredAnnotations, handleAnnotationSelection]);
@@ -68,22 +64,22 @@ export default function AnnotationDialog({
   useEffect(() => {
     if (!emblaApi) return;
     emblaApi.on('select', onSelect);
-    setEmblaRan(true);
+    emblaRanRef.current = true;
     return () => {
       emblaApi.off('select', onSelect);
-      setEmblaRan(false);
+      emblaRanRef.current = false;
     };
-  }, [emblaApi, onSelect, setEmblaRan]);
+  }, [emblaApi, onSelect]);
 
   useEffect(() => {
-    if (selectedAnnotation && emblaApi && !emblaRan) {
+    if (selectedAnnotation && emblaApi && !emblaRanRef.current) {
       emblaApi?.scrollTo(filteredAnnotations.indexOf(selectedAnnotation), true);
     }
-  }, [selectedAnnotation, emblaApi, filteredAnnotations, emblaRan]);
+  }, [selectedAnnotation, emblaApi, filteredAnnotations]);
 
   const onCancelReply = () => {
     cancelReply();
-    setShowCommentInput(false);
+    setShowCommentInputManually(false);
   };
 
   const onHandleCloseAnnotationDialog = () => {
@@ -149,7 +145,7 @@ export default function AnnotationDialog({
               {selectedAnnotation && (
                 <CommentInput
                   showCommentInput={showCommentInput}
-                  setShowCommentInput={setShowCommentInput}
+                  setShowCommentInput={setShowCommentInputManually}
                   annotation={selectedAnnotation}
                 />
               )}
@@ -171,7 +167,7 @@ export default function AnnotationDialog({
               </div>
               <Button
                 variant="ghost"
-                onClick={() => setShowCommentInput(true)}
+                onClick={() => setShowCommentInputManually(true)}
                 className="rounded-lg text-left text-muted-foreground justify-center w-fit"
               >
                 Add comment <MessageCircle className="h-4 w-4" />

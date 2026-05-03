@@ -65,13 +65,9 @@ export default async function RootLayout({
   } = await supabase.auth.getUser();
 
   let profile = null;
-  let email = null;
-  let slug = null;
 
   if (user) {
     profile = await getUserProfile();
-    email = user.email;
-    slug = profile?.username;
   }
 
   return (

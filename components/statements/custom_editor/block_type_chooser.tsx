@@ -1,14 +1,5 @@
 import { Editor } from '@tiptap/react';
-import {
-  Heading1,
-  Heading2,
-  Heading3,
-  List,
-  ListOrdered,
-  Plus,
-  Quote,
-  Table as TableIcon
-} from 'lucide-react';
+import { List, ListOrdered, Plus, Quote, Table as TableIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -94,7 +85,7 @@ export function BlockTypeChooser({ statementId, editor }: BlockTypeChooserProps)
             <TableIcon className="h-4 w-4" />
           </Button>
           <LatexButton editor={editor} displayMode={true} />
-          <VideoButton statementId={statementId} />
+          <VideoButton />
           <ImageButton statementId={statementId} />
         </div>
       </PopoverContent>

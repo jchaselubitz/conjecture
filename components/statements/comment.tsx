@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  BaseCommentVote,
   CommentWithReplies,
   CommentWithUser,
   StatementWithDraftAndCollaborators
@@ -173,7 +172,6 @@ const Comment: React.FC<CommentProps> = ({
           userId={userId}
           comment={comment}
           isRootComment={isRootComment}
-          isHovered={isHovered}
           editingComment={editingComment}
           onReplyClick={onReplyClick}
           onEditClick={() => setEditingComment(true)}

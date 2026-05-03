@@ -229,9 +229,7 @@ async function main() {
   ]);
 
   // --- Generate draft ---
-  const statementIds = Array.from({ length: 10 }).map((_, i) => {
-    return nanoid();
-  });
+  const statementIds = Array.from({ length: 10 }, () => nanoid());
 
   await seed.statement([
     {
@@ -467,7 +465,7 @@ async function main() {
   );
 
   // --- Generate comments ---
-  const comments = await seed.comment(
+  await seed.comment(
     Array.from({ length: 20 }).map((_, i) => {
       const seedStr = `comment-${i}`;
       return {

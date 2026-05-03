@@ -101,7 +101,7 @@ export const BlockLatex = Node.create<BlockLatexOptions>({
     return {
       insertBlockLatex:
         options =>
-        ({ chain, commands }) => {
+        ({ commands }) => {
           const latexId = nanoid();
           const success = commands.insertContent({
             type: this.name,

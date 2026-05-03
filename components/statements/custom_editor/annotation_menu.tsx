@@ -4,12 +4,10 @@ import { RefObject, useEffect, useState } from 'react';
 import { ImperativePanelGroupHandle } from 'react-resizable-panels';
 
 import { AuthButtons } from '@/components/navigation/auth_buttons';
-import { Button } from '@/components/ui/button';
 import { useStatementAnnotationContext } from '@/contexts/StatementAnnotationContext';
 import { useUserContext } from '@/contexts/userContext';
 import { setPanelState } from '@/lib/helpers/helpersLayout';
 import { createStatementAnnotation } from '@/lib/helpers/helpersStatements';
-import { useCopyToClipboard } from '@/lib/hooks/useCopyToClipboard';
 import { cn } from '@/lib/utils';
 
 import { AnnotationButton } from './annotation_button';
@@ -39,7 +37,6 @@ export const AnnotationMenu = ({
 }: AnnotationMenuProps) => {
   const { userId } = useUserContext();
   const { annotations, setAnnotations, setSelectedAnnotationId } = useStatementAnnotationContext();
-  const { copy, copied } = useCopyToClipboard(editor?.state.selection.toString() ?? '');
 
   const [isSelectionEmpty, setIsSelectionEmpty] = useState<boolean | undefined>(
     editor?.state.selection.empty

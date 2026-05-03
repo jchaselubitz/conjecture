@@ -2,7 +2,6 @@
 
 import { AnnotationWithComments } from 'kysely-codegen';
 import { X } from 'lucide-react';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';

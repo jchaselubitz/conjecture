@@ -59,7 +59,6 @@ const HTMLSuperEditor = ({
   const statementId = draft.statementId;
 
   const editor = useHtmlSuperEditor({
-    draft,
     statementCreatorId,
     existingAnnotations,
     userId,

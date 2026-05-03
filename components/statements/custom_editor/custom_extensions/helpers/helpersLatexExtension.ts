@@ -178,7 +178,7 @@ export const saveLatex = ({
         processLatex(editorElement);
       }
     }, 100);
-  } catch (error) {
+  } catch {
     // Silently handle error
   }
 };
