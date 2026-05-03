@@ -204,7 +204,7 @@ export default function UnsubscribePage() {
               placeholder="your.email@example.com"
               value={emailInput}
               onChange={e => {
-                setEmailInput(e.target.value);
+                setEmailInput(e.currentTarget.value);
                 setHasCheckedEmail(false);
                 setIsSubscribed(null);
                 setError('');

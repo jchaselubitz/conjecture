@@ -42,6 +42,7 @@
   ],
   "exclude": [
     "node_modules",
+    "app/sw.ts",
     "supabase/functions/**/*"
   ]
 }

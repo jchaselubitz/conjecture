@@ -14,18 +14,23 @@ export const handleImageCompression = async (imageFile: File): Promise<File | un
 };
 
 export const handleHeaderImageCompression = async (imageFile: File): Promise<File | undefined> => {
+  const isTextHeavyImage = imageFile.type === 'image/png';
   const options = {
-    maxSizeMB: 0.8, // Slightly smaller for header images
-    maxWidthOrHeight: 1600, // Optimized for typical header display
+    // Featured images often contain screenshots or dense typography, so give them
+    // a larger fidelity budget than inline body images.
+    maxSizeMB: isTextHeavyImage ? 3 : 2,
+    maxWidthOrHeight: isTextHeavyImage ? 3200 : 2560,
     useWebWorker: true,
     initialQuality: 1,
-    fileType: 'image/webp' // Use WebP for better compression
+    fileType: imageFile.type,
+    alwaysKeepResolution: isTextHeavyImage
   };
   try {
     return await imageCompression(imageFile, options);
   } catch (error) {
     console.log(error);
-    // Fallback to original compression if WebP fails
+    // Fall back to the default image compression path if the higher-fidelity
+    // featured-image settings fail in this browser.
     return handleImageCompression(imageFile);
   }
 };

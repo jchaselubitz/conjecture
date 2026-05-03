@@ -58,7 +58,7 @@ function LatexPopoverContent({
     saveLatex({
       latex,
       editor,
-  selectedLatexId,
+      selectedLatexId,
       isBlock,
       setLatexPopoverOpen
     });

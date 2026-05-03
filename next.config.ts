@@ -1,88 +1,8 @@
 import withBundleAnalyzer from '@next/bundle-analyzer';
 import { withSentryConfig } from '@sentry/nextjs';
-// Import the necessary modules
+import { withSerwist } from '@serwist/turbopack';
 import { NextConfig } from 'next';
-import withPWA from 'next-pwa';
 /** @type {NextConfig} */
-
-const pwaConfig = withPWA({
-  dest: 'public',
-  register: true,
-  // disable: process.env.NODE_ENV === 'development',
-  skipWaiting: true,
-  buildExcludes: [/middleware-manifest\.json$/],
-  sw: '/sw.js',
-  runtimeCaching: [
-    {
-      urlPattern: /^https?.*/,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'offlineCache',
-        expiration: {
-          maxEntries: 200
-        }
-      }
-    },
-    {
-      urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'google-fonts-cache',
-        expiration: {
-          maxEntries: 10,
-          maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-        }
-      }
-    },
-    {
-      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'images-cache',
-        expiration: {
-          maxEntries: 100,
-          maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-        }
-      }
-    },
-    {
-      urlPattern: /^\/_next\/static\/.*/,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'next-static-cache',
-        expiration: {
-          maxEntries: 200,
-          maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-        }
-      }
-    },
-    {
-      urlPattern: /^\/api\/(?!auth).*/, // Cache API calls except auth
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'api-cache',
-        networkTimeoutSeconds: 3,
-        expiration: {
-          maxEntries: 100,
-          maxAgeSeconds: 60 * 10 // 10 minutes
-        }
-      }
-    },
-    {
-      urlPattern: /^\//,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'pages-cache',
-        networkTimeoutSeconds: 3,
-        expiration: {
-          maxEntries: 100,
-          maxAgeSeconds: 60 * 60 * 24 // 1 day
-        }
-      }
-    }
-  ]
-  // cacheOnFrontEndNav: true,
-});
 
 const withAnalyze = withBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true'
@@ -93,7 +13,6 @@ const supabaseHostname = process.env.SUPABASE_URL
   : 'bewgymyresxixvkkqbzl.supabase.co';
 
 const config: NextConfig = {
-  ...pwaConfig,
   serverExternalPackages: ['@sentry/nextjs'],
   allowedDevOrigins: ['*.romantic-pig-living.ngrok-free.app'],
   experimental: {
@@ -186,41 +105,43 @@ const config: NextConfig = {
   // },
 };
 
-export default withAnalyze(
-  withSentryConfig(config, {
-    // For all available options, see:
-    // https://www.npmjs.com/package/@sentry/webpack-plugin#options
+export default withSerwist(
+  withAnalyze(
+    withSentryConfig(config, {
+      // For all available options, see:
+      // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
-    org: 'cooperativ-labs',
-    project: 'conject',
+      org: 'cooperativ-labs',
+      project: 'conject',
 
-    // Only print logs for uploading source maps in CI
-    silent: !process.env.CI,
+      // Only print logs for uploading source maps in CI
+      silent: !process.env.CI,
 
-    // For all available options, see:
-    // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
+      // For all available options, see:
+      // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
-    // Upload a larger set of source maps for prettier stack traces (increases build time)
-    widenClientFileUpload: true,
+      // Upload a larger set of source maps for prettier stack traces (increases build time)
+      widenClientFileUpload: true,
 
-    // Automatically annotate React components to show their full name in breadcrumbs and session replay
-    reactComponentAnnotation: {
-      enabled: true
-    },
+      // Automatically annotate React components to show their full name in breadcrumbs and session replay
+      reactComponentAnnotation: {
+        enabled: true
+      },
 
-    // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
-    // This can increase your server load as well as your hosting bill.
-    // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
-    // side errors will fail.
-    tunnelRoute: '/monitoring',
+      // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
+      // This can increase your server load as well as your hosting bill.
+      // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
+      // side errors will fail.
+      tunnelRoute: '/monitoring',
 
-    // Automatically tree-shake Sentry logger statements to reduce bundle size
-    disableLogger: true,
+      // Automatically tree-shake Sentry logger statements to reduce bundle size
+      disableLogger: true,
 
-    // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
-    // See the following for more information:
-    // https://docs.sentry.io/product/crons/
-    // https://vercel.com/docs/cron-jobs
-    automaticVercelMonitors: true
-  })
+      // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
+      // See the following for more information:
+      // https://docs.sentry.io/product/crons/
+      // https://vercel.com/docs/cron-jobs
+      automaticVercelMonitors: true
+    })
+  )
 );

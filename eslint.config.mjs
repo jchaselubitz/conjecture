@@ -68,5 +68,16 @@ export default [
       'simple-import-sort/exports': 'warn',
       'no-console': ['warn', { allow: ['warn', 'error'] }]
     }
+  },
+  {
+    files: ['app/sw.ts'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        project: 'tsconfig.sw.json',
+        ecmaVersion: 2022,
+        sourceType: 'module'
+      }
+    }
   }
 ];

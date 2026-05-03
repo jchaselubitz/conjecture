@@ -10,6 +10,7 @@ description: Configuring Progressive Web Apps (PWA) with Next.js App Router and 
 This skill covers everything needed to turn a Next.js App Router project into a fully-featured PWA with offline support (via Serwist), push notifications (via VAPID/web-push), and home screen installation.
 
 ---
+IMPORTANT: Next.js 16 uses Turbopack by default. You need to install @serwist/turbopack and serwist to use Serwist: https://serwist.pages.dev/docs/next/turbo
 
 ## 1. Web App Manifest
 

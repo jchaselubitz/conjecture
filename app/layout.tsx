@@ -3,6 +3,7 @@ import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
 import type { Metadata, Viewport } from 'next';
 
+import { SerwistProvider } from '@/app/serwist';
 import { Toaster } from '@/components/ui/sonner';
 import { UserProvider } from '@/contexts/userContext';
 import { getUserProfile } from '@/lib/actions/userActions';
@@ -80,14 +81,20 @@ export default async function RootLayout({
       <link rel="manifest" href="/manifest.webmanifest" />
 
       <body>
-        <div className="min-h-screen app-safe">
-          <UserProvider userProfile={profile} userEmail={user?.email} userSlug={profile?.username}>
-            {children}
+        <SerwistProvider swUrl="/serwist/sw.js">
+          <div className="min-h-screen app-safe">
+            <UserProvider
+              userProfile={profile}
+              userEmail={user?.email}
+              userSlug={profile?.username}
+            >
+              {children}
 
-            <Toaster />
-            <ProfileSettingsDialog />
-          </UserProvider>
-        </div>
+              <Toaster />
+              <ProfileSettingsDialog />
+            </UserProvider>
+          </div>
+        </SerwistProvider>
         <Analytics />
       </body>
     </html>

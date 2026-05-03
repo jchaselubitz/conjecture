@@ -129,7 +129,9 @@ export default function StatementDetails({
 
   const uploadHeaderImage = async (files: File[]) => {
     if (!userId) {
-      alert('You must be logged in to upload an image.');
+      toast('Error', {
+        description: 'You must be logged in to upload an image.'
+      });
       return;
     }
     if (files.length === 0) return;
@@ -324,22 +326,22 @@ export default function StatementDetails({
                   <span className="text-sm text-white/85">
                     {isDragOverHeaderImage ? 'Drop image to upload' : 'Or drag an image here'}
                   </span>
+                  {isStatementCreator && editMode && (
+                    <div className="mt-3 flex items-center justify-end gap-3 px-1">
+                      <label
+                        htmlFor="show-full-header-img"
+                        className="text-sm font-medium text-muted-foreground"
+                      >
+                        Show cover image at full dimensions
+                      </label>
+                      <Switch
+                        id="show-full-header-img"
+                        checked={showFullHeaderImg}
+                        onCheckedChange={handleShowFullHeaderImgChange}
+                      />
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
-            {isStatementCreator && editMode && (
-              <div className="mt-3 flex items-center justify-end gap-3 px-1">
-                <label
-                  htmlFor="show-full-header-img"
-                  className="text-sm font-medium text-muted-foreground"
-                >
-                  Show cover image at full dimensions
-                </label>
-                <Switch
-                  id="show-full-header-img"
-                  checked={showFullHeaderImg}
-                  onCheckedChange={handleShowFullHeaderImgChange}
-                />
               </div>
             )}
           </div>
