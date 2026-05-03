@@ -1,5 +1,7 @@
 import imageCompression from 'browser-image-compression';
 
+const HEADER_IMAGE_DIRECT_UPLOAD_LIMIT_BYTES = 2.5 * 1024 * 1024;
+
 export const handleImageCompression = async (imageFile: File): Promise<File | undefined> => {
   const options = {
     maxSizeMB: 1,
@@ -14,6 +16,12 @@ export const handleImageCompression = async (imageFile: File): Promise<File | un
 };
 
 export const handleHeaderImageCompression = async (imageFile: File): Promise<File | undefined> => {
+  // Small-ish featured images should keep their original encoding. Recompressing
+  // a 1-2 MB JPEG often introduces visible grain without saving meaningful bandwidth.
+  if (imageFile.size <= HEADER_IMAGE_DIRECT_UPLOAD_LIMIT_BYTES) {
+    return imageFile;
+  }
+
   const isTextHeavyImage = imageFile.type === 'image/png';
   const options = {
     // Featured images often contain screenshots or dense typography, so give them
