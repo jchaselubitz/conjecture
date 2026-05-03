@@ -315,7 +315,7 @@ export default function StatementDetails({
                     isDragOverHeaderImage && 'border-white/70 bg-black/45'
                   )}
                 >
-                  <Button variant="outline" className="gap-2 text-gray-300" onClick={handlePhotoButtonClick}>
+                  <Button variant="outline" className="gap-2 text-gray-800" onClick={handlePhotoButtonClick}>
                     {isUploading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
