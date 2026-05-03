@@ -16,6 +16,9 @@ const config: NextConfig = {
   serverExternalPackages: ['@sentry/nextjs'],
   allowedDevOrigins: ['*.romantic-pig-living.ngrok-free.app'],
   experimental: {
+    serverActions: {
+      bodySizeLimit: '4mb'
+    },
     // Optimize for modern browsers to reduce polyfills
     optimizePackageImports: [
       '@radix-ui/react-icons',
